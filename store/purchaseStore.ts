@@ -25,7 +25,10 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   customerInfo: null,
 
   initialize: async (userId) => {
-    // RevenueCat API Inactivada
+    // Check local/DB status since RevenueCat is inactive
+    if (userId) {
+      await get().verifyProStatus();
+    }
     set({ isLoading: false });
   },
 
@@ -48,11 +51,9 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     try {
       set({ isLoading: true });
       
-      // Actualizar directamente la columna is_pro en la base de datos Supabase
+      // Call RPC to update role, is_pro, and grant achievements
       const { error } = await supabase
-        .from('users')
-        .update({ is_pro: true })
-        .eq('id', profile.id);
+        .rpc('upgrade_to_pro_user', { target_user_id: profile.id });
 
       if (error) throw error;
 
@@ -73,20 +74,17 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     try {
       set({ isLoading: true });
       
-      // Actualizar directamente la columna is_pro en la base de datos Supabase
+      // Call RPC to cancel subscription
       const { error } = await supabase
-        .from('users')
-        .update({ is_pro: false })
-        .eq('id', profile.id);
+        .rpc('cancel_pro_subscription', { target_user_id: profile.id });
 
       if (error) throw error;
 
-      set({ isPro: false, isLoading: false });
-      useAuthStore.getState().setProfile({ ...profile, isPro: false });
+      // Re-verify to see if they lost access immediately (within 24h)
+      await get().verifyProStatus();
     } catch (err: any) {
       console.error('Error cancelling Pro:', err.message || err);
-      set({ isPro: false, isLoading: false });
-      useAuthStore.getState().setProfile({ ...profile, isPro: false });
+      set({ isLoading: false });
     }
   },
 
@@ -97,14 +95,11 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     try {
       set({ isLoading: true });
       const { data, error } = await supabase
-        .from('users')
-        .select('is_pro')
-        .eq('id', profile.id)
-        .single();
+        .rpc('verify_and_update_pro_status', { target_user_id: profile.id });
 
       if (error) throw error;
 
-      const isProNow = !!data.is_pro;
+      const isProNow = !!data;
       set({ isPro: isProNow, isLoading: false });
       useAuthStore.getState().setProfile({ ...profile, isPro: isProNow });
       
