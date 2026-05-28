@@ -1812,7 +1812,7 @@ export default function ProfileScreen() {
           style={{ marginHorizontal: Spacing.base, marginBottom: Spacing.base }}
         >
           <Text style={[s.sectionTitle, { color: colors.textMuted }]}>{t('about.title', 'SOBRE FITGO')}</Text>
-          <MenuRow icon={FileText} label={t('profile.termsAndConditions', 'Términos y Condiciones')} onPress={() => router.push('/(auth)/terms' as any)} iconColor="#6366F1" />
+          <MenuRow icon={FileText} label={t('profile.termsAndPrivacy', 'Términos y Privacidad')} onPress={() => router.push('/(auth)/terms' as any)} iconColor="#6366F1" />
           <MenuRow icon={Info} label={t('about.moreInfo', 'Más información')} rightIcon={showAbout ? '▼' : '›'} onPress={() => toggleSection(setShowAbout, showAbout)} iconColor="#3B82F6" />
           
           {showAbout && (
