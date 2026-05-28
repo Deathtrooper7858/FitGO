@@ -2,32 +2,41 @@ import { Tabs, router, usePathname } from 'expo-router';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { FileText, BarChart2, MessageCircle, Calendar, Trophy } from 'lucide-react-native';
-import { useAuthStore, usePurchaseStore } from '../../store';
-import React, { useCallback } from 'react';
+import { FileText, BarChart2, MessageCircle, Calendar, Trophy, Users } from 'lucide-react-native';
+import { useAuthStore, usePurchaseStore, useSocialStore } from '../../store';
+import React, { useCallback, useRef } from 'react';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-function TabIcon({ Icon, label, focused }: { Icon: any; label: string; focused: boolean }) {
+function TabIcon({ Icon, label, focused, badgeCount }: { Icon: any; label: string; focused: boolean; badgeCount?: number }) {
   const colors = useTheme();
   return (
     <View style={styles.tabItem}>
-      {focused ? (
-        <LinearGradient
-          colors={[colors.primary, colors.secondary || '#A855F7']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.iconPillActive}
-        >
-          <Icon size={22} color="#fff" strokeWidth={2.5} />
-        </LinearGradient>
-      ) : (
-        <View style={styles.iconPillInactive}>
-          <Icon size={22} color={colors.tabInactive} strokeWidth={1.8} />
-        </View>
-      )}
+      <View>
+        {focused ? (
+          <LinearGradient
+            colors={[colors.primary, colors.secondary || '#A855F7']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.iconPillActive}
+          >
+            <Icon size={22} color="#fff" strokeWidth={2.5} />
+          </LinearGradient>
+        ) : (
+          <View style={styles.iconPillInactive}>
+            <Icon size={22} color={colors.tabInactive} strokeWidth={1.8} />
+          </View>
+        )}
+        {!!badgeCount && badgeCount > 0 && (
+          <View style={styles.notifBadge}>
+            <Text style={styles.notifBadgeText}>
+              {badgeCount > 99 ? '99+' : badgeCount}
+            </Text>
+          </View>
+        )}
+      </View>
       <Text
         style={[
           styles.tabLabel,
@@ -48,6 +57,13 @@ export default function TabsLayout() {
   const { isPro } = usePurchaseStore();
   const pathname = usePathname();
   const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin';
+
+  // Social notifications badge
+  const { totalUnreadCount, friends } = useSocialStore();
+  const pendingFriendRequests = friends.filter(
+    f => f.status === 'pending' && f.user_id_2 === profile?.id
+  ).length;
+  const socialBadgeCount = totalUnreadCount + pendingFriendRequests;
 
   const insets = useSafeAreaInsets();
   const isIOS = Platform.OS === 'ios';
@@ -72,10 +88,21 @@ export default function TabsLayout() {
     return 0;
   }, [pathname]);
 
+  // Track where the gesture started vertically to gate zone-based swipes
+  const gestureStartY = useRef(0);
+  // Only fire main-tab change if swipe starts in the TOP zone (header/widgets)
+  const TOP_ZONE_THRESHOLD = 200;
+
   const swipeGesture = Gesture.Pan()
     .activeOffsetX([-40, 40])
+    .failOffsetY([-15, 15])
     .runOnJS(true)
+    .onBegin((e) => {
+      gestureStartY.current = e.absoluteY;
+    })
     .onEnd((e) => {
+      // Only allow main-tab navigation when gesture starts in the top zone
+      if (gestureStartY.current > TOP_ZONE_THRESHOLD) return;
       if (Math.abs(e.velocityX) > 500 || Math.abs(e.translationX) > 100) {
         const direction = e.translationX > 0 ? -1 : 1;
         const currentIndex = getCurrentTabIndex();
@@ -164,9 +191,14 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="social/index"
           options={{
-            title: t('tabs.leagues', 'Ligas'),
+            title: t('tabs.social', 'Social'),
             tabBarIcon: ({ focused }) => (
-              <TabIcon Icon={Trophy} label={t('tabs.leagues', 'Ligas')} focused={focused} />
+              <TabIcon
+                Icon={Users}
+                label={t('tabs.social', 'Social')}
+                focused={focused}
+                badgeCount={socialBadgeCount}
+              />
             ),
           }}
         />
@@ -219,5 +251,26 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.2,
     textAlign: 'center',
+  },
+  notifBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: '#FF3B30',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: '#fff',
+    zIndex: 10,
+  },
+  notifBadgeText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '900',
+    lineHeight: 12,
   },
 });

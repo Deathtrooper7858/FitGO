@@ -42,6 +42,7 @@ interface LeagueStore {
   rewardPoints: number;
   loading: boolean;
   error: string | null;
+  topSquads: Squad[];
 
   // Actions
   fetchMySquad: (userId: string) => Promise<void>;
@@ -54,6 +55,7 @@ interface LeagueStore {
     consumed: { calories: number; protein: number; carbs: number; fat: number },
     target: { calories: number; protein: number; carbs: number; fat: number }
   ) => Promise<void>;
+  fetchTopSquads: () => Promise<void>;
   showReward: (points: number) => void;
   hideReward: () => void;
   reset: () => void;
@@ -100,6 +102,7 @@ export const useLeagueStore = create<LeagueStore>()(
       rewardPoints: 0,
       loading: false,
       error: null,
+      topSquads: [],
 
   // ── Fetch the squad for the current user ────────────────────────────
   fetchMySquad: async (userId: string) => {
@@ -162,6 +165,25 @@ export const useLeagueStore = create<LeagueStore>()(
       // Never wipe squad on unknown error - keep cache
       console.warn('[League] fetchMySquad unexpected error, keeping cache:', err.message);
       set({ loading: false });
+    }
+  },
+
+  // ── Fetch Top Squads ──────────────────────────────────────────────────────
+  fetchTopSquads: async () => {
+    try {
+      const { data, error } = await supabase
+        .from('squads')
+        .select('*')
+        .order('points', { ascending: false })
+        .limit(10);
+      
+      if (error) {
+        console.warn('[League] fetchTopSquads error:', error.message);
+        return;
+      }
+      set({ topSquads: data as Squad[] });
+    } catch (err) {
+      console.warn('[League] fetchTopSquads unexpected error:', err);
     }
   },
 
@@ -277,6 +299,8 @@ export const useLeagueStore = create<LeagueStore>()(
       get().showReward(POINTS.MACRO_PERFECT);
     }
   },
+
+
 
   // ── UI Reward animation control ────────────────────────────────────────────
   showReward: (points: number) => set({ rewardVisible: true, rewardPoints: points }),

@@ -7,7 +7,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useSettingsStore } from '../../store';
 import LanguageModal from '../../components/LanguageModal';
-import { Settings, Apple, Bot, BarChart3, Calendar, Zap, ShieldCheck } from 'lucide-react-native';
+import { Globe, Apple, Bot, BarChart3, Calendar, Zap, ShieldCheck } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 
 export default function WelcomeScreen() {
@@ -40,7 +40,10 @@ export default function WelcomeScreen() {
         style={[styles.settingsBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
         onPress={() => setLangModalVisible(true)}
       >
-        <Settings size={20} color={colors.textPrimary} />
+        <Globe size={18} color={colors.textPrimary} />
+        <Text style={{ color: colors.textPrimary, marginLeft: 6, fontWeight: '700', fontSize: 14 }}>
+          {language.toUpperCase()}
+        </Text>
       </TouchableOpacity>
 
       <LanguageModal 
@@ -105,9 +108,10 @@ const styles = StyleSheet.create({
     top: 60,
     left: 20,
     zIndex: 10,
-    width: 44,
     height: 44,
     borderRadius: 22,
+    flexDirection: 'row',
+    paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
