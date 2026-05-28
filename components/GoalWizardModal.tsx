@@ -10,8 +10,10 @@ import { useTheme } from '../hooks/useTheme';
 import { Spacing, Radius } from '../constants';
 import { 
   Target, Flame, Dumbbell, Heart, Zap, Monitor, Footprints, 
-  Activity, Scale, ChevronLeft, ChevronRight, Building2, Hammer, Plus, Minus
+  Activity, Scale, ChevronLeft, ChevronRight, Building2, Hammer, Plus, Minus,
+  Sparkles, AlertCircle
 } from 'lucide-react-native';
+import { useAuthStore, useSettingsStore } from '../store';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -35,6 +37,8 @@ interface GoalWizardModalProps {
 export function GoalWizardModal({ visible, onClose, onSave, initialData }: GoalWizardModalProps) {
   const { t } = useTranslation();
   const colors = useTheme();
+  const profile = useAuthStore(s => s.profile);
+  const massUnit = useSettingsStore(s => s.massUnit) || 'kg';
   const [step, setStep] = useState(0);
   const [data, setData] = useState(initialData);
 
@@ -171,6 +175,61 @@ export function GoalWizardModal({ visible, onClose, onSave, initialData }: GoalW
     if (step > 0) setStep(step - 1);
     else onClose();
   };
+
+  const heightM = (profile?.height ?? 170) / 100;
+  const isLbs = massUnit === 'lb';
+  const defaultW = isLbs ? 154 : 70;
+  const currentVal = data.targetWeight ?? data.weight ?? defaultW;
+  const currentValKg = isLbs ? currentVal / 2.20462 : currentVal;
+  const targetBMI = currentValKg / (heightM * heightM);
+  
+  const idealMin = Math.round(18.5 * heightM * heightM);
+  const idealMax = Math.round(24.9 * heightM * heightM);
+  const idealMinDisplay = isLbs ? Math.round(idealMin * 2.20462) : idealMin;
+  const idealMaxDisplay = isLbs ? Math.round(idealMax * 2.20462) : idealMax;
+  const unitLabel = isLbs ? 'lbs' : 'kg';
+
+  let statusColor = '#10B981';
+  let statusIcon = <Sparkles size={16} color={statusColor} />;
+  let statusText = '';
+
+  if (data.goal === 'lose') {
+    if (targetBMI < 18.5) {
+      statusColor = '#EF4444';
+      statusIcon = <AlertCircle size={16} color={statusColor} />;
+      statusText = t('onboarding.warningUnderweight', { min: idealMinDisplay, max: idealMaxDisplay, unit: unitLabel, defaultValue: `Este objetivo es demasiado bajo. Tu rango ideal es ${idealMinDisplay}-${idealMaxDisplay} ${unitLabel}.` });
+    } else if (targetBMI > 24.9) {
+      statusColor = '#F59E0B';
+      statusIcon = <AlertCircle size={16} color={statusColor} />;
+      statusText = t('onboarding.recOverweightStep', { min: idealMinDisplay, max: idealMaxDisplay, unit: unitLabel, defaultValue: `Buen paso inicial. Recuerda que tu peso ideal a largo plazo es ${idealMinDisplay}-${idealMaxDisplay} ${unitLabel}.` });
+    } else {
+      statusText = t('onboarding.loseHealthy', { defaultValue: `¡Excelente meta! Alcanzarás un peso muy saludable para tu estatura.` });
+    }
+  } else if (data.goal === 'gain') {
+    if (targetBMI > 27.5) {
+      statusColor = '#F59E0B';
+      statusIcon = <AlertCircle size={16} color={statusColor} />;
+      statusText = t('onboarding.warningOverweightGain', { min: idealMinDisplay, max: idealMaxDisplay, unit: unitLabel, defaultValue: `Cuidado con subir demasiada grasa. Tu rango saludable base es ${idealMinDisplay}-${idealMaxDisplay} ${unitLabel}.` });
+    } else if (targetBMI < 18.5) {
+      statusColor = '#EF4444';
+      statusIcon = <AlertCircle size={16} color={statusColor} />;
+      statusText = t('onboarding.warningUnderweightGain', { min: idealMinDisplay, max: idealMaxDisplay, unit: unitLabel, defaultValue: `Este objetivo sigue siendo bajo. Tu rango ideal es ${idealMinDisplay}-${idealMaxDisplay} ${unitLabel}.` });
+    } else {
+      statusText = t('onboarding.gainHealthy', { defaultValue: `¡Perfecto para ganar masa muscular manteniendo un peso saludable!` });
+    }
+  } else {
+    if (targetBMI < 18.5) {
+      statusColor = '#F59E0B';
+      statusIcon = <AlertCircle size={16} color={statusColor} />;
+      statusText = t('onboarding.warningUnderweightMaintain', { defaultValue: `Actualmente tienes bajo peso. Te recomendamos cambiar tu meta a ganar masa muscular.` });
+    } else if (targetBMI > 24.9) {
+      statusColor = '#F59E0B';
+      statusIcon = <AlertCircle size={16} color={statusColor} />;
+      statusText = t('onboarding.warningOverweightMaintain', { defaultValue: `Tu peso actual es alto. Te sugerimos considerar la meta de pérdida de peso.` });
+    } else {
+      statusText = t('onboarding.maintainHealthy', { defaultValue: `¡Excelente! Estás en un peso ideal para mantenerte en forma y saludable.` });
+    }
+  }
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
@@ -466,6 +525,31 @@ export function GoalWizardModal({ visible, onClose, onSave, initialData }: GoalW
                 >
                   <Text style={{ fontSize: 32, color: colors.primary }}>+</Text>
                 </TouchableOpacity>
+              </View>
+
+              {/* Target Weight Warning Box */}
+              <View style={{ 
+                flexDirection: 'row', 
+                alignItems: 'center', 
+                backgroundColor: statusColor + '12', 
+                padding: 14, 
+                borderRadius: 16, 
+                borderWidth: 1.5, 
+                borderColor: statusColor + '40',
+                marginTop: 32,
+                marginHorizontal: 10
+              }}>
+                <View style={{ 
+                  width: 34, height: 34, borderRadius: 17, 
+                  backgroundColor: statusColor + '20', 
+                  justifyContent: 'center', alignItems: 'center',
+                  marginRight: 12 
+                }}>
+                  {statusIcon}
+                </View>
+                <Text style={{ color: statusColor, fontSize: 13, flex: 1, fontWeight: '600', lineHeight: 19 }}>
+                  {statusText}
+                </Text>
               </View>
             </View>
           )}

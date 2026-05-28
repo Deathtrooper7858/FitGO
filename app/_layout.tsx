@@ -259,6 +259,10 @@ export default function RootLayout() {
             name="modals/reminders"
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />
+          <Stack.Screen
+            name="modals/terms"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
         </Stack>
       </KeyboardAvoidingView>
     </GestureHandlerRootView>

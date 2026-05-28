@@ -74,6 +74,17 @@ export interface DirectMessage {
   is_read: boolean;
 }
 
+// ── Debounce helper ────────────────────────────────────────────────────────────
+const debounceMap = new Map<string, ReturnType<typeof setTimeout>>();
+function debounce(key: string, fn: () => void, ms = 300) {
+  const prev = debounceMap.get(key);
+  if (prev) clearTimeout(prev);
+  debounceMap.set(key, setTimeout(() => {
+    debounceMap.delete(key);
+    fn();
+  }, ms));
+}
+
 interface SocialState {
   friends: Friend[];
   challenges: Challenge[];
@@ -81,7 +92,7 @@ interface SocialState {
   posts: (Post & { likes_count: number; comments_count: number; is_liked: boolean })[];
   unreadCounts: Record<string, number>; // friendId -> count
   totalUnreadCount: number;
-  isLoading: boolean; // Keep for general use if needed
+  isLoading: boolean;
   isPostsLoading: boolean;
   isRankingLoading: boolean;
   isFriendsLoading: boolean;
@@ -163,7 +174,16 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         .eq('is_read', false);
         
       if (error) throw error;
-      await get().fetchUnreadCounts(userId);
+      // Optimistic update instead of full re-fetch
+      set(s => {
+        const newCounts = { ...s.unreadCounts };
+        const removed = newCounts[friendId] || 0;
+        delete newCounts[friendId];
+        return {
+          unreadCounts: newCounts,
+          totalUnreadCount: Math.max(0, s.totalUnreadCount - removed),
+        };
+      });
     } catch (err) {
       console.warn('[SocialStore] Error marking messages as read:', err);
     }
@@ -184,7 +204,8 @@ export const useSocialStore = create<SocialState>((set, get) => ({
           filter: `receiver_id=eq.${userId}`
         },
         (payload: any) => {
-          get().fetchUnreadCounts(userId);
+          // Debounce unread count refresh (multiple messages in burst)
+          debounce(`unread_${userId}`, () => get().fetchUnreadCounts(userId), 400);
           
           if (payload.new && payload.new.sender_id) {
             const senderId = payload.new.sender_id;
@@ -214,7 +235,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
           filter: `receiver_id=eq.${userId}`
         },
         () => {
-          get().fetchUnreadCounts(userId);
+          debounce(`unread_${userId}`, () => get().fetchUnreadCounts(userId), 400);
         }
       )
       .subscribe();
@@ -234,19 +255,19 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     const uniqueSuffix = Math.random().toString(36).substring(7);
     activeSocialChannel = supabase.channel(`social_events_${userId}_${uniqueSuffix}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => {
-        get().fetchPosts();
+        // Debounce: avoids 5 re-fetches if several posts change rapidly
+        debounce('posts_refresh', () => get().fetchPosts(), 500);
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'post_comments' }, () => {
-        get().fetchPosts();
+        debounce('posts_refresh', () => get().fetchPosts(), 500);
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'post_likes' }, () => {
-        get().fetchPosts();
+        debounce('posts_refresh', () => get().fetchPosts(), 500);
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'friends' }, (payload: any) => {
-        get().fetchFriends(userId);
+        debounce(`friends_refresh_${userId}`, () => get().fetchFriends(userId), 300);
         
         if (payload.eventType === 'INSERT') {
-          // Received a friend request
           if (payload.new && payload.new.user_id_2 === userId && payload.new.status === 'pending') {
             const senderId = payload.new.user_id_1;
             supabase
@@ -263,7 +284,6 @@ export const useSocialStore = create<SocialState>((set, get) => ({
               });
           }
         } else if (payload.eventType === 'UPDATE') {
-          // Friend request was accepted
           if (payload.new && payload.old && payload.new.status === 'accepted' && payload.old.status === 'pending') {
             if (payload.new.user_id_1 === userId) {
               const friendId = payload.new.user_id_2;
@@ -284,10 +304,10 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'challenges' }, () => {
-        get().fetchChallenges(userId);
+        debounce(`challenges_refresh_${userId}`, () => get().fetchChallenges(userId), 400);
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'challenge_participants' }, () => {
-        get().fetchChallenges(userId);
+        debounce(`challenges_refresh_${userId}`, () => get().fetchChallenges(userId), 400);
       })
       .subscribe();
 
@@ -340,7 +360,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { error } = await supabase.from('friends').insert({ user_id_1: userId1, user_id_2: userId2, status: 'pending' });
       if (error) throw error;
-      await get().fetchFriends(userId1);
+      // Real-time subscription will trigger fetchFriends via debounce
     } catch (err) {
       console.warn('[SocialStore] Error adding friend:', err);
     }
@@ -350,11 +370,12 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { error } = await supabase.from('friends').update({ status: 'accepted' }).eq('id', friendshipId);
       if (error) throw error;
-      const friend = get().friends.find(f => f.id === friendshipId);
-      if (friend) {
-        const userId = friend.user_id_1 === friend.friend_profile?.id ? friend.user_id_2 : friend.user_id_1;
-        await get().fetchFriends(userId);
-      }
+      // Optimistic local update – no round-trip needed
+      set(s => ({
+        friends: s.friends.map(f =>
+          f.id === friendshipId ? { ...f, status: 'accepted' } : f
+        ),
+      }));
     } catch (err) {
       console.warn('[SocialStore] Error accepting friend:', err);
     }
@@ -364,11 +385,8 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { error } = await supabase.from('friends').delete().eq('id', friendshipId);
       if (error) throw error;
-      const friend = get().friends.find(f => f.id === friendshipId);
-      if (friend) {
-        const userId = friend.user_id_1 === friend.friend_profile?.id ? friend.user_id_2 : friend.user_id_1;
-        await get().fetchFriends(userId);
-      }
+      // Optimistic local update
+      set(s => ({ friends: s.friends.filter(f => f.id !== friendshipId) }));
     } catch (err) {
       console.warn('[SocialStore] Error rejecting friend:', err);
     }
@@ -418,9 +436,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         await supabase.from('challenge_participants').insert(participants);
       }
       
-      if (challenge.creator_id) {
-        await get().fetchChallenges(challenge.creator_id);
-      }
+      // Real-time subscription handles re-fetch via debounce
     } catch (err) {
       console.warn('[SocialStore] Error creating challenge:', err);
     }
@@ -445,7 +461,6 @@ export const useSocialStore = create<SocialState>((set, get) => ({
       const { data: sessionData } = await supabase.auth.getSession();
       const currentUserId = sessionData.session?.user?.id;
 
-      // Intentar primero una consulta básica para ver si el problema son los joins
       const { data, error } = await supabase
         .from('posts')
         .select(`
@@ -455,16 +470,15 @@ export const useSocialStore = create<SocialState>((set, get) => ({
           comments:post_comments(id)
         `)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(30);  // Reduced from 50 → 30 for faster load
       
       if (error) {
         console.warn('[SocialStore] Query failed, trying fallback:', error.message);
-        // Fallback: consulta sin likes/comments por si no se han corrido las migraciones
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('posts')
           .select(`*, user_profile:user_id(name, avatar_url)`)
           .order('created_at', { ascending: false })
-          .limit(50);
+          .limit(30);
         
         if (fallbackError) throw fallbackError;
 
@@ -493,39 +507,85 @@ export const useSocialStore = create<SocialState>((set, get) => ({
 
   createPost: async (post: Partial<Post>) => {
     try {
-      const { error } = await supabase.from('posts').insert(post);
+      const { data, error } = await supabase.from('posts').insert(post).select(`
+        *,
+        user_profile:user_id(name, avatar_url)
+      `).single();
       if (error) throw error;
-      await get().fetchPosts();
+      // Optimistic prepend to avoid full list re-fetch
+      if (data) {
+        const newPost = { ...data, likes_count: 0, comments_count: 0, is_liked: false };
+        set(s => ({ posts: [newPost, ...s.posts] }));
+      }
     } catch (err) {
       console.warn('[SocialStore] Error creating post:', err);
     }
   },
 
   deletePost: async (postId: string) => {
+    // Optimistic remove
+    set(s => ({ posts: s.posts.filter(p => p.id !== postId) }));
     try {
       const { error } = await supabase.from('posts').delete().eq('id', postId);
-      if (error) throw error;
-      await get().fetchPosts();
+      if (error) {
+        // Revert on error by re-fetching
+        get().fetchPosts();
+        throw error;
+      }
     } catch (err) {
       console.warn('[SocialStore] Error deleting post:', err);
     }
   },
 
   likePost: async (postId: string, userId: string) => {
+    // Optimistic update
+    set(s => ({
+      posts: s.posts.map(p =>
+        p.id === postId
+          ? { ...p, likes_count: p.likes_count + 1, is_liked: true }
+          : p
+      ),
+    }));
     try {
       const { error } = await supabase.from('post_likes').insert({ post_id: postId, user_id: userId });
-      if (error) throw error;
-      await get().fetchPosts();
+      if (error) {
+        // Revert
+        set(s => ({
+          posts: s.posts.map(p =>
+            p.id === postId
+              ? { ...p, likes_count: Math.max(0, p.likes_count - 1), is_liked: false }
+              : p
+          ),
+        }));
+        throw error;
+      }
     } catch (err) {
       console.warn('[SocialStore] Error liking post:', err);
     }
   },
 
   unlikePost: async (postId: string, userId: string) => {
+    // Optimistic update
+    set(s => ({
+      posts: s.posts.map(p =>
+        p.id === postId
+          ? { ...p, likes_count: Math.max(0, p.likes_count - 1), is_liked: false }
+          : p
+      ),
+    }));
     try {
       const { error } = await supabase.from('post_likes').delete().eq('post_id', postId).eq('user_id', userId);
-      if (error) throw error;
-      await get().fetchPosts();
+      if (error) {
+        // Revert
+        set(s => ({
+          posts: s.posts.map(p =>
+            p.id === postId
+              ? { ...p, likes_count: p.likes_count + 1, is_liked: true }
+              : p
+          ),
+        }));
+        throw error;
+      }
     } catch (err) {
       console.warn('[SocialStore] Error unliking post:', err);
     }
@@ -535,7 +595,12 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { error } = await supabase.from('post_comments').insert({ post_id: postId, user_id: userId, content });
       if (error) throw error;
-      await get().fetchPosts();
+      // Optimistically bump comments_count
+      set(s => ({
+        posts: s.posts.map(p =>
+          p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p
+        ),
+      }));
     } catch (err) {
       console.warn('[SocialStore] Error adding comment:', err);
     }
@@ -545,7 +610,6 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { error } = await supabase.from('post_comments').delete().eq('id', commentId);
       if (error) throw error;
-      await get().fetchPosts();
     } catch (err) {
       console.warn('[SocialStore] Error deleting comment:', err);
     }
@@ -558,7 +622,6 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         .update({ content, is_edited: true })
         .eq('id', commentId);
       if (error) throw error;
-      await get().fetchPosts();
     } catch (err) {
       console.warn('[SocialStore] Error editing comment:', err);
     }
@@ -606,7 +669,8 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         .from('direct_messages')
         .select('*')
         .or(`and(sender_id.eq.${userId},receiver_id.eq.${friendId}),and(sender_id.eq.${friendId},receiver_id.eq.${userId})`)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
+        .limit(100);  // Safety limit
         
       if (error) throw error;
       return data || [];

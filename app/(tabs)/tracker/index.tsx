@@ -454,7 +454,7 @@ export default function TrackerScreen() {
           activeOpacity={0.7}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            router.push('/modals/social' as any);
+            router.push('/social' as any);
           }}
         >
           {socialNotificationCount > 0 ? (
@@ -513,7 +513,7 @@ export default function TrackerScreen() {
           }}
         >
           {/* Main Calorie Card — GlassCard */}
-          <AnimatedCard index={0} style={{ width: width - 32 }}>
+          <View style={{ width: width - 32 }}>
             <GlassCard showStripe accentColor={colors.primary} noPadding style={{ borderRadius: 24 }}>
             <View style={[s.card, { borderWidth: 0, paddingVertical: 24 }]}>
             <View style={s.arcWrap}>
@@ -569,10 +569,10 @@ export default function TrackerScreen() {
             </View>
             </View>
             </GlassCard>
-          </AnimatedCard>
+          </View>
 
           {/* Other Nutrients Card — GlassCard */}
-          <AnimatedCard index={1} style={{ width: width - 32 }}>
+          <View style={{ width: width - 32 }}>
             <GlassCard noPadding>
             <View style={[s.card, { borderWidth: 0 }]}>
             <View style={s.cardHeader}>
@@ -597,10 +597,10 @@ export default function TrackerScreen() {
             ))}
           </View>
           </GlassCard>
-          </AnimatedCard>
+          </View>
 
           {/* Weekly Calories Chart Card — GlassCard */}
-          <AnimatedCard index={2} style={{ width: width - 32 }}>
+          <View style={{ width: width - 32 }}>
             <GlassCard noPadding showStripe accentColor={colors.carbs}>
             <View style={[s.card, { borderWidth: 0, paddingBottom: 10 }]}>
               <View style={s.cardHeader}>
@@ -636,7 +636,7 @@ export default function TrackerScreen() {
               </View>
             </View>
           </GlassCard>
-          </AnimatedCard>
+          </View>
         </ScrollView>
 
         {/* Carousel Indicators */}
@@ -1266,10 +1266,10 @@ const s = StyleSheet.create({
   dateNum:       { fontSize: 14, fontWeight: '700' },
   dateDot:       { width: 4, height: 4, borderRadius: 2, position: 'absolute', bottom: -8 },
 
-  carousel:      { marginHorizontal: -16 },
+  carousel:      { marginHorizontal: -16, minHeight: 340 },
   carouselContent: { paddingHorizontal: 16, gap: 16 },
 
-  dotsRow:       { flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: -8 },
+  dotsRow:       { flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 4 },
   dotIndicator:  { width: 8, height: 8, borderRadius: 4 },
 
   card:          { borderRadius: Radius.xl, padding: 20, borderWidth: 1 },
