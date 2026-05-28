@@ -6,8 +6,23 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, View, ActivityIndicator, Platform, LogBox, KeyboardAvoidingView, Image, Text } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
-// Ignore specific Supabase Auth errors that occur during development fast-refresh
-LogBox.ignoreLogs(['AuthApiError: Invalid Refresh Token: Refresh Token Not Found']);
+// Ignore specific warnings in the UI
+LogBox.ignoreLogs([
+  'AuthApiError: Invalid Refresh Token: Refresh Token Not Found',
+  'setLayoutAnimationEnabledExperimental is currently a no-op',
+  'is not supported with edge-to-edge enabled',
+  'Prop "resizeMode" is deprecated'
+]);
+
+// Suppress specific warnings in the Metro console
+const originalWarn = console.warn;
+console.warn = (...args) => {
+  if (typeof args[0] === 'string') {
+    if (args[0].includes('setLayoutAnimationEnabledExperimental is currently a no-op')) return;
+    if (args[0].includes('is not supported with edge-to-edge enabled')) return;
+  }
+  originalWarn(...args);
+};
 import { supabase } from '../services/supabase';
 import { useAuthStore, useSettingsStore, usePurchaseStore } from '../store';
 import { Colors } from '../constants';
