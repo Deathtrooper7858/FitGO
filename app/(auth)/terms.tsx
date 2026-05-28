@@ -1,104 +1,220 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { Spacing, Radius } from '../../constants';
 import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { Shield } from 'lucide-react-native';
+import { ShieldCheck, Lock, ChevronLeft } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { TERMS_DATA, PRIVACY_DATA } from '../../constants/legalData';
 
-export default function TermsScreen() {
+const { width } = Dimensions.get('window');
+
+export default function LegalScreen() {
   const { t } = useTranslation();
   const colors = useTheme();
+  const [activeTab, setActiveTab] = useState<'terms' | 'privacy'>('terms');
+  
+  const data = activeTab === 'terms' ? TERMS_DATA : PRIVACY_DATA;
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      <View style={s.glow} />
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
-        <TouchableOpacity style={s.back} onPress={() => router.back()}>
-          <Text style={[s.backText, { color: colors.primary }]}>← {t('common.back', 'Volver')}</Text>
+      <LinearGradient
+        colors={[colors.primary + '20', colors.background]}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 0.3 }}
+      />
+      
+      {/* Glow Effect */}
+      <View style={[s.glow, { backgroundColor: colors.primary }]} />
+      
+      {/* Header Section */}
+      <View style={[s.headerContainer, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity style={s.backButton} onPress={() => router.back()}>
+          <ChevronLeft color={colors.textPrimary} size={24} />
+          <Text style={[s.backText, { color: colors.textPrimary }]}>{t('common.back', 'Volver')}</Text>
         </TouchableOpacity>
+        
+        <View style={s.titleRow}>
+          {activeTab === 'terms' ? (
+            <ShieldCheck color={colors.primary} size={32} />
+          ) : (
+            <Lock color={colors.primary} size={32} />
+          )}
+          <Text style={[s.mainTitle, { color: colors.textPrimary }]}>
+            {activeTab === 'terms' ? 'Términos y Condiciones' : 'Política de Privacidad'}
+          </Text>
+        </View>
 
-        <View style={s.header}>
-          <View style={[s.iconCircle, { backgroundColor: colors.primary + '15' }]}>
-            <Shield size={36} color={colors.primary} />
+        {/* Tab Switcher */}
+        <View style={[s.tabContainer, { backgroundColor: colors.surface }]}>
+          <TouchableOpacity 
+            style={[s.tabButton, activeTab === 'terms' && s.activeTabButton, activeTab === 'terms' && { backgroundColor: colors.primary }]}
+            onPress={() => setActiveTab('terms')}
+            activeOpacity={0.8}
+          >
+            <Text style={[s.tabText, activeTab === 'terms' ? { color: '#fff' } : { color: colors.textSecondary }]}>
+              Términos
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[s.tabButton, activeTab === 'privacy' && s.activeTabButton, activeTab === 'privacy' && { backgroundColor: colors.primary }]}
+            onPress={() => setActiveTab('privacy')}
+            activeOpacity={0.8}
+          >
+            <Text style={[s.tabText, activeTab === 'privacy' ? { color: '#fff' } : { color: colors.textSecondary }]}>
+              Privacidad
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        {data.map((item, index) => (
+          <View key={index} style={[s.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            {item.title && (
+              <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>
+                {item.title}
+              </Text>
+            )}
+            <Text style={[s.paragraph, { color: colors.textSecondary }]}>
+              {item.content}
+            </Text>
           </View>
-          <Text style={[s.title, { color: colors.textPrimary }]}>Términos y Condiciones</Text>
-          <Text style={[s.subtitle, { color: colors.textSecondary }]}>
-            Última actualización: 20 de mayo de 2026
-          </Text>
-        </View>
+        ))}
+        
+        <View style={{ height: 100 }} />
+      </ScrollView>
 
-        <View style={[s.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={[s.sectionTitle, { color: colors.textPrimary, marginTop: 0 }]}>1. Aceptación de los Términos</Text>
-          <Text style={[s.paragraph, { color: colors.textSecondary }]}>
-            Al acceder y utilizar la aplicación FitGO, aceptas estar sujeto a estos Términos y Condiciones. Si no estás de acuerdo con alguna parte de estos términos, no debes utilizar la aplicación.
-          </Text>
-
-          <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>2. Exención de Responsabilidad Médica (Medical Disclaimer)</Text>
-          <Text style={[s.paragraph, { color: colors.textSecondary }]}>
-            FitGO es una herramienta diseñada para ayudarte a alcanzar tus objetivos de fitness y nutrición mediante algoritmos de inteligencia artificial. Sin embargo, <Text style={{fontWeight: 'bold', color: colors.error}}>FITGO NO PROPORCIONA ASESORAMIENTO MÉDICO</Text>. 
-          </Text>
-          <Text style={[s.paragraph, { color: colors.textSecondary }]}>
-            La información, recetas, rutinas de ejercicio y consejos proporcionados en esta aplicación tienen fines meramente informativos y educativos. No sustituyen el diagnóstico, tratamiento o consejo de un profesional médico, nutricionista certificado o fisioterapeuta. Siempre consulta a un médico antes de iniciar cualquier programa de dieta o ejercicio, especialmente si tienes condiciones médicas preexistentes.
-          </Text>
-
-          <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>3. Responsabilidad del Usuario</Text>
-          <Text style={[s.paragraph, { color: colors.textSecondary }]}>
-            El uso de la aplicación y la ejecución de cualquier ejercicio o plan nutricional se realiza estrictamente bajo tu propio riesgo. FitGO y sus desarrolladores no se hacen responsables de ninguna lesión, problema de salud, pérdida o daño que resulte del uso directo o indirecto de la aplicación. Eres responsable de asegurar que la ejecución de los ejercicios sea con la técnica correcta y el peso adecuado a tus capacidades.
-          </Text>
-
-          <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>4. Rol de la Inteligencia Artificial (Coaches IA) y Precisión de Datos</Text>
-          <Text style={[s.paragraph, { color: colors.textSecondary }]}>
-            Nuestros planes y el asesoramiento proporcionado por los "coaches" dentro de la aplicación son generados mediante modelos avanzados de Inteligencia Artificial (IA). <Text style={{fontWeight: 'bold', color: colors.error}}>Ningún coach virtual en la aplicación es un profesional certificado</Text> (ya sea entrenador, profesional de alimentación o de bienestar). Lo que dice la IA no deja de ser IA y siempre debes consultar a un profesional humano certificado antes de hacer o seguir cualquier recomendación dada por el coach o la app.
-          </Text>
-          <Text style={[s.paragraph, { color: colors.textSecondary }]}>
-            Aunque nos esforzamos por ofrecer la mayor precisión posible utilizando bases de datos nutricionales de terceros, FitGO no garantiza que las sugerencias estén libres de errores.
-          </Text>
-
-          <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>5. Suscripciones y Pagos</Text>
-          <Text style={[s.paragraph, { color: colors.textSecondary }]}>
-            FitGO ofrece planes de suscripción Premium que otorgan acceso a funcionalidades avanzadas. Los pagos se procesan a través de la tienda de aplicaciones de tu dispositivo (App Store o Google Play) o mediante RevenueCat. Las suscripciones se renuevan automáticamente salvo que se cancelen al menos 24 horas antes del final del período actual. No ofrecemos reembolsos por períodos parciales de uso.
-          </Text>
-
-          <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>6. Privacidad y Datos de Salud</Text>
-          <Text style={[s.paragraph, { color: colors.textSecondary }]}>
-            Para personalizar tu experiencia, FitGO recopila datos como peso, altura, edad, género y nivel de actividad. Tratamos esta información con estricta confidencialidad bajo nuestra Política de Privacidad. No vendemos tus datos de salud a terceros con fines publicitarios.
-          </Text>
-
-          <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>7. Modificaciones de los Términos</Text>
-          <Text style={[s.paragraph, { color: colors.textSecondary }]}>
-            Nos reservamos el derecho de modificar estos términos en cualquier momento. El uso continuado de la aplicación tras cualquier cambio constituirá tu aceptación de los nuevos términos.
-          </Text>
-        </View>
-
+      {/* Floating Action Button */}
+      <View style={[s.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
         <TouchableOpacity
           style={s.acceptBtn}
           onPress={() => router.back()}
           activeOpacity={0.8}
         >
-          <View style={[s.btnBg, { backgroundColor: colors.primary }]}>
+          <LinearGradient
+            colors={[colors.primary, colors.primary + 'dd']}
+            style={s.btnBg}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          >
             <Text style={s.btnText}>Aceptar y Entendido</Text>
-          </View>
+          </LinearGradient>
         </TouchableOpacity>
-      </ScrollView>
+      </View>
     </View>
   );
 }
 
 const s = StyleSheet.create({
   container: { flex: 1 },
-  glow: { position: 'absolute', top: -100, right: -100, width: 300, height: 300, borderRadius: 150, backgroundColor: '#7C5CFC', opacity: 0.10 },
-  content: { flexGrow: 1, padding: Spacing.base, paddingTop: 60, paddingBottom: 40 },
-  back: { marginBottom: 24, alignSelf: 'flex-start' },
-  backText: { fontSize: 15, fontWeight: '600' },
-  header: { marginBottom: 32, alignItems: 'center' },
-  iconCircle: { width: 72, height: 72, borderRadius: 36, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  title: { fontSize: 28, fontWeight: '800', textAlign: 'center', marginBottom: 8 },
-  subtitle: { fontSize: 14, textAlign: 'center' },
-  card: { borderRadius: Radius.xl, borderWidth: 1, padding: 20, marginBottom: 32 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 8, marginTop: 16 },
-  paragraph: { fontSize: 15, lineHeight: 24, marginBottom: 12 },
-  acceptBtn: { borderRadius: Radius.lg, overflow: 'hidden' },
-  btnBg: { padding: 18, alignItems: 'center', borderRadius: Radius.lg },
-  btnText: { fontSize: 16, fontWeight: '700', color: '#fff' },
+  glow: { position: 'absolute', top: -50, right: -50, width: 250, height: 250, borderRadius: 125, opacity: 0.15, filter: 'blur(50px)' },
+  headerContainer: {
+    paddingTop: 60,
+    paddingHorizontal: Spacing.base,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    zIndex: 10,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  backText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    gap: 12,
+  },
+  mainTitle: {
+    fontSize: 26,
+    fontWeight: '800',
+    flexShrink: 1,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    borderRadius: Radius.full,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: Radius.full,
+  },
+  activeTabButton: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tabText: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  content: {
+    padding: Spacing.base,
+    paddingTop: 24,
+  },
+  card: {
+    borderRadius: Radius.xl,
+    borderWidth: 1,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 12,
+  },
+  paragraph: {
+    fontSize: 15,
+    lineHeight: 24,
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: Spacing.base,
+    paddingBottom: 32,
+    borderTopWidth: 1,
+  },
+  acceptBtn: {
+    borderRadius: Radius.lg,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  btnBg: {
+    padding: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: Radius.lg,
+  },
+  btnText: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#fff',
+    letterSpacing: 0.5,
+  },
 });
