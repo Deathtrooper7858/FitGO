@@ -26,7 +26,7 @@ export default function AchievementsModal() {
     if (!profile) return;
     const current = profile.pinnedAchievements || [];
     let newPinned = [...current];
-    
+
     if (newPinned.includes(id)) {
       newPinned = newPinned.filter(a => a !== id);
     } else {
@@ -35,7 +35,7 @@ export default function AchievementsModal() {
       }
       newPinned.push(id);
     }
-    
+
     setProfile({ ...profile, pinnedAchievements: newPinned });
     await supabase.from('users').update({ pinned_achievements: newPinned }).eq('id', profile.id);
   };
@@ -89,9 +89,9 @@ export default function AchievementsModal() {
             </Text>
             <View style={s.grid}>
               {items.map((item) => (
-                <AchievementCard 
-                  key={item.id} 
-                  achievement={item} 
+                <AchievementCard
+                  key={item.id}
+                  achievement={item}
                   isPinned={profile?.pinnedAchievements?.includes(item.id) || false}
                   onTogglePin={() => item.unlocked && handleTogglePin(item.id)}
                 />
@@ -104,15 +104,15 @@ export default function AchievementsModal() {
   );
 }
 
-function AchievementCard({ 
-  achievement, isPinned, onTogglePin 
-}: { 
-  achievement: Achievement; isPinned: boolean; onTogglePin: () => void; 
+function AchievementCard({
+  achievement, isPinned, onTogglePin
+}: {
+  achievement: Achievement; isPinned: boolean; onTogglePin: () => void;
 }) {
   const colors = useTheme();
-  
+
   const getTierColors = (tier: string) => {
-    switch(tier) {
+    switch (tier) {
       case 'diamante': return ['#38BDF8', '#4F46E5'];
       case 'oro': return ['#FBBF24', '#EA580C'];
       case 'plata': return ['#9CA3AF', '#4B5563'];
@@ -125,14 +125,14 @@ function AchievementCard({
   const isHolo = achievement.unlocked && (achievement.tier === 'oro' || achievement.tier === 'diamante');
 
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       activeOpacity={0.8}
       onPress={onTogglePin}
       style={[
-      s.card, 
-      { backgroundColor: colors.surface },
-      isHolo && { borderColor: tierColors[0] + '50', borderWidth: 1 }
-    ]}>
+        s.card,
+        { backgroundColor: colors.surface },
+        isHolo && { borderColor: tierColors[0] + '50', borderWidth: 1 }
+      ]}>
       {isPinned && (
         <View style={{ position: 'absolute', top: 8, left: 8, zIndex: 10 }}>
           <Text style={{ fontSize: 16 }}>📌</Text>
@@ -164,7 +164,7 @@ function AchievementCard({
           </LinearGradient>
         ) : (
           <View style={[s.iconCircle, { backgroundColor: colors.surfaceAlt }]}>
-             {achievement.iconType === 'lucide' && achievement.lucideIcon ? (
+            {achievement.iconType === 'lucide' && achievement.lucideIcon ? (
               // @ts-ignore
               React.createElement(LucideIcons[achievement.lucideIcon] || LucideIcons.Star, {
                 size: 32,
@@ -187,7 +187,7 @@ function AchievementCard({
           </View>
         )}
       </View>
-      
+
       <Text style={[s.cardTitle, { color: achievement.unlocked ? colors.textPrimary : colors.textSecondary }]} numberOfLines={1}>
         {achievement.title}
       </Text>
@@ -197,15 +197,15 @@ function AchievementCard({
 
       {achievement.rewardBadgeId && (
         <View style={[
-          s.rewardRow, 
-          { 
+          s.rewardRow,
+          {
             backgroundColor: achievement.unlocked ? tierColors[0] + '15' : colors.surfaceAlt,
             borderColor: achievement.unlocked ? tierColors[0] + '40' : colors.border
           }
         ]}>
           <Text style={[
-            s.rewardText, 
-            { 
+            s.rewardText,
+            {
               color: achievement.unlocked ? tierColors[0] : colors.textMuted,
               fontWeight: achievement.unlocked ? '800' : '600'
             }
@@ -226,61 +226,61 @@ function AchievementCard({
 
 const s = StyleSheet.create({
   container: { flex: 1 },
-  header: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'space-between', 
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm
   },
   closeBtn: { padding: 8 },
   title: { fontSize: 20, fontWeight: '800' },
   scrollContent: { padding: Spacing.md },
-  statsCard: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    padding: Spacing.lg, 
-    borderRadius: Radius.xl, 
+  statsCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderRadius: Radius.xl,
     gap: 20,
     marginBottom: Spacing.xl,
     ...Shadow.md
   },
-  statsIconBox: { 
-    backgroundColor: 'rgba(255,255,255,0.2)', 
-    padding: 12, 
-    borderRadius: Radius.lg 
+  statsIconBox: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    padding: 12,
+    borderRadius: Radius.lg
   },
   statsValue: { fontSize: 32, fontWeight: '900', color: '#FFF' },
   statsLabel: { fontSize: 14, color: '#FFF', fontWeight: '600', opacity: 0.9 },
-  grid: { 
-    flexDirection: 'row', 
-    flexWrap: 'wrap', 
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: Spacing.md 
+    gap: Spacing.md
   },
-  card: { 
-    width: (width - Spacing.md * 3) / 2, 
-    padding: Spacing.md, 
-    borderRadius: Radius.lg, 
+  card: {
+    width: (width - Spacing.md * 3) / 2,
+    padding: Spacing.md,
+    borderRadius: Radius.lg,
     alignItems: 'center',
     ...Shadow.sm,
     marginBottom: 4
   },
   cardTop: { marginBottom: 12 },
-  iconCircle: { 
-    width: 64, 
-    height: 64, 
-    borderRadius: 32, 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+  iconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   emojiIcon: { fontSize: 32 },
-  lockOverlay: { 
-    position: 'absolute', 
-    bottom: -2, 
-    right: -2, 
-    backgroundColor: '#121212', 
-    borderRadius: 10, 
+  lockOverlay: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    backgroundColor: '#121212',
+    borderRadius: 10,
     padding: 4,
     borderWidth: 1,
     borderColor: '#333'
