@@ -19,7 +19,7 @@ import { CustomAlert, AlertType } from '../../components/CustomAlert';
 import { useAudioRecorder, useAudioRecorderState, AudioModule, RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync } from 'expo-audio';
 import { transcribeAudio, parseVoiceLog } from '../../services/groq';
 
-type ScanMode = 'barcode' | 'photo' | 'text';
+type ScanMode = 'barcode' | 'photo' | 'text' | 'search';
 type Meal = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
 export default function ScanModal() {
@@ -30,6 +30,12 @@ export default function ScanModal() {
   const [loading, setLoading]           = useState(false);
   const [mode, setMode]                 = useState<ScanMode>('photo');
   const [textInput, setTextInput]       = useState('');
+  
+  // Search Mode State
+  const [searchQuery, setSearchQuery]   = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching]   = useState(false);
+
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(recorder, 500);
 
@@ -108,6 +114,26 @@ export default function ScanModal() {
   useEffect(() => {
     if (!permission?.granted) requestPermission();
   }, []);
+
+  // Search Debounce Effect
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const delayDebounceFn = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const results = await searchFood(searchQuery);
+        setSearchResults(results);
+      } catch (err) {
+        console.error('Search error', err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 600);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
 
   const checkAiLimit = (scanMode: 'photo' | 'text'): boolean => {
     if (isProActually) return true;
@@ -627,6 +653,12 @@ export default function ScanModal() {
               >
                 <Text style={[s.modeText, mode === 'text' && s.modeTextActive]} numberOfLines={1} adjustsFontSizeToFit>✍️ {t('scan.text')}</Text>
               </TouchableOpacity>
+              <TouchableOpacity 
+                style={[s.modePill, mode === 'search' && [s.modePillActive, { backgroundColor: colors.tabActive }]]} 
+                onPress={() => setMode('search')}
+              >
+                <Text style={[s.modeText, mode === 'search' && s.modeTextActive]} numberOfLines={1} adjustsFontSizeToFit>🔎 {t('common.search') || 'Buscar'}</Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -674,7 +706,7 @@ export default function ScanModal() {
                   {!isProActually && <Text style={s.limitNote}>{t('scan.aiLimitNote', { count: 5 - aiPhotoUsageCount }) || `${5 - aiPhotoUsageCount} AI scans left today`}</Text>}
                 </View>
               </>
-            ) : (
+            ) : mode === 'text' ? (
               <ScrollView contentContainerStyle={s.textInputWrap} style={{ width: '100%' }}>
                 <View style={[s.textCard, { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: colors.border }]}>
                   <TextInput
@@ -701,6 +733,50 @@ export default function ScanModal() {
                 </TouchableOpacity>
                 {!profile?.isPro && <Text style={s.limitNote}>{t('scan.aiLimitNote', { count: 10 - aiTextUsageCount }) || `${10 - aiTextUsageCount} AI scans left today`}</Text>}
               </ScrollView>
+            ) : (
+              <View style={[s.searchWrap, { backgroundColor: 'rgba(0,0,0,0.6)', flex: 1, width: '100%' }]}>
+                <View style={[s.searchInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text style={{ fontSize: 20, marginRight: 8 }}>🔎</Text>
+                  <TextInput
+                    style={[s.searchTextInput, { color: colors.textPrimary }]}
+                    placeholder={t('scan.searchPlaceholder') || "Buscar alimento en la base de datos..."}
+                    placeholderTextColor={colors.textSecondary}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                  />
+                  {isSearching && <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 8 }} />}
+                </View>
+                
+                <ScrollView contentContainerStyle={s.searchResultsList} style={{ flex: 1, width: '100%' }}>
+                  {searchResults.map((item) => (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[s.searchResultItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                      onPress={() => {
+                        router.replace({
+                          pathname: '/modals/food-detail',
+                          params: { 
+                            foodJson: JSON.stringify(item),
+                            meal: initialMeal || getAutoMeal(),
+                            date: date
+                          },
+                        });
+                      }}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text style={[s.searchResultName, { color: colors.textPrimary }]}>{item.name}</Text>
+                        <Text style={[s.searchResultBrand, { color: colors.textSecondary }]}>
+                          {item.brand ? `${item.brand} • ` : ''}{item.calories} kcal | {item.protein}P {item.carbs}C {item.fat}G
+                        </Text>
+                      </View>
+                      <Text style={{ fontSize: 18 }}>+</Text>
+                    </TouchableOpacity>
+                  ))}
+                  {searchQuery.length > 0 && searchResults.length === 0 && !isSearching && (
+                    <Text style={{ textAlign: 'center', color: colors.textSecondary, marginTop: 20 }}>No se encontraron resultados</Text>
+                  )}
+                </ScrollView>
+              </View>
             )}
           </View>
         </View>
@@ -798,6 +874,13 @@ const s = StyleSheet.create({
   totalValue:    { fontSize: 28, fontWeight: '800' },
   notesText:     { fontSize: 14, fontStyle: 'italic', paddingHorizontal: 10, lineHeight: 22 },
   resultFooter:  { flexDirection: 'row', gap: 10, padding: Spacing.base, borderTopWidth: 1, paddingBottom: 36 },
+  searchWrap: { padding: Spacing.md },
+  searchInputContainer: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: Radius.lg, borderWidth: 1, marginBottom: Spacing.md },
+  searchTextInput: { flex: 1, fontSize: 16 },
+  searchResultsList: { paddingBottom: 40 },
+  searchResultItem: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: Radius.md, borderWidth: 1, marginBottom: 8 },
+  searchResultName: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  searchResultBrand: { fontSize: 13 },
   retryBtn:      { flex: 1, paddingVertical: 14, borderRadius: Radius.md, borderWidth: 1.5, alignItems: 'center' },
   retryText:     { fontWeight: '600', fontSize: 15 },
   addAllBtn:     { flex: 2, borderRadius: Radius.md, overflow: 'hidden' },

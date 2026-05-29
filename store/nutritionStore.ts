@@ -7,7 +7,7 @@
  */
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { FoodLog, ActivityLog } from './types';
 import type { FoodItem } from '../services/foodDatabase';
 import { getLocalDateString } from '../utils/date';
@@ -15,6 +15,19 @@ import { useAuthStore } from './authStore';
 import { useLeagueStore, POINTS } from './leagueStore';
 import { supabase } from '../services/supabase';
 import * as Crypto from 'expo-crypto';
+
+// Secure storage adapter for Zustand
+const secureStorage = {
+  getItem: async (name: string) => {
+    return (await SecureStore.getItemAsync(name)) || null;
+  },
+  setItem: async (name: string, value: string) => {
+    await SecureStore.setItemAsync(name, value);
+  },
+  removeItem: async (name: string) => {
+    await SecureStore.deleteItemAsync(name);
+  },
+};
 
 /** Returns true if the string is a valid UUID v4 format. */
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -646,7 +659,7 @@ export const useNutritionStore = create<NutritionState>()(
     }),
     {
       name: 'ff-nutrition',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => secureStorage),
       partialize: (s) => ({
         todayLogs:     s.todayLogs,
         streakDays:    s.streakDays,

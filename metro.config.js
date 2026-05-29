@@ -12,4 +12,6 @@ config.resolver.blockList = [
   /.*\/ios\/.*/
 ];
 
+config.resolver.assetExts.push('tflite');
+
 module.exports = config;

@@ -7,12 +7,12 @@ import * as LucideIcons from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { useAchievements, Achievement, ALL_BADGES } from '../../hooks/useAchievements';
 import { Spacing, Radius, Shadow } from '../../constants';
-// TEMPORARILY DISABLED FOR EXPO GO COMPATIBILITY
-// import LottieView from 'lottie-react-native';
-// import { LottieRegistry } from '../../hooks/LottieRegistry';
+
 
 import { useAuthStore } from '../../store';
 import { supabase } from '../../services/supabase';
+import LottieView from 'lottie-react-native';
+import { LottieRegistry } from '../../hooks/LottieRegistry';
 
 const { width } = Dimensions.get('window');
 
@@ -142,8 +142,17 @@ function AchievementCard({
         {achievement.unlocked ? (
           <LinearGradient
             colors={tierColors as [string, string, ...string[]]}
-            style={[s.iconCircle, isHolo && { shadowColor: tierColors[0], shadowOpacity: 0.6, shadowRadius: 10, elevation: 8 }]}
+            style={[s.iconCircle, isHolo && { shadowColor: tierColors[0], shadowOpacity: 0.6, shadowRadius: 10, elevation: 8, overflow: 'hidden' }]}
           >
+            {isHolo && (
+              <LottieView
+                source={LottieRegistry.diamond_glow}
+                autoPlay
+                loop
+                style={{ position: 'absolute', width: 120, height: 120, opacity: 0.8 }}
+                resizeMode="cover"
+              />
+            )}
             {achievement.iconType === 'lucide' && achievement.lucideIcon ? (
               // @ts-ignore
               React.createElement(LucideIcons[achievement.lucideIcon] || LucideIcons.Star, {
@@ -151,13 +160,6 @@ function AchievementCard({
                 color: '#FFF',
                 strokeWidth: 2
               })
-            ) : false && achievement.iconType === 'lottie' && achievement.lottieFile ? (
-              <LottieView
-                source={LottieRegistry[achievement.lottieFile]}
-                autoPlay
-                loop
-                style={{ width: 44, height: 44 }}
-              />
             ) : (
               <Text style={s.emojiIcon}>{achievement.icon}</Text>
             )}
@@ -171,13 +173,6 @@ function AchievementCard({
                 color: colors.textSecondary,
                 opacity: 0.2
               })
-            ) : false && achievement.iconType === 'lottie' && achievement.lottieFile ? (
-              <LottieView
-                source={LottieRegistry[achievement.lottieFile]}
-                autoPlay={false}
-                loop={false}
-                style={{ width: 44, height: 44, opacity: 0.2 }}
-              />
             ) : (
               <Text style={[s.emojiIcon, { opacity: 0.2 }]}>{achievement.icon}</Text>
             )}
