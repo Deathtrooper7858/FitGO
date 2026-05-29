@@ -3,7 +3,7 @@ import { Stack, router, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet, View, ActivityIndicator, Platform, LogBox, KeyboardAvoidingView, Image, Text } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, Platform, LogBox, Image, Text } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 // Ignore specific warnings in the UI
@@ -186,11 +186,6 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={[styles.root, { backgroundColor: colors.background }]}>
-      <KeyboardAvoidingView
-        style={styles.root}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={0}
-      >
         <StatusBar style={theme === 'dark' ? 'light' : 'dark'} backgroundColor={colors.background} />
         <NavigationGuard />
         <Stack screenOptions={{ 
@@ -264,7 +259,6 @@ export default function RootLayout() {
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />
         </Stack>
-      </KeyboardAvoidingView>
     </GestureHandlerRootView>
   );
 }
