@@ -1123,63 +1123,7 @@ function DietStep({ data, onChange }: { data: Partial<OnboardingData>; onChange:
   );
 }
 
-// ─── Step 5b: Terms & Conditions ──────────────────────────────────────────────
-function TermsStep({ data, onChange }: { data: Partial<OnboardingData>; onChange: (d: Partial<OnboardingData>) => void }) {
-  const { t } = useTranslation();
-  const colors = useTheme();
 
-  return (
-    <View style={step.container}>
-      <View style={step.headerSection}>
-        <View style={[step.targetCircle, { backgroundColor: colors.primary + '15', shadowColor: colors.primary, elevation: 12 }]}>
-          <Check size={42} color={colors.primary} />
-        </View>
-        <Text style={[step.title, { color: colors.textPrimary }]}>{t('onboarding.termsTitle')}</Text>
-        <Text style={[step.sub, { color: colors.textSecondary }]}>{t('onboarding.termsSub')}</Text>
-      </View>
-
-      <TouchableOpacity
-        style={[
-          step.optionCard, 
-          { backgroundColor: colors.surface, borderColor: colors.border, padding: 20 },
-          data.termsAccepted && {
-            borderColor: colors.primary,
-            shadowColor: colors.primary,
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.2,
-            shadowRadius: 10,
-            elevation: 4,
-          }
-        ]}
-        onPress={() => onChange({ termsAccepted: !data.termsAccepted })}
-        activeOpacity={0.8}
-      >
-        {data.termsAccepted && (
-          <LinearGradient
-            colors={[colors.primary + '14', colors.primary + '03']}
-            style={StyleSheet.absoluteFill}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          />
-        )}
-        <View style={[
-          step.radioOuter, 
-          { 
-            borderColor: data.termsAccepted ? colors.primary : colors.border, 
-            backgroundColor: data.termsAccepted ? colors.primary : 'transparent',
-            borderRadius: 8,
-            borderWidth: 2
-          }
-        ]}>
-          {data.termsAccepted && <Check size={14} color="#FFF" strokeWidth={4} />}
-        </View>
-        <Text style={{ color: data.termsAccepted ? colors.textPrimary : colors.textSecondary, fontSize: 14, flex: 1, lineHeight: 22, fontWeight: '500' }}>
-          {t('onboarding.termsAgreement')}
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
 
 // ─── Step 6: Personalization ──────────────────────────────────────────────────
 function PersonalizationStep({ data, onChange }: { data: Partial<OnboardingData>; onChange: (d: Partial<OnboardingData>) => void }) {
@@ -1420,6 +1364,66 @@ function PersonalizationStep({ data, onChange }: { data: Partial<OnboardingData>
           </View>
         </View>
       </View>
+    </View>
+  );
+}
+// ─── Step 6.5: Terms and Privacy ─────────────────────────────────────────────
+function TermsStep({ data, onChange }: { data: Partial<OnboardingData>; onChange: (d: Partial<OnboardingData>) => void }) {
+  const { t } = useTranslation();
+  const colors = useTheme();
+
+  return (
+    <View style={step.container}>
+      <View style={step.headerSection}>
+        <View style={[step.targetCircle, { backgroundColor: colors.primary + '15', shadowColor: colors.primary }]}>
+          <Check size={36} color={colors.primary} />
+        </View>
+        <Text style={[step.title, { color: colors.textPrimary }]}>{t('onboarding.termsTitle', 'Aviso Legal')}</Text>
+        <Text style={[step.sub, { color: colors.textSecondary }]}>{t('onboarding.termsSub', 'Por favor revisa y acepta nuestros términos y políticas para continuar.')}</Text>
+      </View>
+
+      <TouchableOpacity
+        style={[
+          step.optionCard, 
+          { backgroundColor: colors.surface, borderColor: colors.border, paddingVertical: 20 },
+          data.termsAccepted && { borderColor: colors.primary, shadowColor: colors.primary, elevation: 3 }
+        ]}
+        onPress={() => onChange({ termsAccepted: !data.termsAccepted })}
+        activeOpacity={0.8}
+      >
+        <View style={[
+          step.radioOuter, 
+          { 
+            borderColor: data.termsAccepted ? colors.primary : colors.border, 
+            borderRadius: 8,
+            backgroundColor: data.termsAccepted ? colors.primary : 'transparent',
+            borderWidth: 2,
+            marginRight: 16
+          }
+        ]}>
+          {data.termsAccepted && <Check size={14} color="#fff" strokeWidth={4} />}
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: colors.textPrimary, fontSize: 15, lineHeight: 22 }}>
+            He leído y acepto los{' '}
+            <Text 
+              style={{ color: colors.primary, fontWeight: '700', textDecorationLine: 'underline' }}
+              onPress={(e) => { e.stopPropagation(); router.push('/modals/terms'); }}
+            >
+              Términos y Condiciones
+            </Text>
+            {' '}y la{' '}
+            <Text 
+              style={{ color: colors.primary, fontWeight: '700', textDecorationLine: 'underline' }}
+              onPress={(e) => { e.stopPropagation(); router.push('/modals/terms'); }}
+            >
+              Política de Privacidad
+            </Text>
+            .
+          </Text>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 }

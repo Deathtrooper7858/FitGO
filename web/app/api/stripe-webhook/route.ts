@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 // Use service role for admin tasks like webhook updates
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! // In a real app, use SERVICE_ROLE_KEY here
+  process.env.SUPABASE_SERVICE_ROLE_KEY! // Correctly using service role key for backend operations
 );
 
 export async function POST(req: Request) {

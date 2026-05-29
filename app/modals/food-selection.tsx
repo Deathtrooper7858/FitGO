@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Platform, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTheme } from '../../hooks/useTheme';
@@ -8,7 +8,8 @@ import { supabase } from '../../services/supabase';
 import { Radius, Spacing } from '../../constants';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Apple, ChevronLeft, Sparkles, AlertCircle } from 'lucide-react-native';
+import { Apple, ChevronLeft, Sparkles, AlertCircle, Search, Plus, Check } from 'lucide-react-native';
+import { searchFood, FoodItem } from '../../services/foodDatabase';
 
 const FOOD_CATEGORIES = [
   {
@@ -147,6 +148,11 @@ export default function FoodSelectionModal() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<FoodItem[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => setError(null), 3000);
@@ -154,8 +160,28 @@ export default function FoodSelectionModal() {
     }
   }, [error]);
 
-  const toggle = (id: string) => {
-    setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const delayDebounceFn = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const results = await searchFood(searchQuery);
+        setSearchResults(results);
+      } catch (err) {
+        console.error('Search error', err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
+
+  const toggle = (idOrJson: string) => {
+    setSelected(prev => prev.includes(idOrJson) ? prev.filter(x => x !== idOrJson) : [...prev, idOrJson]);
   };
 
   const selectAll = (categoryItems: {id: string}[]) => {
@@ -170,10 +196,11 @@ export default function FoodSelectionModal() {
   };
 
   const handleSave = async () => {
-    // Validation
+    const basicSelected = selected.filter(s => !s.startsWith('{')); // Only check standard string IDs
     for (const cat of FOOD_CATEGORIES) {
-      const selectedInCategory = cat.items.filter(item => selected.includes(item.id));
-      if (selectedInCategory.length < cat.min) {
+      const selectedInCategory = cat.items.filter(item => basicSelected.includes(item.id));
+      if (selectedInCategory.length < cat.min && searchQuery.length === 0) {
+        // Only enforce validation if they are not actively searching
         setError(
           t('onboarding.validationFoodMin', { 
             category: t(`onboarding.${cat.title}`), 
@@ -239,7 +266,49 @@ export default function FoodSelectionModal() {
            <Text style={[s.introSub, { color: colors.textSecondary }]}>{t('onboarding.foodsSub')}</Text>
         </View>
 
-        {FOOD_CATEGORIES.map((cat) => (
+        {/* Search Bar */}
+        <View style={[s.searchContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Search size={20} color={colors.textSecondary} style={s.searchIcon} />
+          <TextInput
+            style={[s.searchInput, { color: colors.textPrimary }]}
+            placeholder={t('scan.searchPlaceholder') || "Buscar alimento..."}
+            placeholderTextColor={colors.textSecondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {isSearching && <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 12 }} />}
+        </View>
+
+        {searchQuery.length > 0 ? (
+          <View style={s.searchResults}>
+            {searchResults.length === 0 && !isSearching ? (
+              <Text style={[s.noResults, { color: colors.textSecondary }]}>{t('common.noResults') || 'No se encontraron resultados'}</Text>
+            ) : (
+              searchResults.map((item) => {
+                const itemJson = JSON.stringify(item);
+                const isActive = selected.includes(itemJson);
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[s.searchResultItem, { backgroundColor: colors.surface, borderColor: colors.border }, isActive && { borderColor: colors.primary }]}
+                    onPress={() => toggle(itemJson)}
+                  >
+                    <View style={s.searchResultInfo}>
+                      <Text style={[s.searchResultName, { color: colors.textPrimary }]}>{item.name}</Text>
+                      <Text style={[s.searchResultBrand, { color: colors.textSecondary }]}>
+                        {item.brand ? `${item.brand} • ` : ''}{item.calories} kcal | {item.protein}P {item.carbs}C {item.fat}G
+                      </Text>
+                    </View>
+                    <View style={[s.addIconWrap, isActive ? { backgroundColor: colors.primary } : { backgroundColor: colors.surfaceAlt }]}>
+                      {isActive ? <Check size={16} color="#FFF" /> : <Plus size={16} color={colors.textSecondary} />}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })
+            )}
+          </View>
+        ) : (
+          FOOD_CATEGORIES.map((cat) => (
           <View key={cat.id} style={s.category}>
             <View style={s.catHeader}>
               <View>
@@ -287,7 +356,7 @@ export default function FoodSelectionModal() {
               })}
             </View>
           </View>
-        ))}
+        )))}
       </ScrollView>
 
       <View style={s.footer}>
@@ -380,5 +449,56 @@ const s = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     flex: 1,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    marginBottom: 24,
+    paddingHorizontal: 12,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: 48,
+    fontSize: 16,
+  },
+  searchResults: {
+    paddingBottom: 20,
+  },
+  noResults: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+  },
+  searchResultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  searchResultInfo: {
+    flex: 1,
+  },
+  searchResultName: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  searchResultBrand: {
+    fontSize: 13,
+  },
+  addIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 12,
   },
 });
