@@ -136,7 +136,7 @@ export function useAchievements() {
       { id: 'coffee_addict', title: 'Sangre de Cafeína', description: 'Registraste más de 3 cafés en un solo día.', icon: '☕', iconType: 'lucide' as const, lucideIcon: 'Coffee', tier: 'plata', category: 'Nutrición', unlocked: unlockedAchievements.includes('coffee_addict') || todayLogs.filter(l => l.foodItem.name.toLowerCase().includes('café') || l.foodItem.name.toLowerCase().includes('coffee')).length >= 3 },
       { id: 'fasting_monk', title: 'Monje del Ayuno', description: 'Pasaste 16 horas sin registrar comidas.', icon: '🕰️', iconType: 'lucide' as const, lucideIcon: 'Timer', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('fasting_monk') },
       { id: 'chef_kiss', title: 'Beso del Chef', description: 'Creaste tu primera receta personalizada en la app.', icon: '👨‍🍳', iconType: 'lucide' as const, lucideIcon: 'ChefHat', tier: 'bronce', category: 'Nutrición', unlocked: unlockedAchievements.includes('chef_kiss') },
-      { id: 'immortal', title: 'Inmortal', description: 'No fallaste tus macros durante 100 días consecutivos.', icon: '🩸', iconType: 'lottie' as const, lottieFile: 'fire_burst', tier: 'diamante', category: 'Nutrición', unlocked: unlockedAchievements.includes('immortal') },
+
       // ── Categoría: Físico & Progreso ──
       { id: 'goal_reached', title: 'En la Meta', description: 'Estás a menos de 1kg de tu peso objetivo.', icon: '🎯', iconType: 'lucide' as const, lucideIcon: 'Target', tier: 'oro', category: 'Físico', unlocked: unlockedAchievements.includes('goal_reached') || (weightDiff <= 1 && weightDiff > 0), rewardBadgeId: 'weight_master' },
       { id: 'weight_loss_1', title: 'Primeros Resultados', description: 'Has perdido tus primeros 2kg.', icon: '📉', iconType: 'lucide' as const, lucideIcon: 'TrendingDown', tier: 'bronce', category: 'Físico', unlocked: unlockedAchievements.includes('weight_loss_1') || (profile.goal === 'lose' && (profile.startingWeight || 0) - currentWeight >= 2) },
@@ -185,12 +185,7 @@ export function useAchievements() {
       { id: 'iron_lungs', title: 'Pulmones de Acero', description: 'Registraste una sesión de natación intensa.', icon: '🏊‍♂️', iconType: 'lucide' as const, lucideIcon: 'Waves', tier: 'plata', category: 'Actividad', unlocked: unlockedAchievements.includes('iron_lungs') },
       { id: 'mountain_climber', title: 'Alpinista', description: 'Superaste los 50,000 pasos en una semana.', icon: '🧗‍♂️', iconType: 'lucide' as const, lucideIcon: 'Mountain', tier: 'oro', category: 'Actividad', unlocked: unlockedAchievements.includes('mountain_climber') },
 
-      // ── Curiosidades Nutricionales ──
-      { id: 'carnivore', title: 'Depredador Alfa', description: 'Consumiste más de 250g de proteína en un día.', icon: '🥩', iconType: 'lucide' as const, lucideIcon: 'Beef', tier: 'diamante', category: 'Nutrición', unlocked: unlockedAchievements.includes('carnivore') || proteinLogged >= 250 },
-      { id: 'sweet_tooth', title: 'Antojo Dulce', description: 'Registraste un postre pero aún cumpliste tus macros.', icon: '🍩', iconType: 'lucide' as const, lucideIcon: 'Cookie', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('sweet_tooth') },
-      { id: 'coffee_addict', title: 'Sangre de Cafeína', description: 'Registraste más de 3 cafés en un solo día.', icon: '☕', iconType: 'lucide' as const, lucideIcon: 'Coffee', tier: 'plata', category: 'Nutrición', unlocked: unlockedAchievements.includes('coffee_addict') || todayLogs.filter(l => l.foodItem.name.toLowerCase().includes('café') || l.foodItem.name.toLowerCase().includes('coffee')).length >= 3 },
-      { id: 'fasting_monk', title: 'Monje del Ayuno', description: 'Pasaste 16 horas sin registrar comidas.', icon: '🕰️', iconType: 'lucide' as const, lucideIcon: 'Hourglass', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('fasting_monk') },
-      { id: 'chef_kiss', title: 'Beso del Chef', description: 'Creaste tu primera receta personalizada en la app.', icon: '👨‍🍳', iconType: 'lucide' as const, lucideIcon: 'ChefHat', tier: 'bronce', category: 'Nutrición', unlocked: unlockedAchievements.includes('chef_kiss') },
+
 
       // ── Curiosidades de Comunidad ──
       { id: 'viral_post', title: 'Fenómeno Viral', description: 'Tu publicación alcanzó 50 likes.', icon: '🔥', iconType: 'lottie' as const, lottieFile: 'fire_viral', tier: 'diamante', category: 'Comunidad', unlocked: unlockedAchievements.includes('viral_post') },

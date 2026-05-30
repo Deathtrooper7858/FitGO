@@ -7,12 +7,11 @@ import * as LucideIcons from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { useAchievements, Achievement, ALL_BADGES } from '../../hooks/useAchievements';
 import { Spacing, Radius, Shadow } from '../../constants';
-
-
-import { useAuthStore } from '../../store';
 import { supabase } from '../../services/supabase';
 import LottieView from 'lottie-react-native';
 import { LottieRegistry } from '../../hooks/LottieRegistry';
+import { GlassCard } from '../../components/GlassCard';
+import { useAuthStore } from '../../store';
 
 const { width } = Dimensions.get('window');
 
@@ -55,41 +54,44 @@ export default function AchievementsModal() {
       {/* Header */}
       <View style={s.header}>
         <TouchableOpacity onPress={() => router.back()} style={s.closeBtn}>
-          <LucideIcons.X color={colors.textPrimary} size={24} />
+          <LucideIcons.ArrowLeft color={colors.textPrimary} size={24} />
         </TouchableOpacity>
-        <Text style={[s.title, { color: colors.textPrimary }]}>Mis Logros</Text>
+        <Text style={[s.title, { color: colors.textPrimary }]}>Tus Logros</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Stats Summary */}
-        <LinearGradient
-          colors={['#FFD700', '#FFA500']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={s.statsCard}
-        >
-          <View style={s.statsIconBox}>
-            <LucideIcons.Trophy size={48} color="#FFF" />
+        {/* Premium Dashboard Header */}
+        <View style={s.dashboardHeader}>
+          <LottieView 
+             source={LottieRegistry.fire_burst}
+             autoPlay 
+             loop
+             style={s.dashboardLottie}
+          />
+          <View style={s.dashboardTextContainer}>
+            <Text style={s.dashboardValue}>{unlockedCount}</Text>
+            <Text style={s.dashboardDivider}>/</Text>
+            <Text style={s.dashboardTotal}>{achievements.length}</Text>
           </View>
-          <View>
-            <Text style={s.statsValue}>{unlockedCount} / {achievements.length}</Text>
-            <Text style={s.statsLabel}>Logros Completados</Text>
-          </View>
-        </LinearGradient>
+          <Text style={[s.dashboardLabel, { color: colors.textSecondary }]}>Logros Desbloqueados</Text>
+        </View>
 
-        <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: Spacing.xl, textAlign: 'center' }}>
+        <Text style={[s.instructions, { color: colors.textSecondary }]}>
           Toca un logro desbloqueado para fijarlo en tu vitrina (Máx 3)
         </Text>
 
         {groupedAchievements.map(([category, items]) => (
-          <View key={category} style={{ marginBottom: Spacing.xl }}>
-            <Text style={{ fontSize: 18, fontWeight: '800', color: colors.textPrimary, marginBottom: Spacing.md, paddingHorizontal: 4 }}>
-              {category}
-            </Text>
-            <View style={s.grid}>
+          <View key={category} style={s.categorySection}>
+            <View style={s.categoryHeaderRow}>
+              <View style={[s.categoryLine, { backgroundColor: colors.border }]} />
+              <Text style={[s.categoryTitle, { color: colors.textPrimary }]}>{category}</Text>
+              <View style={[s.categoryLine, { backgroundColor: colors.border }]} />
+            </View>
+            
+            <View style={s.listContainer}>
               {items.map((item) => (
-                <AchievementCard
+                <AchievementListItem
                   key={item.id}
                   achievement={item}
                   isPinned={profile?.pinnedAchievements?.includes(item.id) || false}
@@ -104,7 +106,7 @@ export default function AchievementsModal() {
   );
 }
 
-function AchievementCard({
+function AchievementListItem({
   achievement, isPinned, onTogglePin
 }: {
   achievement: Achievement; isPinned: boolean; onTogglePin: () => void;
@@ -123,98 +125,83 @@ function AchievementCard({
 
   const tierColors = getTierColors(achievement.tier);
   const isHolo = achievement.unlocked && (achievement.tier === 'oro' || achievement.tier === 'diamante');
+  const accentColor = tierColors[0];
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.8}
-      onPress={onTogglePin}
-      style={[
-        s.card,
-        { backgroundColor: colors.surface },
-        isHolo && { borderColor: tierColors[0] + '50', borderWidth: 1 }
-      ]}>
-      {isPinned && (
-        <View style={{ position: 'absolute', top: 8, left: 8, zIndex: 10 }}>
-          <Text style={{ fontSize: 16 }}>📌</Text>
-        </View>
-      )}
-      <View style={s.cardTop}>
-        {achievement.unlocked ? (
-          <LinearGradient
-            colors={tierColors as [string, string, ...string[]]}
-            style={[s.iconCircle, isHolo && { shadowColor: tierColors[0], shadowOpacity: 0.6, shadowRadius: 10, elevation: 8, overflow: 'hidden' }]}
-          >
-            {isHolo && (
-              <LottieView
-                source={LottieRegistry.diamond_glow}
-                autoPlay
-                loop
-                style={{ position: 'absolute', width: 120, height: 120, opacity: 0.8 }}
-                resizeMode="cover"
-              />
-            )}
-            {achievement.iconType === 'lucide' && achievement.lucideIcon ? (
-              // @ts-ignore
-              React.createElement(LucideIcons[achievement.lucideIcon] || LucideIcons.Star, {
-                size: 32,
-                color: '#FFF',
-                strokeWidth: 2
-              })
+    <TouchableOpacity activeOpacity={0.8} onPress={onTogglePin} style={{ marginBottom: 12 }}>
+      <GlassCard 
+        accentColor={achievement.unlocked ? accentColor : colors.border} 
+        showStripe={achievement.unlocked}
+        style={[s.listItem, !achievement.unlocked && { opacity: 0.7 }]}
+        noPadding
+      >
+        <View style={s.listItemInner}>
+          <View style={s.iconContainer}>
+            {achievement.unlocked ? (
+              <LinearGradient
+                colors={tierColors as [string, string, ...string[]]}
+                style={[s.iconHexagon, isHolo && { shadowColor: accentColor, shadowOpacity: 0.8, shadowRadius: 15, elevation: 10 }]}
+              >
+                {isHolo && (
+                  <LottieView
+                    source={LottieRegistry.diamond_glow}
+                    autoPlay
+                    loop
+                    style={{ position: 'absolute', width: 90, height: 90, opacity: 0.85 }}
+                    resizeMode="cover"
+                  />
+                )}
+                <Text style={[s.emojiIconHuge, { textShadowColor: '#FFF', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 8 }]}>
+                  {achievement.icon}
+                </Text>
+              </LinearGradient>
             ) : (
-              <Text style={s.emojiIcon}>{achievement.icon}</Text>
+              <View style={[s.iconHexagon, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, borderWidth: 1 }]}>
+                <Text style={[s.emojiIconHuge, { opacity: 0.2 }]}>{achievement.icon}</Text>
+                <View style={s.lockBadge}>
+                  <LucideIcons.Lock size={12} color="#FFF" />
+                </View>
+              </View>
             )}
-          </LinearGradient>
-        ) : (
-          <View style={[s.iconCircle, { backgroundColor: colors.surfaceAlt }]}>
-            {achievement.iconType === 'lucide' && achievement.lucideIcon ? (
-              // @ts-ignore
-              React.createElement(LucideIcons[achievement.lucideIcon] || LucideIcons.Star, {
-                size: 32,
-                color: colors.textSecondary,
-                opacity: 0.2
-              })
-            ) : (
-              <Text style={[s.emojiIcon, { opacity: 0.2 }]}>{achievement.icon}</Text>
+            
+            {isPinned && (
+              <View style={s.pinBadge}>
+                <Text style={{ fontSize: 10 }}>📌</Text>
+              </View>
             )}
-            <View style={s.lockOverlay}>
-              <LucideIcons.Lock size={12} color={colors.textSecondary} />
-            </View>
           </View>
-        )}
-      </View>
 
-      <Text style={[s.cardTitle, { color: achievement.unlocked ? colors.textPrimary : colors.textSecondary }]} numberOfLines={1}>
-        {achievement.title}
-      </Text>
-      <Text style={[s.cardDesc, { color: colors.textSecondary }]} numberOfLines={2}>
-        {achievement.description}
-      </Text>
+          <View style={s.textContent}>
+            <View style={s.titleRow}>
+              <Text style={[s.itemTitle, { color: achievement.unlocked ? colors.textPrimary : colors.textSecondary }]} numberOfLines={1}>
+                {achievement.title}
+              </Text>
+              {achievement.unlocked && <LucideIcons.CheckCircle2 size={16} color={accentColor} />}
+            </View>
+            
+            <Text style={[s.itemDesc, { color: colors.textSecondary }]} numberOfLines={2}>
+              {achievement.description}
+            </Text>
 
-      {achievement.rewardBadgeId && (
-        <View style={[
-          s.rewardRow,
-          {
-            backgroundColor: achievement.unlocked ? tierColors[0] + '15' : colors.surfaceAlt,
-            borderColor: achievement.unlocked ? tierColors[0] + '40' : colors.border
-          }
-        ]}>
-          <Text style={[
-            s.rewardText,
-            {
-              color: achievement.unlocked ? tierColors[0] : colors.textMuted,
-              fontWeight: achievement.unlocked ? '800' : '600'
-            }
-          ]}>
-            🎁 {ALL_BADGES[achievement.rewardBadgeId]?.icon} {ALL_BADGES[achievement.rewardBadgeId]?.label}
-          </Text>
+            {achievement.rewardBadgeId && (
+              <View style={[
+                s.rewardPill,
+                {
+                  backgroundColor: achievement.unlocked ? accentColor + '15' : colors.surfaceAlt,
+                  borderColor: achievement.unlocked ? accentColor + '40' : colors.border
+                }
+              ]}>
+                <Text style={[
+                  s.rewardPillText,
+                  { color: achievement.unlocked ? accentColor : colors.textMuted }
+                ]}>
+                  🎁 {ALL_BADGES[achievement.rewardBadgeId]?.icon} {ALL_BADGES[achievement.rewardBadgeId]?.label}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
-      )}
-
-      {achievement.unlocked && (
-        <View style={s.checkMark}>
-          <LucideIcons.CheckCircle2 size={16} color={tierColors[0]} />
-        </View>
-      )}
+      </GlassCard>
     </TouchableOpacity>
   );
 }
@@ -230,71 +217,173 @@ const s = StyleSheet.create({
   },
   closeBtn: { padding: 8 },
   title: { fontSize: 20, fontWeight: '800' },
-  scrollContent: { padding: Spacing.md },
-  statsCard: {
-    flexDirection: 'row',
+  scrollContent: { padding: Spacing.md, paddingBottom: 60 },
+  
+  dashboardHeader: {
     alignItems: 'center',
-    padding: Spacing.lg,
-    borderRadius: Radius.xl,
-    gap: 20,
-    marginBottom: Spacing.xl,
-    ...Shadow.md
-  },
-  statsIconBox: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    padding: 12,
-    borderRadius: Radius.lg
-  },
-  statsValue: { fontSize: 32, fontWeight: '900', color: '#FFF' },
-  statsLabel: { fontSize: 14, color: '#FFF', fontWeight: '600', opacity: 0.9 },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: Spacing.md
-  },
-  card: {
-    width: (width - Spacing.md * 3) / 2,
-    padding: Spacing.md,
-    borderRadius: Radius.lg,
-    alignItems: 'center',
-    ...Shadow.sm,
-    marginBottom: 4
-  },
-  cardTop: { marginBottom: 12 },
-  iconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
     justifyContent: 'center',
-    alignItems: 'center'
+    paddingVertical: 30,
+    marginBottom: 20,
   },
-  emojiIcon: { fontSize: 32 },
-  lockOverlay: {
+  dashboardLottie: {
     position: 'absolute',
-    bottom: -2,
-    right: -2,
-    backgroundColor: '#121212',
-    borderRadius: 10,
-    padding: 4,
-    borderWidth: 1,
-    borderColor: '#333'
+    width: width,
+    height: 250,
+    opacity: 0.6,
+    zIndex: -1,
   },
-  cardTitle: { fontSize: 16, fontWeight: '700', textAlign: 'center', marginBottom: 4 },
-  cardDesc: { fontSize: 12, textAlign: 'center', lineHeight: 16 },
-  checkMark: { position: 'absolute', top: 8, right: 8 },
-  rewardRow: {
-    marginTop: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: Radius.sm || 8,
-    borderWidth: 1,
+  dashboardTextContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '100%',
+    zIndex: 1,
   },
-  rewardText: {
-    fontSize: 9,
+  dashboardValue: {
+    fontSize: 64,
+    fontWeight: '900',
+    color: '#FFD700',
+    textShadowColor: 'rgba(255, 215, 0, 0.4)',
+    textShadowOffset: { width: 0, height: 4 },
+    textShadowRadius: 15,
+  },
+  dashboardDivider: {
+    fontSize: 32,
+    marginHorizontal: 12,
+    color: '#FFF',
+    opacity: 0.4,
+  },
+  dashboardTotal: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: '#FFF',
+    opacity: 0.6,
+  },
+  dashboardLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    marginTop: 8,
+  },
+  instructions: {
+    fontSize: 13,
     textAlign: 'center',
+    marginBottom: 30,
+  },
+  categorySection: {
+    marginBottom: 30,
+  },
+  categoryHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  categoryLine: {
+    flex: 1,
+    height: 1,
+  },
+  categoryTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    paddingHorizontal: 16,
+  },
+  listContainer: {
+    // gaps managed by marginBottom in listItem
+  },
+  listItem: {
+    width: '100%',
+    borderRadius: Radius.lg,
+  },
+  listItemInner: {
+    flexDirection: 'row',
+    padding: 16,
+    alignItems: 'center',
+  },
+  iconContainer: {
+    marginRight: 16,
+    position: 'relative',
+  },
+  iconHexagon: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  emojiIconLarge: {
+    fontSize: 28,
+  },
+  emojiIconHuge: {
+    fontSize: 34,
+  },
+  lockBadge: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    backgroundColor: '#1E293B',
+    padding: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  pinBadge: {
+    position: 'absolute',
+    top: -6,
+    left: -6,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 12,
+    padding: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  textContent: {
+    flex: 1,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  itemTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    flex: 1,
+    paddingRight: 8,
+  },
+  itemDesc: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  rewardPill: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  rewardPillText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  testButton: {
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#7C5CFC',
+    marginTop: 20,
+    marginBottom: 40,
+    backgroundColor: 'rgba(124, 92, 252, 0.1)',
+  },
+  testButtonText: {
+    color: '#7C5CFC',
+    fontSize: 14,
+    fontWeight: '700',
   }
 });
