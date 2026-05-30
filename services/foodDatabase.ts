@@ -122,7 +122,7 @@ export async function getFoodByBarcode(barcode: string, language: string = 'es')
       }
     }
   } catch (err) {
-    console.error('[OpenFoodFacts] Barcode fetch error:', err);
+    console.warn('[OpenFoodFacts] Barcode fetch error:', err);
   }
 
   // Fallback to Groq AI barcode lookup
@@ -149,7 +149,7 @@ export async function getFoodByBarcode(barcode: string, language: string = 'es')
       };
     }
   } catch (err) {
-    console.error('[Barcode fallback] Groq AI lookup error:', err);
+    console.warn('[Barcode fallback] Groq AI lookup error:', err);
   }
 
   return null;
@@ -187,7 +187,7 @@ export async function searchFoodEdamam(query: string): Promise<FoodItem[]> {
       source:   'edamam' as const,
     }));
   } catch (err) {
-    console.error('[Edamam Proxy] Error fetching food:', err);
+    console.warn('[Edamam Proxy] Error fetching food:', err);
     return [];
   }
 }

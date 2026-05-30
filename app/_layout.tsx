@@ -30,6 +30,9 @@ import '../i18n';
 import i18n from 'i18next';
 import { useTheme } from '../hooks/useTheme';
 import * as NavigationBar from 'expo-navigation-bar';
+import { AchievementToast } from '../components/AchievementToast';
+import { useAchievements } from '../hooks/useAchievements';
+import { useToastStore } from '../store';
 
 // Safely detect if edge-to-edge is enabled
 let isEdgeToEdgeActive = false;
@@ -75,6 +78,33 @@ function NavigationGuard() {
       }
     }
   }, [session, profile, isLoading, segments]);
+
+  return null;
+}
+
+function AchievementEngine() {
+  const { achievements } = useAchievements();
+  const { profile, setProfile } = useAuthStore();
+  const { addToast } = useToastStore();
+
+  useEffect(() => {
+    if (!profile) return;
+    
+    const currentUnlockedIds = profile.unlockedAchievements || [];
+    const newlyUnlocked = achievements.filter(a => a.unlocked && !currentUnlockedIds.includes(a.id));
+
+    if (newlyUnlocked.length > 0) {
+      const newIds = [...currentUnlockedIds, ...newlyUnlocked.map(a => a.id)];
+      
+      setProfile({ ...profile, unlockedAchievements: newIds });
+      
+      supabase.from('users').update({ unlocked_achievements: newIds }).eq('id', profile.id).then(({error}) => {
+         if(error) console.warn("[AchievementEngine] Sync error:", error);
+      });
+
+      newlyUnlocked.forEach(a => addToast(a));
+    }
+  }, [achievements, profile]);
 
   return null;
 }
@@ -188,6 +218,8 @@ export default function RootLayout() {
     <GestureHandlerRootView style={[styles.root, { backgroundColor: colors.background }]}>
         <StatusBar style={theme === 'dark' ? 'light' : 'dark'} backgroundColor={colors.background} />
         <NavigationGuard />
+        <AchievementEngine />
+        <AchievementToast />
         <Stack screenOptions={{ 
           headerShown: false, 
           animation: 'fade',

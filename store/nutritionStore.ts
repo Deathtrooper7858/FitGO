@@ -251,7 +251,7 @@ export const useNutritionStore = create<NutritionState>()(
               logged_at: safeLog.loggedAt
             });
             if (error) {
-              console.error('[NutritionStore] addLog Supabase error:', error);
+              console.warn('[NutritionStore] addLog Supabase error:', error);
               throw error;
             }
 
@@ -273,7 +273,7 @@ export const useNutritionStore = create<NutritionState>()(
               console.warn('[NutritionStore] Failed to award gamification points:', e);
             }
           } catch (err) {
-            console.error('[NutritionStore] addLog sync error:', err);
+            console.warn('[NutritionStore] addLog sync error:', err);
             throw err;
           }
         }
