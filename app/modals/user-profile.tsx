@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Image } from 'expo-image';
-import { ArrowLeft, UserPlus, Check, Trophy, Heart, MessageSquare, Users } from 'lucide-react-native';
+import { ArrowLeft, UserPlus, Check, Trophy, Heart, MessageSquare, Users, Trash2 } from 'lucide-react-native';
 import * as LucideIcons from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../../services/supabase';
@@ -12,6 +12,7 @@ import { GlassCard } from '../../components/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
 import { useAchievements, ALL_BADGES } from '../../hooks/useAchievements';
 import { Radius } from '../../constants';
+import { CustomAlert } from '../../components/CustomAlert';
 // TEMPORARILY DISABLED FOR EXPO GO COMPATIBILITY
 // import LottieView from 'lottie-react-native';
 // import { LottieRegistry } from '../../hooks/LottieRegistry';
@@ -33,6 +34,7 @@ export default function UserProfileModal() {
   const [userFriends, setUserFriends] = useState<any[]>([]);
   const [totalFriends, setTotalFriends] = useState(0);
   const [showAchievements, setShowAchievements] = useState(false);
+  const [deleteFriendAlert, setDeleteFriendAlert] = useState<{ friendId: string; friendName: string } | null>(null);
 
   const isMe = userId === myProfile?.id;
 
@@ -212,17 +214,26 @@ export default function UserProfileModal() {
           {!isMe && (
             <View style={{ marginBottom: 20 }}>
               {friendStatus?.status === 'accepted' ? (
-                <View style={{ flexDirection: 'row', gap: 12 }}>
-                  <View style={[s.actionBtn, { flex: 1, backgroundColor: colors.success + '20' }]}>
-                    <Check size={20} color={colors.success} />
-                    <Text style={[s.actionBtnText, { color: colors.success }]}>Son Amigos</Text>
+                <View style={{ gap: 10 }}>
+                  <View style={{ flexDirection: 'row', gap: 12 }}>
+                    <View style={[s.actionBtn, { flex: 1, backgroundColor: colors.success + '20' }]}>
+                      <Check size={20} color={colors.success} />
+                      <Text style={[s.actionBtnText, { color: colors.success }]}>Son Amigos</Text>
+                    </View>
+                    <TouchableOpacity 
+                      style={[s.actionBtn, { flex: 1, backgroundColor: colors.primary }]}
+                      onPress={() => router.push({ pathname: '/modals/chat', params: { friendId: userId, friendName: displayUser.name, friendAvatar: displayUser.avatar_url || '' } })}
+                    >
+                      <MessageSquare size={20} color="#fff" />
+                      <Text style={[s.actionBtnText, { color: '#fff' }]}>Mensaje</Text>
+                    </TouchableOpacity>
                   </View>
-                  <TouchableOpacity 
-                    style={[s.actionBtn, { flex: 1, backgroundColor: colors.primary }]}
-                    onPress={() => router.push({ pathname: '/modals/chat', params: { friendId: userId, friendName: displayUser.name, friendAvatar: displayUser.avatar_url || '' } })}
+                  <TouchableOpacity
+                    style={{ height: 46, borderRadius: Radius.xl, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.error + '15', borderWidth: 1, borderColor: colors.error + '40', flexDirection: 'row', gap: 8 }}
+                    onPress={() => setDeleteFriendAlert({ friendId: friendStatus.id, friendName: displayUser.name || 'este usuario' })}
                   >
-                    <MessageSquare size={20} color="#fff" />
-                    <Text style={[s.actionBtnText, { color: '#fff' }]}>Mensaje</Text>
+                    <Trash2 size={16} color={colors.error} />
+                    <Text style={{ color: colors.error, fontWeight: '700', fontSize: 15 }}>Eliminar Amigo</Text>
                   </TouchableOpacity>
                 </View>
               ) : friendStatus?.status === 'pending' ? (
@@ -246,6 +257,50 @@ export default function UserProfileModal() {
                   </LinearGradient>
                 </TouchableOpacity>
               )}
+            </View>
+          )}
+
+          {/* ── Vitrina de Trofeos (Showcase) ── */}
+          {displayUser.pinned_achievements && displayUser.pinned_achievements.length > 0 && (
+            <View style={{ marginBottom: 16 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 Vitrina de Trofeos</Text>
+              </View>
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                {displayUser.pinned_achievements.map((id: string) => {
+                  const ach = myAchievements.find((a: any) => a.id === id);
+                  if (!ach) return null;
+                  const isHolo = ach.tier === 'oro' || ach.tier === 'diamante';
+                  const tierColor = ach.tier === 'diamante' ? '#38BDF8' : 
+                                    ach.tier === 'oro' ? '#FBBF24' : 
+                                    ach.tier === 'plata' ? '#9CA3AF' : '#D97706';
+                  return (
+                    <View key={id} style={{
+                      flex: 1, backgroundColor: colors.surfaceAlt, padding: 8, borderRadius: 16, alignItems: 'center',
+                      borderWidth: 1, borderColor: isHolo ? tierColor + '50' : colors.border,
+                      ...(isHolo ? { shadowColor: tierColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 } : {})
+                    }}>
+                      <LinearGradient
+                        colors={(isHolo ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5'] : ['transparent', 'transparent']) as [string, string, ...string[]]}
+                        style={{ width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: isHolo ? 'transparent' : colors.surfaceAlt, marginBottom: 8 }}
+                      >
+                        {ach.iconType === 'lucide' && ach.lucideIcon ? (
+                          // @ts-ignore
+                          React.createElement(LucideIcons[ach.lucideIcon] || LucideIcons.Star, {
+                            size: 24,
+                            color: isHolo ? '#FFF' : tierColor,
+                            strokeWidth: 2.5
+                          })
+                        ) : (
+                          <Text style={{ fontSize: 24 }}>{ach.icon}</Text>
+                        )}
+                      </LinearGradient>
+                      <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' }} numberOfLines={1}>{ach.title}</Text>
+                      <Text style={{ fontSize: 9, color: tierColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>{ach.tier}</Text>
+                    </View>
+                  );
+                })}
+              </View>
             </View>
           )}
 

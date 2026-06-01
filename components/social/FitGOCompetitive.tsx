@@ -15,6 +15,7 @@ import { useAuthStore, useSocialStore } from '../../store';
 import { useLeagueStore, LeagueTier, SquadMember, Squad } from '../../store/leagueStore';
 import MacroRewardAnimation from '../MacroRewardAnimation';
 import * as Clipboard from 'expo-clipboard';
+import { router } from 'expo-router';
 
 // ─── Liga Config ──────────────────────────────────────────────────────────────
 
@@ -208,6 +209,7 @@ export default function FitGOCompetitive() {
   const [joinCode, setJoinCode] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [inspectingSquad, setInspectingSquad] = useState<Squad | null>(null);
+  const [inspectingUser, setInspectingUser] = useState<any | null>(null);
   const [activeSection, setActiveSection] = useState<'my-squad' | 'ranking' | 'challenges'>('ranking');
   const [rankingSubTab, setRankingSubTab] = useState<'squads' | 'individual'>('individual');
   const [showRankingInfo, setShowRankingInfo] = useState(false);
@@ -469,8 +471,10 @@ export default function FitGOCompetitive() {
                         const grade = getRankGrade(user.points);
                         const isMe = user.id === profile?.id;
                         return (
-                          <View
+                          <TouchableOpacity
                             key={user.id}
+                            activeOpacity={0.7}
+                            onPress={() => { Haptics.selectionAsync(); setInspectingUser(user); }}
                             style={[
                               styles.restRow,
                               { borderBottomColor: colors.border + '33' },
@@ -505,7 +509,7 @@ export default function FitGOCompetitive() {
                               <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 14 }}>{Math.round(user.points)}</Text>
                               <Text style={{ color: colors.textMuted, fontSize: 10 }}>pts</Text>
                             </View>
-                          </View>
+                          </TouchableOpacity>
                         );
                       })
                     )}
@@ -776,6 +780,124 @@ export default function FitGOCompetitive() {
                     </LinearGradient>
                   </TouchableOpacity>
                 )}
+              </View>
+            );
+          })()}
+        </View>
+      </Modal>
+      {/* User Inspect Modal */}
+      <Modal visible={!!inspectingUser} transparent animationType="fade" onRequestClose={() => setInspectingUser(null)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center' }}>
+          {inspectingUser && (() => {
+            const grade = getRankGrade(inspectingUser.points);
+            const isMe = inspectingUser.id === profile?.id;
+            
+            const isFriend = socialStore.friends.some(f => 
+              f.status === 'accepted' && (f.user_id_1 === inspectingUser.id || f.user_id_2 === inspectingUser.id)
+            );
+            const isPending = socialStore.friends.some(f => 
+              f.status === 'pending' && (f.user_id_1 === inspectingUser.id || f.user_id_2 === inspectingUser.id)
+            );
+
+            const rankIndex = socialStore.globalRanking.findIndex(u => u.id === inspectingUser.id);
+            const rankPos = rankIndex !== -1 ? `#${rankIndex + 1}` : 'N/A';
+
+            return (
+              <View style={{ width: '85%', backgroundColor: colors.surface, borderRadius: 32, padding: 24, paddingTop: 0, alignItems: 'center' }}>
+                <TouchableOpacity
+                  style={{ position: 'absolute', top: 16, right: 16, padding: 8, backgroundColor: colors.surfaceAlt, borderRadius: 20, zIndex: 10 }}
+                  onPress={() => setInspectingUser(null)}
+                >
+                  <X size={18} color={colors.textSecondary} />
+                </TouchableOpacity>
+
+                {/* Protruding Avatar */}
+                <View style={{ marginTop: -50, marginBottom: 16 }}>
+                  <View style={{ width: 100, height: 100, borderRadius: 50, borderWidth: 4, borderColor: colors.secondary || '#A855F7', padding: 2, backgroundColor: colors.surface }}>
+                    {inspectingUser.avatar_url ? (
+                      <Image source={{ uri: inspectingUser.avatar_url }} style={{ width: '100%', height: '100%', borderRadius: 50 }} />
+                    ) : (
+                      <View style={{ flex: 1, borderRadius: 50, backgroundColor: isMe ? colors.primary : colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={{ color: isMe ? '#fff' : colors.textSecondary, fontWeight: 'bold', fontSize: 32 }}>
+                          {inspectingUser.name?.[0]?.toUpperCase()}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+
+                {/* Username */}
+                <Text style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 24 }}>
+                  {inspectingUser.name}
+                </Text>
+
+                {/* Stats Row */}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 32 }}>
+                  <View style={{ alignItems: 'center', flex: 1 }}>
+                    <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: '900' }}>{rankPos}</Text>
+                    <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 4 }}>Ranking</Text>
+                  </View>
+                  <View style={{ alignItems: 'center', flex: 1 }}>
+                    <Text style={{ color: colors.secondary || '#A855F7', fontSize: 18, fontWeight: '900' }}>{Math.round(inspectingUser.points)}</Text>
+                    <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 4 }}>Puntos</Text>
+                  </View>
+                  <View style={{ alignItems: 'center', flex: 1 }}>
+                    <View style={{ backgroundColor: grade.bg, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8 }}>
+                      <Text style={{ color: grade.color, fontSize: 16, fontWeight: '900' }}>{grade.label}</Text>
+                    </View>
+                    <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 4 }}>Clase</Text>
+                  </View>
+                </View>
+
+                {/* Actions */}
+                <View style={{ width: '100%', gap: 12 }}>
+                  <TouchableOpacity 
+                    style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: colors.surfaceAlt, paddingVertical: 16, borderRadius: 16 }}
+                    onPress={() => {
+                      setInspectingUser(null);
+                      router.push({ 
+                        pathname: '/modals/user-profile', 
+                        params: { userId: inspectingUser.id, name: inspectingUser.name, avatarUrl: inspectingUser.avatar_url || '' } 
+                      });
+                    }}
+                  >
+                    <Users size={18} color={colors.textPrimary} />
+                    <Text style={{ color: colors.textPrimary, fontSize: 15, fontWeight: '800' }}>Ver Perfil Completo</Text>
+                  </TouchableOpacity>
+
+                  {!isMe && (
+                    <TouchableOpacity 
+                      style={{ 
+                        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, 
+                        backgroundColor: isFriend ? '#10B98120' : (isPending ? '#F59E0B20' : colors.primary + '15'),
+                        paddingVertical: 16, borderRadius: 16 
+                      }}
+                      onPress={() => {
+                        if (!isFriend && !isPending && profile?.id) {
+                          socialStore.addFriend(profile.id, inspectingUser.id);
+                        }
+                      }}
+                    >
+                      {isFriend ? (
+                        <>
+                          <Text style={{ color: '#10B981', fontSize: 18 }}>✓</Text>
+                          <Text style={{ color: '#10B981', fontSize: 15, fontWeight: '800' }}>Son Amigos</Text>
+                        </>
+                      ) : isPending ? (
+                        <>
+                          <Text style={{ color: '#F59E0B', fontSize: 18 }}>⌛</Text>
+                          <Text style={{ color: '#F59E0B', fontSize: 15, fontWeight: '800' }}>Pendiente</Text>
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={18} color={colors.primary} />
+                          <Text style={{ color: colors.primary, fontSize: 15, fontWeight: '800' }}>Añadir a Amigos</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </View>
+
               </View>
             );
           })()}

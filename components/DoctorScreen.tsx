@@ -23,6 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { safe } from '../utils/sanitize';
 import CoachHistoryModal from './CoachHistoryModal';
 import { ImagePickerModal } from './ImagePickerModal';
+import { ImageViewerModal } from './ImageViewerModal';
 import { useKeyboardNavBar } from '../hooks/useKeyboardNavBar';
 
 const FREE_MSG_LIMIT = 5;
@@ -112,7 +113,7 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
 };
 
 // ─── Message bubble ───────────────────────────────────────────────────────────
-function MessageBubble({ msg, isLastUser, onEdit }: { msg: CoachMessage; isLastUser?: boolean; onEdit?: (m: CoachMessage) => void }) {
+function MessageBubble({ msg, isLastUser, onEdit, onImagePress }: { msg: CoachMessage; isLastUser?: boolean; onEdit?: (m: CoachMessage) => void; onImagePress?: (url: string) => void }) {
   const colors = useTheme();
   const isUser = msg.role === 'user';
 
@@ -134,11 +135,13 @@ function MessageBubble({ msg, isLastUser, onEdit }: { msg: CoachMessage; isLastU
           ]}
         >
           {msg.imageUrl && (
-            <Image
-              source={{ uri: msg.imageUrl }}
-              style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }}
-              resizeMode="cover"
-            />
+            <TouchableOpacity onPress={() => onImagePress?.(msg.imageUrl!)} activeOpacity={0.8}>
+              <Image
+                source={{ uri: msg.imageUrl }}
+                style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
           )}
           {renderFormattedContent(msg.content, true, colors)}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 8, marginTop: 6 }}>
@@ -173,11 +176,13 @@ function MessageBubble({ msg, isLastUser, onEdit }: { msg: CoachMessage; isLastU
         ]}
       >
         {msg.imageUrl && (
-          <Image
-            source={{ uri: msg.imageUrl }}
-            style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }}
-            resizeMode="cover"
-          />
+          <TouchableOpacity onPress={() => onImagePress?.(msg.imageUrl!)} activeOpacity={0.8}>
+            <Image
+              source={{ uri: msg.imageUrl }}
+              style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
         )}
         {renderFormattedContent(msg.content, false, colors)}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 8, marginTop: 6 }}>
@@ -261,6 +266,7 @@ export default function DoctorScreen() {
   const recorderState = useAudioRecorderState(audioRecorder, 500);
   const isRecording   = recorderState.isRecording;
   const [imagePickerVisible, setImagePickerVisible] = useState(false);
+  const [viewingImage, setViewingImage] = useState<string | null>(null);
   const flatRef                         = useRef<FlatList<CoachMessage>>(null);
 
   const { t } = useTranslation();
@@ -682,6 +688,7 @@ export default function DoctorScreen() {
               <MessageBubble 
                 msg={item} 
                 isLastUser={isLastUser}
+                onImagePress={setViewingImage}
                 onEdit={(m) => {
                   setInput(m.content);
                   removeLastPair('doctor');
@@ -859,6 +866,11 @@ export default function DoctorScreen() {
         onClose={() => setImagePickerVisible(false)}
         onCamera={onLaunchCamera}
         onGallery={onLaunchGallery}
+      />
+      <ImageViewerModal
+        visible={!!viewingImage}
+        imageUri={viewingImage}
+        onClose={() => setViewingImage(null)}
       />
     </View>
   );
