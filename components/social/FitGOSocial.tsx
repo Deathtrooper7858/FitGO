@@ -14,6 +14,8 @@ import { GlassCard } from '../../components/GlassCard';
 import { useSocialStore, useAuthStore, useSettingsStore } from '../../store';
 import { generateSocialChallenge } from '../../services/groq';
 import { ImagePickerModal } from '../../components/ImagePickerModal';
+import { ImageViewerModal } from '../../components/ImageViewerModal';
+import { CustomAlert } from '../../components/CustomAlert';
 import { supabase } from '../../services/supabase';
 import { getLocalDateString } from '../../utils/date';
 
@@ -138,6 +140,8 @@ export default function FitGOSocial() {
   const { profile } = useAuthStore();
   const { language } = useSettingsStore();
   const socialStore = useSocialStore();
+  const [friendsTab, setFriendsTab] = useState<'list' | 'requests' | 'search'>('list');
+  const [deleteFriendAlert, setDeleteFriendAlert] = useState<{ friendId: string; friendName: string } | null>(null);
   
   const TABS: TabType[] = ['you', 'feed', 'friends'];
   
@@ -186,6 +190,7 @@ export default function FitGOSocial() {
   const [postComments, setPostComments] = useState<Record<string, any[]>>({});
   const [newComment, setNewComment] = useState('');
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+  const [viewingImage, setViewingImage] = useState<string | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState('');
 
@@ -422,6 +427,49 @@ export default function FitGOSocial() {
           </View>
         </GlassCard>
 
+        {profile?.pinnedAchievements && profile.pinnedAchievements.length > 0 && (
+          <View style={{ marginBottom: Spacing.md }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
+              <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 Vitrina de Trofeos</Text>
+            </View>
+            <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
+              {profile.pinnedAchievements.map(id => {
+                const ach = achievements.find((a: any) => a.id === id);
+                if (!ach) return null;
+                const isHolo = ach.tier === 'oro' || ach.tier === 'diamante';
+                const tierColor = ach.tier === 'diamante' ? '#38BDF8' : 
+                                  ach.tier === 'oro' ? '#FBBF24' : 
+                                  ach.tier === 'plata' ? '#9CA3AF' : '#D97706';
+                return (
+                  <View key={id} style={{
+                    flex: 1, backgroundColor: colors.surfaceAlt, padding: Spacing.sm, borderRadius: 16, alignItems: 'center',
+                    borderWidth: 1, borderColor: isHolo ? tierColor + '50' : colors.border,
+                    ...(isHolo ? { shadowColor: tierColor, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 } : {})
+                  }}>
+                    <LinearGradient
+                      colors={(isHolo ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5'] : ['transparent', 'transparent']) as [string, string, ...string[]]}
+                      style={{ width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: isHolo ? 'transparent' : colors.surfaceAlt, marginBottom: 8 }}
+                    >
+                      {ach.iconType === 'lucide' && ach.lucideIcon ? (
+                        // @ts-ignore
+                        React.createElement(require('lucide-react-native')[ach.lucideIcon] || require('lucide-react-native').Star, {
+                          size: 24,
+                          color: isHolo ? '#FFF' : tierColor,
+                          strokeWidth: 2.5
+                        })
+                      ) : (
+                        <Text style={{ fontSize: 24 }}>{ach.icon}</Text>
+                      )}
+                    </LinearGradient>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' }} numberOfLines={1}>{ach.title}</Text>
+                    <Text style={{ fontSize: 9, color: tierColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>{ach.tier}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
         <TouchableOpacity
           onPress={() => router.navigate('/modals/achievements' as any)}
           style={{
@@ -479,7 +527,9 @@ export default function FitGOSocial() {
                 </View>
                 <Text style={[s.postContent, { color: colors.textPrimary }]}>{post.content}</Text>
                 {post.image_url && (
-                  <Image source={{ uri: post.image_url }} style={s.postImage} resizeMode="cover" />
+                  <TouchableOpacity onPress={() => setViewingImage(post.image_url!)} activeOpacity={0.8}>
+                    <Image source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
+                  </TouchableOpacity>
                 )}
               </View>
               <View style={[s.postFooter, { borderTopColor: colors.border + '33' }]}>
@@ -596,7 +646,9 @@ export default function FitGOSocial() {
               </View>
               <Text style={[s.postContent, { color: colors.textPrimary }]}>{post.content}</Text>
               {post.image_url && (
-                <Image source={{ uri: post.image_url }} style={s.postImage} resizeMode="cover" />
+                <TouchableOpacity onPress={() => setViewingImage(post.image_url!)} activeOpacity={0.8}>
+                  <Image source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
+                </TouchableOpacity>
               )}
             </View>
             <View style={[s.postFooter, { borderTopColor: colors.border + '33' }]}>
@@ -715,162 +767,215 @@ export default function FitGOSocial() {
 
     return (
       <View style={s.tabContent}>
-        <GlassCard accentColor={colors.primary} style={{ marginBottom: 20 }}>
-          <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>{t('social.friends.addFriends')}</Text>
-          <View style={[s.searchBar, { backgroundColor: colors.surfaceAlt }]}>
-            <Search size={20} color={colors.textSecondary} />
-            <TextInput
-              style={[s.searchInput, { color: colors.textPrimary }]}
-              placeholder={t('social.friends.searchPlaceholder')}
-              placeholderTextColor={colors.textMuted}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={handleSearch}
-            />
-            <TouchableOpacity onPress={handleSearch}>
-              <Text style={{ color: colors.primary, fontWeight: '700' }}>{t('social.friends.searchBtn')}</Text>
-            </TouchableOpacity>
-          </View>
+        {/* Sub-tabs for Friends Section */}
+        <View style={{ flexDirection: 'row', backgroundColor: colors.surfaceAlt, borderRadius: 12, padding: 4, marginBottom: 20 }}>
+          <TouchableOpacity 
+            style={{ flex: 1, paddingVertical: 8, alignItems: 'center', backgroundColor: friendsTab === 'list' ? colors.primary : 'transparent', borderRadius: 8 }}
+            onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setFriendsTab('list'); }}
+          >
+            <Text style={{ color: friendsTab === 'list' ? '#fff' : colors.textSecondary, fontWeight: '600' }}>Mis Amigos</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={{ flex: 1, paddingVertical: 8, alignItems: 'center', backgroundColor: friendsTab === 'search' ? colors.primary : 'transparent', borderRadius: 8 }}
+            onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setFriendsTab('search'); }}
+          >
+            <Text style={{ color: friendsTab === 'search' ? '#fff' : colors.textSecondary, fontWeight: '600' }}>Buscar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={{ flex: 1, paddingVertical: 8, alignItems: 'center', backgroundColor: friendsTab === 'requests' ? colors.primary : 'transparent', borderRadius: 8, flexDirection: 'row', justifyContent: 'center', gap: 6 }}
+            onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setFriendsTab('requests'); }}
+          >
+            <Text style={{ color: friendsTab === 'requests' ? '#fff' : colors.textSecondary, fontWeight: '600' }}>Solicitudes</Text>
+            {receivedRequests.length > 0 && (
+              <View style={{ backgroundColor: friendsTab === 'requests' ? '#fff' : colors.error, width: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ color: friendsTab === 'requests' ? colors.primary : '#fff', fontSize: 10, fontWeight: 'bold' }}>{receivedRequests.length}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
 
-          {isSearching && <ActivityIndicator color={colors.primary} style={{ marginVertical: 10 }} />}
-          
-          {searchResults.map(user => (
-            <View key={user.id} style={[s.userRow, { borderBottomColor: colors.border + '33' }]}>
-              <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(user)}>
-                {user.avatar_url ? (
-                  <Image source={{ uri: user.avatar_url }} style={s.avatar} />
-                ) : (
-                  <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary }]}>
-                    <Text style={s.avatarInitials}>{user.name?.[0]}</Text>
-                  </View>
-                )}
-                <View>
-                  <Text style={[s.userName, { color: colors.textPrimary }]}>{user.name}</Text>
-                  <Text style={{ color: colors.textMuted, fontSize: 12 }}>{user.email}</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[s.actionBtn, { backgroundColor: colors.primary }]}
-                onPress={() => handleAddFriend(user.id)}
-              >
-                <Plus size={16} color="#fff" />
-                <Text style={s.actionBtnText}>{t('social.friends.sendRequest')}</Text>
+        {friendsTab === 'search' && (
+          <GlassCard accentColor={colors.primary} style={{ marginBottom: 20 }}>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>{t('social.friends.addFriends')}</Text>
+            <View style={[s.searchBar, { backgroundColor: colors.surfaceAlt }]}>
+              <Search size={20} color={colors.textSecondary} />
+              <TextInput
+                style={[s.searchInput, { color: colors.textPrimary }]}
+                placeholder={t('social.friends.searchPlaceholder')}
+                placeholderTextColor={colors.textMuted}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={handleSearch}
+              />
+              <TouchableOpacity onPress={handleSearch}>
+                <Text style={{ color: colors.primary, fontWeight: '700' }}>{t('social.friends.searchBtn')}</Text>
               </TouchableOpacity>
             </View>
-          ))}
-        </GlassCard>
 
-        {receivedRequests.length > 0 && (
-          <View style={{ marginBottom: 20 }}>
-            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>Solicitudes Recibidas</Text>
-            {receivedRequests.map(req => (
-              <GlassCard key={req.id} style={{ marginBottom: 8, padding: 12 }}>
-                <View style={s.userRow}>
-                  <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(req.friend_profile)}>
-                    {req.friend_profile?.avatar_url ? (
-                      <Image source={{ uri: req.friend_profile.avatar_url }} style={s.avatarSmall} />
-                    ) : (
-                      <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
-                        <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
-                      </View>
-                    )}
-                    <Text style={[s.userName, { color: colors.textPrimary }]}>{req.friend_profile?.name}</Text>
-                  </TouchableOpacity>
-                  <View style={{ flexDirection: 'row', gap: 8 }}>
-                    <TouchableOpacity 
-                      style={[s.iconBtn, { backgroundColor: colors.success }]}
-                      onPress={() => socialStore.acceptFriend(req.id)}
-                    >
-                      <Check size={18} color="#fff" />
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={[s.iconBtn, { backgroundColor: colors.error }]}
-                      onPress={() => socialStore.rejectFriend(req.id)}
-                    >
-                      <X size={18} color="#fff" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </GlassCard>
-            ))}
-          </View>
-        )}
+            {isSearching && <ActivityIndicator color={colors.primary} style={{ marginVertical: 10 }} />}
+            
+            {searchResults.length === 0 && !isSearching && searchQuery.length > 0 && (
+              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10 }}>No se encontraron resultados.</Text>
+            )}
 
-        {sentRequests.length > 0 && (
-          <View style={{ marginBottom: 20 }}>
-            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>Solicitudes Enviadas</Text>
-            {sentRequests.map(req => (
-              <GlassCard key={req.id} style={{ marginBottom: 8, padding: 12, opacity: 0.8 }}>
-                <View style={s.userRow}>
-                  <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(req.friend_profile)}>
-                    {req.friend_profile?.avatar_url ? (
-                      <Image source={{ uri: req.friend_profile.avatar_url }} style={s.avatarSmall} />
-                    ) : (
-                      <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
-                        <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
-                      </View>
-                    )}
-                    <Text style={[s.userName, { color: colors.textPrimary }]}>{req.friend_profile?.name}</Text>
-                  </TouchableOpacity>
-                  <View style={{ backgroundColor: colors.surfaceAlt, paddingHorizontal: 10, paddingVertical: 4, borderRadius: Radius.full }}>
-                    <Text style={{ color: colors.textMuted, fontSize: 11 }}>Pendiente</Text>
-                  </View>
-                  <TouchableOpacity onPress={() => socialStore.rejectFriend(req.id)} style={{ marginLeft: 12 }}>
-                    <Trash2 size={16} color={colors.textMuted} />
-                  </TouchableOpacity>
-                </View>
-              </GlassCard>
-            ))}
-          </View>
-        )}
-
-        <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>Mis Amigos</Text>
-        {acceptedFriends.length === 0 ? (
-          <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10 }}>Aún no tienes amigos.</Text>
-        ) : (
-          acceptedFriends.map(friend => (
-            <GlassCard key={friend.id} style={{ marginBottom: 8, padding: 12 }}>
-              <View style={s.userRow}>
-                <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(friend.friend_profile)}>
-                  {friend.friend_profile?.avatar_url ? (
-                    <Image source={{ uri: friend.friend_profile.avatar_url }} style={s.avatarSmall} />
+            {searchResults.map(user => (
+              <View key={user.id} style={[s.userRow, { borderBottomColor: colors.border + '33' }]}>
+                <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(user)}>
+                  {user.avatar_url ? (
+                    <Image source={{ uri: user.avatar_url }} style={s.avatar} />
                   ) : (
-                    <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
-                      <Text style={[s.avatarInitials, { fontSize: 14 }]}>{friend.friend_profile?.name?.[0]}</Text>
+                    <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary }]}>
+                      <Text style={s.avatarInitials}>{user.name?.[0]}</Text>
                     </View>
                   )}
-                  <Text style={[s.userName, { color: colors.textPrimary }]}>{friend.friend_profile?.name}</Text>
+                  <View>
+                    <Text style={[s.userName, { color: colors.textPrimary }]}>{user.name}</Text>
+                    <Text style={{ color: colors.textMuted, fontSize: 12 }}>{user.email}</Text>
+                  </View>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={s.iconBtn}
-                  onPress={() => router.push({
-                    pathname: '/modals/chat',
-                    params: { 
-                      friendId: friend.friend_profile?.id, 
-                      friendName: friend.friend_profile?.name, 
-                      friendAvatar: friend.friend_profile?.avatar_url || ''
-                    }
-                  } as any)}
+                  style={[s.actionBtn, { backgroundColor: colors.primary }]}
+                  onPress={() => handleAddFriend(user.id)}
                 >
-                  {socialStore.unreadCounts[friend.friend_profile?.id || ''] > 0 ? (
-                    <LinearGradient
-                      colors={[colors.primary, colors.secondary || '#A855F7']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={s.gradientIconBtn}
-                    >
-                      <MessageSquare size={18} color="#fff" />
-                      <View style={s.badge}>
-                        <Text style={s.badgeText}>{socialStore.unreadCounts[friend.friend_profile?.id || '']}</Text>
-                      </View>
-                    </LinearGradient>
-                  ) : (
-                    <MessageSquare size={18} color={colors.primary} />
-                  )}
+                  <Plus size={16} color="#fff" />
+                  <Text style={s.actionBtnText}>{t('social.friends.sendRequest')}</Text>
                 </TouchableOpacity>
               </View>
-            </GlassCard>
-          ))
+            ))}
+          </GlassCard>
+        )}
+
+        {friendsTab === 'requests' && (
+          <View>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>Solicitudes Recibidas</Text>
+            {receivedRequests.length === 0 ? (
+              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10, marginBottom: 20 }}>No tienes solicitudes recibidas.</Text>
+            ) : (
+              <View style={{ marginBottom: 20 }}>
+                {receivedRequests.map(req => (
+                  <GlassCard key={req.id} style={{ marginBottom: 8, padding: 12 }}>
+                    <View style={s.userRow}>
+                      <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(req.friend_profile)}>
+                        {req.friend_profile?.avatar_url ? (
+                          <Image source={{ uri: req.friend_profile.avatar_url }} style={s.avatarSmall} />
+                        ) : (
+                          <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
+                            <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
+                          </View>
+                        )}
+                        <Text style={[s.userName, { color: colors.textPrimary }]}>{req.friend_profile?.name}</Text>
+                      </TouchableOpacity>
+                      <View style={{ flexDirection: 'row', gap: 8 }}>
+                        <TouchableOpacity 
+                          style={[s.iconBtn, { backgroundColor: colors.success }]}
+                          onPress={() => socialStore.acceptFriend(req.id)}
+                        >
+                          <Check size={18} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                          style={[s.iconBtn, { backgroundColor: colors.error }]}
+                          onPress={() => socialStore.rejectFriend(req.id)}
+                        >
+                          <X size={18} color="#fff" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </GlassCard>
+                ))}
+              </View>
+            )}
+
+            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12, marginTop: 10 }]}>Solicitudes Enviadas</Text>
+            {sentRequests.length === 0 ? (
+              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10, marginBottom: 20 }}>No tienes solicitudes enviadas.</Text>
+            ) : (
+              <View style={{ marginBottom: 20 }}>
+                {sentRequests.map(req => (
+                  <GlassCard key={req.id} style={{ marginBottom: 8, padding: 12, opacity: 0.8 }}>
+                    <View style={s.userRow}>
+                      <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(req.friend_profile)}>
+                        {req.friend_profile?.avatar_url ? (
+                          <Image source={{ uri: req.friend_profile.avatar_url }} style={s.avatarSmall} />
+                        ) : (
+                          <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
+                            <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
+                          </View>
+                        )}
+                        <Text style={[s.userName, { color: colors.textPrimary }]}>{req.friend_profile?.name}</Text>
+                      </TouchableOpacity>
+                      <View style={{ backgroundColor: colors.surfaceAlt, paddingHorizontal: 10, paddingVertical: 4, borderRadius: Radius.full }}>
+                        <Text style={{ color: colors.textMuted, fontSize: 11 }}>Pendiente</Text>
+                      </View>
+                      <TouchableOpacity onPress={() => socialStore.rejectFriend(req.id)} style={{ marginLeft: 12 }}>
+                        <Trash2 size={16} color={colors.textMuted} />
+                      </TouchableOpacity>
+                    </View>
+                  </GlassCard>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
+        {friendsTab === 'list' && (
+          <View>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>Mis Amigos</Text>
+            {acceptedFriends.length === 0 ? (
+              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10 }}>Aún no tienes amigos.</Text>
+            ) : (
+              acceptedFriends.map(friend => (
+                <GlassCard key={friend.id} style={{ marginBottom: 8, padding: 12 }}>
+                  <View style={s.userRow}>
+                    <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(friend.friend_profile)}>
+                      {friend.friend_profile?.avatar_url ? (
+                        <Image source={{ uri: friend.friend_profile.avatar_url }} style={s.avatarSmall} />
+                      ) : (
+                        <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
+                          <Text style={[s.avatarInitials, { fontSize: 14 }]}>{friend.friend_profile?.name?.[0]}</Text>
+                        </View>
+                      )}
+                      <Text style={[s.userName, { color: colors.textPrimary }]}>{friend.friend_profile?.name}</Text>
+                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                      <TouchableOpacity 
+                        style={s.iconBtn}
+                        onPress={() => router.push({
+                          pathname: '/modals/chat',
+                          params: { 
+                            friendId: friend.friend_profile?.id, 
+                            friendName: friend.friend_profile?.name, 
+                            friendAvatar: friend.friend_profile?.avatar_url || ''
+                          }
+                        } as any)}
+                      >
+                        {socialStore.unreadCounts[friend.friend_profile?.id || ''] > 0 ? (
+                          <LinearGradient
+                            colors={[colors.primary, colors.secondary || '#A855F7']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={s.gradientIconBtn}
+                          >
+                            <MessageSquare size={18} color="#fff" />
+                            <View style={s.badge}>
+                              <Text style={s.badgeText}>{socialStore.unreadCounts[friend.friend_profile?.id || '']}</Text>
+                            </View>
+                          </LinearGradient>
+                        ) : (
+                          <MessageSquare size={18} color={colors.primary} />
+                        )}
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[s.iconBtn, { backgroundColor: colors.error + '20' }]}
+                        onPress={() => setDeleteFriendAlert({ friendId: friend.id, friendName: friend.friend_profile?.name || 'este usuario' })}
+                      >
+                        <Trash2 size={16} color={colors.error} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </GlassCard>
+              ))
+            )}
+          </View>
         )}
       </View>
     );
@@ -1019,9 +1124,18 @@ export default function FitGOSocial() {
 
                     {/* Friend action */}
                     {friendStatus?.status === 'accepted' ? (
-                      <View style={{ height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.success + '20', flexDirection: 'row', gap: 8 }}>
-                        <Check size={16} color={colors.success} />
-                        <Text style={{ color: colors.success, fontWeight: '700', fontSize: 14 }}>Son Amigos</Text>
+                      <View style={{ gap: 8 }}>
+                        <View style={{ height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.success + '20', flexDirection: 'row', gap: 8 }}>
+                          <Check size={16} color={colors.success} />
+                          <Text style={{ color: colors.success, fontWeight: '700', fontSize: 14 }}>Son Amigos</Text>
+                        </View>
+                        <TouchableOpacity
+                          style={{ height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.error + '15', borderWidth: 1, borderColor: colors.error + '40', flexDirection: 'row', gap: 8 }}
+                          onPress={() => setDeleteFriendAlert({ friendId: friendStatus.id, friendName: inspectingUser?.name || 'este usuario' })}
+                        >
+                          <Trash2 size={16} color={colors.error} />
+                          <Text style={{ color: colors.error, fontWeight: '700', fontSize: 14 }}>Eliminar Amigo</Text>
+                        </TouchableOpacity>
                       </View>
                     ) : friendStatus?.status === 'pending' ? (
                       <View style={{ height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt, flexDirection: 'row', gap: 8 }}>
@@ -1063,6 +1177,30 @@ export default function FitGOSocial() {
         onClose={() => setIsImageModalVisible(false)}
         onCamera={handleCamera}
         onGallery={handleGallery}
+      />
+      
+      <ImageViewerModal
+        visible={!!viewingImage}
+        imageUri={viewingImage}
+        onClose={() => setViewingImage(null)}
+      />
+
+      <CustomAlert
+        visible={!!deleteFriendAlert}
+        type="confirm"
+        title="Eliminar amigo"
+        message={`¿Seguro que quieres eliminar a ${deleteFriendAlert?.friendName} de tus amigos?`}
+        onConfirm={() => {}} // Not used because we use actions
+        actions={[
+          { text: 'Cancelar', onPress: () => setDeleteFriendAlert(null), type: 'secondary' },
+          { text: 'Eliminar', onPress: async () => {
+            if (deleteFriendAlert) {
+              await socialStore.rejectFriend(deleteFriendAlert.friendId);
+              setDeleteFriendAlert(null);
+              setInspectingUser(null);
+            }
+          }, type: 'destructive' }
+        ]}
       />
     </View>
   );

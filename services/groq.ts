@@ -20,6 +20,7 @@
  */
 
 import { supabase } from './supabase';
+import axios from 'axios';
 
 // ─── Shared language map ──────────────────────────────────────────────────────
 /** Maps language codes to full language names used in AI prompts. */
@@ -49,33 +50,24 @@ async function fetchGroq(payload: any) {
     setTimeout(() => reject(new Error('AI Service Error: Request timed out. Please try again.')), 15000);
   });
 
-  const fetchPromise = supabase.functions.invoke('groq-proxy', {
-    body: payload,
-  }).then(({ data, error }) => {
-    if (error) {
-      console.error('[Groq Proxy Error]:', error);
-      
-      let errorMsg = error.message || 'Unknown error';
-      
-      if (error && typeof error === 'object' && 'context' in error) {
-        const context = (error as any).context;
-        try {
-          if (context instanceof Response) {
-            const body = context.json(); // May throw if already consumed, but supabase-js usually consumes it
-            // errorMsg might be updated here if we could read it
-          }
-        } catch (e) {
-          // ignore parsing errors
-        }
-
-        if (context?.status === 400 && errorMsg === 'Unknown error') {
-          errorMsg = 'Bad Request (400) - Check model availability or parameters.';
-        }
-      }
-
-      throw new Error(`AI Service Error: ${errorMsg}`);
+  const fetchPromise = supabase.auth.getSession().then(({ data: { session } }) => {
+    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+    const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+    const token = session?.access_token || supabaseAnonKey;
+    
+    return axios.post(`${supabaseUrl}/functions/v1/groq-proxy`, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }).then((res) => res.data).catch((error) => {
+    console.error('[Groq Proxy Error]:', error);
+    let errorMsg = error.response?.data?.error || error.message || 'Unknown error';
+    if (error.response?.status === 400 && errorMsg === 'Unknown error') {
+      errorMsg = 'Bad Request (400) - Check model availability or parameters.';
     }
-    return data;
+    throw new Error(`AI Service Error: ${errorMsg}`);
   });
 
   return Promise.race([fetchPromise, timeoutPromise]);
@@ -552,20 +544,23 @@ export async function transcribeAudio(uri: string): Promise<string> {
   if (__DEV__) console.log('[Groq] Transcribing via Proxy:', uri, 'Mime:', mimeType);
   
   try {
-    const { data, error } = await supabase.functions.invoke('groq-proxy', {
-      body: formData,
+    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+    const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token || supabaseAnonKey;
+
+    const response = await axios.post(`${supabaseUrl}/functions/v1/groq-proxy`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`,
+      },
     });
   
-    if (error) {
-      console.error('[Groq] Transcription Error:', error);
-      throw new Error(`AI Transcription failed: ${error.message}`);
-    }
-  
-    if (__DEV__) console.log('[Groq] Transcription Success:', data?.text?.substring(0, 30));
-    return data?.text ?? '';
+    if (__DEV__) console.log('[Groq] Transcription Success:', response.data?.text?.substring(0, 30));
+    return response.data?.text ?? '';
   } catch (err: any) {
     console.error('[Groq] Transcription Fetch Error:', err);
-    throw err;
+    throw new Error(`AI Transcription failed: ${err.response?.data?.error || err.message}`);
   }
 }
 

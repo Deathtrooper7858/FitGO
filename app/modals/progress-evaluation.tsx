@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Camera, X, Upload, Brain, CheckCircle, ArrowUpCircle, History, ChevronRight } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
 import { Spacing, Radius, Shadow } from '../../constants';
@@ -78,11 +79,15 @@ export default function ProgressEvaluationModal() {
     setIsAnalyzing(true);
     try {
       const response = await analyzePhysiquePhoto(base64Image, language);
-      const dataUri = `data:image/jpeg;base64,${base64Image}`;
+      
+      // Save image to filesystem for persistence instead of keeping base64 in AsyncStorage
+      const fileName = `eval_${Date.now()}.jpg`;
+      const localUri = `${FileSystem.documentDirectory}${fileName}`;
+      await FileSystem.copyAsync({ from: imageUri, to: localUri });
+
       const newEvaluation = {
         id: Math.random().toString(36).substring(7),
-        uri: imageUri,
-        base64ImageData: dataUri,
+        uri: localUri, // Save the persistent local URI
         date: getLocalDateString(),
         ...response
       };

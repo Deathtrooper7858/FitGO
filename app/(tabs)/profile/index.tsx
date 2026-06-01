@@ -614,6 +614,78 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+// ─── VitrinaTrofeos (Memoized for performance) ────────────────────────────────
+function getTierColorFromTier(tier: string) {
+  switch (tier) {
+    case 'diamante': return '#38BDF8';
+    case 'oro': return '#FBBF24';
+    case 'plata': return '#9CA3AF';
+    default: return '#D97706';
+  }
+}
+
+const VitrinaTrofeoItem = React.memo(function VitrinaTrofeoItem({
+  id, achievements, colors
+}: { id: string; achievements: any[]; colors: any }) {
+  const ach = React.useMemo(() => achievements.find((a: any) => a.id === id), [achievements, id]);
+  if (!ach) return null;
+  const isHolo = ach.tier === 'oro' || ach.tier === 'diamante';
+  const tierColor = getTierColorFromTier(ach.tier);
+  const gradColors: [string, string] = isHolo
+    ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5']
+    : ['transparent', 'transparent'];
+
+  return (
+    <View style={{
+      flex: 1, backgroundColor: colors.surface, padding: Spacing.sm, borderRadius: 16, alignItems: 'center',
+      borderWidth: 1, borderColor: isHolo ? tierColor + '50' : colors.border,
+      ...(isHolo ? { shadowColor: tierColor, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 } : {})
+    }}>
+      <LinearGradient
+        colors={gradColors}
+        style={{ width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: isHolo ? 'transparent' : colors.surfaceAlt, marginBottom: 8 }}
+      >
+        {ach.iconType === 'lucide' && ach.lucideIcon ? (
+          // @ts-ignore
+          React.createElement(LucideIcons[ach.lucideIcon] || LucideIcons.Star, {
+            size: 24, color: isHolo ? '#FFF' : tierColor, strokeWidth: 2.5
+          })
+        ) : (
+          <Text style={{ fontSize: 24 }}>{ach.icon}</Text>
+        )}
+      </LinearGradient>
+      <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' }} numberOfLines={1}>{ach.title}</Text>
+      <Text style={{ fontSize: 9, color: tierColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>{ach.tier}</Text>
+    </View>
+  );
+});
+
+const VitrinaTrofeos = React.memo(function VitrinaTrofeos({
+  pinnedAchievements, achievements, onEdit, colors
+}: {
+  pinnedAchievements?: string[];
+  achievements: any[];
+  onEdit: () => void;
+  colors: any;
+}) {
+  if (!pinnedAchievements || pinnedAchievements.length === 0) return null;
+  return (
+    <View style={{ marginHorizontal: Spacing.base, marginTop: Spacing.md, marginBottom: Spacing.sm }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
+        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 Vitrina de Trofeos</Text>
+        <TouchableOpacity onPress={onEdit}>
+          <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '700' }}>Editar ›</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
+        {pinnedAchievements.map(id => (
+          <VitrinaTrofeoItem key={id} id={id} achievements={achievements} colors={colors} />
+        ))}
+      </View>
+    </View>
+  );
+});
+
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function ProfileScreen() {
   const { t } = useTranslation();
@@ -1540,53 +1612,12 @@ export default function ProfileScreen() {
         </LinearGradient>
 
         {/* ── Vitrina de Trofeos (Showcase) ── */}
-        {profile?.pinnedAchievements && profile.pinnedAchievements.length > 0 && (
-          <View style={{ marginHorizontal: Spacing.base, marginTop: Spacing.md, marginBottom: Spacing.sm }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
-              <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 Vitrina de Trofeos</Text>
-              <TouchableOpacity onPress={() => router.push('/modals/achievements')}>
-                <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '700' }}>Editar ›</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
-              {profile.pinnedAchievements.map(id => {
-                const ach = achievements.find(a => a.id === id);
-                if (!ach) return null;
-                const isHolo = ach.tier === 'oro' || ach.tier === 'diamante';
-                const tierColor = ach.tier === 'diamante' ? '#38BDF8' : 
-                                  ach.tier === 'oro' ? '#FBBF24' : 
-                                  ach.tier === 'plata' ? '#9CA3AF' : '#D97706';
-                return (
-                  <View key={id} style={{
-                    flex: 1, backgroundColor: colors.surface, padding: Spacing.sm, borderRadius: 16, alignItems: 'center',
-                    borderWidth: 1, borderColor: isHolo ? tierColor + '50' : colors.border,
-                    ...(isHolo ? { shadowColor: tierColor, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 } : {})
-                  }}>
-                    <LinearGradient
-                      colors={(isHolo ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5'] : ['transparent', 'transparent']) as [string, string, ...string[]]}
-                      style={{ width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: isHolo ? 'transparent' : colors.surfaceAlt, marginBottom: 8 }}
-                    >
-                      {ach.iconType === 'lucide' && ach.lucideIcon ? (
-                        // @ts-ignore
-                        React.createElement(LucideIcons[ach.lucideIcon] || LucideIcons.Star, {
-                          size: 24,
-                          color: isHolo ? '#FFF' : tierColor,
-                          strokeWidth: 2.5
-                        })
-                      ) : false && ach?.iconType === 'lottie' && ach?.lottieFile ? (
-                        null as any
-                      ) : (
-                        <Text style={{ fontSize: 24 }}>{ach.icon}</Text>
-                      )}
-                    </LinearGradient>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' }} numberOfLines={1}>{ach.title}</Text>
-                    <Text style={{ fontSize: 9, color: tierColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>{ach.tier}</Text>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
-        )}
+        <VitrinaTrofeos
+          pinnedAchievements={profile?.pinnedAchievements}
+          achievements={achievements}
+          onEdit={() => router.push('/modals/achievements')}
+          colors={colors}
+        />
 
         {/* ── Progress Chart ── Gamified Weight Journey */}
         <GlassCard
