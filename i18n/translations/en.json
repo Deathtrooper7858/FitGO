@@ -167,6 +167,7 @@
     "macrosWidget": "Macros",
     "measurementsWidget": "Measurements",
     "photosWidget": "Photos",
+    "recipeSearchWidget": "Recipe Search",
     "scoreTitle": "Nutritional Score",
     "phaseTitle": "Phase",
     "statsTitle": "Statistics",
@@ -446,7 +447,13 @@
     "proTitle": "Recipes are a Pro Feature",
     "proSub": "Unlock personalized AI-generated recipes to hit your macros perfectly.",
     "unlockNow": "Unlock Pro Now",
-    "prepTime": "min"
+    "prepTime": "min",
+    "searchPlaceholder": "Ex: Chicken, Oats...",
+    "search": "Search",
+    "pinned": "Pinned Recipes",
+    "searchTab": "Search",
+    "pinnedTab": "Pinned",
+    "noPinned": "You have no pinned recipes yet."
   },
   "coach": {
     "title": "Fitz Coach",

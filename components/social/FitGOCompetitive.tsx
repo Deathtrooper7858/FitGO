@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, TextInput, Alert, RefreshControl, Image, Modal,
-  Platform,
+  Platform, Share,
 } from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -92,7 +92,7 @@ function LeagueBadge({ tier, size = 'md' }: { tier: LeagueTier; size?: 'sm' | 'm
   );
 }
 
-function MemberRow({ member, rank }: { member: SquadMember; rank: number }) {
+function MemberRow({ member, rank, onRemove, isMe }: { member: SquadMember; rank: number; onRemove?: () => void; isMe?: boolean }) {
   const colors = useTheme();
   const rankColor = rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : rank === 3 ? '#CD7F32' : colors.textSecondary;
   return (
@@ -116,6 +116,11 @@ function MemberRow({ member, rank }: { member: SquadMember; rank: number }) {
           {member.league_points.toLocaleString()} pts
         </Text>
       </View>
+      {onRemove && !isMe && (
+        <TouchableOpacity style={{ marginLeft: 8, padding: 6, backgroundColor: '#EF444415', borderRadius: 8 }} onPress={onRemove}>
+          <X size={16} color="#EF4444" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -184,7 +189,10 @@ function PodiumCard({ squad, position, onInspect }: { squad: Squad; position: nu
         </Text>
       </View>
       {/* Podium bar */}
-      <View style={[styles.podiumBar, { height: pd.height, backgroundColor: pd.glow + '25', borderColor: pd.glow + '50' }]} />
+      <LinearGradient
+        colors={[pd.glow + '35', pd.glow + '05']}
+        style={[styles.podiumBar, { height: pd.height, borderColor: pd.glow + '50', borderTopWidth: 2 }]}
+      />
     </TouchableOpacity>
   );
 }
@@ -210,9 +218,23 @@ export default function FitGOCompetitive() {
   const [refreshing, setRefreshing] = useState(false);
   const [inspectingSquad, setInspectingSquad] = useState<Squad | null>(null);
   const [inspectingUser, setInspectingUser] = useState<any | null>(null);
+  const [inspectingSquadMembers, setInspectingSquadMembers] = useState<SquadMember[]>([]);
+  const [loadingInspectMembers, setLoadingInspectMembers] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [invitedFriends, setInvitedFriends] = useState<Record<string, boolean>>({});
   const [activeSection, setActiveSection] = useState<'my-squad' | 'ranking' | 'challenges'>('ranking');
   const [rankingSubTab, setRankingSubTab] = useState<'squads' | 'individual'>('individual');
   const [showRankingInfo, setShowRankingInfo] = useState(false);
+
+  const handleInspectSquad = async (s: Squad) => {
+    Haptics.selectionAsync();
+    setInspectingSquad(s);
+    setLoadingInspectMembers(true);
+    const members = await useLeagueStore.getState().fetchSquadMembers(s.id);
+    setInspectingSquadMembers(members);
+    setLoadingInspectMembers(false);
+  };
 
   // Swipe between ranking / my-squad / challenges
   const SECTIONS: Array<'ranking' | 'my-squad' | 'challenges'> = ['ranking', 'my-squad', 'challenges'];
@@ -389,9 +411,9 @@ export default function FitGOCompetitive() {
                 ) : (
                   <>
                     <View style={styles.podiumContainer}>
-                      {top3[1] && <View style={styles.podiumSlot}><PodiumCard squad={top3[1]} position={2} onInspect={setInspectingSquad} /></View>}
-                      {top3[0] && <View style={[styles.podiumSlot, { zIndex: 2 }]}><PodiumCard squad={top3[0]} position={1} onInspect={setInspectingSquad} /></View>}
-                      {top3[2] && <View style={styles.podiumSlot}><PodiumCard squad={top3[2]} position={3} onInspect={setInspectingSquad} /></View>}
+                      {top3[1] && <View style={styles.podiumSlot}><PodiumCard squad={top3[1]} position={2} onInspect={handleInspectSquad} /></View>}
+                      {top3[0] && <View style={[styles.podiumSlot, { zIndex: 2 }]}><PodiumCard squad={top3[0]} position={1} onInspect={handleInspectSquad} /></View>}
+                      {top3[2] && <View style={styles.podiumSlot}><PodiumCard squad={top3[2]} position={3} onInspect={handleInspectSquad} /></View>}
                     </View>
 
                     {rest.length > 0 && (
@@ -403,7 +425,7 @@ export default function FitGOCompetitive() {
                             <TouchableOpacity
                               key={s.id}
                               style={[styles.restRow, { borderBottomColor: colors.border + '40' }]}
-                              onPress={() => { Haptics.selectionAsync(); setInspectingSquad(s); }}
+                              onPress={() => handleInspectSquad(s)}
                             >
                               <Text style={[styles.restRank, { color: colors.textMuted }]}>#{i + 4}</Text>
                               <LeagueBadge tier={s.league_tier} size="sm" />
@@ -593,16 +615,28 @@ export default function FitGOCompetitive() {
                       </View>
                     </View>
                     <TouchableOpacity
-                      style={[styles.codeChip, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}
+                      style={[
+                        styles.codeChip, 
+                        copied 
+                          ? { backgroundColor: '#10B98120', borderColor: '#10B98150' }
+                          : { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }
+                      ]}
                       onPress={async () => {
                         await Clipboard.setStringAsync(squad.invite_code);
                         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                        Alert.alert('✓ Copiado', `Código: ${squad.invite_code}`);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
                       }}
                     >
-                      <Hash size={13} color={colors.primary} />
-                      <Text style={[styles.codeText, { color: colors.primary }]}>{squad.invite_code}</Text>
-                      <Copy size={13} color={colors.primary} />
+                      {copied ? (
+                        <Text style={{ color: '#10B981', fontWeight: '800', fontSize: 13 }}>¡Copiado!</Text>
+                      ) : (
+                        <>
+                          <Hash size={13} color={colors.primary} />
+                          <Text style={[styles.codeText, { color: colors.primary }]}>{squad.invite_code}</Text>
+                          <Copy size={13} color={colors.primary} />
+                        </>
+                      )}
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -628,8 +662,43 @@ export default function FitGOCompetitive() {
                 {/* Leaderboard */}
                 <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Clasificación del Squad</Text>
                 <View style={{ gap: 8 }}>
-                  {members.map((m, i) => <MemberRow key={m.user_id} member={m} rank={i + 1} />)}
+                  {members.map((m, i) => (
+                    <MemberRow 
+                      key={m.user_id} 
+                      member={m} 
+                      rank={i + 1} 
+                      isMe={m.user_id === profile?.id}
+                      onRemove={squad.created_by === profile?.id ? () => {
+                        Alert.alert(
+                          'Expulsar integrante',
+                          `¿Estás seguro de que quieres expulsar a ${m.name} del squad?`,
+                          [
+                            { text: 'Cancelar', style: 'cancel' },
+                            { text: 'Expulsar', style: 'destructive', onPress: async () => {
+                              const success = await useLeagueStore.getState().removeMember(squad.id, m.user_id);
+                              if (success) {
+                                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                              }
+                            }}
+                          ]
+                        );
+                      } : undefined}
+                    />
+                  ))}
                 </View>
+
+                {squad.created_by === profile?.id && members.length < 5 && (
+                  <TouchableOpacity 
+                    style={{ marginTop: 16, backgroundColor: colors.primary + '20', padding: 14, borderRadius: 16, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8, borderWidth: 1, borderColor: colors.primary + '40' }}
+                    onPress={() => {
+                      socialStore.fetchFriends(profile?.id || '');
+                      setShowInviteModal(true);
+                    }}
+                  >
+                    <Plus size={18} color={colors.primary} />
+                    <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 15 }}>Invitar Amigos</Text>
+                  </TouchableOpacity>
+                )}
 
                 {/* Leagues Progress */}
                 <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginTop: 28 }]}>Camino a la Élite</Text>
@@ -736,55 +805,136 @@ export default function FitGOCompetitive() {
                 <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: 'center', marginBottom: 20 }} />
 
                 <TouchableOpacity
-                  style={{ position: 'absolute', top: 16, right: 16, padding: 8, backgroundColor: colors.surfaceAlt, borderRadius: 20 }}
+                  style={{ position: 'absolute', top: 16, right: 16, padding: 8, backgroundColor: colors.surfaceAlt, borderRadius: 20, zIndex: 10 }}
                   onPress={() => setInspectingSquad(null)}
                 >
                   <X size={18} color={colors.textSecondary} />
                 </TouchableOpacity>
 
-                {/* League badge */}
-                <View style={{ alignItems: 'center', marginBottom: 20 }}>
-                  <LeagueBadge tier={inspectingSquad.league_tier} size="lg" />
-                  <Text style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '900', marginTop: 14, textAlign: 'center' }}>
-                    {inspectingSquad.name}
-                  </Text>
-                  <View style={{ backgroundColor: cfg.glow + '20', paddingHorizontal: 14, paddingVertical: 5, borderRadius: 12, marginTop: 8 }}>
-                    <Text style={{ color: cfg.glow, fontWeight: '800', fontSize: 13 }}>
-                      {cfg.label}  •  {inspectingSquad.points.toLocaleString()} pts
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+                  {/* League badge */}
+                  <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                    <LeagueBadge tier={inspectingSquad.league_tier} size="lg" />
+                    <Text style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '900', marginTop: 14, textAlign: 'center' }}>
+                      {inspectingSquad.name}
                     </Text>
+                    <View style={{ backgroundColor: cfg.glow + '20', paddingHorizontal: 14, paddingVertical: 5, borderRadius: 12, marginTop: 8 }}>
+                      <Text style={{ color: cfg.glow, fontWeight: '800', fontSize: 13 }}>
+                        {cfg.label}  •  {inspectingSquad.points.toLocaleString()} pts
+                      </Text>
+                    </View>
                   </View>
-                </View>
 
-                {isMySquad ? (
-                  <View style={[styles.infoChip, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}>
-                    <Star size={14} color={colors.primary} fill={colors.primary} />
-                    <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 13 }}>Estás en este squad</Text>
-                  </View>
-                ) : (
-                  <TouchableOpacity
-                    style={[styles.joinSheetBtn, { overflow: 'hidden' }]}
-                    onPress={() => {
-                      setInspectingSquad(null);
-                      setJoinCode(inspectingSquad.invite_code);
-                      setActiveSection('my-squad');
-                      setShowJoin(true);
-                    }}
-                  >
-                    <LinearGradient
-                      colors={[colors.primary, colors.secondary || '#A855F7']}
-                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                      style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                  <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 16, paddingHorizontal: 4 }]}>Integrantes del Squad</Text>
+                  
+                  {loadingInspectMembers ? (
+                    <ActivityIndicator color={colors.primary} style={{ marginVertical: 30 }} />
+                  ) : (
+                    <View style={{ gap: 8, marginBottom: 24 }}>
+                      {inspectingSquadMembers.length > 0 ? inspectingSquadMembers.map((m, i) => (
+                        <MemberRow key={m.user_id} member={m} rank={i + 1} />
+                      )) : (
+                        <Text style={{ color: colors.textSecondary, textAlign: 'center' }}>No hay integrantes visibles.</Text>
+                      )}
+                    </View>
+                  )}
+
+                  {isMySquad ? (
+                    <View style={[styles.infoChip, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}>
+                      <Star size={14} color={colors.primary} fill={colors.primary} />
+                      <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 13 }}>Estás en este squad</Text>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      style={[styles.joinSheetBtn, { overflow: 'hidden' }]}
+                      onPress={() => {
+                        setInspectingSquad(null);
+                        setJoinCode(inspectingSquad.invite_code);
+                        setActiveSection('my-squad');
+                        setShowJoin(true);
+                      }}
                     >
-                      <Plus size={18} color="#fff" />
-                      <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>Solicitar Unirse</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                )}
+                      <LinearGradient
+                        colors={[colors.primary, colors.secondary || '#A855F7']}
+                        start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                        style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                      >
+                        <Plus size={18} color="#fff" />
+                        <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>Solicitar Unirse</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  )}
+                </ScrollView>
               </View>
             );
           })()}
         </View>
       </Modal>
+      {/* Invite Friends Modal */}
+      <Modal visible={showInviteModal} transparent animationType="slide" onRequestClose={() => setShowInviteModal(false)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' }}>
+          <View style={[styles.inspectSheet, { backgroundColor: colors.surface, maxHeight: '80%' }]}>
+            <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: 'center', marginBottom: 20 }} />
+
+            <TouchableOpacity
+              style={{ position: 'absolute', top: 16, right: 16, padding: 8, backgroundColor: colors.surfaceAlt, borderRadius: 20, zIndex: 10 }}
+              onPress={() => setShowInviteModal(false)}
+            >
+              <X size={18} color={colors.textSecondary} />
+            </TouchableOpacity>
+
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 16, paddingHorizontal: 4 }]}>Invitar Amigos al Squad</Text>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+              {socialStore.isFriendsLoading ? (
+                <ActivityIndicator color={colors.primary} style={{ marginVertical: 30 }} />
+              ) : socialStore.friends.filter(f => f.status === 'accepted').length === 0 ? (
+                <Text style={{ color: colors.textSecondary, textAlign: 'center', marginTop: 20 }}>No tienes amigos agregados aún para invitar.</Text>
+              ) : (
+                <View style={{ gap: 12 }}>
+                  {socialStore.friends.filter(f => f.status === 'accepted').map(f => {
+                    const friendProfile = f.friend_profile;
+                    const isInvited = invitedFriends[f.id];
+                    if (!friendProfile) return null;
+                    return (
+                      <View key={f.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surfaceAlt, padding: 12, borderRadius: 16 }}>
+                        {friendProfile.avatar_url ? (
+                          <Image source={{ uri: friendProfile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                        ) : (
+                          <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primary + '30', alignItems: 'center', justifyContent: 'center' }}>
+                            <Text style={{ color: colors.primary, fontWeight: 'bold' }}>{friendProfile.name?.[0]?.toUpperCase()}</Text>
+                          </View>
+                        )}
+                        <View style={{ flex: 1, marginLeft: 12 }}>
+                          <Text style={{ color: colors.textPrimary, fontWeight: 'bold' }}>{friendProfile.name}</Text>
+                        </View>
+                        <TouchableOpacity
+                          style={{ backgroundColor: isInvited ? colors.border : colors.primary, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}
+                          disabled={isInvited}
+                          onPress={async () => {
+                            Haptics.selectionAsync();
+                            await socialStore.sendDirectMessage(
+                              profile!.id,
+                              friendProfile.id,
+                              `¡Hola! Únete a mi squad en FitGO. Usa este código de invitación: ${squad?.invite_code}`
+                            );
+                            setInvitedFriends(prev => ({ ...prev, [f.id]: true }));
+                          }}
+                        >
+                          <Text style={{ color: isInvited ? colors.textSecondary : '#fff', fontWeight: 'bold', fontSize: 13 }}>
+                            {isInvited ? 'Enviado ✓' : 'Invitar'}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
       {/* User Inspect Modal */}
       <Modal visible={!!inspectingUser} transparent animationType="fade" onRequestClose={() => setInspectingUser(null)}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center' }}>

@@ -340,66 +340,118 @@ export default function UserProfileModal() {
           {showAchievements && (
             <View style={{ flexDirection: 'row', gap: 12, marginBottom: 20 }}>
               <View style={{ flex: 1, gap: 10 }}>
-                <View style={{ backgroundColor: colors.surfaceAlt, padding: 8, borderRadius: Radius.md, alignItems: 'center', marginBottom: 4 }}>
-                  <Text style={{ fontWeight: '800', color: colors.textPrimary }}>Tú</Text>
-                  <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>{myAchievements.filter(a => a.unlocked).length} / {totalAchievements}</Text>
-                </View>
+                <LinearGradient
+                  colors={[colors.primary + '30', colors.surfaceAlt]}
+                  style={{ padding: 12, borderRadius: Radius.lg, alignItems: 'center', marginBottom: 4, borderWidth: 1, borderColor: colors.primary + '40' }}
+                >
+                  <Text style={{ fontWeight: '900', color: colors.textPrimary, fontSize: 16 }}>Tú</Text>
+                  <View style={{ backgroundColor: colors.background, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginTop: 4 }}>
+                    <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '800' }}>
+                      {myAchievements.filter(a => a.unlocked).length} / {totalAchievements}
+                    </Text>
+                  </View>
+                </LinearGradient>
                 {myAchievements.filter(a => a.unlocked).length === 0 && (
                    <Text style={{ color: colors.textMuted, textAlign: 'center', fontSize: 12, marginTop: 10 }}>Sin logros</Text>
                 )}
                 {myAchievements.map(achievement => {
                   if (!achievement.unlocked) return null;
+                  const isHolo = achievement.tier === 'oro' || achievement.tier === 'diamante';
+                  const tierColor = achievement.tier === 'diamante' ? '#38BDF8' : 
+                                    achievement.tier === 'oro' ? '#FBBF24' : 
+                                    achievement.tier === 'plata' ? '#9CA3AF' : '#D97706';
+                  
+                  const tierGradients = {
+                    bronce: ['#D97706', '#92400E'],
+                    plata: ['#9CA3AF', '#4B5563'],
+                    oro: ['#FBBF24', '#EA580C'],
+                    diamante: ['#38BDF8', '#4F46E5']
+                  };
+                  const gradientColors = tierGradients[achievement.tier as keyof typeof tierGradients] || tierGradients.bronce;
+
                   return (
-                    <GlassCard key={`me-${achievement.id}`} style={{ padding: 12, alignItems: 'center' }}>
-                      <View style={{ marginBottom: 6 }}>
+                    <View key={`me-${achievement.id}`} style={{
+                      padding: 12, alignItems: 'center', backgroundColor: colors.surfaceAlt, borderRadius: 16,
+                      borderWidth: 1, borderColor: isHolo ? tierColor + '50' : colors.border,
+                      ...(isHolo ? { shadowColor: tierColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 4 } : {})
+                    }}>
+                      <LinearGradient
+                        colors={gradientColors as [string, string]}
+                        style={{ width: 48, height: 48, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 10, shadowColor: tierColor, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3 }}
+                      >
                         {achievement.iconType === 'lucide' && achievement.lucideIcon ? (
                           // @ts-ignore
                           React.createElement(LucideIcons[achievement.lucideIcon] || LucideIcons.Star, {
-                            size: 32,
-                            color: colors.primary,
-                            strokeWidth: 2
+                            size: 26,
+                            color: '#FFF',
+                            strokeWidth: 2.5
                           })
-                        ) : false && achievement.iconType === 'lottie' && achievement.lottieFile ? (
-                          null as any
                         ) : (
-                          <Text style={{ fontSize: 32 }}>{achievement.icon}</Text>
+                          <Text style={{ fontSize: 26 }}>{achievement.icon}</Text>
                         )}
-                      </View>
-                      <Text style={{ color: colors.textPrimary, fontWeight: 'bold', fontSize: 13, textAlign: 'center' }} numberOfLines={2}>{achievement.title}</Text>
-                    </GlassCard>
+                      </LinearGradient>
+                      <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 12, textAlign: 'center' }} numberOfLines={2}>{achievement.title}</Text>
+                      <Text style={{ fontSize: 10, color: tierColor, fontWeight: '900', textTransform: 'uppercase', marginTop: 4 }}>{achievement.tier}</Text>
+                    </View>
                   );
                 })}
               </View>
 
               {!isMe && (
                 <View style={{ flex: 1, gap: 10 }}>
-                  <View style={{ backgroundColor: colors.surfaceAlt, padding: 8, borderRadius: Radius.md, alignItems: 'center', marginBottom: 4 }}>
-                    <Text style={{ fontWeight: '800', color: colors.textPrimary }} numberOfLines={1}>{displayUser.name?.split(' ')[0]}</Text>
-                    <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>{theirUnlockedCount} / {totalAchievements}</Text>
-                  </View>
+                  <LinearGradient
+                    colors={[(colors.secondary || '#A855F7') + '30', colors.surfaceAlt]}
+                    style={{ padding: 12, borderRadius: Radius.lg, alignItems: 'center', marginBottom: 4, borderWidth: 1, borderColor: (colors.secondary || '#A855F7') + '40' }}
+                  >
+                    <Text style={{ fontWeight: '900', color: colors.textPrimary, fontSize: 16 }} numberOfLines={1}>{displayUser.name?.split(' ')[0]}</Text>
+                    <View style={{ backgroundColor: colors.background, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginTop: 4 }}>
+                      <Text style={{ fontSize: 12, color: colors.secondary || '#A855F7', fontWeight: '800' }}>
+                        {theirUnlockedCount} / {totalAchievements}
+                      </Text>
+                    </View>
+                  </LinearGradient>
                   {theirUnlockedCount === 0 && (
                      <Text style={{ color: colors.textMuted, textAlign: 'center', fontSize: 12, marginTop: 10 }}>Sin logros</Text>
                   )}
                   {myAchievements.map(achievement => {
                     if (!theirUnlockedIds.includes(achievement.id)) return null;
+                    const isHolo = achievement.tier === 'oro' || achievement.tier === 'diamante';
+                    const tierColor = achievement.tier === 'diamante' ? '#38BDF8' : 
+                                      achievement.tier === 'oro' ? '#FBBF24' : 
+                                      achievement.tier === 'plata' ? '#9CA3AF' : '#D97706';
+                    
+                    const tierGradients = {
+                      bronce: ['#D97706', '#92400E'],
+                      plata: ['#9CA3AF', '#4B5563'],
+                      oro: ['#FBBF24', '#EA580C'],
+                      diamante: ['#38BDF8', '#4F46E5']
+                    };
+                    const gradientColors = tierGradients[achievement.tier as keyof typeof tierGradients] || tierGradients.bronce;
+
                     return (
-                      <GlassCard key={`them-${achievement.id}`} style={{ padding: 12, alignItems: 'center' }}>
-                        <View style={{ marginBottom: 6 }}>
+                      <View key={`them-${achievement.id}`} style={{
+                        padding: 12, alignItems: 'center', backgroundColor: colors.surfaceAlt, borderRadius: 16,
+                        borderWidth: 1, borderColor: isHolo ? tierColor + '50' : colors.border,
+                        ...(isHolo ? { shadowColor: tierColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 4 } : {})
+                      }}>
+                        <LinearGradient
+                          colors={gradientColors as [string, string]}
+                          style={{ width: 48, height: 48, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 10, shadowColor: tierColor, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3 }}
+                        >
                           {achievement.iconType === 'lucide' && achievement.lucideIcon ? (
                             // @ts-ignore
                             React.createElement(LucideIcons[achievement.lucideIcon] || LucideIcons.Star, {
-                              size: 32,
-                              color: colors.primary,
-                              strokeWidth: 2
+                              size: 26,
+                              color: '#FFF',
+                              strokeWidth: 2.5
                             })
-                          ) : false && achievement.iconType === 'lottie' && achievement.lottieFile ? (
-                            null as any
                           ) : (
-                            <Text style={{ fontSize: 32 }}>{achievement.icon}</Text>
+                            <Text style={{ fontSize: 26 }}>{achievement.icon}</Text>
                           )}
-                        </View>
-                        <Text style={{ color: colors.textPrimary, fontWeight: 'bold', fontSize: 13, textAlign: 'center' }} numberOfLines={2}>{achievement.title}</Text>
-                      </GlassCard>
+                        </LinearGradient>
+                        <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 12, textAlign: 'center' }} numberOfLines={2}>{achievement.title}</Text>
+                        <Text style={{ fontSize: 10, color: tierColor, fontWeight: '900', textTransform: 'uppercase', marginTop: 4 }}>{achievement.tier}</Text>
+                      </View>
                     );
                   })}
                 </View>
