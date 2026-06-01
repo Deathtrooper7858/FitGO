@@ -26,7 +26,6 @@ console.warn = (...args) => {
 import { supabase } from '../services/supabase';
 import { useAuthStore, useSettingsStore, usePurchaseStore } from '../store';
 import { Colors } from '../constants';
-import '../i18n';
 import i18n from 'i18next';
 import { useTheme } from '../hooks/useTheme';
 import * as NavigationBar from 'expo-navigation-bar';
