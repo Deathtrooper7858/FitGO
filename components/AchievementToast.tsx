@@ -1,55 +1,112 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
-import { GlassCard } from './GlassCard';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Animated, Dimensions, TouchableOpacity } from 'react-native';
 import { useToastStore } from '../store/toastStore';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Achievement } from '../hooks/useAchievements';
+import { useTheme } from '../hooks/useTheme';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as LucideIcons from 'lucide-react-native';
+import { X } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 
-const { width } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+function getTierColor(tier: string) {
+  switch (tier) {
+    case 'diamante': return '#38BDF8';
+    case 'oro': return '#FBBF24';
+    case 'plata': return '#9CA3AF';
+    default: return '#D97706';
+  }
+}
 
 export function AchievementToast() {
+  const colors = useTheme();
   const { toastQueue, showNext } = useToastStore();
-  const [currentToast, setCurrentToast] = useState<Achievement | null>(null);
-  const translateY = useRef(new Animated.Value(-150)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(-50)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  
+  const [currentToast, setCurrentToast] = useState<Achievement | undefined>(toastQueue[0]);
 
   useEffect(() => {
     if (toastQueue.length > 0 && !currentToast) {
       setCurrentToast(toastQueue[0]);
-      
-      // Animate in
-      Animated.spring(translateY, {
-        toValue: 60, // distance from top
-        useNativeDriver: true,
-        bounciness: 12
-      }).start();
-
-      // Wait 3.5s then animate out
-      setTimeout(() => {
-        Animated.timing(translateY, {
-          toValue: -150,
-          duration: 300,
-          useNativeDriver: true
-        }).start(() => {
-          setCurrentToast(null);
-          showNext();
-        });
-      }, 3500);
     }
   }, [toastQueue, currentToast]);
 
+  useEffect(() => {
+    if (currentToast) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
+        Animated.spring(slideAnim, { toValue: 0, friction: 6, tension: 40, useNativeDriver: true }),
+        Animated.spring(scaleAnim, { toValue: 1, friction: 5, tension: 50, useNativeDriver: true }),
+      ]).start();
+
+      const timer = setTimeout(() => {
+        closeToast();
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentToast]);
+
+  const closeToast = () => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: -50, duration: 300, useNativeDriver: true }),
+      Animated.timing(scaleAnim, { toValue: 0.9, duration: 300, useNativeDriver: true }),
+    ]).start(() => {
+      setCurrentToast(undefined);
+      showNext();
+    });
+  };
+
   if (!currentToast) return null;
 
+  const tierColor = getTierColor(currentToast.tier);
+  const isHolo = currentToast.tier === 'oro' || currentToast.tier === 'diamante';
+  const gradColors = isHolo
+    ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5'] as const
+    : ['transparent', 'transparent'] as const;
+
   return (
-    <Animated.View style={[styles.container, { transform: [{ translateY }] }]}>
-      <GlassCard accentColor="#FFD700" style={styles.card} noPadding>
-        <LinearGradient colors={['rgba(255, 215, 0, 0.15)', 'transparent']} style={styles.inner}>
-          <Text style={styles.icon}>{currentToast.icon}</Text>
-          <View style={styles.textContainer}>
-            <Text style={styles.title}>🏆 ¡Logro Desbloqueado!</Text>
-            <Text style={styles.name}>{currentToast.title}</Text>
-          </View>
-        </LinearGradient>
-      </GlassCard>
+    <Animated.View 
+      style={[
+        styles.container, 
+        { 
+          backgroundColor: colors.surface,
+          borderColor: isHolo ? tierColor + '50' : colors.border,
+          shadowColor: isHolo ? tierColor : '#000',
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }, { scale: scaleAnim }]
+        }
+      ]}
+    >
+      <LinearGradient
+        colors={gradColors}
+        style={[styles.iconWrapper, { backgroundColor: isHolo ? 'transparent' : colors.surfaceAlt }]}
+      >
+        {currentToast.iconType === 'lucide' && currentToast.lucideIcon ? (
+          // @ts-ignore
+          React.createElement(LucideIcons[currentToast.lucideIcon] || LucideIcons.Star, {
+            size: 28, color: isHolo ? '#FFF' : tierColor, strokeWidth: 2.5
+          })
+        ) : (
+          <Text style={{ fontSize: 28 }}>{currentToast.icon}</Text>
+        )}
+      </LinearGradient>
+      
+      <View style={styles.content}>
+        <Text style={[styles.headerText, { color: tierColor }]}>¡NUEVO LOGRO DESBLOQUEADO!</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={1}>{currentToast.title}</Text>
+        <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={2}>{currentToast.description}</Text>
+      </View>
+
+      <TouchableOpacity onPress={closeToast} style={styles.closeBtn} activeOpacity={0.7}>
+        <X size={20} color={colors.textMuted} />
+      </TouchableOpacity>
     </Animated.View>
   );
 }
@@ -57,41 +114,52 @@ export function AchievementToast() {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 0,
-    left: 16,
-    right: 16,
+    top: 60, // under the status bar
+    left: 20,
+    right: 20,
     zIndex: 9999,
-  },
-  card: {
-    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 10,
     overflow: 'hidden',
   },
-  inner: {
-    flexDirection: 'row',
-    padding: 16,
+  iconWrapper: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
     alignItems: 'center',
-  },
-  icon: {
-    fontSize: 36,
     marginRight: 16,
-    textShadowColor: '#FFF',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
   },
-  textContainer: {
+  content: {
     flex: 1,
+    gap: 2,
+  },
+  headerText: {
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1,
+    marginBottom: 2,
   },
   title: {
-    color: '#FFD700',
-    fontSize: 11,
+    fontSize: 18,
     fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 4,
+    letterSpacing: -0.3,
   },
-  name: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '800',
+  description: {
+    fontSize: 13,
+    fontWeight: '500',
+    opacity: 0.9,
+    lineHeight: 18,
+  },
+  closeBtn: {
+    padding: 8,
+    marginLeft: 8,
   }
 });
