@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Platform, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTheme } from '../../hooks/useTheme';
@@ -8,7 +8,8 @@ import { supabase } from '../../services/supabase';
 import { Radius, Spacing } from '../../constants';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Apple, ChevronLeft, Sparkles, AlertCircle } from 'lucide-react-native';
+import { Apple, ChevronLeft, Sparkles, AlertCircle, Search, Plus, Check } from 'lucide-react-native';
+import { searchFood, FoodItem } from '../../services/foodDatabase';
 
 const FOOD_CATEGORIES = [
   {
@@ -20,18 +21,32 @@ const FOOD_CATEGORIES = [
       { id: 'beef', label: 'beef', emoji: '🥩' },
       { id: 'fish', label: 'fish', emoji: '🐟' },
       { id: 'salmon', label: 'salmon', emoji: '🍣' },
-      { id: 'tuna', label: 'tuna', emoji: '🐟' },
+      { id: 'tuna', label: 'tuna', emoji: '🐠' },
       { id: 'turkey', label: 'turkey', emoji: '🦃' },
-      { id: 'pork', label: 'pork', emoji: '🥩' },
+      { id: 'pork', label: 'pork', emoji: '🍖' },
       { id: 'eggs', label: 'eggs', emoji: '🥚' },
-      { id: 'tofu', label: 'tofu', emoji: '🧊' },
-      { id: 'greek_yogurt', label: 'greek_yogurt', emoji: '🍦' },
+      { id: 'tofu', label: 'tofu', emoji: '🍱' },
+      { id: 'greek_yogurt', label: 'greek_yogurt', emoji: '🥬' },
       { id: 'cottage_cheese', label: 'cottage_cheese', emoji: '🧀' },
-      { id: 'protein_powder', label: 'protein_powder', emoji: '🥛' },
+      { id: 'protein_powder', label: 'protein_powder', emoji: '🕡' },
       { id: 'shrimp', label: 'shrimp', emoji: '🦐' },
       { id: 'seitan', label: 'seitan', emoji: '🌾' },
-      { id: 'tempeh', label: 'tempeh', emoji: '🧊' },
+      { id: 'tempeh', label: 'tempeh', emoji: '🌱' },
       { id: 'lamb', label: 'lamb', emoji: '🍖' },
+      { id: 'sardines', label: 'sardines', emoji: '🐟' },
+      { id: 'crab', label: 'crab', emoji: '🦀' },
+      { id: 'octopus', label: 'octopus', emoji: '🐙' },
+      { id: 'tilapia', label: 'tilapia', emoji: '🐟' },
+      { id: 'duck', label: 'duck', emoji: '🦆' },
+      { id: 'bison', label: 'bison', emoji: '🥩' },
+      { id: 'venison', label: 'venison', emoji: '🥩' },
+      { id: 'skyr', label: 'skyr', emoji: '🥮' },
+      { id: 'edamame', label: 'edamame', emoji: '🌱' },
+      { id: 'lox', label: 'lox', emoji: '🍣' },
+      { id: 'anchovies', label: 'anchovies', emoji: '🐟' },
+      { id: 'mussels', label: 'mussels', emoji: '🐚' },
+      { id: 'chicken_liver', label: 'chicken_liver', emoji: '🍖' },
+      { id: 'beef_liver', label: 'beef_liver', emoji: '🥩' },
     ]
   },
   {
@@ -43,17 +58,30 @@ const FOOD_CATEGORIES = [
       { id: 'potato', label: 'potato', emoji: '🥔' },
       { id: 'sweet_potato', label: 'sweet_potato', emoji: '🍠' },
       { id: 'pasta', label: 'pasta', emoji: '🍝' },
-      { id: 'oats', label: 'oats', emoji: '🥣' },
-      { id: 'quinoa', label: 'quinoa', emoji: '🥗' },
+      { id: 'oats', label: 'oats', emoji: '🫓' },
+      { id: 'quinoa', label: 'quinoa', emoji: '🌾' },
       { id: 'couscous', label: 'couscous', emoji: '🍚' },
-      { id: 'bulgur', label: 'bulgur', emoji: '🥣' },
+      { id: 'bulgur', label: 'bulgur', emoji: '🌾' },
       { id: 'beans', label: 'beans', emoji: '🫘' },
-      { id: 'lentils', label: 'lentils', emoji: '🥘' },
+      { id: 'lentils', label: 'lentils', emoji: '🍲' },
       { id: 'bread', label: 'bread', emoji: '🍞' },
-      { id: 'rice_cakes', label: 'rice_cakes', emoji: '🍘' },
+      { id: 'rice_cakes', label: 'rice_cakes', emoji: '🎘' },
       { id: 'corn', label: 'corn', emoji: '🌽' },
       { id: 'tortilla', label: 'tortilla', emoji: '🫓' },
       { id: 'plantain', label: 'plantain', emoji: '🍌' },
+      { id: 'chickpeas', label: 'chickpeas', emoji: '🫘' },
+      { id: 'brown_rice', label: 'brown_rice', emoji: '🍚' },
+      { id: 'whole_wheat_pasta', label: 'whole_wheat_pasta', emoji: '🍝' },
+      { id: 'barley', label: 'barley', emoji: '🌾' },
+      { id: 'rye_bread', label: 'rye_bread', emoji: '🍞' },
+      { id: 'granola', label: 'granola', emoji: '🫓' },
+      { id: 'farro', label: 'farro', emoji: '🌾' },
+      { id: 'sourdough', label: 'sourdough', emoji: '🍞' },
+      { id: 'pita_bread', label: 'pita_bread', emoji: '🫓' },
+      { id: 'millet', label: 'millet', emoji: '🌾' },
+      { id: 'tapioca', label: 'tapioca', emoji: '🍠' },
+      { id: 'cassava', label: 'cassava', emoji: '🥔' },
+      { id: 'taro', label: 'taro', emoji: '🥔' },
     ]
   },
   {
@@ -63,17 +91,30 @@ const FOOD_CATEGORIES = [
     items: [
       { id: 'avocado', label: 'avocado', emoji: '🥑' },
       { id: 'nuts', label: 'nuts', emoji: '🥜' },
-      { id: 'almonds', label: 'almonds', emoji: '🫘' },
-      { id: 'walnuts', label: 'walnuts', emoji: '🥜' },
-      { id: 'peanut_butter', label: 'peanut_butter', emoji: '🍯' },
+      { id: 'almonds', label: 'almonds', emoji: '🌰' },
+      { id: 'walnuts', label: 'walnuts', emoji: '🌰' },
+      { id: 'peanut_butter', label: 'peanut_butter', emoji: '🥜' },
       { id: 'olive_oil', label: 'olive_oil', emoji: '🫒' },
       { id: 'cheese', label: 'cheese', emoji: '🧀' },
-      { id: 'yogurt', label: 'yogurt', emoji: '🍦' },
+      { id: 'yogurt', label: 'yogurt', emoji: '🥮' },
       { id: 'chia_seeds', label: 'chia_seeds', emoji: '🌱' },
-      { id: 'pumpkin_seeds', label: 'pumpkin_seeds', emoji: '🎃' },
+      { id: 'pumpkin_seeds', label: 'pumpkin_seeds', emoji: '🌰' },
       { id: 'sunflower_seeds', label: 'sunflower_seeds', emoji: '🌻' },
       { id: 'coconut_oil', label: 'coconut_oil', emoji: '🥥' },
       { id: 'ghee', label: 'ghee', emoji: '🧈' },
+      { id: 'butter', label: 'butter', emoji: '🧈' },
+      { id: 'cashews', label: 'cashews', emoji: '🌰' },
+      { id: 'pistachios', label: 'pistachios', emoji: '🌰' },
+      { id: 'macadamia', label: 'macadamia', emoji: '🌰' },
+      { id: 'brazil_nuts', label: 'brazil_nuts', emoji: '🌰' },
+      { id: 'pecans', label: 'pecans', emoji: '🌰' },
+      { id: 'hemp_seeds', label: 'hemp_seeds', emoji: '🌱' },
+      { id: 'flaxseeds', label: 'flaxseeds', emoji: '🌱' },
+      { id: 'tahini', label: 'tahini', emoji: '🍯' },
+      { id: 'sesame_oil', label: 'sesame_oil', emoji: '🫒' },
+      { id: 'dark_chocolate', label: 'dark_chocolate', emoji: '🍫' },
+      { id: 'coconut_milk', label: 'coconut_milk', emoji: '🥥' },
+      { id: 'almond_butter', label: 'almond_butter', emoji: '🌰' },
     ]
   },
   {
@@ -93,6 +134,20 @@ const FOOD_CATEGORIES = [
       { id: 'pear', label: 'pear', emoji: '🍐' },
       { id: 'kiwi', label: 'kiwi', emoji: '🥝' },
       { id: 'cherry', label: 'cherry', emoji: '🍒' },
+      { id: 'blueberries', label: 'blueberries', emoji: '🍑' },
+      { id: 'raspberries', label: 'raspberries', emoji: '🍓' },
+      { id: 'papaya', label: 'papaya', emoji: '🥭' },
+      { id: 'pomegranate', label: 'pomegranate', emoji: '🍎' },
+      { id: 'lemon', label: 'lemon', emoji: '🍋' },
+      { id: 'lime', label: 'lime', emoji: '🍋' },
+      { id: 'grapefruit', label: 'grapefruit', emoji: '🍊' },
+      { id: 'plum', label: 'plum', emoji: '🍑' },
+      { id: 'fig', label: 'fig', emoji: '🍎' },
+      { id: 'date', label: 'date', emoji: '🍋' },
+      { id: 'apricot', label: 'apricot', emoji: '🍑' },
+      { id: 'coconut', label: 'coconut', emoji: '🥥' },
+      { id: 'dragonfruit', label: 'dragonfruit', emoji: '🍑' },
+      { id: 'passion_fruit', label: 'passion_fruit', emoji: '🍊' },
     ]
   },
   {
@@ -110,10 +165,23 @@ const FOOD_CATEGORIES = [
       { id: 'cucumber', label: 'cucumber', emoji: '🥒' },
       { id: 'bell_pepper', label: 'bell_pepper', emoji: '🫑' },
       { id: 'zucchini', label: 'zucchini', emoji: '🥒' },
-      { id: 'asparagus', label: 'asparagus', emoji: '🥬' },
+      { id: 'asparagus', label: 'asparagus', emoji: '🥦' },
       { id: 'cauliflower', label: 'cauliflower', emoji: '🥦' },
       { id: 'mushroom', label: 'mushroom', emoji: '🍄' },
       { id: 'eggplant', label: 'eggplant', emoji: '🍆' },
+      { id: 'celery', label: 'celery', emoji: '🥦' },
+      { id: 'beet', label: 'beet', emoji: '🥔' },
+      { id: 'radish', label: 'radish', emoji: '🥔' },
+      { id: 'artichoke', label: 'artichoke', emoji: '🥦' },
+      { id: 'peas', label: 'peas', emoji: '🌱' },
+      { id: 'green_beans', label: 'green_beans', emoji: '🌱' },
+      { id: 'leek', label: 'leek', emoji: '🥦' },
+      { id: 'bok_choy', label: 'bok_choy', emoji: '🥬' },
+      { id: 'brussels_sprouts', label: 'brussels_sprouts', emoji: '🥦' },
+      { id: 'sweet_corn', label: 'sweet_corn', emoji: '🌽' },
+      { id: 'pumpkin', label: 'pumpkin', emoji: '🎃' },
+      { id: 'cabbage', label: 'cabbage', emoji: '🥬' },
+      { id: 'arugula', label: 'arugula', emoji: '🥬' },
     ]
   },
   {
@@ -124,17 +192,71 @@ const FOOD_CATEGORIES = [
       { id: 'salt', label: 'salt', emoji: '🧂' },
       { id: 'pepper', label: 'pepper', emoji: '🌶️' },
       { id: 'soy_sauce', label: 'soy_sauce', emoji: '🍶' },
-      { id: 'hot_sauce', label: 'hot_sauce', emoji: '🥫' },
-      { id: 'sriracha', label: 'sriracha', emoji: '🔥' },
+      { id: 'hot_sauce', label: 'hot_sauce', emoji: '🔥' },
+      { id: 'sriracha', label: 'sriracha', emoji: '🌶️' },
       { id: 'garlic', label: 'garlic', emoji: '🧄' },
-      { id: 'mustard', label: 'mustard', emoji: '🍯' },
+      { id: 'mustard', label: 'mustard', emoji: '🌶️' },
       { id: 'lemon_juice', label: 'lemon_juice', emoji: '🍋' },
       { id: 'balsamic', label: 'balsamic', emoji: '🍶' },
-      { id: 'cinnamon', label: 'cinnamon', emoji: '🪵' },
-      { id: 'turmeric', label: 'turmeric', emoji: '🟡' },
-      { id: 'ginger', label: 'ginger', emoji: '🫚' },
+      { id: 'cinnamon', label: 'cinnamon', emoji: '🌰' },
+      { id: 'turmeric', label: 'turmeric', emoji: '🫚' },
+      { id: 'ginger', label: 'ginger', emoji: '🥔' },
       { id: 'mayonnaise', label: 'mayonnaise', emoji: '🍯' },
-      { id: 'ketchup', label: 'ketchup', emoji: '🥫' },
+      { id: 'ketchup', label: 'ketchup', emoji: '🍅' },
+      { id: 'honey', label: 'honey', emoji: '🍯' },
+      { id: 'agave', label: 'agave', emoji: '🌻' },
+      { id: 'maple_syrup', label: 'maple_syrup', emoji: '🍁' },
+      { id: 'apple_cider_vinegar', label: 'apple_cider_vinegar', emoji: '🍎' },
+      { id: 'worcestershire', label: 'worcestershire', emoji: '🍶' },
+      { id: 'fish_sauce', label: 'fish_sauce', emoji: '🐟' },
+      { id: 'tamari', label: 'tamari', emoji: '🍶' },
+      { id: 'miso', label: 'miso', emoji: '🍲' },
+      { id: 'cumin', label: 'cumin', emoji: '🌾' },
+      { id: 'paprika', label: 'paprika', emoji: '🌶️' },
+      { id: 'oregano', label: 'oregano', emoji: '🌿' },
+      { id: 'basil', label: 'basil', emoji: '🌿' },
+      { id: 'thyme', label: 'thyme', emoji: '🌿' },
+      { id: 'rosemary', label: 'rosemary', emoji: '🌿' },
+    ]
+  },
+  {
+    id: 'dairy',
+    title: 'dairy',
+    min: 0,
+    items: [
+      { id: 'milk', label: 'milk', emoji: '🥛' },
+      { id: 'heavy_cream', label: 'heavy_cream', emoji: '🥛' },
+      { id: 'almond_milk', label: 'almond_milk', emoji: '🥛' },
+      { id: 'oat_milk', label: 'oat_milk', emoji: '🥛' },
+      { id: 'soy_milk', label: 'soy_milk', emoji: '🥛' },
+      { id: 'mozzarella', label: 'mozzarella', emoji: '🧀' },
+      { id: 'parmesan', label: 'parmesan', emoji: '🧀' },
+      { id: 'cheddar', label: 'cheddar', emoji: '🧀' },
+      { id: 'feta', label: 'feta', emoji: '🧀' },
+      { id: 'ricotta', label: 'ricotta', emoji: '🧀' },
+      { id: 'cream_cheese', label: 'cream_cheese', emoji: '🧀' },
+      { id: 'whipping_cream', label: 'whipping_cream', emoji: '🥛' },
+      { id: 'kefir', label: 'kefir', emoji: '🥮' },
+      { id: 'ice_cream', label: 'ice_cream', emoji: '🍨' },
+    ]
+  },
+  {
+    id: 'beverages',
+    title: 'beverages',
+    min: 0,
+    items: [
+      { id: 'water', label: 'water', emoji: '💧' },
+      { id: 'coffee', label: 'coffee', emoji: '☕' },
+      { id: 'green_tea', label: 'green_tea', emoji: '🍵' },
+      { id: 'black_tea', label: 'black_tea', emoji: '🍵' },
+      { id: 'matcha', label: 'matcha', emoji: '🍵' },
+      { id: 'orange_juice', label: 'orange_juice', emoji: '🍊' },
+      { id: 'protein_shake', label: 'protein_shake', emoji: '🕡' },
+      { id: 'smoothie', label: 'smoothie', emoji: '🥤' },
+      { id: 'coconut_water', label: 'coconut_water', emoji: '🥥' },
+      { id: 'sports_drink', label: 'sports_drink', emoji: '🫙' },
+      { id: 'bone_broth', label: 'bone_broth', emoji: '🍲' },
+      { id: 'kombucha', label: 'kombucha', emoji: '🫙' },
     ]
   }
 ];
@@ -147,6 +269,11 @@ export default function FoodSelectionModal() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<FoodItem[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => setError(null), 3000);
@@ -154,8 +281,28 @@ export default function FoodSelectionModal() {
     }
   }, [error]);
 
-  const toggle = (id: string) => {
-    setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const delayDebounceFn = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const results = await searchFood(searchQuery);
+        setSearchResults(results);
+      } catch (err) {
+        console.error('Search error', err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
+
+  const toggle = (idOrJson: string) => {
+    setSelected(prev => prev.includes(idOrJson) ? prev.filter(x => x !== idOrJson) : [...prev, idOrJson]);
   };
 
   const selectAll = (categoryItems: {id: string}[]) => {
@@ -170,10 +317,12 @@ export default function FoodSelectionModal() {
   };
 
   const handleSave = async () => {
-    // Validation
+    const basicSelected = selected.filter(s => !s.startsWith('{')); // Only check standard string IDs
     for (const cat of FOOD_CATEGORIES) {
-      const selectedInCategory = cat.items.filter(item => selected.includes(item.id));
-      if (selectedInCategory.length < cat.min) {
+      if (cat.min === 0) continue; // Skip optional categories
+      const selectedInCategory = cat.items.filter(item => basicSelected.includes(item.id));
+      if (selectedInCategory.length < cat.min && searchQuery.length === 0) {
+        // Only enforce validation if they are not actively searching
         setError(
           t('onboarding.validationFoodMin', { 
             category: t(`onboarding.${cat.title}`), 
@@ -239,7 +388,49 @@ export default function FoodSelectionModal() {
            <Text style={[s.introSub, { color: colors.textSecondary }]}>{t('onboarding.foodsSub')}</Text>
         </View>
 
-        {FOOD_CATEGORIES.map((cat) => (
+        {/* Search Bar */}
+        <View style={[s.searchContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Search size={20} color={colors.textSecondary} style={s.searchIcon} />
+          <TextInput
+            style={[s.searchInput, { color: colors.textPrimary }]}
+            placeholder="Buscar alimento en tu lista..."
+            placeholderTextColor={colors.textSecondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {isSearching && <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 12 }} />}
+        </View>
+
+        {searchQuery.length > 0 ? (
+          <View style={s.searchResults}>
+            {searchResults.length === 0 && !isSearching ? (
+              <Text style={[s.noResults, { color: colors.textSecondary }]}>{t('common.noResults') || 'No se encontraron resultados'}</Text>
+            ) : (
+              searchResults.map((item) => {
+                const itemJson = JSON.stringify(item);
+                const isActive = selected.includes(itemJson);
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[s.searchResultItem, { backgroundColor: colors.surface, borderColor: colors.border }, isActive && { borderColor: colors.primary }]}
+                    onPress={() => toggle(itemJson)}
+                  >
+                    <View style={s.searchResultInfo}>
+                      <Text style={[s.searchResultName, { color: colors.textPrimary }]}>{item.name}</Text>
+                      <Text style={[s.searchResultBrand, { color: colors.textSecondary }]}>
+                        {item.brand ? `${item.brand} • ` : ''}{item.calories} kcal | {item.protein}P {item.carbs}C {item.fat}G
+                      </Text>
+                    </View>
+                    <View style={[s.addIconWrap, isActive ? { backgroundColor: colors.primary } : { backgroundColor: colors.surfaceAlt }]}>
+                      {isActive ? <Check size={16} color="#FFF" /> : <Plus size={16} color={colors.textSecondary} />}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })
+            )}
+          </View>
+        ) : (
+          FOOD_CATEGORIES.map((cat) => (
           <View key={cat.id} style={s.category}>
             <View style={s.catHeader}>
               <View>
@@ -287,7 +478,7 @@ export default function FoodSelectionModal() {
               })}
             </View>
           </View>
-        ))}
+        )))}
       </ScrollView>
 
       <View style={s.footer}>
@@ -380,5 +571,56 @@ const s = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     flex: 1,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    marginBottom: 24,
+    paddingHorizontal: 12,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: 48,
+    fontSize: 16,
+  },
+  searchResults: {
+    paddingBottom: 20,
+  },
+  noResults: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+  },
+  searchResultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  searchResultInfo: {
+    flex: 1,
+  },
+  searchResultName: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  searchResultBrand: {
+    fontSize: 13,
+  },
+  addIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 12,
   },
 });

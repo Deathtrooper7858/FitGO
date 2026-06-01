@@ -77,7 +77,8 @@
           "icon": "./assets/notification-icon.png",
           "color": "#7C5CFC"
         }
-      ]
+      ],
+      "react-native-fast-tflite"
     ],
     "experiments": {
       "typedRoutes": true

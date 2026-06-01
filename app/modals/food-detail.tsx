@@ -45,6 +45,7 @@ export default function FoodDetailModal() {
   };
 
   const [meal, setMeal]       = useState<Meal>(initialMeal || getAutoMeal());
+  const [isSaving, setIsSaving] = useState(false);
   const { energyUnit } = useSettingsStore();
   const energyLabel = energyUnit.toUpperCase();
   
@@ -117,12 +118,14 @@ export default function FoodDetailModal() {
   ].filter(d => d.value > 0);
 
   const handleSave = async () => {
+    if (isSaving) return;
     if (!g || g <= 0) {
       showAlert('error', t('common.error'), t('foodDetail.invalidAmount'));
       return;
     }
 
     try {
+      setIsSaving(true);
       if (logId) {
         // Update existing log
         await updateLog(logId, {
@@ -164,9 +167,15 @@ export default function FoodDetailModal() {
       }
     } catch (err) {
       // Log was saved locally; sync error is non-blocking
-      console.error('[FoodDetail] Sync error (local save succeeded):', err);
+      console.warn('[FoodDetail] Sync error (local save succeeded):', err);
+    } finally {
+      setIsSaving(false);
     }
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)/tracker');
+    }
   };
 
   return (

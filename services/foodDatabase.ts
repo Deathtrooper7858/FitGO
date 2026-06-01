@@ -3,10 +3,9 @@
  */
 import axios from 'axios';
 import { getFoodByBarcodeAI } from './groq';
+import { supabase } from './supabase';
 
 const OFF_BASE = 'https://world.openfoodfacts.org';
-const EDAMAM_APP_ID  = process.env.EXPO_PUBLIC_EDAMAM_APP_ID  ?? '';
-const EDAMAM_APP_KEY = process.env.EXPO_PUBLIC_EDAMAM_APP_KEY ?? '';
 
 export interface FoodItem {
   id:       string;
@@ -123,7 +122,7 @@ export async function getFoodByBarcode(barcode: string, language: string = 'es')
       }
     }
   } catch (err) {
-    console.error('[OpenFoodFacts] Barcode fetch error:', err);
+    console.warn('[OpenFoodFacts] Barcode fetch error:', err);
   }
 
   // Fallback to Groq AI barcode lookup
@@ -150,7 +149,7 @@ export async function getFoodByBarcode(barcode: string, language: string = 'es')
       };
     }
   } catch (err) {
-    console.error('[Barcode fallback] Groq AI lookup error:', err);
+    console.warn('[Barcode fallback] Groq AI lookup error:', err);
   }
 
   return null;
@@ -158,17 +157,19 @@ export async function getFoodByBarcode(barcode: string, language: string = 'es')
 
 // ─── Edamam search (fallback / enrichment) ─────────────────────────────────────
 export async function searchFoodEdamam(query: string): Promise<FoodItem[]> {
-  if (!EDAMAM_APP_ID || !EDAMAM_APP_KEY) return [];
   try {
-    const { data } = await axios.get('https://api.edamam.com/api/food-database/v2/parser', {
-      params: {
-        app_id:  EDAMAM_APP_ID,
-        app_key: EDAMAM_APP_KEY,
-        ingr:    query,
-        'nutrition-type': 'cooking',
-      },
-      timeout: 8000,
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      console.warn('[Edamam Proxy] No active session, skipping search.');
+      return [];
+    }
+
+    const { data, error } = await supabase.functions.invoke('edamam-proxy', {
+      body: { query }
     });
+
+    if (error) throw error;
 
     return (data.hints ?? []).slice(0, 15).map((h: any) => ({
       id:       h.food.foodId,
@@ -185,7 +186,8 @@ export async function searchFoodEdamam(query: string): Promise<FoodItem[]> {
       imageUrl: h.food.image,
       source:   'edamam' as const,
     }));
-  } catch {
+  } catch (err) {
+    console.warn('[Edamam Proxy] Error fetching food:', err);
     return [];
   }
 }
