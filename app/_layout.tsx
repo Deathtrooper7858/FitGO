@@ -26,12 +26,10 @@ console.warn = (...args) => {
 import { supabase } from '../services/supabase';
 import { useAuthStore, useSettingsStore, usePurchaseStore } from '../store';
 import { Colors } from '../constants';
-import i18n from 'i18next';
+import i18n from '../i18n';
 import { useTheme } from '../hooks/useTheme';
 import * as NavigationBar from 'expo-navigation-bar';
 import { AchievementToast } from '../components/AchievementToast';
-import { useAchievements } from '../hooks/useAchievements';
-import { useToastStore } from '../store';
 
 // Safely detect if edge-to-edge is enabled
 let isEdgeToEdgeActive = false;
@@ -81,32 +79,6 @@ function NavigationGuard() {
   return null;
 }
 
-function AchievementEngine() {
-  const { achievements } = useAchievements();
-  const { profile, setProfile } = useAuthStore();
-  const { addToast } = useToastStore();
-
-  useEffect(() => {
-    if (!profile) return;
-    
-    const currentUnlockedIds = profile.unlockedAchievements || [];
-    const newlyUnlocked = achievements.filter(a => a.unlocked && !currentUnlockedIds.includes(a.id));
-
-    if (newlyUnlocked.length > 0) {
-      const newIds = [...currentUnlockedIds, ...newlyUnlocked.map(a => a.id)];
-      
-      setProfile({ ...profile, unlockedAchievements: newIds });
-      
-      supabase.from('users').update({ unlocked_achievements: newIds }).eq('id', profile.id).then(({error}) => {
-         if(error) console.warn("[AchievementEngine] Sync error:", error);
-      });
-
-      newlyUnlocked.forEach(a => addToast(a));
-    }
-  }, [achievements, profile]);
-
-  return null;
-}
 
 export default function RootLayout() {
   const { setSession, setLoading, setProfile, fetchProfile, isLoading } = useAuthStore();
@@ -115,7 +87,9 @@ export default function RootLayout() {
   const colors = useTheme();
 
   useEffect(() => {
-    i18n.changeLanguage(language);
+    if (i18n.isInitialized) {
+      i18n.changeLanguage(language);
+    }
   }, [language]);
 
   const segments = useSegments();
@@ -217,7 +191,6 @@ export default function RootLayout() {
     <GestureHandlerRootView style={[styles.root, { backgroundColor: colors.background }]}>
         <StatusBar style={theme === 'dark' ? 'light' : 'dark'} backgroundColor={colors.background} />
         <NavigationGuard />
-        <AchievementEngine />
         <AchievementToast />
         <Stack screenOptions={{ 
           headerShown: false, 

@@ -17,25 +17,28 @@ const secureStorage = {
 };
 
 interface RecipesState {
-  recipes:     Recipe[];
-  favorites:   string[]; // IDs
-  setRecipes:  (recipes: Recipe[]) => void;
-  toggleFav:   (id: string) => void;
-  reset:       () => void;
+  recipes:       Recipe[];
+  pinnedRecipes: Recipe[];
+  setRecipes:    (recipes: Recipe[]) => void;
+  togglePin:     (recipe: Recipe) => void;
+  reset:         () => void;
 }
 
 export const useRecipesStore = create<RecipesState>()(
   persist(
     (set) => ({
-      recipes:    [],
-      favorites:  [],
-      setRecipes: (recipes) => set({ recipes }),
-      toggleFav:  (id) => set((s) => ({
-        favorites: s.favorites.includes(id)
-          ? s.favorites.filter(fid => fid !== id)
-          : [...s.favorites, id],
-      })),
-      reset: () => set({ recipes: [], favorites: [] }),
+      recipes:       [],
+      pinnedRecipes: [],
+      setRecipes:    (recipes) => set({ recipes }),
+      togglePin:     (recipe) => set((s) => {
+        const isPinned = s.pinnedRecipes.some(r => r.id === recipe.id);
+        return {
+          pinnedRecipes: isPinned
+            ? s.pinnedRecipes.filter(r => r.id !== recipe.id)
+            : [...s.pinnedRecipes, recipe],
+        };
+      }),
+      reset: () => set({ recipes: [], pinnedRecipes: [] }),
     }),
     {
       name: 'ff-recipes',

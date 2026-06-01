@@ -13,7 +13,7 @@ import {
   User, Zap, Activity, Mars, Venus, Footprints, Monitor, Bike,
   Utensils, Sparkles, Droplets, Leaf, Scale, Clock, ChevronRight,
   Apple, AlertCircle, Trophy, Check, Briefcase, Building2, Coffee,
-  PersonStanding, Hammer, Plus, Minus
+  PersonStanding, Hammer, Plus, Minus, Search, ChevronDown, ChevronUp
 } from 'lucide-react-native';
 import Svg, { Path, Defs, LinearGradient as SvgLinearGradient, Stop, Circle, Line as SvgLine } from 'react-native-svg';
 import { 
@@ -22,7 +22,7 @@ import {
 } from '../store';
 import { useTheme } from '../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { calculateTDEE, calculateMacros } from '../services/foodDatabase';
+import { calculateTDEE, calculateMacros, searchFood, FoodItem } from '../services/foodDatabase';
 import { supabase } from '../services/supabase';
 import { CustomAlert, AlertType } from '../components/CustomAlert';
 import * as Haptics from 'expo-haptics';
@@ -1032,9 +1032,46 @@ const FOOD_CATEGORIES = [
   }
 ];
 
+// Category color palettes & icons (same as food-selection modal)
+const CAT_META_OB: Record<string, { gradient: [string, string]; icon: string }> = {
+  proteins:   { gradient: ['#FF6B6B', '#EE5A24'], icon: '🍗' },
+  carbs:      { gradient: ['#F9CA24', '#F0932B'], icon: '🍚' },
+  fats:       { gradient: ['#6AB04C', '#BADC58'], icon: '🥑' },
+  fruits:     { gradient: ['#EB4D8B', '#FD79A8'], icon: '🍓' },
+  veggies:    { gradient: ['#00B894', '#00CEC9'], icon: '🥦' },
+  condiments: { gradient: ['#FDCB6E', '#E17055'], icon: '🧂' },
+  dairy:      { gradient: ['#74B9FF', '#0984E3'], icon: '🥛' },
+  beverages:  { gradient: ['#A29BFE', '#6C5CE7'], icon: '☕' },
+};
+
 function DietStep({ data, onChange }: { data: Partial<OnboardingData>; onChange: (d: Partial<OnboardingData>) => void }) {
   const { t } = useTranslation();
   const colors = useTheme();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [expandedCats, setExpandedCats] = useState<string[]>([]);
+
+  const toggleCat = (id: string) => {
+    setExpandedCats(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const filteredCategories = React.useMemo(() => {
+    if (!searchQuery.trim()) return FOOD_CATEGORIES;
+    const q = searchQuery.toLowerCase().trim();
+    return FOOD_CATEGORIES.map(cat => {
+      const filteredItems = cat.items.filter(item => {
+        const translatedLabel = t(`onboarding.foodItems.${item.label}`) || item.label;
+        return translatedLabel.toLowerCase().includes(q) || item.label.toLowerCase().includes(q);
+      });
+      return { ...cat, items: filteredItems };
+    }).filter(cat => cat.items.length > 0);
+  }, [searchQuery, t]);
+
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      setExpandedCats(filteredCategories.map(c => c.id));
+    }
+  }, [searchQuery, filteredCategories]);
 
   const toggle = (id: string) => {
     const cur = data.availableFoods ?? [];
@@ -1045,80 +1082,143 @@ function DietStep({ data, onChange }: { data: Partial<OnboardingData>; onChange:
     const cur = data.availableFoods ?? [];
     const itemIds = categoryItems.map(i => i.id);
     const allSelected = itemIds.every(id => cur.includes(id));
-    
     if (allSelected) {
       onChange({ availableFoods: cur.filter(id => !itemIds.includes(id)) });
     } else {
-      const uniqueNew = [...new Set([...cur, ...itemIds])];
-      onChange({ availableFoods: uniqueNew });
+      onChange({ availableFoods: [...new Set([...cur, ...itemIds])] });
     }
   };
 
+  const totalSelected = (data.availableFoods ?? []).length;
+
   return (
     <View style={step.container}>
+      {/* Header */}
       <View style={step.headerSection}>
-        <View style={[step.targetCircle, { backgroundColor: colors.primary + '15', shadowColor: colors.primary }]}>
-          <Apple size={36} color={colors.primary} />
-        </View>
-        <Text style={[step.title, { color: colors.textPrimary }]}>{t('onboarding.foodsTitle')}</Text>
-        <Text style={[step.sub, { color: colors.textSecondary }]}>{t('onboarding.foodsSub')}</Text>
+        <LinearGradient colors={[colors.primary + '25', colors.primary + '08']} style={step.heroGrad}>
+          <View style={[step.heroIcon, { backgroundColor: colors.primary + '20' }]}>
+            <Apple size={36} color={colors.primary} />
+          </View>
+          <Text style={[step.title, { color: colors.textPrimary }]}>{t('onboarding.foodsTitle')}</Text>
+          <Text style={[step.sub, { color: colors.textSecondary }]}>{t('onboarding.foodsSub')}</Text>
+          {totalSelected > 0 && (
+            <View style={[step.selectedBadge, { backgroundColor: colors.primary }]}>
+              <Text style={step.selectedBadgeText}>{totalSelected} seleccionados</Text>
+            </View>
+          )}
+        </LinearGradient>
       </View>
 
-      {FOOD_CATEGORIES.map((cat) => (
-        <View key={cat.id} style={{ marginBottom: 32 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 12 }}>
-            <View>
-              <Text style={[step.categoryTitle, { color: colors.textPrimary }]}>{t(`onboarding.${cat.title}`)}</Text>
-              <Text style={[step.categorySub, { color: colors.textSecondary }]}>{t('onboarding.chooseAtLeast', { count: cat.min })}</Text>
-            </View>
-            <TouchableOpacity onPress={() => selectAll(cat.items)}>
-              <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 14 }}>{t('onboarding.selectAll')}</Text>
+      {/* Search Bar */}
+      <View style={[step.searchWrap, { backgroundColor: colors.surface, borderColor: searchQuery ? colors.primary : colors.border }]}>
+        <Search size={18} color={searchQuery ? colors.primary : colors.textSecondary} />
+        <TextInput
+          style={[step.searchInput, { color: colors.textPrimary }]}
+          placeholder="Buscar alimento..."
+          placeholderTextColor={colors.textSecondary}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')} style={[step.clearBtn, { backgroundColor: colors.surfaceAlt }]}>
+            <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '800' }}>✕</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* No results */}
+      {searchQuery.trim() && filteredCategories.length === 0 && (
+        <View style={{ alignItems: 'center', paddingVertical: 40 }}>
+          <Text style={{ fontSize: 32, marginBottom: 10 }}>🔍</Text>
+          <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 17 }}>Sin resultados</Text>
+          <Text style={{ color: colors.textSecondary, marginTop: 4 }}>Intenta con otro término</Text>
+        </View>
+      )}
+
+      {/* Category Accordions */}
+      {filteredCategories.map((cat) => {
+        const meta = CAT_META_OB[cat.id] || { gradient: [colors.primary, colors.primary], icon: '🍽️' };
+        const isExpanded = expandedCats.includes(cat.id);
+        const catSelected = (data.availableFoods ?? []).filter(id => cat.items.some(i => i.id === id)).length;
+
+        return (
+          <View key={cat.id} style={[step.categoryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            {/* Header Row */}
+            <TouchableOpacity style={step.catHeader} onPress={() => toggleCat(cat.id)} activeOpacity={0.7}>
+              <View style={step.catIconWrap}>
+                <LinearGradient colors={meta.gradient as [string, string]} style={step.catIconGrad}>
+                  <Text style={{ fontSize: 20 }}>{meta.icon}</Text>
+                </LinearGradient>
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={[step.catTitle, { color: colors.textPrimary }]}>{t(`onboarding.${cat.title}`)}</Text>
+                <Text style={[step.catSub, { color: colors.textSecondary }]}>
+                  {catSelected}/{cat.items.length} seleccionados{cat.min > 0 ? ` • min ${cat.min}` : ''}
+                </Text>
+              </View>
+              {catSelected > 0 && (
+                <View style={[step.catBadge, { backgroundColor: meta.gradient[0] + '30' }]}>
+                  <Text style={[step.catBadgeText, { color: meta.gradient[0] }]}>{catSelected}</Text>
+                </View>
+              )}
+              <View style={[step.chevronWrap, { backgroundColor: colors.surfaceAlt }]}>
+                {isExpanded ? <ChevronUp size={16} color={colors.textSecondary} /> : <ChevronDown size={16} color={colors.textSecondary} />}
+              </View>
             </TouchableOpacity>
-          </View>
-          
-          <View style={step.dietGrid}>
-            {cat.items.map((item) => {
-              const active = data.availableFoods?.includes(item.id);
-              return (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    step.dietPill, 
-                    { backgroundColor: colors.surface, borderColor: colors.border }, 
-                    active && { 
-                      borderColor: colors.primary, 
-                      shadowColor: colors.primary,
-                      shadowOffset: { width: 0, height: 3 },
-                      shadowOpacity: 0.25,
-                      shadowRadius: 6,
-                      elevation: 4,
-                    }
-                  ]}
-                  onPress={() => toggle(item.id)}
-                  activeOpacity={0.75}
-                >
-                  {active && (
-                    <LinearGradient
-                      colors={[colors.primary + '20', colors.primary + '07']}
-                      style={StyleSheet.absoluteFill}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                    />
-                  )}
-                  <Text style={{ fontSize: 17, marginRight: 6 }}>{item.emoji}</Text>
-                  <Text style={[
-                    step.dietPillText, 
-                    { color: active ? colors.textPrimary : colors.textSecondary }, 
-                    active && { fontWeight: '800', color: colors.primary }
-                  ]}>
-                    {t(`onboarding.foodItems.${item.label}`) || item.label}
+
+            {/* Progress bar */}
+            {cat.min > 0 && (
+              <View style={[step.progressTrack, { backgroundColor: colors.border }]}>
+                <LinearGradient
+                  colors={meta.gradient as [string, string]}
+                  style={[step.progressBar, { width: `${Math.min((catSelected / cat.min) * 100, 100)}%` }]}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                />
+              </View>
+            )}
+
+            {/* Items */}
+            {isExpanded && (
+              <View style={step.itemsSection}>
+                <TouchableOpacity onPress={() => selectAll(cat.items)} style={step.selectAllBtn}>
+                  <Text style={[step.selectAllText, { color: meta.gradient[0] }]}>
+                    {cat.items.every(i => (data.availableFoods ?? []).includes(i.id)) ? '✓ Todo seleccionado' : 'Seleccionar todo'}
                   </Text>
                 </TouchableOpacity>
-              );
-            })}
+                <View style={step.dietGrid}>
+                  {cat.items.map((item) => {
+                    const active = (data.availableFoods ?? []).includes(item.id);
+                    return (
+                      <TouchableOpacity
+                        key={item.id}
+                        style={[
+                          step.dietPill,
+                          { backgroundColor: colors.background, borderColor: colors.border },
+                          active && { borderColor: meta.gradient[0], backgroundColor: meta.gradient[0] + '15' }
+                        ]}
+                        onPress={() => toggle(item.id)}
+                        activeOpacity={0.75}
+                      >
+                        <View style={[step.pillEmoji, { backgroundColor: active ? meta.gradient[0] + '25' : colors.surfaceAlt }]}>
+                          <Text style={{ fontSize: 17 }}>{item.emoji}</Text>
+                        </View>
+                        <Text style={[step.dietPillText, { color: active ? colors.textPrimary : colors.textSecondary }, active && { fontWeight: '700', color: colors.textPrimary }]}>
+                          {t(`onboarding.foodItems.${item.label}`) || item.label}
+                        </Text>
+                        {active && (
+                          <View style={[step.checkDot, { backgroundColor: meta.gradient[0] }]}>
+                            <Check size={9} color="#FFF" strokeWidth={3} />
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
           </View>
-        </View>
-      ))}
+        );
+      })}
     </View>
   );
 }
@@ -1662,19 +1762,49 @@ const step = StyleSheet.create({
   numValueSmall:    { fontSize: 16, fontWeight: '700', minWidth: 60, textAlign: 'center' },
   categoryTitle:    { fontSize: 20, fontWeight: '900', marginBottom: 4, letterSpacing: -0.5 },
   categorySub:      { fontSize: 13, opacity: 0.6, fontWeight: '600' },
-  dietGrid:         { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'flex-start' },
+  dietGrid:         { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-start' },
   dietPill:         { 
     borderRadius: 20, 
     borderWidth: 1.5, 
-    paddingHorizontal: 16, 
-    paddingVertical: 12,
+    paddingRight: 12, 
+    paddingLeft: 4,
+    paddingVertical: 4,
     flexDirection: 'row',
     alignItems: 'center',
     overflow: 'hidden'
   },
   dietPillActive:   { backgroundColor: '#7C5CFC22' },
-  dietPillText:     { fontSize: 15, fontWeight: '600' },
+  dietPillText:     { fontSize: 14, fontWeight: '600' },
   dietPillTextActive:{ fontWeight: '800' },
+
+  // Premium DietStep styles
+  heroGrad:         { alignItems: 'center', paddingVertical: 24, borderRadius: 20, marginBottom: 16, paddingHorizontal: 20 },
+  heroIcon:         { width: 68, height: 68, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginBottom: 14 },
+  selectedBadge:    { marginTop: 12, paddingHorizontal: 14, paddingVertical: 5, borderRadius: 20 },
+  selectedBadgeText: { color: '#FFF', fontSize: 13, fontWeight: '800' },
+  searchWrap:       { 
+    flexDirection: 'row', alignItems: 'center', 
+    borderRadius: 14, borderWidth: 1.5, 
+    paddingHorizontal: 14, marginBottom: 16, gap: 10 
+  },
+  searchInput:      { flex: 1, height: 48, fontSize: 16 },
+  clearBtn:         { width: 26, height: 26, borderRadius: 13, justifyContent: 'center', alignItems: 'center' },
+  categoryCard:     { borderRadius: 18, borderWidth: 1, marginBottom: 14, overflow: 'hidden' },
+  catHeader:        { flexDirection: 'row', alignItems: 'center', padding: 14 },
+  catIconWrap:      { borderRadius: 14, overflow: 'hidden' },
+  catIconGrad:      { width: 46, height: 46, justifyContent: 'center', alignItems: 'center', borderRadius: 14 },
+  catTitle:         { fontSize: 15, fontWeight: '800', marginBottom: 2 },
+  catSub:           { fontSize: 12, fontWeight: '500', opacity: 0.7 },
+  catBadge:         { paddingHorizontal: 9, paddingVertical: 3, borderRadius: 18, marginRight: 8 },
+  catBadgeText:     { fontSize: 12, fontWeight: '800' },
+  chevronWrap:      { width: 30, height: 30, borderRadius: 9, justifyContent: 'center', alignItems: 'center' },
+  progressTrack:    { height: 3, marginHorizontal: 14, borderRadius: 2, marginBottom: 2 },
+  progressBar:      { height: 3, borderRadius: 2, minWidth: 4 },
+  itemsSection:     { paddingHorizontal: 12, paddingBottom: 14, paddingTop: 6 },
+  selectAllBtn:     { alignSelf: 'flex-end', marginBottom: 10, paddingVertical: 3 },
+  selectAllText:    { fontSize: 12, fontWeight: '700' },
+  pillEmoji:        { width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginRight: 6 },
+  checkDot:         { width: 15, height: 15, borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginLeft: 3 },
 });
 
 // ─── Main Onboarding Screen ────────────────────────────────────────────────────

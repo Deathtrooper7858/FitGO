@@ -167,6 +167,7 @@
     "macrosWidget": "Macros",
     "measurementsWidget": "Medidas",
     "photosWidget": "Fotos",
+    "recipeSearchWidget": "Buscar Recetas",
     "scoreTitle": "Score Nutricional",
     "phaseTitle": "Fase",
     "statsTitle": "Estadísticas",
@@ -460,7 +461,13 @@
     "proTitle": "Las Recetas son una Función Pro",
     "proSub": "Desbloquea recetas personalizadas generadas por IA para alcanzar tus macros perfectamente.",
     "unlockNow": "Desbloquear Pro Ahora",
-    "prepTime": "min"
+    "prepTime": "min",
+    "searchPlaceholder": "Ej: Pollo, Avena...",
+    "search": "Buscar",
+    "pinned": "Tus recetas fijadas",
+    "searchTab": "Buscar",
+    "pinnedTab": "Fijadas",
+    "noPinned": "No tienes recetas fijadas aún."
   },
   "coach": {
     "title": "Fitz Coach",

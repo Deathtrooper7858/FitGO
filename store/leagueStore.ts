@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import * as SecureStore from 'expo-secure-store';
 import { supabase } from '../services/supabase';
+import { useAuthStore } from './authStore';
 
 // Secure storage adapter for Zustand
 const secureStorage = {
@@ -69,6 +70,8 @@ interface LeagueStore {
     target: { calories: number; protein: number; carbs: number; fat: number }
   ) => Promise<void>;
   fetchTopSquads: () => Promise<void>;
+  fetchSquadMembers: (squadId: string) => Promise<SquadMember[]>;
+  removeMember: (squadId: string, userId: string) => Promise<boolean>;
   showReward: (points: number) => void;
   hideReward: () => void;
   reset: () => void;
@@ -200,6 +203,22 @@ export const useLeagueStore = create<LeagueStore>()(
     }
   },
 
+  // ── Fetch arbitrary squad members ─────────────────────────────────────────
+  fetchSquadMembers: async (squadId: string) => {
+    try {
+      const { data, error } = await supabase
+        .rpc('get_squad_leaderboard', { p_squad_id: squadId });
+      if (error) {
+        console.warn('[League] fetchSquadMembers error:', error.message);
+        return [];
+      }
+      return (data || []) as SquadMember[];
+    } catch (err: any) {
+      console.warn('[League] fetchSquadMembers unexpected error:', err.message);
+      return [];
+    }
+  },
+
   // ── Create a new squad ────────────────────────────────────────────────────
   createSquad: async (name: string, userId: string) => {
     set({ loading: true, error: null });
@@ -272,7 +291,36 @@ export const useLeagueStore = create<LeagueStore>()(
       .from('squad_members')
       .delete()
       .match({ squad_id: squad.id, user_id: userId });
+    
+    await supabase.rpc('recalculate_league_tier', { p_squad_id: squad.id });
+    
     set({ squad: null, members: [] });
+  },
+
+  // ── Remove a member (leader only) ─────────────────────────────────────────
+  removeMember: async (squadId: string, memberId: string) => {
+    const { profile } = useAuthStore.getState();
+    const { squad } = get();
+    if (squad?.id !== squadId || squad?.created_by !== profile?.id) return false;
+
+    set({ loading: true, error: null });
+    try {
+      const { error } = await supabase
+        .from('squad_members')
+        .delete()
+        .match({ squad_id: squadId, user_id: memberId });
+      
+      if (error) throw error;
+
+      await supabase.rpc('recalculate_league_tier', { p_squad_id: squadId });
+      await get().fetchMySquad(profile!.id);
+      
+      return true;
+    } catch (err: any) {
+      console.error('[LeagueStore] Error removing member:', err);
+      set({ error: err.message, loading: false });
+      return false;
+    }
   },
 
   // ── Award generic points via RPC ──────────────────────────────────────────

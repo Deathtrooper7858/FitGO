@@ -8,14 +8,23 @@ import { supabase } from '../../services/supabase';
 import { Radius, Spacing } from '../../constants';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Apple, ChevronLeft, Sparkles, AlertCircle, Search, Plus, Check } from 'lucide-react-native';
-import { searchFood, FoodItem } from '../../services/foodDatabase';
+import { Apple, ChevronLeft, Sparkles, AlertCircle, Search, Check, ChevronDown, ChevronUp, Utensils } from 'lucide-react-native';
+
+// Category color palettes & icons
+const CAT_META: Record<string, { gradient: [string, string]; icon: string }> = {
+  proteins: { gradient: ['#FF6B6B', '#EE5A24'], icon: '🍗' },
+  carbs:    { gradient: ['#F9CA24', '#F0932B'], icon: '🍚' },
+  fats:     { gradient: ['#6AB04C', '#BADC58'], icon: '🥑' },
+  fruits:   { gradient: ['#EB4D8B', '#FD79A8'], icon: '🍓' },
+  veggies:  { gradient: ['#00B894', '#00CEC9'], icon: '🥦' },
+  condiments: { gradient: ['#FDCB6E', '#E17055'], icon: '🧂' },
+  dairy:    { gradient: ['#74B9FF', '#0984E3'], icon: '🥛' },
+  beverages:{ gradient: ['#A29BFE', '#6C5CE7'], icon: '☕' },
+};
 
 const FOOD_CATEGORIES = [
   {
-    id: 'proteins',
-    title: 'proteins',
-    min: 3,
+    id: 'proteins', title: 'proteins', min: 3,
     items: [
       { id: 'chicken', label: 'chicken', emoji: '🍗' },
       { id: 'beef', label: 'beef', emoji: '🥩' },
@@ -26,9 +35,9 @@ const FOOD_CATEGORIES = [
       { id: 'pork', label: 'pork', emoji: '🍖' },
       { id: 'eggs', label: 'eggs', emoji: '🥚' },
       { id: 'tofu', label: 'tofu', emoji: '🍱' },
-      { id: 'greek_yogurt', label: 'greek_yogurt', emoji: '🥬' },
+      { id: 'greek_yogurt', label: 'greek_yogurt', emoji: '🥄' },
       { id: 'cottage_cheese', label: 'cottage_cheese', emoji: '🧀' },
-      { id: 'protein_powder', label: 'protein_powder', emoji: '🕡' },
+      { id: 'protein_powder', label: 'protein_powder', emoji: '💪' },
       { id: 'shrimp', label: 'shrimp', emoji: '🦐' },
       { id: 'seitan', label: 'seitan', emoji: '🌾' },
       { id: 'tempeh', label: 'tempeh', emoji: '🌱' },
@@ -36,23 +45,11 @@ const FOOD_CATEGORIES = [
       { id: 'sardines', label: 'sardines', emoji: '🐟' },
       { id: 'crab', label: 'crab', emoji: '🦀' },
       { id: 'octopus', label: 'octopus', emoji: '🐙' },
-      { id: 'tilapia', label: 'tilapia', emoji: '🐟' },
       { id: 'duck', label: 'duck', emoji: '🦆' },
-      { id: 'bison', label: 'bison', emoji: '🥩' },
-      { id: 'venison', label: 'venison', emoji: '🥩' },
-      { id: 'skyr', label: 'skyr', emoji: '🥮' },
-      { id: 'edamame', label: 'edamame', emoji: '🌱' },
-      { id: 'lox', label: 'lox', emoji: '🍣' },
-      { id: 'anchovies', label: 'anchovies', emoji: '🐟' },
-      { id: 'mussels', label: 'mussels', emoji: '🐚' },
-      { id: 'chicken_liver', label: 'chicken_liver', emoji: '🍖' },
-      { id: 'beef_liver', label: 'beef_liver', emoji: '🥩' },
     ]
   },
   {
-    id: 'carbs',
-    title: 'carbs',
-    min: 3,
+    id: 'carbs', title: 'carbs', min: 3,
     items: [
       { id: 'rice', label: 'rice', emoji: '🍚' },
       { id: 'potato', label: 'potato', emoji: '🥔' },
@@ -60,34 +57,19 @@ const FOOD_CATEGORIES = [
       { id: 'pasta', label: 'pasta', emoji: '🍝' },
       { id: 'oats', label: 'oats', emoji: '🫓' },
       { id: 'quinoa', label: 'quinoa', emoji: '🌾' },
-      { id: 'couscous', label: 'couscous', emoji: '🍚' },
-      { id: 'bulgur', label: 'bulgur', emoji: '🌾' },
       { id: 'beans', label: 'beans', emoji: '🫘' },
       { id: 'lentils', label: 'lentils', emoji: '🍲' },
       { id: 'bread', label: 'bread', emoji: '🍞' },
-      { id: 'rice_cakes', label: 'rice_cakes', emoji: '🎘' },
       { id: 'corn', label: 'corn', emoji: '🌽' },
       { id: 'tortilla', label: 'tortilla', emoji: '🫓' },
       { id: 'plantain', label: 'plantain', emoji: '🍌' },
       { id: 'chickpeas', label: 'chickpeas', emoji: '🫘' },
       { id: 'brown_rice', label: 'brown_rice', emoji: '🍚' },
-      { id: 'whole_wheat_pasta', label: 'whole_wheat_pasta', emoji: '🍝' },
-      { id: 'barley', label: 'barley', emoji: '🌾' },
-      { id: 'rye_bread', label: 'rye_bread', emoji: '🍞' },
-      { id: 'granola', label: 'granola', emoji: '🫓' },
-      { id: 'farro', label: 'farro', emoji: '🌾' },
-      { id: 'sourdough', label: 'sourdough', emoji: '🍞' },
-      { id: 'pita_bread', label: 'pita_bread', emoji: '🫓' },
-      { id: 'millet', label: 'millet', emoji: '🌾' },
-      { id: 'tapioca', label: 'tapioca', emoji: '🍠' },
-      { id: 'cassava', label: 'cassava', emoji: '🥔' },
-      { id: 'taro', label: 'taro', emoji: '🥔' },
+      { id: 'granola', label: 'granola', emoji: '🥣' },
     ]
   },
   {
-    id: 'fats',
-    title: 'fats',
-    min: 1,
+    id: 'fats', title: 'fats', min: 1,
     items: [
       { id: 'avocado', label: 'avocado', emoji: '🥑' },
       { id: 'nuts', label: 'nuts', emoji: '🥜' },
@@ -96,31 +78,15 @@ const FOOD_CATEGORIES = [
       { id: 'peanut_butter', label: 'peanut_butter', emoji: '🥜' },
       { id: 'olive_oil', label: 'olive_oil', emoji: '🫒' },
       { id: 'cheese', label: 'cheese', emoji: '🧀' },
-      { id: 'yogurt', label: 'yogurt', emoji: '🥮' },
       { id: 'chia_seeds', label: 'chia_seeds', emoji: '🌱' },
-      { id: 'pumpkin_seeds', label: 'pumpkin_seeds', emoji: '🌰' },
-      { id: 'sunflower_seeds', label: 'sunflower_seeds', emoji: '🌻' },
       { id: 'coconut_oil', label: 'coconut_oil', emoji: '🥥' },
-      { id: 'ghee', label: 'ghee', emoji: '🧈' },
-      { id: 'butter', label: 'butter', emoji: '🧈' },
-      { id: 'cashews', label: 'cashews', emoji: '🌰' },
-      { id: 'pistachios', label: 'pistachios', emoji: '🌰' },
-      { id: 'macadamia', label: 'macadamia', emoji: '🌰' },
-      { id: 'brazil_nuts', label: 'brazil_nuts', emoji: '🌰' },
-      { id: 'pecans', label: 'pecans', emoji: '🌰' },
-      { id: 'hemp_seeds', label: 'hemp_seeds', emoji: '🌱' },
-      { id: 'flaxseeds', label: 'flaxseeds', emoji: '🌱' },
-      { id: 'tahini', label: 'tahini', emoji: '🍯' },
-      { id: 'sesame_oil', label: 'sesame_oil', emoji: '🫒' },
       { id: 'dark_chocolate', label: 'dark_chocolate', emoji: '🍫' },
-      { id: 'coconut_milk', label: 'coconut_milk', emoji: '🥥' },
-      { id: 'almond_butter', label: 'almond_butter', emoji: '🌰' },
+      { id: 'tahini', label: 'tahini', emoji: '🍯' },
+      { id: 'cashews', label: 'cashews', emoji: '🌰' },
     ]
   },
   {
-    id: 'fruits',
-    title: 'fruits',
-    min: 2,
+    id: 'fruits', title: 'fruits', min: 2,
     items: [
       { id: 'banana', label: 'banana', emoji: '🍌' },
       { id: 'apple', label: 'apple', emoji: '🍎' },
@@ -131,132 +97,69 @@ const FOOD_CATEGORIES = [
       { id: 'mango', label: 'mango', emoji: '🥭' },
       { id: 'pineapple', label: 'pineapple', emoji: '🍍' },
       { id: 'peach', label: 'peach', emoji: '🍑' },
-      { id: 'pear', label: 'pear', emoji: '🍐' },
       { id: 'kiwi', label: 'kiwi', emoji: '🥝' },
       { id: 'cherry', label: 'cherry', emoji: '🍒' },
-      { id: 'blueberries', label: 'blueberries', emoji: '🍑' },
-      { id: 'raspberries', label: 'raspberries', emoji: '🍓' },
-      { id: 'papaya', label: 'papaya', emoji: '🥭' },
-      { id: 'pomegranate', label: 'pomegranate', emoji: '🍎' },
       { id: 'lemon', label: 'lemon', emoji: '🍋' },
-      { id: 'lime', label: 'lime', emoji: '🍋' },
-      { id: 'grapefruit', label: 'grapefruit', emoji: '🍊' },
-      { id: 'plum', label: 'plum', emoji: '🍑' },
-      { id: 'fig', label: 'fig', emoji: '🍎' },
-      { id: 'date', label: 'date', emoji: '🍋' },
-      { id: 'apricot', label: 'apricot', emoji: '🍑' },
       { id: 'coconut', label: 'coconut', emoji: '🥥' },
-      { id: 'dragonfruit', label: 'dragonfruit', emoji: '🍑' },
-      { id: 'passion_fruit', label: 'passion_fruit', emoji: '🍊' },
     ]
   },
   {
-    id: 'veggies',
-    title: 'veggies',
-    min: 2,
+    id: 'veggies', title: 'veggies', min: 2,
     items: [
       { id: 'broccoli', label: 'broccoli', emoji: '🥦' },
       { id: 'spinach', label: 'spinach', emoji: '🥬' },
-      { id: 'kale', label: 'kale', emoji: '🥬' },
       { id: 'carrot', label: 'carrot', emoji: '🥕' },
       { id: 'tomato', label: 'tomato', emoji: '🍅' },
       { id: 'onion', label: 'onion', emoji: '🧅' },
-      { id: 'lettuce', label: 'lettuce', emoji: '🥬' },
       { id: 'cucumber', label: 'cucumber', emoji: '🥒' },
       { id: 'bell_pepper', label: 'bell_pepper', emoji: '🫑' },
       { id: 'zucchini', label: 'zucchini', emoji: '🥒' },
-      { id: 'asparagus', label: 'asparagus', emoji: '🥦' },
-      { id: 'cauliflower', label: 'cauliflower', emoji: '🥦' },
       { id: 'mushroom', label: 'mushroom', emoji: '🍄' },
       { id: 'eggplant', label: 'eggplant', emoji: '🍆' },
-      { id: 'celery', label: 'celery', emoji: '🥦' },
-      { id: 'beet', label: 'beet', emoji: '🥔' },
-      { id: 'radish', label: 'radish', emoji: '🥔' },
-      { id: 'artichoke', label: 'artichoke', emoji: '🥦' },
-      { id: 'peas', label: 'peas', emoji: '🌱' },
-      { id: 'green_beans', label: 'green_beans', emoji: '🌱' },
-      { id: 'leek', label: 'leek', emoji: '🥦' },
-      { id: 'bok_choy', label: 'bok_choy', emoji: '🥬' },
-      { id: 'brussels_sprouts', label: 'brussels_sprouts', emoji: '🥦' },
-      { id: 'sweet_corn', label: 'sweet_corn', emoji: '🌽' },
+      { id: 'cauliflower', label: 'cauliflower', emoji: '🥦' },
+      { id: 'asparagus', label: 'asparagus', emoji: '🥦' },
       { id: 'pumpkin', label: 'pumpkin', emoji: '🎃' },
       { id: 'cabbage', label: 'cabbage', emoji: '🥬' },
-      { id: 'arugula', label: 'arugula', emoji: '🥬' },
     ]
   },
   {
-    id: 'condiments',
-    title: 'condiments',
-    min: 1,
+    id: 'condiments', title: 'condiments', min: 1,
     items: [
       { id: 'salt', label: 'salt', emoji: '🧂' },
       { id: 'pepper', label: 'pepper', emoji: '🌶️' },
       { id: 'soy_sauce', label: 'soy_sauce', emoji: '🍶' },
       { id: 'hot_sauce', label: 'hot_sauce', emoji: '🔥' },
-      { id: 'sriracha', label: 'sriracha', emoji: '🌶️' },
       { id: 'garlic', label: 'garlic', emoji: '🧄' },
       { id: 'mustard', label: 'mustard', emoji: '🌶️' },
-      { id: 'lemon_juice', label: 'lemon_juice', emoji: '🍋' },
-      { id: 'balsamic', label: 'balsamic', emoji: '🍶' },
+      { id: 'honey', label: 'honey', emoji: '🍯' },
       { id: 'cinnamon', label: 'cinnamon', emoji: '🌰' },
       { id: 'turmeric', label: 'turmeric', emoji: '🫚' },
       { id: 'ginger', label: 'ginger', emoji: '🥔' },
-      { id: 'mayonnaise', label: 'mayonnaise', emoji: '🍯' },
-      { id: 'ketchup', label: 'ketchup', emoji: '🍅' },
-      { id: 'honey', label: 'honey', emoji: '🍯' },
-      { id: 'agave', label: 'agave', emoji: '🌻' },
-      { id: 'maple_syrup', label: 'maple_syrup', emoji: '🍁' },
-      { id: 'apple_cider_vinegar', label: 'apple_cider_vinegar', emoji: '🍎' },
-      { id: 'worcestershire', label: 'worcestershire', emoji: '🍶' },
-      { id: 'fish_sauce', label: 'fish_sauce', emoji: '🐟' },
-      { id: 'tamari', label: 'tamari', emoji: '🍶' },
-      { id: 'miso', label: 'miso', emoji: '🍲' },
-      { id: 'cumin', label: 'cumin', emoji: '🌾' },
-      { id: 'paprika', label: 'paprika', emoji: '🌶️' },
-      { id: 'oregano', label: 'oregano', emoji: '🌿' },
-      { id: 'basil', label: 'basil', emoji: '🌿' },
-      { id: 'thyme', label: 'thyme', emoji: '🌿' },
-      { id: 'rosemary', label: 'rosemary', emoji: '🌿' },
     ]
   },
   {
-    id: 'dairy',
-    title: 'dairy',
-    min: 0,
+    id: 'dairy', title: 'dairy', min: 0,
     items: [
       { id: 'milk', label: 'milk', emoji: '🥛' },
-      { id: 'heavy_cream', label: 'heavy_cream', emoji: '🥛' },
       { id: 'almond_milk', label: 'almond_milk', emoji: '🥛' },
       { id: 'oat_milk', label: 'oat_milk', emoji: '🥛' },
-      { id: 'soy_milk', label: 'soy_milk', emoji: '🥛' },
       { id: 'mozzarella', label: 'mozzarella', emoji: '🧀' },
       { id: 'parmesan', label: 'parmesan', emoji: '🧀' },
       { id: 'cheddar', label: 'cheddar', emoji: '🧀' },
       { id: 'feta', label: 'feta', emoji: '🧀' },
-      { id: 'ricotta', label: 'ricotta', emoji: '🧀' },
       { id: 'cream_cheese', label: 'cream_cheese', emoji: '🧀' },
-      { id: 'whipping_cream', label: 'whipping_cream', emoji: '🥛' },
-      { id: 'kefir', label: 'kefir', emoji: '🥮' },
-      { id: 'ice_cream', label: 'ice_cream', emoji: '🍨' },
     ]
   },
   {
-    id: 'beverages',
-    title: 'beverages',
-    min: 0,
+    id: 'beverages', title: 'beverages', min: 0,
     items: [
       { id: 'water', label: 'water', emoji: '💧' },
       { id: 'coffee', label: 'coffee', emoji: '☕' },
       { id: 'green_tea', label: 'green_tea', emoji: '🍵' },
-      { id: 'black_tea', label: 'black_tea', emoji: '🍵' },
       { id: 'matcha', label: 'matcha', emoji: '🍵' },
-      { id: 'orange_juice', label: 'orange_juice', emoji: '🍊' },
-      { id: 'protein_shake', label: 'protein_shake', emoji: '🕡' },
       { id: 'smoothie', label: 'smoothie', emoji: '🥤' },
       { id: 'coconut_water', label: 'coconut_water', emoji: '🥥' },
-      { id: 'sports_drink', label: 'sports_drink', emoji: '🫙' },
-      { id: 'bone_broth', label: 'bone_broth', emoji: '🍲' },
-      { id: 'kombucha', label: 'kombucha', emoji: '🫙' },
+      { id: 'protein_shake', label: 'protein_shake', emoji: '🧃' },
     ]
   }
 ];
@@ -268,11 +171,12 @@ export default function FoodSelectionModal() {
   const [selected, setSelected] = useState<string[]>(profile?.availableFoods || []);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Search State
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<FoodItem[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [expandedCats, setExpandedCats] = useState<string[]>([]);
+
+  const toggleCat = (id: string) => {
+    setExpandedCats(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
 
   useEffect(() => {
     if (error) {
@@ -281,34 +185,31 @@ export default function FoodSelectionModal() {
     }
   }, [error]);
 
+  const filteredCategories = React.useMemo(() => {
+    if (!searchQuery.trim()) return FOOD_CATEGORIES;
+    const q = searchQuery.toLowerCase().trim();
+    return FOOD_CATEGORIES.map(cat => {
+      const filteredItems = cat.items.filter(item => {
+        const translatedLabel = t(`onboarding.foodItems.${item.label}`) || item.label;
+        return translatedLabel.toLowerCase().includes(q) || item.label.toLowerCase().includes(q);
+      });
+      return { ...cat, items: filteredItems };
+    }).filter(cat => cat.items.length > 0);
+  }, [searchQuery, t]);
+
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      return;
+    if (searchQuery.trim()) {
+      setExpandedCats(filteredCategories.map(c => c.id));
     }
-    const delayDebounceFn = setTimeout(async () => {
-      setIsSearching(true);
-      try {
-        const results = await searchFood(searchQuery);
-        setSearchResults(results);
-      } catch (err) {
-        console.error('Search error', err);
-      } finally {
-        setIsSearching(false);
-      }
-    }, 600);
+  }, [searchQuery, filteredCategories]);
 
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
-
-  const toggle = (idOrJson: string) => {
-    setSelected(prev => prev.includes(idOrJson) ? prev.filter(x => x !== idOrJson) : [...prev, idOrJson]);
+  const toggle = (id: string) => {
+    setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
   const selectAll = (categoryItems: {id: string}[]) => {
     const itemIds = categoryItems.map(i => i.id);
     const allSelected = itemIds.every(id => selected.includes(id));
-    
     if (allSelected) {
       setSelected(prev => prev.filter(id => !itemIds.includes(id)));
     } else {
@@ -317,30 +218,18 @@ export default function FoodSelectionModal() {
   };
 
   const handleSave = async () => {
-    const basicSelected = selected.filter(s => !s.startsWith('{')); // Only check standard string IDs
     for (const cat of FOOD_CATEGORIES) {
-      if (cat.min === 0) continue; // Skip optional categories
-      const selectedInCategory = cat.items.filter(item => basicSelected.includes(item.id));
-      if (selectedInCategory.length < cat.min && searchQuery.length === 0) {
-        // Only enforce validation if they are not actively searching
-        setError(
-          t('onboarding.validationFoodMin', { 
-            category: t(`onboarding.${cat.title}`), 
-            min: cat.min 
-          })
-        );
+      if (cat.min === 0) continue;
+      const selectedInCategory = cat.items.filter(item => selected.includes(item.id));
+      if (selectedInCategory.length < cat.min && !searchQuery) {
+        setError(t('onboarding.validationFoodMin', { category: t(`onboarding.${cat.title}`), min: cat.min }));
         return;
       }
     }
-
     if (!profile) return;
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('users')
-        .update({ available_foods: selected })
-        .eq('id', profile.id);
-
+      const { error } = await supabase.from('users').update({ available_foods: selected }).eq('id', profile.id);
       if (error) throw error;
       setProfile({ ...profile, availableFoods: selected });
       router.back();
@@ -352,138 +241,166 @@ export default function FoodSelectionModal() {
     }
   };
 
+  const totalSelected = selected.length;
+
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
-      {/* Error Overlay */}
+      {/* Error Toast */}
       {error && (
         <View style={s.errorContainer}>
-          <LinearGradient
-            colors={[colors.error + 'EE', colors.error]}
-            style={s.errorGradient}
-          >
-            <AlertCircle size={22} color="#FFF" />
+          <LinearGradient colors={[colors.error + 'EE', colors.error]} style={s.errorGradient}>
+            <AlertCircle size={20} color="#FFF" />
             <Text style={s.errorText}>{error}</Text>
           </LinearGradient>
         </View>
       )}
 
-      <View style={s.header}>
-        <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-          <ChevronLeft size={28} color={colors.textPrimary} />
+      {/* Header */}
+      <View style={[s.header, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity onPress={() => router.back()} style={[s.backBtn, { backgroundColor: colors.surface }]}>
+          <ChevronLeft size={22} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={[s.title, { color: colors.textPrimary }]}>{t('profile.mealPlanFoods')}</Text>
-        <View style={{ width: 40 }} />
+        <View style={[s.countBadge, { backgroundColor: colors.primary }]}>
+          <Text style={s.countText}>{totalSelected}</Text>
+        </View>
       </View>
 
-      <ScrollView 
-        style={{ flex: 1 }}
-        contentContainerStyle={s.content} 
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={s.intro}>
-           <View style={[s.iconCircle, { backgroundColor: colors.primary + '15' }]}>
-              <Apple size={32} color={colors.primary} />
-           </View>
-           <Text style={[s.introTitle, { color: colors.textPrimary }]}>{t('onboarding.foodsTitle')}</Text>
-           <Text style={[s.introSub, { color: colors.textSecondary }]}>{t('onboarding.foodsSub')}</Text>
-        </View>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+
+        {/* Hero */}
+        <LinearGradient colors={[colors.primary + '20', colors.primary + '05', 'transparent']} style={s.hero}>
+          <View style={[s.heroIconWrap, { backgroundColor: colors.primary + '20' }]}>
+            <Utensils size={36} color={colors.primary} />
+          </View>
+          <Text style={[s.introTitle, { color: colors.textPrimary }]}>{t('onboarding.foodsTitle')}</Text>
+          <Text style={[s.introSub, { color: colors.textSecondary }]}>{t('onboarding.foodsSub')}</Text>
+        </LinearGradient>
 
         {/* Search Bar */}
-        <View style={[s.searchContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Search size={20} color={colors.textSecondary} style={s.searchIcon} />
+        <View style={[s.searchWrap, { backgroundColor: colors.surface, borderColor: searchQuery ? colors.primary : colors.border }]}>
+          <Search size={18} color={searchQuery ? colors.primary : colors.textSecondary} />
           <TextInput
             style={[s.searchInput, { color: colors.textPrimary }]}
-            placeholder="Buscar alimento en tu lista..."
+            placeholder="Buscar alimento..."
             placeholderTextColor={colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
-          {isSearching && <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 12 }} />}
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')} style={[s.clearBtn, { backgroundColor: colors.surfaceAlt }]}>
+              <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '700' }}>✕</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
-        {searchQuery.length > 0 ? (
-          <View style={s.searchResults}>
-            {searchResults.length === 0 && !isSearching ? (
-              <Text style={[s.noResults, { color: colors.textSecondary }]}>{t('common.noResults') || 'No se encontraron resultados'}</Text>
-            ) : (
-              searchResults.map((item) => {
-                const itemJson = JSON.stringify(item);
-                const isActive = selected.includes(itemJson);
-                return (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={[s.searchResultItem, { backgroundColor: colors.surface, borderColor: colors.border }, isActive && { borderColor: colors.primary }]}
-                    onPress={() => toggle(itemJson)}
-                  >
-                    <View style={s.searchResultInfo}>
-                      <Text style={[s.searchResultName, { color: colors.textPrimary }]}>{item.name}</Text>
-                      <Text style={[s.searchResultBrand, { color: colors.textSecondary }]}>
-                        {item.brand ? `${item.brand} • ` : ''}{item.calories} kcal | {item.protein}P {item.carbs}C {item.fat}G
-                      </Text>
-                    </View>
-                    <View style={[s.addIconWrap, isActive ? { backgroundColor: colors.primary } : { backgroundColor: colors.surfaceAlt }]}>
-                      {isActive ? <Check size={16} color="#FFF" /> : <Plus size={16} color={colors.textSecondary} />}
-                    </View>
-                  </TouchableOpacity>
-                );
-              })
-            )}
+        {/* No Results */}
+        {searchQuery.trim() && filteredCategories.length === 0 && (
+          <View style={s.noResultsWrap}>
+            <Text style={{ fontSize: 32, marginBottom: 12 }}>🔍</Text>
+            <Text style={[s.noResultsText, { color: colors.textPrimary }]}>Sin resultados</Text>
+            <Text style={[s.noResultsSub, { color: colors.textSecondary }]}>Intenta con otro término</Text>
           </View>
-        ) : (
-          FOOD_CATEGORIES.map((cat) => (
-          <View key={cat.id} style={s.category}>
-            <View style={s.catHeader}>
-              <View>
-                <Text style={[s.catTitle, { color: colors.textPrimary }]}>{t(`onboarding.${cat.title}`)}</Text>
-                <Text style={[s.catSub, { color: colors.textSecondary }]}>{t('onboarding.chooseAtLeast', { count: cat.min })}</Text>
-              </View>
-              <TouchableOpacity onPress={() => selectAll(cat.items)}>
-                <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 13 }}>{t('onboarding.selectAll')}</Text>
+        )}
+
+        {/* Categories */}
+        {filteredCategories.map((cat) => {
+          const meta = CAT_META[cat.id] || { gradient: [colors.primary, colors.primary], icon: '🍽️' };
+          const isExpanded = expandedCats.includes(cat.id);
+          const catSelected = cat.items.filter(i => selected.includes(i.id)).length;
+
+          return (
+            <View key={cat.id} style={[s.categoryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              {/* Category Header */}
+              <TouchableOpacity style={s.catHeader} onPress={() => toggleCat(cat.id)} activeOpacity={0.7}>
+                <View style={[s.catIconWrap]}>
+                  <LinearGradient colors={meta.gradient as [string, string]} style={s.catIconGrad}>
+                    <Text style={{ fontSize: 20 }}>{meta.icon}</Text>
+                  </LinearGradient>
+                </View>
+
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={[s.catTitle, { color: colors.textPrimary }]}>{t(`onboarding.${cat.title}`)}</Text>
+                  <Text style={[s.catSub, { color: colors.textSecondary }]}>
+                    {catSelected}/{cat.items.length} seleccionados
+                    {cat.min > 0 && ` • min ${cat.min}`}
+                  </Text>
+                </View>
+
+                {catSelected > 0 && (
+                  <View style={[s.catBadge, { backgroundColor: meta.gradient[0] + '30' }]}>
+                    <Text style={[s.catBadgeText, { color: meta.gradient[0] }]}>{catSelected}</Text>
+                  </View>
+                )}
+
+                <View style={[s.chevronWrap, { backgroundColor: colors.surfaceAlt }]}>
+                  {isExpanded
+                    ? <ChevronUp size={16} color={colors.textSecondary} />
+                    : <ChevronDown size={16} color={colors.textSecondary} />
+                  }
+                </View>
               </TouchableOpacity>
-            </View>
-            
-            <View style={s.grid}>
-              {cat.items.map((item) => {
-                const active = selected.includes(item.id);
-                return (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={[
-                      s.pill, 
-                      { backgroundColor: colors.surface, borderColor: colors.border }, 
-                      active && { 
-                        borderColor: colors.primary, 
-                        backgroundColor: colors.primary + '15',
-                        shadowColor: colors.primary,
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.2,
-                        shadowRadius: 4,
-                      }
-                    ]}
-                    onPress={() => toggle(item.id)}
-                    activeOpacity={0.7}
-                  >
-                    {active && (
-                      <LinearGradient
-                        colors={[colors.primary + '10', colors.primary + '05']}
-                        style={StyleSheet.absoluteFill}
-                      />
-                    )}
-                    <Text style={{ fontSize: 16, marginRight: 8 }}>{item.emoji}</Text>
-                    <Text style={[s.pillText, { color: colors.textSecondary }, active && { color: colors.textPrimary, fontWeight: '800' }]}>
-                      {t(`onboarding.foodItems.${item.label}`) || item.label}
+
+              {/* Progress bar */}
+              {cat.min > 0 && (
+                <View style={[s.progressTrack, { backgroundColor: colors.border }]}>
+                  <LinearGradient
+                    colors={meta.gradient as [string, string]}
+                    style={[s.progressBar, { width: `${Math.min((catSelected / cat.min) * 100, 100)}%` }]}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                  />
+                </View>
+              )}
+
+              {/* Items Grid */}
+              {isExpanded && (
+                <View style={s.itemsSection}>
+                  <TouchableOpacity onPress={() => selectAll(cat.items)} style={s.selectAllBtn}>
+                    <Text style={[s.selectAllText, { color: meta.gradient[0] }]}>
+                      {cat.items.every(i => selected.includes(i.id)) ? '✓ Todo seleccionado' : 'Seleccionar todo'}
                     </Text>
                   </TouchableOpacity>
-                );
-              })}
+
+                  <View style={s.grid}>
+                    {cat.items.map((item) => {
+                      const active = selected.includes(item.id);
+                      return (
+                        <TouchableOpacity
+                          key={item.id}
+                          style={[
+                            s.pill,
+                            { backgroundColor: colors.background, borderColor: colors.border },
+                            active && { borderColor: meta.gradient[0], backgroundColor: meta.gradient[0] + '15' }
+                          ]}
+                          onPress={() => toggle(item.id)}
+                          activeOpacity={0.7}
+                        >
+                          <View style={[s.pillEmoji, { backgroundColor: active ? meta.gradient[0] + '25' : colors.surfaceAlt }]}>
+                            <Text style={{ fontSize: 17 }}>{item.emoji}</Text>
+                          </View>
+                          <Text style={[s.pillText, { color: active ? colors.textPrimary : colors.textSecondary }, active && { fontWeight: '700' }]}>
+                            {t(`onboarding.foodItems.${item.label}`) || item.label}
+                          </Text>
+                          {active && (
+                            <View style={[s.checkDot, { backgroundColor: meta.gradient[0] }]}>
+                              <Check size={9} color="#FFF" strokeWidth={3} />
+                            </View>
+                          )}
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </View>
+              )}
             </View>
-          </View>
-        )))}
+          );
+        })}
       </ScrollView>
 
-      <View style={s.footer}>
-        <TouchableOpacity style={s.saveBtn} onPress={handleSave} disabled={saving}>
-          <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.saveGrad}>
+      {/* Footer Save Button */}
+      <View style={[s.footer, { backgroundColor: colors.background }]}>
+        <TouchableOpacity style={s.saveBtn} onPress={handleSave} disabled={saving} activeOpacity={0.85}>
+          <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.saveGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
             {saving ? (
               <ActivityIndicator color="#fff" />
             ) : (
@@ -500,127 +417,121 @@ export default function FoodSelectionModal() {
 }
 
 const s = StyleSheet.create({
-  safe:      { flex: 1 },
-  header:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12 },
-  backBtn:   { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-  title:     { fontSize: 18, fontWeight: '800' },
-  content:   { padding: 20, paddingBottom: 120 },
-  intro:     { alignItems: 'center', marginBottom: 32 },
-  iconCircle: { 
-    width: 80, height: 80, borderRadius: 40, 
-    justifyContent: 'center', alignItems: 'center', 
-    marginBottom: 24,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 15,
-    elevation: 10
+  safe: { flex: 1 },
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1,
   },
-  introTitle: { fontSize: 24, fontWeight: '900', marginBottom: 8, textAlign: 'center' },
-  introSub:  { fontSize: 14, textAlign: 'center', opacity: 0.7, paddingHorizontal: 20, marginBottom: 10 },
-  category:  { marginBottom: 36 },
-  catHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 16 },
-  catTitle:  { fontSize: 20, fontWeight: '900', letterSpacing: -0.5 },
-  catSub:    { fontSize: 13, opacity: 0.6, fontWeight: '600', marginTop: 2 },
-  grid:      { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  pill:      { 
-    borderRadius: 20, 
-    borderWidth: 1.5, 
-    paddingHorizontal: 16, 
-    paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    overflow: 'hidden'
+  backBtn: {
+    width: 38, height: 38, borderRadius: 12,
+    justifyContent: 'center', alignItems: 'center',
   },
-  pillText:  { fontSize: 15, fontWeight: '600' },
-  footer:    { 
-    position: 'absolute', bottom: 0, left: 0, right: 0, 
-    padding: 20, paddingBottom: Platform.OS === 'ios' ? 40 : 20,
-    backgroundColor: 'transparent'
+  title: { fontSize: 17, fontWeight: '800', flex: 1, textAlign: 'center' },
+  countBadge: {
+    minWidth: 32, height: 28, borderRadius: 14,
+    justifyContent: 'center', alignItems: 'center', paddingHorizontal: 8,
   },
-  saveBtn:   { 
-    borderRadius: Radius.xl, 
-    overflow: 'hidden', 
-    shadowColor: '#7C5CFC', 
-    shadowOffset: { width: 0, height: 4 }, 
-    shadowOpacity: 0.3, 
-    shadowRadius: 8 
+  countText: { color: '#FFF', fontSize: 13, fontWeight: '800' },
+
+  content: { paddingHorizontal: 16, paddingBottom: 120, paddingTop: 4 },
+
+  hero: {
+    alignItems: 'center', paddingVertical: 28, borderRadius: 20,
+    marginVertical: 16, paddingHorizontal: 20,
   },
-  saveGrad:  { paddingVertical: 18, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10 },
-  saveText:  { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
-  errorContainer: {
-    position: 'absolute',
-    top: 60,
-    left: 20,
-    right: 20,
-    zIndex: 1000,
+  heroIconWrap: {
+    width: 72, height: 72, borderRadius: 24,
+    justifyContent: 'center', alignItems: 'center', marginBottom: 16,
   },
+  introTitle: { fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 6, letterSpacing: -0.5 },
+  introSub: { fontSize: 14, textAlign: 'center', lineHeight: 20, opacity: 0.8 },
+
+  searchWrap: {
+    flexDirection: 'row', alignItems: 'center',
+    borderRadius: 16, borderWidth: 1.5,
+    paddingHorizontal: 14, paddingVertical: 0,
+    marginBottom: 20, gap: 10,
+  },
+  searchInput: { flex: 1, height: 50, fontSize: 16 },
+  clearBtn: {
+    width: 26, height: 26, borderRadius: 13,
+    justifyContent: 'center', alignItems: 'center',
+  },
+
+  noResultsWrap: { alignItems: 'center', paddingVertical: 48 },
+  noResultsText: { fontSize: 18, fontWeight: '800', marginBottom: 6 },
+  noResultsSub: { fontSize: 14 },
+
+  categoryCard: {
+    borderRadius: 20, borderWidth: 1,
+    marginBottom: 16, overflow: 'hidden',
+  },
+  catHeader: {
+    flexDirection: 'row', alignItems: 'center',
+    padding: 16,
+  },
+  catIconWrap: { borderRadius: 14, overflow: 'hidden' },
+  catIconGrad: {
+    width: 48, height: 48,
+    justifyContent: 'center', alignItems: 'center',
+    borderRadius: 14,
+  },
+  catTitle: { fontSize: 16, fontWeight: '800', marginBottom: 2 },
+  catSub: { fontSize: 12, fontWeight: '500', opacity: 0.7 },
+  catBadge: {
+    paddingHorizontal: 10, paddingVertical: 4,
+    borderRadius: 20, marginRight: 10,
+  },
+  catBadgeText: { fontSize: 13, fontWeight: '800' },
+  chevronWrap: {
+    width: 32, height: 32, borderRadius: 10,
+    justifyContent: 'center', alignItems: 'center',
+  },
+
+  progressTrack: {
+    height: 3, marginHorizontal: 16, borderRadius: 2, marginBottom: 2,
+  },
+  progressBar: { height: 3, borderRadius: 2, minWidth: 4 },
+
+  itemsSection: { paddingHorizontal: 14, paddingBottom: 16, paddingTop: 8 },
+  selectAllBtn: { alignSelf: 'flex-end', marginBottom: 12, paddingVertical: 4 },
+  selectAllText: { fontSize: 13, fontWeight: '700' },
+
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  pill: {
+    flexDirection: 'row', alignItems: 'center',
+    borderRadius: 20, borderWidth: 1.5,
+    paddingRight: 12, paddingLeft: 4, paddingVertical: 4,
+    overflow: 'hidden',
+  },
+  pillEmoji: {
+    width: 30, height: 30, borderRadius: 15,
+    justifyContent: 'center', alignItems: 'center', marginRight: 6,
+  },
+  pillText: { fontSize: 14, fontWeight: '600', marginRight: 4 },
+  checkDot: {
+    width: 16, height: 16, borderRadius: 8,
+    justifyContent: 'center', alignItems: 'center', marginLeft: 2,
+  },
+
+  footer: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    paddingHorizontal: 20, paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 36 : 20,
+    borderTopWidth: 1,
+  },
+  saveBtn: {
+    borderRadius: 18, overflow: 'hidden',
+    shadowColor: '#7C5CFC', shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35, shadowRadius: 12, elevation: 8,
+  },
+  saveGrad: { paddingVertical: 17, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10 },
+  saveText: { color: '#fff', fontSize: 17, fontWeight: '800', letterSpacing: 0.3 },
+
+  errorContainer: { position: 'absolute', top: 60, left: 20, right: 20, zIndex: 1000 },
   errorGradient: {
-    padding: 16,
-    borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 10,
+    padding: 14, borderRadius: 14, flexDirection: 'row', alignItems: 'center', gap: 10,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 10,
   },
-  errorText: {
-    color: '#FFF',
-    fontSize: 14,
-    fontWeight: '700',
-    flex: 1,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    marginBottom: 24,
-    paddingHorizontal: 12,
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    height: 48,
-    fontSize: 16,
-  },
-  searchResults: {
-    paddingBottom: 20,
-  },
-  noResults: {
-    textAlign: 'center',
-    marginTop: 20,
-    fontSize: 16,
-  },
-  searchResultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: Radius.md,
-    borderWidth: 1,
-    marginBottom: 12,
-  },
-  searchResultInfo: {
-    flex: 1,
-  },
-  searchResultName: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  searchResultBrand: {
-    fontSize: 13,
-  },
-  addIconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 12,
-  },
+  errorText: { color: '#FFF', fontSize: 14, fontWeight: '700', flex: 1 },
 });

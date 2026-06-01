@@ -323,10 +323,11 @@ export default function DashboardScreen() {
 
   const [widgetsOrder, setWidgetsOrder] = useState(() => {
 
-    let defaultOrder = ['weight', 'bodyFat', 'sleep', 'calories', 'macros', 'measurements', 'photos', 'muscle_directory'];
+    let defaultOrder = ['weight', 'bodyFat', 'sleep', 'calories', 'macros', 'measurements', 'photos', 'recipe_search', 'muscle_directory'];
     if (profile?.widgetsOrder?.length) {
       let order = profile.widgetsOrder.filter(id => id !== 'achievements');
       if (!order.includes('muscle_directory')) order.push('muscle_directory');
+      if (!order.includes('recipe_search')) order.push('recipe_search');
       return order;
     }
     return defaultOrder;
@@ -445,6 +446,19 @@ export default function DashboardScreen() {
         );
       case 'achievements':
         return null; // Removed from grid as requested
+      case 'recipe_search':
+        return (
+          <WidgetCard key={id} {...commonProps} title={t('dashboard.recipeSearchWidget', 'Buscar Recetas')} icon="🍳"
+            customContent={
+              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 32, color: colors.textSecondary }}>🥗</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginTop: 8 }}>{t('dashboard.recipeSearchWidget', 'Buscar Recetas')}</Text>
+                <Text style={[w.subValue, { color: colors.textSecondary }]}>Con IA</Text>
+              </View>
+            }
+            onPress={() => router.push('/modals/recipes' as any)}
+          />
+        );
       case 'muscle_directory':
         return (
           <WidgetCard key={id} {...commonProps} title={t('dashboard.muscleDirWidget', 'Ejercicios')} icon="💪"

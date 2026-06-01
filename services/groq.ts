@@ -569,10 +569,14 @@ export async function transcribeAudio(uri: string): Promise<string> {
 }
 
 // ─── Generate Recipes ─────────────────────────────────────────────────────────
-export async function generateRecipes(userGoal: string, language: string = 'en', count: number = 3): Promise<any[]> {
+export async function generateRecipes(userGoal: string, language: string = 'en', count: number = 3, foodName?: string): Promise<any[]> {
   const targetLang = getLang(language);
 
-  const prompt = `Generate ${count} healthy recipe ideas for someone with the goal: ${userGoal}.
+  const context = foodName 
+    ? `containing the ingredient/food: "${foodName}" for someone with the goal: ${userGoal}`
+    : `for someone with the goal: ${userGoal}`;
+
+  const prompt = `Generate ${count} healthy recipe ideas ${context}.
 IMPORTANT: All recipe names, descriptions, and instructions MUST be in ${targetLang}.
 Return ONLY valid JSON (no markdown). Structure:
 [
