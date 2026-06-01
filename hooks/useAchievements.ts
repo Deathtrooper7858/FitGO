@@ -8,6 +8,7 @@ import {
   selectDailyTotals 
 } from '../store';
 import { supabase } from '../services/supabase';
+import { useToastStore } from '../store/toastStore';
 
 export type AchievementTier = 'bronce' | 'plata' | 'oro' | 'diamante';
 export type AchievementIconType = 'lucide' | 'lottie';
@@ -151,6 +152,8 @@ export function useAchievements() {
       { id: 'sweet_tooth', title: 'Antojo Dulce', description: 'Registraste un postre pero aún cumpliste tus macros.', icon: '🍩', iconType: 'lucide' as const, lucideIcon: 'Cookie', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('sweet_tooth') },
       { id: 'coffee_addict', title: 'Sangre de Cafeína', description: 'Registraste más de 3 cafés en un solo día.', icon: '☕', iconType: 'lucide' as const, lucideIcon: 'Coffee', tier: 'plata', category: 'Nutrición', unlocked: unlockedAchievements.includes('coffee_addict') || todayLogs.filter(l => l.foodItem.name.toLowerCase().includes('café') || l.foodItem.name.toLowerCase().includes('coffee')).length >= 3 },
       { id: 'fasting_monk', title: 'Monje del Ayuno', description: 'Pasaste 16 horas sin registrar comidas.', icon: '🕰️', iconType: 'lucide' as const, lucideIcon: 'Timer', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('fasting_monk') },
+      { id: 'chef_kiss', title: 'Beso del Chef', description: 'Creaste tu primera receta personalizada en la app.', icon: '👨‍🍳', iconType: 'lucide' as const, lucideIcon: 'ChefHat', tier: 'bronce', category: 'Nutrición', unlocked: unlockedAchievements.includes('chef_kiss') },
+
       // ── Categoría: Físico & Progreso ──
       { id: 'goal_reached', title: 'En la Meta', description: 'Estás a menos de 1kg de tu peso objetivo.', icon: '🎯', iconType: 'lucide' as const, lucideIcon: 'Target', tier: 'oro', category: 'Físico', unlocked: unlockedAchievements.includes('goal_reached') || (weightDiff <= 1 && weightDiff > 0), rewardBadgeId: 'weight_master' },
       { id: 'weight_loss_1', title: 'Primeros Resultados', description: 'Has perdido tus primeros 2kg.', icon: '📉', iconType: 'lucide' as const, lucideIcon: 'TrendingDown', tier: 'bronce', category: 'Físico', unlocked: unlockedAchievements.includes('weight_loss_1') || (profile.goal === 'lose' && (profile.startingWeight || 0) - currentWeight >= 2) },
@@ -311,6 +314,16 @@ export function useAchievements() {
     if (needsAchievementUpdate || needsBadgeUpdate) {
       const mergedAchievements = Array.from(new Set([...currentUnlockedAchievements, ...newlyUnlockedIds]));
       const mergedBadges = Array.from(new Set([...currentBadges, ...earnedBadgeIds]));
+
+      // Dispatch newly unlocked achievements to the global toast queue
+      if (needsAchievementUpdate) {
+        missingAchievements.forEach(id => {
+          const ach = achievements.find(a => a.id === id);
+          if (ach) {
+            useToastStore.getState().addToast(ach);
+          }
+        });
+      }
 
       // Update local Zustand store
       useAuthStore.getState().setProfile({

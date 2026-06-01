@@ -648,15 +648,21 @@ export const useSocialStore = create<SocialState>((set, get) => ({
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
       const filePath = `posts/${fileName}`;
 
-      const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
+      const formData = new FormData();
+      formData.append('file', {
+        uri,
+        name: fileName,
+        type: 'image/jpeg',
+      } as any);
 
-      const { error } = await supabase.storage.from('social').upload(filePath, decode(base64), {
-        contentType: 'image/jpeg'
+      const { data, error } = await supabase.storage.from('social').upload(filePath, formData, {
+        upsert: false,
       });
+
       if (error) throw error;
 
-      const { data } = supabase.storage.from('social').getPublicUrl(filePath);
-      return data.publicUrl;
+      const { data: urlData } = supabase.storage.from('social').getPublicUrl(filePath);
+      return urlData.publicUrl;
     } catch (err) {
       console.warn('[SocialStore] Error uploading post image:', err);
       return null;

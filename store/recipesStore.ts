@@ -1,7 +1,20 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { Recipe } from './types';
+
+// Secure storage adapter for Zustand
+const secureStorage = {
+  getItem: async (name: string) => {
+    return (await SecureStore.getItemAsync(name)) || null;
+  },
+  setItem: async (name: string, value: string) => {
+    await SecureStore.setItemAsync(name, value);
+  },
+  removeItem: async (name: string) => {
+    await SecureStore.deleteItemAsync(name);
+  },
+};
 
 interface RecipesState {
   recipes:     Recipe[];
@@ -26,7 +39,7 @@ export const useRecipesStore = create<RecipesState>()(
     }),
     {
       name: 'ff-recipes',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => secureStorage),
     }
   )
 );
