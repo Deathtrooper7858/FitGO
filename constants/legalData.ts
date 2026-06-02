@@ -1,4 +1,5 @@
-export const TERMS_DATA = [
+export const TERMS_DATA: Record<string, {title?: string, content: string}[]> = {
+  es: [
   {
     "title": "Última actualización: 28 de mayo de 2025",
     "content": "FitGO Technologies S.A.S."
@@ -103,9 +104,24 @@ export const TERMS_DATA = [
     "title": "CLÁUSULA 15. CONTACTO",
     "content": "Para cualquier consulta relativa a los presentes Términos y Condiciones, puede contactar con FitGO a través de:\n\nCorreo electrónico: fitgoenterprise@gmail.com"
   }
-];
+  ],
+  en: [
+    { title: "Last Updated: May 28, 2025", content: "FitGO Technologies S.A.S." },
+    { title: "CLAUSE 1. ACCEPTANCE AND SCOPE", content: "These Terms and Conditions of Use regulate the access and use of the FitGO mobile application and its associated services." },
+    { title: "BY INSTALLING OR USING THE APP, YOU DECLARE YOU ARE AT LEAST 16 YEARS OLD AND AGREE TO THESE TERMS.", content: "These Terms must be read together with the Privacy Policy." },
+    { title: "CLAUSE 2. SERVICE DESCRIPTION", content: "FitGO is a health, nutrition, and fitness mobile application providing daily tracking, AI Coach, and social gamification." },
+    { title: "3.1 Informative Nature, Not Medical", content: "FitGO is strictly informative. IT IS NOT A MEDICAL DEVICE AND DOES NOT PROVIDE MEDICAL ADVICE." },
+    { title: "3.3 AI Coach Disclaimer", content: "The AI Coach uses Large Language Models. Responses may be inaccurate and are not reviewed by health professionals." },
+    { title: "CLAUSE 4. FREE AND PRO PLANS", content: "FitGO offers a free plan and a premium subscription (Pro Plan) with advanced features." },
+    { title: "4.3 Billing and Auto-Renewal", content: "SUBSCRIPTIONS AUTOMATICALLY RENEW UNLESS CANCELED AT LEAST 24 HOURS BEFORE THE END OF THE CURRENT PERIOD." },
+    { title: "CLAUSE 5. USER ACCOUNTS", content: "Users must provide accurate information and maintain account security. Fraudulent or malicious behavior is prohibited." },
+    { title: "CLAUSE 6. INTELLECTUAL PROPERTY", content: "All FitGO elements, including source code and AI algorithms, are the exclusive property of FitGO Technologies S.A.S." },
+    { title: "CLAUSE 15. CONTACT", content: "For inquiries regarding these Terms and Conditions, contact us at: fitgoenterprise@gmail.com" }
+  ]
+};
 
-export const PRIVACY_DATA = [
+export const PRIVACY_DATA: Record<string, {title?: string, content: string}[]> = {
+  es: [
   {
     "title": "Última actualización: 28 de mayo de 2025",
     "content": "FitGO Technologies S.A.S."
@@ -206,4 +222,14 @@ export const PRIVACY_DATA = [
     "title": "Sitio web: https://www.fitgo.app",
     "content": "Nos comprometemos a responder todas las comunicaciones en un plazo máximo de 30 días hábiles."
   }
-];
+  ],
+  en: [
+    { title: "Last Updated: May 28, 2025", content: "FitGO Technologies S.A.S." },
+    { title: "1. INTRODUCTION AND CONTROLLER", content: "This Privacy Policy describes how FitGO collects, uses, and protects your personal information. Contact: privacidad@fitgo.app" },
+    { title: "3. DATA WE COLLECT", content: "We collect account data, health metrics, nutritional logs, activity, device data, and AI interactions." },
+    { title: "5. PURPOSES OF PROCESSING", content: "Data is used to provide the service, calculate health metrics, manage social features, and improve the app." },
+    { title: "6. THIRD-PARTY SERVICE PROVIDERS", content: "We use providers like Supabase (database), GROQ (AI), RevenueCat (subscriptions), and Edamam (nutrition)." },
+    { title: "10. DATA SECURITY", content: "We implement encryption in transit (TLS 1.3) and at rest (AES-256), along with strict access controls." },
+    { title: "14. CONTACT", content: "Website: https://www.fitgo.app. We will respond to inquiries within 30 days." }
+  ]
+};

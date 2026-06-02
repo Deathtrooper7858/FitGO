@@ -1,4 +1,5 @@
 import { useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   useAuthStore, 
   useNutritionStore, 
@@ -11,6 +12,7 @@ import { supabase } from '../services/supabase';
 import { useToastStore } from '../store/toastStore';
 
 export type AchievementTier = 'bronce' | 'plata' | 'oro' | 'diamante';
+export const TIER_POINTS: Record<AchievementTier, number> = { bronce: 10, plata: 25, oro: 50, diamante: 100 };
 export type AchievementIconType = 'lucide' | 'lottie';
 
 export interface Achievement {
@@ -84,6 +86,7 @@ export const ALL_BADGES: Record<string, BadgeInfo> = {
 };
 
 export function useAchievements() {
+  const { t } = useTranslation();
   const { profile } = useAuthStore();
   const { todayLogs, dailySleep, streakDays, dailySteps, activityLogs, dailyWater } = useNutritionStore();
   const { measurements, latest } = useBodyStore();
@@ -356,5 +359,13 @@ export function useAchievements() {
     }
   }, [achievements, profile]);
 
-  return { achievements, unlockedCount };
+  const translatedAchievements = useMemo(() => {
+    return achievements.map(a => ({
+      ...a,
+      title: t(`achievements.items.${a.id}.title`, a.title),
+      description: t(`achievements.items.${a.id}.desc`, a.description),
+    }));
+  }, [achievements, t]);
+
+  return { achievements: translatedAchievements, unlockedCount };
 }

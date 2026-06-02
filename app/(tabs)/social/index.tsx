@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
@@ -11,6 +12,7 @@ import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 
 export default function SocialTabScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'social' | 'competitive'>('social');
 
   // Swipe left/right to switch between Social and Competitive
@@ -47,12 +49,12 @@ export default function SocialTabScreen() {
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
-            {activeTab === 'social' ? 'FitGO Social' : 'FitGO Competitive'}
+            {activeTab === 'social' ? `FitGO ${t('social.headers.socialTab', 'Social')}` : `FitGO ${t('social.headers.compTab', 'Competitive')}`}
           </Text>
           <Text style={[styles.headerSub, { color: colors.textSecondary }]}>
             {activeTab === 'social'
-              ? 'Conecta con tu comunidad'
-              : 'Compite y sube en el ranking'}
+              ? t('social.headers.socialSubtitle', 'Connect with your community')
+              : t('social.headers.compSubtitle', 'Compete and climb the ranking')}
           </Text>
         </View>
 
@@ -80,7 +82,7 @@ export default function SocialTabScreen() {
               strokeWidth={2.2}
             />
             <Text style={[styles.segmentText, { color: activeTab === 'social' ? '#fff' : colors.textSecondary }]}>
-              Social
+              {t('social.headers.socialTab', 'Social')}
             </Text>
           </TouchableOpacity>
 
@@ -106,7 +108,7 @@ export default function SocialTabScreen() {
               strokeWidth={2.2}
             />
             <Text style={[styles.segmentText, { color: activeTab === 'competitive' ? '#fff' : colors.textSecondary }]}>
-              Competitive
+              {t('social.headers.compTab', 'Competitive')}
             </Text>
           </TouchableOpacity>
         </View>

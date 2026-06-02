@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Platform, UIManager, Share, Modal, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Platform, Share, Modal, FlatList } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -16,12 +16,9 @@ import { generateSocialChallenge } from '../../services/groq';
 import { ImagePickerModal } from '../../components/ImagePickerModal';
 import { ImageViewerModal } from '../../components/ImageViewerModal';
 import { CustomAlert } from '../../components/CustomAlert';
+import { AvatarViewerModal } from '../../components/AvatarViewerModal';
 import { supabase } from '../../services/supabase';
 import { getLocalDateString } from '../../utils/date';
-
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 type TabType = 'you' | 'feed' | 'friends' | 'ranking' | 'challenges';
 
@@ -195,10 +192,12 @@ export default function FitGOSocial() {
   const [editingCommentText, setEditingCommentText] = useState('');
 
   const [inspectingUser, setInspectingUser] = useState<any>(null);
+  const [avatarViewerData, setAvatarViewerData] = useState<{ url: string; name: string } | null>(null);
   const { achievements, unlockedCount } = require('../../hooks/useAchievements').useAchievements();
   const ALL_BADGES = require('../../hooks/useAchievements').ALL_BADGES;
 
   const getRank = (points: number) => {
+    if (points >= 15000) return { label: 'S++', color: '#FF0055', bg: '#FF005520', glow: '#FF005550' };
     if (points >= 10000) return { label: 'S+', color: '#FFD700', bg: '#FFD70020', glow: '#FFD70050' };
     if (points >= 5000) return { label: 'S', color: '#A855F7', bg: '#A855F720', glow: '#A855F730' };
     if (points >= 2000) return { label: 'A', color: '#3B82F6', bg: '#3B82F620', glow: 'transparent' };
@@ -384,7 +383,7 @@ export default function FitGOSocial() {
     const userRankIndex = socialStore.globalRanking.findIndex(u => u.id === profile?.id);
     const userGrade = userRankInfo ? getRank(userRankInfo.points) : getRank(0);
     const myPosts = socialStore.posts.filter(p => p.user_id === profile?.id);
-    const currentBadgeId = profile?.selectedBadge || (profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
+    const currentBadgeId = profile?.selectedBadge || (profile?.role === 'owner' ? 'owner' : profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
     const currentBadge = ALL_BADGES[currentBadgeId] || ALL_BADGES.verified;
 
     return (
@@ -412,7 +411,7 @@ export default function FitGOSocial() {
           <View style={{ flexDirection: 'row', marginTop: 20, paddingTop: 20, borderTopWidth: 1, borderTopColor: colors.border + '30', justifyContent: 'space-around' }}>
             <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => setActiveTab('friends')}>
               <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: 'bold' }}>{acceptedFriends.length}</Text>
-              <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{t('social.you.friends')}</Text>
+              <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{t('social.you.friends', 'Friends')}</Text>
             </TouchableOpacity>
             <View style={{ width: 1, backgroundColor: colors.border + '30' }} />
             <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => setActiveTab('ranking')}>
@@ -430,7 +429,7 @@ export default function FitGOSocial() {
         {profile?.pinnedAchievements && profile.pinnedAchievements.length > 0 && (
           <View style={{ marginBottom: Spacing.md }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
-              <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 Vitrina de Trofeos</Text>
+              <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>{t('social.you.trophyShowcase', '🏆 Trophy Showcase')}</Text>
             </View>
             <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
               {profile.pinnedAchievements.map(id => {
@@ -773,19 +772,19 @@ export default function FitGOSocial() {
             style={{ flex: 1, paddingVertical: 8, alignItems: 'center', backgroundColor: friendsTab === 'list' ? colors.primary : 'transparent', borderRadius: 8 }}
             onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setFriendsTab('list'); }}
           >
-            <Text style={{ color: friendsTab === 'list' ? '#fff' : colors.textSecondary, fontWeight: '600' }}>Mis Amigos</Text>
+            <Text style={{ color: friendsTab === 'list' ? '#fff' : colors.textSecondary, fontWeight: '600' }}>{t('social.friends.myFriends', 'My Friends')}</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={{ flex: 1, paddingVertical: 8, alignItems: 'center', backgroundColor: friendsTab === 'search' ? colors.primary : 'transparent', borderRadius: 8 }}
             onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setFriendsTab('search'); }}
           >
-            <Text style={{ color: friendsTab === 'search' ? '#fff' : colors.textSecondary, fontWeight: '600' }}>Buscar</Text>
+            <Text style={{ color: friendsTab === 'search' ? '#fff' : colors.textSecondary, fontWeight: '600' }}>{t('social.friends.search', 'Search')}</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={{ flex: 1, paddingVertical: 8, alignItems: 'center', backgroundColor: friendsTab === 'requests' ? colors.primary : 'transparent', borderRadius: 8, flexDirection: 'row', justifyContent: 'center', gap: 6 }}
             onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setFriendsTab('requests'); }}
           >
-            <Text style={{ color: friendsTab === 'requests' ? '#fff' : colors.textSecondary, fontWeight: '600' }}>Solicitudes</Text>
+            <Text style={{ color: friendsTab === 'requests' ? '#fff' : colors.textSecondary, fontWeight: '600' }}>{t('social.friends.requests', 'Requests')}</Text>
             {receivedRequests.length > 0 && (
               <View style={{ backgroundColor: friendsTab === 'requests' ? '#fff' : colors.error, width: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center' }}>
                 <Text style={{ color: friendsTab === 'requests' ? colors.primary : '#fff', fontSize: 10, fontWeight: 'bold' }}>{receivedRequests.length}</Text>
@@ -815,7 +814,7 @@ export default function FitGOSocial() {
             {isSearching && <ActivityIndicator color={colors.primary} style={{ marginVertical: 10 }} />}
             
             {searchResults.length === 0 && !isSearching && searchQuery.length > 0 && (
-              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10 }}>No se encontraron resultados.</Text>
+              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10 }}>{t('social.friends.noResults', 'No results found.')}</Text>
             )}
 
             {searchResults.map(user => (
@@ -847,9 +846,9 @@ export default function FitGOSocial() {
 
         {friendsTab === 'requests' && (
           <View>
-            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>Solicitudes Recibidas</Text>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>{t('social.friends.receivedRequests', 'Received Requests')}</Text>
             {receivedRequests.length === 0 ? (
-              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10, marginBottom: 20 }}>No tienes solicitudes recibidas.</Text>
+              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10, marginBottom: 20 }}>{t('social.friends.noReceived', 'No received requests.')}</Text>
             ) : (
               <View style={{ marginBottom: 20 }}>
                 {receivedRequests.map(req => (
@@ -885,9 +884,9 @@ export default function FitGOSocial() {
               </View>
             )}
 
-            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12, marginTop: 10 }]}>Solicitudes Enviadas</Text>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12, marginTop: 10 }]}>{t('social.friends.sentRequests', 'Sent Requests')}</Text>
             {sentRequests.length === 0 ? (
-              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10, marginBottom: 20 }}>No tienes solicitudes enviadas.</Text>
+              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10, marginBottom: 20 }}>{t('social.friends.noSent', 'No sent requests.')}</Text>
             ) : (
               <View style={{ marginBottom: 20 }}>
                 {sentRequests.map(req => (
@@ -904,7 +903,7 @@ export default function FitGOSocial() {
                         <Text style={[s.userName, { color: colors.textPrimary }]}>{req.friend_profile?.name}</Text>
                       </TouchableOpacity>
                       <View style={{ backgroundColor: colors.surfaceAlt, paddingHorizontal: 10, paddingVertical: 4, borderRadius: Radius.full }}>
-                        <Text style={{ color: colors.textMuted, fontSize: 11 }}>Pendiente</Text>
+                        <Text style={{ color: colors.textMuted, fontSize: 11 }}>{t('social.friends.pending', 'Pending')}</Text>
                       </View>
                       <TouchableOpacity onPress={() => socialStore.rejectFriend(req.id)} style={{ marginLeft: 12 }}>
                         <Trash2 size={16} color={colors.textMuted} />
@@ -919,9 +918,9 @@ export default function FitGOSocial() {
 
         {friendsTab === 'list' && (
           <View>
-            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>Mis Amigos</Text>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>{t('social.friends.myFriends', 'My Friends')}</Text>
             {acceptedFriends.length === 0 ? (
-              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10 }}>Aún no tienes amigos.</Text>
+              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10 }}>{t('social.friends.noFriends', 'You have no friends yet.')}</Text>
             ) : (
               acceptedFriends.map(friend => (
                 <GlassCard key={friend.id} style={{ marginBottom: 8, padding: 12 }}>
@@ -1010,7 +1009,7 @@ export default function FitGOSocial() {
                     s.tabText, 
                     { color: isActive ? '#fff' : colors.textSecondary },
                   ]}>
-                    {tab === 'you' ? 'Tú' : tab === 'feed' ? 'Comunidad' : 'Amigos'}
+                    {t('social.tabs.' + tab)}
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -1050,11 +1049,15 @@ export default function FitGOSocial() {
               </TouchableOpacity>
 
               {/* Avatar */}
-              <View style={{
-                width: 90, height: 90, borderRadius: 45, marginBottom: 14, marginTop: 8,
-                shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
-                borderWidth: 3, borderColor: colors.primary + '60',
-              }}>
+              <TouchableOpacity
+                onPress={() => inspectingUser?.avatar_url ? setAvatarViewerData({ url: inspectingUser.avatar_url, name: inspectingUser.name }) : null}
+                activeOpacity={0.85}
+                style={{
+                  width: 90, height: 90, borderRadius: 45, marginBottom: 14, marginTop: 8,
+                  shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
+                  borderWidth: 3, borderColor: colors.primary + '60',
+                }}
+              >
                 {inspectingUser?.avatar_url ? (
                   <Image source={{ uri: inspectingUser.avatar_url }} style={{ width: 84, height: 84, borderRadius: 42 }} />
                 ) : (
@@ -1062,7 +1065,7 @@ export default function FitGOSocial() {
                     <Text style={[s.avatarInitials, { fontSize: 32 }]}>{inspectingUser?.name?.[0]}</Text>
                   </View>
                 )}
-              </View>
+              </TouchableOpacity>
 
               <Text style={{ color: colors.textPrimary, fontSize: 20, fontWeight: '900', letterSpacing: -0.4, marginBottom: 4, textAlign: 'center' }}>{inspectingUser?.name}</Text>
 
@@ -1201,6 +1204,12 @@ export default function FitGOSocial() {
             }
           }, type: 'destructive' }
         ]}
+      />
+      <AvatarViewerModal
+        visible={!!avatarViewerData}
+        avatarUrl={avatarViewerData?.url || null}
+        name={avatarViewerData?.name}
+        onClose={() => setAvatarViewerData(null)}
       />
     </View>
   );

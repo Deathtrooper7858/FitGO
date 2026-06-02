@@ -184,20 +184,25 @@ export const useLeagueStore = create<LeagueStore>()(
     }
   },
 
-  // ── Fetch Top Squads ──────────────────────────────────────────────────────
+  // ── Fetch Top Squads via SECURITY DEFINER RPC (bypasses RLS) ────────────────
   fetchTopSquads: async () => {
     try {
       const { data, error } = await supabase
-        .from('squads')
-        .select('*')
-        .order('points', { ascending: false })
-        .limit(10);
-      
+        .rpc('get_top_squads_with_live_points', { p_limit: 10 });
+
       if (error) {
-        console.warn('[League] fetchTopSquads error:', error.message);
+        // Fallback: direct table query with stored points
+        console.warn('[League] fetchTopSquads RPC failed, falling back:', error.message);
+        const { data: fallback, error: fbErr } = await supabase
+          .from('squads')
+          .select('*')
+          .order('points', { ascending: false })
+          .limit(10);
+        if (!fbErr) set({ topSquads: (fallback ?? []) as Squad[] });
         return;
       }
-      set({ topSquads: data as Squad[] });
+
+      set({ topSquads: (data ?? []) as Squad[] });
     } catch (err) {
       console.warn('[League] fetchTopSquads unexpected error:', err);
     }

@@ -267,7 +267,7 @@ const s = StyleSheet.create({
   historyBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: Spacing.xl, padding: Spacing.md, borderRadius: Radius.lg, width: '100%', justifyContent: 'center' },
   historyBtnText: { fontSize: 16, fontWeight: '600' },
   imageSection: { alignItems: 'center' },
-  previewImage: { width: '100%', height: 400, borderRadius: Radius.xl, resizeMode: 'cover' },
+  previewImage: { width: '100%', height: 400, borderRadius: Radius.xl, contentFit: 'cover' },
   buttonRowImage: { flexDirection: 'row', gap: Spacing.md, width: '100%', marginTop: Spacing.lg },
   secondaryBtn: { flex: 1, height: 50, borderRadius: Radius.full, justifyContent: 'center', alignItems: 'center' },
   secondaryBtnText: { fontSize: 16, fontWeight: '600' },

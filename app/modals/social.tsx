@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Platform, UIManager, Share, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Platform, Share, Modal } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -18,9 +18,6 @@ import { ImagePickerModal } from '../../components/ImagePickerModal';
 import { supabase } from '../../services/supabase';
 import { getLocalDateString } from '../../utils/date';
 
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 type TabType = 'you' | 'feed' | 'friends' | 'ranking' | 'challenges';
 
@@ -454,7 +451,7 @@ export default function SocialModal() {
     const userRankIndex = socialStore.globalRanking.findIndex(u => u.id === profile?.id);
     const userGrade = userRankInfo ? getRank(userRankInfo.points) : getRank(0);
     const myPosts = socialStore.posts.filter(p => p.user_id === profile?.id);
-    const currentBadgeId = profile?.selectedBadge || (profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
+    const currentBadgeId = profile?.selectedBadge || (profile?.role === 'owner' ? 'owner' : profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
     const currentBadge = ALL_BADGES[currentBadgeId] || ALL_BADGES.verified;
 
     return (
@@ -554,7 +551,7 @@ export default function SocialModal() {
                 </View>
                 <Text style={[s.postContent, { color: colors.textPrimary }]}>{post.content}</Text>
                 {post.image_url && (
-                  <Image source={{ uri: post.image_url }} style={s.postImage} resizeMode="cover" />
+                  <Image source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
                 )}
               </View>
               <View style={[s.postFooter, { borderTopColor: colors.border + '33' }]}>
@@ -665,7 +662,7 @@ export default function SocialModal() {
               </View>
               <Text style={[s.postContent, { color: colors.textPrimary }]}>{post.content}</Text>
               {post.image_url && (
-                <Image source={{ uri: post.image_url }} style={s.postImage} resizeMode="cover" />
+                <Image source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
               )}
             </View>
             <View style={[s.postFooter, { borderTopColor: colors.border + '33' }]}>

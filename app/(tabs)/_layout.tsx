@@ -10,7 +10,7 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-function TabIcon({ Icon, label, focused, badgeCount }: { Icon: any; label: string; focused: boolean; badgeCount?: number }) {
+const TabIcon = React.memo(({ Icon, label, focused, badgeCount }: { Icon: any; label: string; focused: boolean; badgeCount?: number }) => {
   const colors = useTheme();
   return (
     <View style={styles.tabItem}>
@@ -48,7 +48,7 @@ function TabIcon({ Icon, label, focused, badgeCount }: { Icon: any; label: strin
       </Text>
     </View>
   );
-}
+});
 
 export default function TabsLayout() {
   const { t } = useTranslation();
@@ -56,7 +56,7 @@ export default function TabsLayout() {
   const { profile } = useAuthStore();
   const { isPro } = usePurchaseStore();
   const pathname = usePathname();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin';
+  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
 
   // Social notifications badge
   const { totalUnreadCount, friends } = useSocialStore();

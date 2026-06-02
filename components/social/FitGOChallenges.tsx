@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Platform, UIManager, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Platform, Modal } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
@@ -10,10 +10,6 @@ import { GlassCard } from '../../components/GlassCard';
 import { useSocialStore, useAuthStore, useSettingsStore } from '../../store';
 import { generateSocialChallenge } from '../../services/groq';
 import { getLocalDateString } from '../../utils/date';
-
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 const s = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontWeight: '800', letterSpacing: -0.3 },
@@ -137,7 +133,7 @@ const generateAIChallenge = async () => {
           <GlassCard accentColor={colors.error} style={{ marginBottom: 20 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
               <Sword size={24} color={colors.error} />
-              <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>Retos FitGo</Text>
+              <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>{t('social.challenges.fitgoChallenges', 'FitGo Challenges')}</Text>
             </View>
 
             <TouchableOpacity 
@@ -145,7 +141,7 @@ const generateAIChallenge = async () => {
               onPress={generateAIChallenge}
             >
               <Bot size={20} color={colors.primary} />
-              <Text style={{ color: colors.textPrimary, fontWeight: '700', flex: 1 }}>Sugerencia de Fitz (IA)</Text>
+              <Text style={{ color: colors.textPrimary, fontWeight: '700', flex: 1 }}>{t('social.challenges.suggestAI', 'Fitz Suggestion (AI)')}</Text>
             </TouchableOpacity>
 
             {aiLoading && <ActivityIndicator color={colors.primary} style={{ marginVertical: 15 }} />}
@@ -173,7 +169,7 @@ const generateAIChallenge = async () => {
                 setIsCreatingChallenge(true);
               }}
             >
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Nuevo Reto Personalizado</Text>
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{t('social.challenges.newCustomChallenge', 'New Custom Challenge')}</Text>
             </TouchableOpacity>
           </GlassCard>
         ) : (
@@ -353,9 +349,9 @@ const generateAIChallenge = async () => {
           </GlassCard>
         )}
 
-        <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>Retos Activos</Text>
+        <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>{t('social.challenges.activeChallenges', 'Active Challenges')}</Text>
         {socialStore.challenges.length === 0 ? (
-          <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10 }}>No hay retos activos.</Text>
+          <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10 }}>{t('social.challenges.noActiveChallenges', 'No active challenges.')}</Text>
         ) : (
           socialStore.challenges.map(challenge => (
             <GlassCard key={challenge.id} style={{ marginBottom: 12, borderLeftWidth: 4, borderLeftColor: challenge.status === 'completed' ? colors.success : colors.error }}>

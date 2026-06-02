@@ -70,7 +70,14 @@
     "done": "Listo",
     "continue": "Continuar",
     "previous": "Ant.",
-    "edit": "Editar"
+    "edit": "Editar",
+    "search": "Buscar",
+    "slogan": "Tu mejor versión",
+    "greeting": "Hola",
+    "warning": "Advertencia",
+    "understood": "Entendido",
+    "tapToHide": "Toca para ocultar",
+    "tapToView": "Toca para ver los logros"
   },
   "welcome": {
     "motto": "Fit-Go: Tu mejor versión",
@@ -131,7 +138,8 @@
     "doctor": "Bienestar",
     "planner": "Planificador",
     "profile": "Perfil",
-    "coach": "Coach"
+    "coach": "Coach",
+    "social": "Social"
   },
   "dashboard": {
     "greetingMorning": "Buen día",
@@ -186,7 +194,14 @@
     "measurementsSub": "Cintura, pecho, etc.",
     "seeHistory": "Ver historial",
     "viewAchievements": "Ver Medallas",
-    "muscleDirectorySub": "Toca un grupo muscular en la figura para ver los ejercicios o encuéntralos en la lista."
+    "muscleDirectorySub": "Toca un grupo muscular en la figura para ver los ejercicios o encuéntralos en la lista.",
+    "evaluationWidget": "Evaluación IA",
+    "evaluatePhysique": "Evaluar Físico",
+    "getAIFeedback": "Recibe feedback IA",
+    "withAI": "Con IA",
+    "muscleDirWidget": "Ejercicios",
+    "muscleDirTitle": "Directorio",
+    "muscleDirSub": "Por músculos"
   },
   "tracker": {
     "title": "Registro",
@@ -452,7 +467,17 @@
     "editAgeSubtitle": "Configura tu edad actual",
     "otherMeasurements": "Otras Medidas",
     "otherGender": "Otro",
-    "specifyGender": "Especifica tu género..."
+    "specifyGender": "Especifica tu género...",
+    "activeGoal": "Objetivo Activo",
+    "userProfile": "Perfil de Usuario",
+    "ranking": "Ranking",
+    "points": "Puntos",
+    "class": "Clase",
+    "areFriends": "Son Amigos",
+    "message": "Mensaje",
+    "removeFriend": "Eliminar Amigo",
+    "pendingRequest": "Solicitud Pendiente",
+    "sendFriendRequest": "Enviar Solicitud de Amistad"
   },
   "recipes": {
     "title": "Recetas IA",
@@ -884,7 +909,8 @@
     "lookupFailed": "Error al buscar el código. Inténtalo de nuevo.",
     "noVoiceDetected": "No se detectó voz. Intenta hablar más claro.",
     "audioFileError": "Error de hardware: no se generó el archivo de audio.",
-    "audioProcessError": "Error al procesar audio: {{error}}"
+    "audioProcessError": "Error al procesar audio: {{error}}",
+    "searchPlaceholder": "Buscar alimento en la base de datos..."
   },
   "foodDetail": {
     "per": "Por",
@@ -2494,7 +2520,8 @@
       "achievements": "Logros",
       "viewAllAchievements": "Ver todos tus logros",
       "yourPosts": "Tus Publicaciones",
-      "noPosts": "Aún no has publicado nada."
+      "noPosts": "Aún no has publicado nada.",
+      "trophyShowcase": "🏆 Vitrina de Trofeos"
     },
     "feed": {
       "postPlaceholder": "¿Qué estás pensando?",
@@ -2564,6 +2591,100 @@
       "pendingRequest": "Solicitud Pendiente",
       "addFriend": "Añadir Amigo",
       "class": "Clase"
+    },
+    "headers": {
+      "socialSubtitle": "Conecta con tu comunidad",
+      "compSubtitle": "Compite y sube en el ranking",
+      "socialTab": "Social",
+      "compTab": "Competitive"
+    },
+    "posts": "Publicaciones",
+    "noPostsMe": "Aún no has publicado nada.",
+    "noPosts": "Este usuario no ha publicado nada.",
+    "likes": "Me gusta",
+    "comments": "Comentarios"
+  },
+  "terms": {
+    "titleTerms": "Términos y Condiciones",
+    "titlePrivacy": "Política de Privacidad",
+    "tabTerms": "Términos",
+    "tabPrivacy": "Privacidad",
+    "accept": "Aceptar y Entendido"
+  },
+  "achievements": {
+    "title": "Tus Logros",
+    "badges": "Insignias",
+    "unlocked": "Desbloqueado",
+    "total": "Totales",
+    "completed": "Completado",
+    "available": "disponibles",
+    "systemTitle": "Sistema de Logros",
+    "systemDesc": "Los logros ahora otorgan puntos de ranking según su calidad, sin importar si los has desbloqueado aún o no, puedes saber su valor por el color del logro:",
+    "understood": "Entendido",
+    "pinHint": "📌 Toca un logro desbloqueado para fijarlo (máx. 3)",
+    "tiers": {
+      "bronze": "Bronce",
+      "silver": "Plata",
+      "gold": "Oro",
+      "diamond": "Diamante"
+    },
+    "trophyShowcase": "Vitrina de Trofeos",
+    "myAchievements": "Mis Logros",
+    "achievements": "Logros",
+    "noAchievements": "Sin logros aún",
+    "categories": {
+      "General": "General",
+      "Constancia": "Constancia",
+      "Nutricion": "Nutrición",
+      "Misterio": "Misterio",
+      "Fisico": "Físico",
+      "Actividad": "Actividad",
+      "Descanso": "Descanso",
+      "Comunidad": "Comunidad",
+      "Especial": "Especial"
+    }
+  },
+  "competitive": {
+    "mySquad": "Mi Squad",
+    "individual": "Individual",
+    "leagues": {
+      "carbono": {
+        "name": "Liga Carbono",
+        "desc": "Escudo geométrico oscuro. El inicio de la leyenda."
+      },
+      "neon": {
+        "name": "Liga Neón",
+        "desc": "Poder fluorescente sobre vidrio esmerilado."
+      },
+      "titanio": {
+        "name": "Liga Titanio",
+        "desc": "Monolito metálico. Reflejos de acero líquido."
+      },
+      "cuarzo": {
+        "name": "Liga Cuarzo",
+        "desc": "Cristal hexagonal holográfico. Energía en refracción."
+      },
+      "zenit": {
+        "name": "Liga Élite Zenit",
+        "desc": "Corona de oro blanco. El ápex de FitGO."
+      }
+    },
+    "squads": {
+      "days": "días",
+      "emptyTitle": "Guerras de Macros",
+      "emptySub": "Únete o crea un Squad con hasta 4 amigos. Cumplan sus macros diarios, acumulen puntos y suban de liga juntos.",
+      "createSquad": "Crear Squad",
+      "joinSquad": "Unirme",
+      "invitations": "Tus Invitaciones",
+      "podiumTitle": "Podio de Ligas",
+      "podiumSub": "Los mejores squads de FitGO Competitive",
+      "totalPoints": "pts totales del squad",
+      "members": "miembros",
+      "myPoints": "Mis puntos",
+      "streakDays": "Días racha",
+      "rankingTitle": "Clasificación del Squad",
+      "infoText": "Los puntos totales del squad son la suma de los puntos de todos sus integrantes.",
+      "squadPoints": "Puntos del Squad"
     }
   }
 }

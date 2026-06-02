@@ -312,7 +312,7 @@ export default function PlannerScreen() {
 
   const { streakDays }            = useNutritionStore();
   const { isPro }                 = usePurchaseStore();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin';
+  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
 
   // ─── Load stored plans ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -595,8 +595,8 @@ export default function PlannerScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <LinearGradient
-        colors={['rgba(245, 158, 11, 0.45)', 'rgba(239, 68, 68, 0.15)', 'transparent']}
-        style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 500 }}
+        colors={['rgba(245, 158, 11, 0.1)', 'rgba(239, 68, 68, 0.05)', 'transparent']}
+        style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 350 }}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
       />
@@ -661,7 +661,7 @@ export default function PlannerScreen() {
               return (
                 <TouchableOpacity
                   key={m}
-                  style={[s.tab, isActive && { backgroundColor: colors.surface, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 }]}
+                  style={[s.tab, isActive && { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }]}
                   onPress={() => setMode(m)}
                   activeOpacity={0.8}
                 >
@@ -1091,7 +1091,7 @@ const dp = StyleSheet.create({
 });
 
 const mc = StyleSheet.create({
-  card:      { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 24, padding: 16, marginBottom: 12, borderWidth: 1, shadowColor: '#000', shadowOffset: {width: 0, height: 2}, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
+  card:      { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 24, padding: 16, marginBottom: 12, borderWidth: 1 },
   iconWrap:  { width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center' },
   info:      { flex: 1 },
   mealLabel: { fontSize: 11, fontWeight: '800', marginBottom: 2, letterSpacing: 0.5 },
@@ -1120,18 +1120,18 @@ const s = StyleSheet.create({
   tabContent:  { flexDirection: 'row', alignItems: 'center', gap: 8 },
   tabText:     { fontSize: 14, fontWeight: '700' },
 
-  homeWorkoutWrap: { flexDirection: 'row', alignItems: 'center', padding: Spacing.base, marginHorizontal: Spacing.base, borderRadius: 16, borderWidth: 1 },
-  homeWorkoutTitle: { fontSize: 15, fontWeight: '700' },
-  homeWorkoutSub: { fontSize: 13, marginTop: 2 },
+  homeWorkoutWrap: { flexDirection: 'row', alignItems: 'center', padding: Spacing.lg, marginHorizontal: Spacing.base, borderRadius: 24, borderWidth: 1, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.08, shadowRadius: 12, elevation: 3 },
+  homeWorkoutTitle: { fontSize: 16, fontWeight: '800' },
+  homeWorkoutSub: { fontSize: 13, marginTop: 4, opacity: 0.8 },
   
-  equipmentWrap: { marginHorizontal: Spacing.base, padding: Spacing.base, borderRadius: 16, borderWidth: 1 },
-  equipmentTitle: { fontSize: 14, fontWeight: '800', marginBottom: 4 },
-  equipmentSub: { fontSize: 12, marginBottom: 12 },
-  equipmentChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
-  equipmentChip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, borderWidth: 1 },
-  equipmentChipText: { fontSize: 12, fontWeight: '600' },
-  inputWrap: { borderRadius: 12, borderWidth: 1, padding: 12 },
-  equipmentInput: { fontSize: 14, minHeight: 40, textAlignVertical: 'top' },
+  equipmentWrap: { marginHorizontal: Spacing.base, padding: Spacing.lg, borderRadius: 24, borderWidth: 1, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.08, shadowRadius: 12, elevation: 3 },
+  equipmentTitle: { fontSize: 16, fontWeight: '800', marginBottom: 6 },
+  equipmentSub: { fontSize: 13, marginBottom: 16, opacity: 0.8 },
+  equipmentChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
+  equipmentChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, borderWidth: 1 },
+  equipmentChipText: { fontSize: 13, fontWeight: '700' },
+  inputWrap: { borderRadius: 16, borderWidth: 1, padding: 16, backgroundColor: 'rgba(0,0,0,0.02)' },
+  equipmentInput: { fontSize: 15, minHeight: 44, textAlignVertical: 'top' },
 
   // AI Disclaimer Banner
   aiDisclaimerBanner: { marginHorizontal: Spacing.base, marginBottom: Spacing.md, borderRadius: 18, borderWidth: 1, padding: 14 },

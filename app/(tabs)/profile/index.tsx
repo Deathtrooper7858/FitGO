@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert,
   Modal, TextInput, KeyboardAvoidingView, Platform, Image, Linking,
-  LayoutAnimation, UIManager,
+  LayoutAnimation,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -227,7 +227,7 @@ function EditModal({
 const em = StyleSheet.create({
   overlay:   { 
     flex: 1, 
-    backgroundColor: 'rgba(15, 23, 42, 0.75)', // Elegant darker slate overlay
+    backgroundColor: 'rgba(15, 23, 42, 0.5)', // Elegant darker slate overlay
     justifyContent: 'center', 
     padding: 20 
   },
@@ -610,9 +610,6 @@ const mr = StyleSheet.create({
   arrow: { fontWeight: '700' },
 });
 
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 // ─── VitrinaTrofeos (Memoized for performance) ────────────────────────────────
 function getTierColorFromTier(tier: string) {
@@ -661,20 +658,21 @@ const VitrinaTrofeoItem = React.memo(function VitrinaTrofeoItem({
 });
 
 const VitrinaTrofeos = React.memo(function VitrinaTrofeos({
-  pinnedAchievements, achievements, onEdit, colors
+  pinnedAchievements, achievements, onEdit, colors, t
 }: {
   pinnedAchievements?: string[];
   achievements: any[];
   onEdit: () => void;
   colors: any;
+  t: (...args: any[]) => any;
 }) {
   if (!pinnedAchievements || pinnedAchievements.length === 0) return null;
   return (
     <View style={{ marginHorizontal: Spacing.base, marginTop: Spacing.md, marginBottom: Spacing.sm }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
-        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 Vitrina de Trofeos</Text>
+        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 {t('achievements.trophyShowcase', 'Vitrina de Trofeos')}</Text>
         <TouchableOpacity onPress={onEdit}>
-          <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '700' }}>Editar ›</Text>
+          <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '700' }}>{t('common.edit', 'Editar')} ›</Text>
         </TouchableOpacity>
       </View>
       <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
@@ -728,7 +726,9 @@ export default function ProfileScreen() {
 
   const availableBadges = useMemo(() => {
     const list = ['verified', 'early_adopter'];
-    if (profile?.role === 'super_admin') {
+    if (profile?.role === 'owner') {
+      list.push('owner', 'super_admin', 'admin', 'pro', 'beast_mode', 'fitness_enthusiast');
+    } else if (profile?.role === 'super_admin') {
       list.push('super_admin', 'admin', 'pro', 'beast_mode', 'fitness_enthusiast');
     } else if (profile?.role === 'admin') {
       list.push('admin', 'pro', 'beast_mode');
@@ -746,7 +746,7 @@ export default function ProfileScreen() {
     return list;
   }, [profile]);
 
-  const currentBadgeId = profile?.selectedBadge || (profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
+  const currentBadgeId = profile?.selectedBadge || (profile?.role === 'owner' ? 'owner' : profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
   const currentBadge = ALL_BADGES[currentBadgeId] || ALL_BADGES.verified;
   
   const toggleSection = (setter: React.Dispatch<React.SetStateAction<boolean>>, current: boolean) => {
@@ -1617,6 +1617,7 @@ export default function ProfileScreen() {
           achievements={achievements}
           onEdit={() => router.push('/modals/achievements')}
           colors={colors}
+          t={t}
         />
 
         {/* ── Progress Chart ── Gamified Weight Journey */}
@@ -1843,7 +1844,8 @@ export default function ProfileScreen() {
           style={{ marginHorizontal: Spacing.base, marginBottom: Spacing.base }}
         >
           <Text style={[s.sectionTitle, { color: colors.textMuted }]}>{t('about.title', 'SOBRE FITGO')}</Text>
-          <MenuRow icon={FileText} label={t('profile.termsAndPrivacy', 'Términos y Privacidad')} onPress={() => router.push('/modals/terms' as any)} iconColor="#6366F1" />
+          <MenuRow icon={FileText} label={t('profile.terms', 'Términos y Condiciones')} onPress={() => router.push({ pathname: '/modals/terms', params: { tab: 'terms' } } as any)} iconColor="#6366F1" />
+          <MenuRow icon={ShieldCheck} label={t('profile.privacy', 'Política de Privacidad')} onPress={() => router.push({ pathname: '/modals/terms', params: { tab: 'privacy' } } as any)} iconColor="#10B981" />
           <MenuRow icon={Info} label={t('about.moreInfo', 'Más información')} rightIcon={showAbout ? '▼' : '›'} onPress={() => toggleSection(setShowAbout, showAbout)} iconColor="#3B82F6" />
           
           {showAbout && (

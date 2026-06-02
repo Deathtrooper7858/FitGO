@@ -61,7 +61,7 @@ export default function ScanModal() {
   const { addLog, fetchLogs, selectedDate, aiPhotoUsageCount, aiTextUsageCount, incrementAiUsage } = useNutritionStore();
   const { profile } = useAuthStore();
   const { isPro } = usePurchaseStore();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin';
+  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const [showSuccess, setShowSuccess] = useState(false);
   const [flash, setFlash] = useState<'off' | 'on' | 'auto'>('off');
   const [facing, setFacing] = useState<'back' | 'front'>('back');
@@ -124,7 +124,7 @@ export default function ScanModal() {
     const delayDebounceFn = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const results = await searchFood(searchQuery);
+        const results = await searchFood(searchQuery, language);
         setSearchResults(results);
       } catch (err) {
         console.error('Search error', err);
@@ -133,7 +133,7 @@ export default function ScanModal() {
       }
     }, 600);
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
+  }, [searchQuery, language]);
 
   const checkAiLimit = (scanMode: 'photo' | 'text'): boolean => {
     if (isProActually) return true;
@@ -547,7 +547,7 @@ export default function ScanModal() {
           <View style={{ width: 40 }} />
         </View>
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: Spacing.base, paddingBottom: 100 }}>
-          <Image source={{ uri: capturedUri }} style={s.capturedImage} resizeMode="cover" />
+          <Image source={{ uri: capturedUri }} style={s.capturedImage} contentFit="cover" />
           <View style={[s.confidenceBadge, { borderColor: confidenceColor }]}>
             <View style={[s.confidenceDot, { backgroundColor: confidenceColor }]} />
             <Text style={[s.confidenceText, { color: confidenceColor }]}>{photoResult.confidence.toUpperCase()} {t('scan.confidence')}</Text>
@@ -588,6 +588,14 @@ export default function ScanModal() {
             <Text style={[s.totalLabel, { color: colors.textSecondary }]}>{t('scan.totalCalories')}</Text>
             <Text style={[s.totalValue, { color: colors.accent }]}>{editedFoods.reduce((acc, f) => acc + f.calories, 0)} kcal</Text>
           </LinearGradient>
+          <View style={[s.disclaimerBox, { backgroundColor: colors.warning + '18', borderColor: colors.warning + '44' }]}>
+            <Text style={{ fontSize: 14 }}>⚠️</Text>
+            <Text style={[s.disclaimerText, { color: colors.warning }]}>
+              {language === 'es'
+                ? 'El análisis por foto es una estimación. Los valores nutricionales pueden no ser 100% precisos.'
+                : 'Photo analysis is an estimate. Nutritional values may not be 100% accurate.'}
+            </Text>
+          </View>
           {photoResult.notes && <Text style={[s.notesText, { color: colors.textSecondary }]}>💡 {photoResult.notes}</Text>}
         </ScrollView>
         <View style={[s.resultFooter, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
@@ -762,14 +770,35 @@ export default function ScanModal() {
                           },
                         });
                       }}
+                      activeOpacity={0.7}
                     >
-                      <View style={{ flex: 1 }}>
-                        <Text style={[s.searchResultName, { color: colors.textPrimary }]}>{item.name}</Text>
-                        <Text style={[s.searchResultBrand, { color: colors.textSecondary }]}>
-                          {item.brand ? `${item.brand} • ` : ''}{item.calories} kcal | {item.protein}P {item.carbs}C {item.fat}G
+                      {item.imageUrl ? (
+                        <Image source={{ uri: item.imageUrl }} style={s.searchResultImage} />
+                      ) : (
+                        <View style={[s.searchResultImage, { backgroundColor: colors.surfaceAlt, justifyContent: 'center', alignItems: 'center' }]}>
+                          <Text style={{ fontSize: 24 }}>🍽️</Text>
+                        </View>
+                      )}
+                      <View style={{ flex: 1, marginLeft: 12 }}>
+                        <Text style={[s.searchResultName, { color: colors.textPrimary }]} numberOfLines={1}>{item.name}</Text>
+                        <Text style={[s.searchResultBrand, { color: colors.textSecondary }]} numberOfLines={1}>
+                          {item.brand ? `${item.brand} • ` : ''}{item.calories} kcal
                         </Text>
+                        <View style={{ flexDirection: 'row', gap: 6, marginTop: 4 }}>
+                          <View style={[s.macroBadge, { backgroundColor: colors.protein + '15' }]}>
+                            <Text style={[s.macroBadgeText, { color: colors.protein }]}>P {item.protein}g</Text>
+                          </View>
+                          <View style={[s.macroBadge, { backgroundColor: colors.carbs + '15' }]}>
+                            <Text style={[s.macroBadgeText, { color: colors.carbs }]}>C {item.carbs}g</Text>
+                          </View>
+                          <View style={[s.macroBadge, { backgroundColor: colors.fat + '15' }]}>
+                            <Text style={[s.macroBadgeText, { color: colors.fat }]}>G {item.fat}g</Text>
+                          </View>
+                        </View>
                       </View>
-                      <Text style={{ fontSize: 18 }}>+</Text>
+                      <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.searchResultAddBtn}>
+                        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 18 }}>+</Text>
+                      </LinearGradient>
                     </TouchableOpacity>
                   ))}
                   {searchQuery.length > 0 && searchResults.length === 0 && !isSearching && (
@@ -878,9 +907,13 @@ const s = StyleSheet.create({
   searchInputContainer: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: Radius.lg, borderWidth: 1, marginBottom: Spacing.md },
   searchTextInput: { flex: 1, fontSize: 16 },
   searchResultsList: { paddingBottom: 40 },
-  searchResultItem: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: Radius.md, borderWidth: 1, marginBottom: 8 },
-  searchResultName: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
-  searchResultBrand: { fontSize: 13 },
+  searchResultItem: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: Radius.lg, borderWidth: 1, marginBottom: 12 },
+  searchResultImage: { width: 64, height: 64, borderRadius: Radius.md },
+  searchResultName: { fontSize: 16, fontWeight: '700', marginBottom: 2 },
+  searchResultBrand: { fontSize: 13, marginBottom: 2 },
+  macroBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+  macroBadgeText: { fontSize: 10, fontWeight: '700' },
+  searchResultAddBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
   retryBtn:      { flex: 1, paddingVertical: 14, borderRadius: Radius.md, borderWidth: 1.5, alignItems: 'center' },
   retryText:     { fontWeight: '600', fontSize: 15 },
   addAllBtn:     { flex: 2, borderRadius: Radius.md, overflow: 'hidden' },
@@ -898,4 +931,6 @@ const s = StyleSheet.create({
   analyzeText:   { color: '#fff', fontWeight: '800', fontSize: 16, letterSpacing: 0.5 },
   recordingStatus: { textAlign: 'center', fontSize: 15, fontWeight: '700', letterSpacing: 1 },
   limitNote:     { textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 12, fontWeight: '600' },
+  disclaimerBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, borderRadius: Radius.md, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10, marginTop: -8, marginBottom: 16 },
+  disclaimerText: { flex: 1, fontSize: 13, fontWeight: '500', lineHeight: 18 },
 });
