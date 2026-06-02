@@ -139,7 +139,7 @@ function MessageBubble({ msg, isLastUser, onEdit, onImagePress }: { msg: CoachMe
               <Image
                 source={{ uri: msg.imageUrl }}
                 style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }}
-                resizeMode="cover"
+                contentFit="cover"
               />
             </TouchableOpacity>
           )}
@@ -180,7 +180,7 @@ function MessageBubble({ msg, isLastUser, onEdit, onImagePress }: { msg: CoachMe
             <Image
               source={{ uri: msg.imageUrl }}
               style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }}
-              resizeMode="cover"
+              contentFit="cover"
             />
           </TouchableOpacity>
         )}
@@ -198,7 +198,7 @@ function MessageBubble({ msg, isLastUser, onEdit, onImagePress }: { msg: CoachMe
     <View style={[bubble.row, isUser && bubble.rowUser]}>
       {!isUser && (
         <View style={[bubble.avatarContainer, { borderColor: colors.primary + '30' }]}>
-          <Image source={require('../assets/trainer_badge.jpg')} style={bubble.avatar} resizeMode="cover" />
+          <Image source={require('../assets/trainer_badge.jpg')} style={bubble.avatar} contentFit="cover" />
         </View>
       )}
       {renderBubbleBody()}
@@ -231,7 +231,7 @@ function TypingIndicator() {
   return (
     <View style={[bubble.row, { paddingHorizontal: Spacing.base, marginTop: 6 }]}>
       <View style={[bubble.avatarContainer, { borderColor: colors.primary + '30' }]}>
-        <Image source={require('../assets/trainer_badge.jpg')} style={bubble.avatar} resizeMode="cover" />
+        <Image source={require('../assets/trainer_badge.jpg')} style={bubble.avatar} contentFit="cover" />
       </View>
       <View 
         style={[
@@ -282,7 +282,7 @@ export default function TrainerScreen() {
   const { profile } = useAuthStore();
 
   const { isPro } = usePurchaseStore();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin';
+  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const atLimit = !isProActually && msgCount >= FREE_MSG_LIMIT;
 
   useEffect(() => {
@@ -625,7 +625,7 @@ export default function TrainerScreen() {
           style={s.header}
         >
           <View style={[s.headerAvatarContainer, { borderColor: colors.primary + '40' }]}>
-            <Image source={require('../assets/trainer_badge.jpg')} style={s.headerAvatar} resizeMode="cover" />
+            <Image source={require('../assets/trainer_badge.jpg')} style={s.headerAvatar} contentFit="cover" />
             <View style={[s.headerOnlineDot, { backgroundColor: colors.success }]} />
           </View>
           
@@ -763,7 +763,7 @@ export default function TrainerScreen() {
                   <Image
                     source={{ uri: `data:image/jpeg;base64,${selectedImage}` }}
                     style={s.imagePreview}
-                    resizeMode="cover"
+                    contentFit="cover"
                   />
                   <TouchableOpacity
                     onPress={() => setSelectedImage(null)}
@@ -901,7 +901,7 @@ const s = StyleSheet.create({
   inputIconBtn:         { width: 42, height: 42, borderRadius: Radius.lg, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 4, elevation: 1 },
   lockBadge:            { position: 'absolute', top: 2, right: 2, backgroundColor: 'rgba(0,0,0,0.06)', borderRadius: 6, padding: 1 },
   
-  input:                { flex: 1, borderRadius: Radius.lg, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15, lineHeight: 20, borderWidth: 1.5, maxHeight: 120 },
+  input:                { flex: 1, borderRadius: Radius.lg, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, fontSize: 15, lineHeight: 22, borderWidth: 1.5, maxHeight: 200, minHeight: 44 },
   sendBtn:              { borderRadius: Radius.lg, overflow: 'hidden' },
   sendBtnDisabled:      { opacity: 0.4 },
   sendGrad:             { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },

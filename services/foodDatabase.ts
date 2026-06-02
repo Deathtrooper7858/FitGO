@@ -27,7 +27,32 @@ export interface FoodItem {
 }
 
 // ─── OpenFoodFacts ─────────────────────────────────────────────────────────────
-export async function searchFoodOFF(query: string, page = 1): Promise<FoodItem[]> {
+function mapOFFProduct(p: any): FoodItem | null {
+  const nut = p.nutriments || {};
+  const name = p.product_name_es || p.product_name || p.product_name_en || p.generic_name_es || p.generic_name || '';
+  if (!name || !p.nutriments) return null;
+  const cal = nut['energy-kcal_100g'] ?? (nut['energy_100g'] ? Math.round(nut['energy_100g'] / 4.184) : 0);
+  return {
+    id:       p.id ?? p.code ?? p._id,
+    name,
+    brand:    p.brands,
+    calories: Math.round(cal),
+    protein:  Math.round(nut['proteins_100g']      ?? 0),
+    carbs:    Math.round(nut['carbohydrates_100g'] ?? 0),
+    fat:      Math.round(nut['fat_100g']           ?? 0),
+    saturatedFat: Math.round(nut['saturated-fat_100g'] ?? 0),
+    transFat:     Math.round(nut['trans-fat_100g']     ?? 0),
+    fiber:    Math.round(nut['fiber_100g']         ?? 0),
+    sugar:    Math.round(nut['sugars_100g']        ?? 0),
+    sodium:   Math.round((nut['sodium_100g']  ?? 0) * 1000),
+    iron:     Math.round((nut['iron_100g']    ?? 0) * 1000),
+    calcium:  Math.round((nut['calcium_100g'] ?? 0) * 1000),
+    imageUrl: p.image_front_small_url,
+    source:   'openfoodfacts' as const,
+  };
+}
+
+export async function searchFoodOFF(query: string, _language: string = 'en', page = 1): Promise<FoodItem[]> {
   const { data } = await axios.get(`${OFF_BASE}/cgi/search.pl`, {
     headers: {
       'User-Agent': 'FitGO - Android/iOS - 1.0.0 - support@fitgo.app',
@@ -37,39 +62,17 @@ export async function searchFoodOFF(query: string, page = 1): Promise<FoodItem[]
       search_simple: 1,
       action: 'process',
       json: 1,
-      page_size: 20,
+      page_size: 25,
       page,
-      fields: 'id,product_name,brands,nutriments,image_front_small_url',
-      lc: 'es',
-      categories_lc: 'es'
+      fields: 'id,_id,code,product_name,product_name_es,product_name_en,generic_name,generic_name_es,brands,nutriments,image_front_small_url',
+      // NOTE: No lc/categories_lc filter — it causes 0 results for many Spanish queries
     },
-    timeout: 8000,
+    timeout: 10000,
   });
 
   return (data.products ?? [])
-    .filter((p: any) => p.product_name && p.nutriments)
-    .map((p: any) => {
-      const nut = p.nutriments || {};
-      const cal = nut['energy-kcal_100g'] ?? (nut['energy_100g'] ? Math.round(nut['energy_100g'] / 4.184) : 0);
-      return {
-        id:       p.id ?? p.code,
-        name:     p.product_name,
-        brand:    p.brands,
-        calories: Math.round(cal),
-        protein:  Math.round(nut['proteins_100g']    ?? 0),
-        carbs:    Math.round(nut['carbohydrates_100g'] ?? 0),
-        fat:      Math.round(nut['fat_100g']          ?? 0),
-        saturatedFat: Math.round(nut['saturated-fat_100g'] ?? 0),
-        transFat:     Math.round(nut['trans-fat_100g']     ?? 0),
-        fiber:    Math.round(nut['fiber_100g']        ?? 0),
-        sugar:    Math.round(nut['sugars_100g']       ?? 0),
-        sodium:   Math.round((nut['sodium_100g'] ?? 0) * 1000),
-        iron:     Math.round((nut['iron_100g'] ?? 0) * 1000),
-        calcium:  Math.round((nut['calcium_100g'] ?? 0) * 1000),
-        imageUrl: p.image_front_small_url,
-        source:   'openfoodfacts' as const,
-      };
-    });
+    .map((p: any) => mapOFFProduct(p))
+    .filter((item: FoodItem | null): item is FoodItem => item !== null);
 }
 
 // ─── OpenFoodFacts barcode lookup ──────────────────────────────────────────────
@@ -156,20 +159,20 @@ export async function getFoodByBarcode(barcode: string, language: string = 'es')
 }
 
 // ─── Edamam search (fallback / enrichment) ─────────────────────────────────────
+// NOTE: Edamam requires EDAMAM_APP_ID + EDAMAM_APP_KEY to be set as Supabase secrets.
+// If not configured, this silently returns [] and the app uses OpenFoodFacts only.
 export async function searchFoodEdamam(query: string): Promise<FoodItem[]> {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     
-    if (!session) {
-      console.warn('[Edamam Proxy] No active session, skipping search.');
-      return [];
-    }
+    if (!session) return [];
 
     const { data, error } = await supabase.functions.invoke('edamam-proxy', {
       body: { query }
     });
 
     if (error) throw error;
+    if (!data?.hints) return [];
 
     return (data.hints ?? []).slice(0, 15).map((h: any) => ({
       id:       h.food.foodId,
@@ -186,26 +189,27 @@ export async function searchFoodEdamam(query: string): Promise<FoodItem[]> {
       imageUrl: h.food.image,
       source:   'edamam' as const,
     }));
-  } catch (err) {
-    console.warn('[Edamam Proxy] Error fetching food:', err);
+  } catch {
+    // Silently ignore — Edamam is optional enrichment
     return [];
   }
 }
 
 // ─── Combined search ───────────────────────────────────────────────────────────
-export async function searchFood(query: string): Promise<FoodItem[]> {
+export async function searchFood(query: string, language: string = 'en'): Promise<FoodItem[]> {
   const [off, edamam] = await Promise.allSettled([
-    searchFoodOFF(query),
+    searchFoodOFF(query, language),
     searchFoodEdamam(query),
   ]);
 
   const offResults    = off.status    === 'fulfilled' ? off.value    : [];
   const edamamResults = edamam.status === 'fulfilled' ? edamam.value : [];
 
-  // Deduplicate by name (simple)
+  // Deduplicate by name (case-insensitive)
   const seen = new Set<string>();
   return [...offResults, ...edamamResults].filter(f => {
-    const key = f.name.toLowerCase();
+    if (!f.name) return false;
+    const key = f.name.toLowerCase().trim();
     if (seen.has(key)) return false;
     seen.add(key);
     return true;

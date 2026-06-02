@@ -84,6 +84,7 @@ export const useAuthStore = create<AuthState>()(
                 selectedBadge:  data.selected_badge  ?? null,
                 unlockedAchievements: data.unlocked_achievements ?? [],
                 pinnedAchievements: data.pinned_achievements ?? [],
+                achievementPoints:  data.achievement_points ?? 0,
               }
             });
           } else {

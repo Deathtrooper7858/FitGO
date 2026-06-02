@@ -16,56 +16,58 @@ import { useLeagueStore, LeagueTier, SquadMember, Squad } from '../../store/leag
 import MacroRewardAnimation from '../MacroRewardAnimation';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
+import { CustomAlert, AlertType } from '../CustomAlert';
+import { useTranslation } from 'react-i18next';
 
 // ─── Liga Config ──────────────────────────────────────────────────────────────
 
 const LEAGUE_CONFIG: Record<LeagueTier, {
-  label: string;
+  labelKey: string;
   colors: [string, string, string];
   glow: string;
   icon: React.ReactNode;
   pointsNeeded: number;
-  description: string;
+  descriptionKey: string;
 }> = {
   carbono: {
-    label: 'Liga Carbono',
+    labelKey: 'competitive.leagues.carbono.name',
     colors: ['#1A1A1A', '#2D2D2D', '#1A1A1A'],
     glow: '#555555',
     icon: <Shield size={22} color="#888" />,
     pointsNeeded: 0,
-    description: 'Escudo geométrico oscuro. El inicio de la leyenda.',
+    descriptionKey: 'competitive.leagues.carbono.desc',
   },
   neon: {
-    label: 'Liga Neón',
+    labelKey: 'competitive.leagues.neon.name',
     colors: ['#001A1A', '#00FF9550', '#001A1A'],
     glow: '#00FF95',
     icon: <Zap size={22} color="#00FF95" />,
     pointsNeeded: 400,
-    description: 'Poder fluorescente sobre vidrio esmerilado.',
+    descriptionKey: 'competitive.leagues.neon.desc',
   },
   titanio: {
-    label: 'Liga Titanio',
+    labelKey: 'competitive.leagues.titanio.name',
     colors: ['#1C2333', '#A8B8D8', '#1C2333'],
     glow: '#A8B8D8',
     icon: <Shield size={22} color="#C0D0E8" />,
     pointsNeeded: 1000,
-    description: 'Monolito metálico. Reflejos de acero líquido.',
+    descriptionKey: 'competitive.leagues.titanio.desc',
   },
   cuarzo: {
-    label: 'Liga Cuarzo',
+    labelKey: 'competitive.leagues.cuarzo.name',
     colors: ['#0D1B2A', '#88C0FF', '#1A0D2E'],
     glow: '#88CCFF',
     icon: <Trophy size={22} color="#88CCFF" />,
     pointsNeeded: 2500,
-    description: 'Cristal hexagonal holográfico. Energía en refracción.',
+    descriptionKey: 'competitive.leagues.cuarzo.desc',
   },
   zenit: {
-    label: 'Liga Élite Zenit',
+    labelKey: 'competitive.leagues.zenit.name',
     colors: ['#1A0A00', '#FFD700', '#1A0A00'],
     glow: '#FFD700',
     icon: <Crown size={22} color="#FFD700" />,
     pointsNeeded: 5000,
-    description: 'Corona de oro blanco. El ápex de FitGO.',
+    descriptionKey: 'competitive.leagues.zenit.desc',
   },
 };
 
@@ -94,6 +96,7 @@ function LeagueBadge({ tier, size = 'md' }: { tier: LeagueTier; size?: 'sm' | 'm
 
 function MemberRow({ member, rank, onRemove, isMe }: { member: SquadMember; rank: number; onRemove?: () => void; isMe?: boolean }) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const rankColor = rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : rank === 3 ? '#CD7F32' : colors.textSecondary;
   return (
     <View style={[styles.memberRow, { borderColor: colors.border, backgroundColor: colors.surface }]}>
@@ -108,7 +111,7 @@ function MemberRow({ member, rank, onRemove, isMe }: { member: SquadMember; rank
       <View style={{ flex: 1 }}>
         <Text style={[styles.memberName, { color: colors.textPrimary }]} numberOfLines={1}>{member.name}</Text>
         <Text style={[styles.memberSub, { color: colors.textSecondary }]}>
-          🔥 {member.current_streak} días
+          🔥 {member.current_streak} {t('competitive.squads.days', 'días')}
         </Text>
       </View>
       <View style={[styles.pointsBadge, { backgroundColor: colors.primary + '20' }]}>
@@ -127,6 +130,23 @@ function MemberRow({ member, rank, onRemove, isMe }: { member: SquadMember; rank
 
 function EmptySquad({ onCreate, onJoin }: { onCreate: () => void; onJoin: () => void }) {
   const colors = useTheme();
+  const { t } = useTranslation();
+  const { profile } = useAuthStore();
+  const socialStore = useSocialStore();
+  const [invitations, setInvitations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (profile?.id) {
+      socialStore.fetchSquadInvitations(profile.id).then(invites => {
+        setInvitations(invites);
+        setLoading(false);
+      });
+    } else {
+      setLoading(false);
+    }
+  }, [profile?.id]);
+
   return (
     <View style={styles.emptyContainer}>
       <LinearGradient
@@ -136,26 +156,74 @@ function EmptySquad({ onCreate, onJoin }: { onCreate: () => void; onJoin: () => 
       <View style={[styles.emptyIconWrap, { borderColor: colors.border }]}>
         <Trophy size={48} color={colors.primary} />
       </View>
-      <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>Guerras de Macros</Text>
+      <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>{t('competitive.squads.emptyTitle', 'Guerras de Macros')}</Text>
       <Text style={[styles.emptySub, { color: colors.textSecondary }]}>
-        Únete o crea un Squad con hasta 4 amigos. Cumplan sus macros diarios, acumulen puntos y suban de liga juntos.
+        {t('competitive.squads.emptySub', 'Únete o crea un Squad con hasta 4 amigos. Cumplan sus macros diarios, acumulen puntos y suban de liga juntos.')}
       </Text>
-      <View style={{ flexDirection: 'row', gap: 12, marginTop: 24 }}>
+      <View style={{ flexDirection: 'row', gap: 12, marginTop: 24, marginBottom: 32 }}>
         <TouchableOpacity
           style={[styles.emptyBtn, { backgroundColor: colors.primary }]}
           onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); onCreate(); }}
         >
           <Plus size={18} color="#fff" />
-          <Text style={styles.emptyBtnText}>Crear Squad</Text>
+          <Text style={styles.emptyBtnText}>{t('competitive.squads.createSquad', 'Crear Squad')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.emptyBtnOutline, { borderColor: colors.primary }]}
           onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onJoin(); }}
         >
           <Hash size={18} color={colors.primary} />
-          <Text style={[styles.emptyBtnText, { color: colors.primary }]}>Unirme</Text>
+          <Text style={[styles.emptyBtnText, { color: colors.primary }]}>{t('competitive.squads.joinSquad', 'Unirme')}</Text>
         </TouchableOpacity>
       </View>
+
+      {!loading && invitations.length > 0 && (
+        <View style={{ width: '100%', alignItems: 'flex-start' }}>
+          <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: '800', marginBottom: 12, paddingHorizontal: 4 }}>
+            {t('competitive.squads.invitations', 'Tus Invitaciones')} ({invitations.length})
+          </Text>
+          {invitations.map((inv) => {
+            const match = inv.content.match(/código de invitación:\s*([a-zA-Z0-9]+)/i);
+            const code = match ? match[1] : null;
+            return (
+              <View key={inv.id} style={{ width: '100%', backgroundColor: colors.surfaceAlt, padding: 14, borderRadius: 16, marginBottom: 10, flexDirection: 'row', alignItems: 'center' }}>
+                {inv.sender?.avatar_url ? (
+                  <Image source={{ uri: inv.sender.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                ) : (
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primary + '30', alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ color: colors.primary, fontWeight: 'bold' }}>{inv.sender?.name?.[0]?.toUpperCase()}</Text>
+                  </View>
+                )}
+                <View style={{ flex: 1, marginLeft: 12, paddingRight: 8 }}>
+                  <Text style={{ color: colors.textPrimary, fontWeight: 'bold' }}>{inv.sender?.name}</Text>
+                  <Text style={{ color: colors.textSecondary, fontSize: 12 }} numberOfLines={1}>Te ha invitado a un squad.</Text>
+                </View>
+                {code ? (
+                  <TouchableOpacity
+                    style={{ backgroundColor: colors.primary, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12 }}
+                    onPress={async () => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                      const store = useLeagueStore.getState();
+                      if (profile?.id) {
+                        const ok = await store.joinSquadByCode(code, profile.id);
+                        if (ok) {
+                          store.fetchMySquad(profile.id);
+                        } else {
+                          Alert.alert('Error', store.error || 'No se pudo unir al squad.');
+                        }
+                      }
+                    }}
+                  >
+                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>Aceptar</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <Text style={{ color: colors.textSecondary, fontSize: 11, fontStyle: 'italic' }}>Inválido</Text>
+                )}
+              </View>
+            );
+          })}
+        </View>
+      )}
     </View>
   );
 }
@@ -164,6 +232,7 @@ function EmptySquad({ onCreate, onJoin }: { onCreate: () => void; onJoin: () => 
 
 function PodiumCard({ squad, position, onInspect }: { squad: Squad; position: number; onInspect: (s: Squad) => void }) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const cfg = LEAGUE_CONFIG[squad.league_tier];
   const podiumColors: Record<number, { medal: string; height: number; glow: string }> = {
     1: { medal: '🥇', height: 110, glow: '#FFD700' },
@@ -201,6 +270,7 @@ function PodiumCard({ squad, position, onInspect }: { squad: Squad; position: nu
 
 export default function FitGOCompetitive() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const { profile } = useAuthStore();
   const {
     squad, members, myPoints, myStreak,
@@ -226,6 +296,11 @@ export default function FitGOCompetitive() {
   const [activeSection, setActiveSection] = useState<'my-squad' | 'ranking' | 'challenges'>('ranking');
   const [rankingSubTab, setRankingSubTab] = useState<'squads' | 'individual'>('individual');
   const [showRankingInfo, setShowRankingInfo] = useState(false);
+  const [showSquadInfo, setShowSquadInfo] = useState(false);
+  
+  const [alert, setAlert] = useState<{
+    visible: boolean; type: AlertType; title: string; message: string; confirmText?: string; cancelText?: string; onConfirm: () => void; onCancel?: () => void;
+  }>({ visible: false, type: 'info', title: '', message: '', onConfirm: () => {} });
 
   const handleInspectSquad = async (s: Squad) => {
     Haptics.selectionAsync();
@@ -269,6 +344,7 @@ export default function FitGOCompetitive() {
   };
 
   const getRankGrade = (points: number) => {
+    if (points >= 15000) return { label: 'S++', color: '#FF0055', bg: '#FF005520' };
     if (points >= 10000) return { label: 'S+', color: '#FFD700', bg: '#FFD70020' };
     if (points >= 5000)  return { label: 'S',  color: '#A855F7', bg: '#A855F720' };
     if (points >= 2000)  return { label: 'A',  color: '#3B82F6', bg: '#3B82F620' };
@@ -305,10 +381,19 @@ export default function FitGOCompetitive() {
   };
 
   const handleLeave = () => {
-    Alert.alert('Salir del Squad', '¿Estás seguro?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Salir', style: 'destructive', onPress: () => profile?.id && leaveSquad(profile.id) },
-    ]);
+    setAlert({
+      visible: true,
+      type: 'warning',
+      title: 'Salir del Squad',
+      message: '¿Estás seguro de que deseas salir del squad?',
+      confirmText: 'Salir',
+      cancelText: 'Cancelar',
+      onConfirm: () => {
+        if (profile?.id) leaveSquad(profile.id);
+        setAlert(prev => ({ ...prev, visible: false }));
+      },
+      onCancel: () => setAlert(prev => ({ ...prev, visible: false }))
+    });
   };
 
   const leagueCfg = squad ? LEAGUE_CONFIG[squad.league_tier] : LEAGUE_CONFIG.carbono;
@@ -317,6 +402,16 @@ export default function FitGOCompetitive() {
 
   return (
     <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+      <CustomAlert 
+        visible={alert.visible} 
+        type={alert.type} 
+        title={alert.title} 
+        message={alert.message} 
+        confirmText={alert.confirmText}
+        cancelText={alert.cancelText}
+        onConfirm={alert.onConfirm} 
+        onCancel={alert.onCancel}
+      />
       <MacroRewardAnimation visible={rewardVisible} points={rewardPoints} onHide={hideReward} />
 
       {/* Section Toggle */}
@@ -327,7 +422,7 @@ export default function FitGOCompetitive() {
         >
           <Trophy size={15} color={activeSection === 'ranking' ? colors.primary : colors.textSecondary} />
           <Text style={[styles.sectionToggleText, { color: activeSection === 'ranking' ? colors.primary : colors.textSecondary }]}>
-            Ranking
+            {t('social.ranking.globalRanking', 'Ranking')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -336,7 +431,7 @@ export default function FitGOCompetitive() {
         >
           <Users size={15} color={activeSection === 'my-squad' ? colors.primary : colors.textSecondary} />
           <Text style={[styles.sectionToggleText, { color: activeSection === 'my-squad' ? colors.primary : colors.textSecondary }]}>
-            Mi Squad
+            {t('competitive.mySquad', 'My Squad')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -345,7 +440,7 @@ export default function FitGOCompetitive() {
         >
           <Sword size={15} color={activeSection === 'challenges' ? colors.primary : colors.textSecondary} />
           <Text style={[styles.sectionToggleText, { color: activeSection === 'challenges' ? colors.primary : colors.textSecondary }]}>
-            Retos
+            {t('social.challenges.fitgoChallenges', 'Challenges')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -375,7 +470,7 @@ export default function FitGOCompetitive() {
               >
                 <Users size={14} color={rankingSubTab === 'individual' ? colors.primary : colors.textMuted} />
                 <Text style={[styles.subToggleText, { color: rankingSubTab === 'individual' ? colors.primary : colors.textMuted }]}>
-                  Individual
+                  {t('competitive.individual', 'Individual')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -393,9 +488,9 @@ export default function FitGOCompetitive() {
             {rankingSubTab === 'squads' && (
               <>
                 <View style={styles.rankingHeader}>
-                  <Text style={[styles.rankingTitle, { color: colors.textPrimary }]}>🏆 Podio de Ligas</Text>
+                  <Text style={[styles.rankingTitle, { color: colors.textPrimary }]}>🏆 {t('competitive.squads.podiumTitle', 'Podio de Ligas')}</Text>
                   <Text style={[styles.rankingSub, { color: colors.textSecondary }]}>
-                    Los mejores squads de FitGO Competitive
+                    {t('competitive.squads.podiumSub', 'Los mejores squads de FitGO Competitive')}
                   </Text>
                 </View>
 
@@ -473,19 +568,19 @@ export default function FitGOCompetitive() {
                         <Text style={{ color: myGrade.color, fontSize: 18, fontWeight: '900' }}>{myGrade.label}</Text>
                       </View>
                       <View style={{ flex: 1 }}>
-                        <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '600', textTransform: 'uppercase' }}>TU RANGO ACTUAL</Text>
-                        <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: '900', letterSpacing: -0.5 }}>#{myRankIndex + 1} del mundo</Text>
+                        <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '600', textTransform: 'uppercase' }}>{t('social.ranking.currentRank', 'Your Current Rank')}</Text>
+                        <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: '900', letterSpacing: -0.5 }}>#{myRankIndex + 1} {t('social.ranking.inWorld', 'in the world')}</Text>
                       </View>
                       <View style={{ alignItems: 'flex-end' }}>
                         <Text style={{ color: colors.primary, fontSize: 22, fontWeight: '900' }}>{Math.round(myRankInfo.points)}</Text>
-                        <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '700' }}>PUNTOS</Text>
+                        <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '700' }}>{t('social.ranking.points', 'POINTS')}</Text>
                       </View>
                     </View>
                   )}
 
                   {/* Global list */}
                   <View style={[styles.restList, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 12 }]}>Ranking Global</Text>
+                    <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 12 }]}>{t('social.ranking.globalRanking', 'Global Ranking')}</Text>
                     {socialStore.isRankingLoading && socialStore.globalRanking.length === 0 ? (
                       <ActivityIndicator color="#F59E0B" />
                     ) : (
@@ -550,8 +645,39 @@ export default function FitGOCompetitive() {
                             <X size={18} color={colors.textSecondary} />
                           </TouchableOpacity>
                         </View>
-                        <Text style={{ color: colors.textSecondary, fontSize: 14, lineHeight: 22 }}>
-                          Los puntos del ranking individual se acumulan completando registros diarios, cumpliendo tus metas de macros y manteniendo una racha activa.{`\n\n`}Cuanto mayor sea tu racha, mayor será el multiplicador de puntos. ¡Mantente constante para subir en el ranking!
+
+                        {/* Points breakdown */}
+                        <View style={{ gap: 10, marginBottom: 16 }}>
+                          {[
+                            { icon: '🍽️', label: 'Registrar una comida', pts: '+10 pts' },
+                            { icon: '🎯', label: 'Macros perfectos (±5%)', pts: '+100 pts' },
+                            { icon: '⚡', label: 'Sinergia de Squad', pts: '+50 pts' },
+                          ].map((row) => (
+                            <View key={row.label} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surfaceAlt, borderRadius: 12, padding: 12, gap: 10 }}>
+                              <Text style={{ fontSize: 20 }}>{row.icon}</Text>
+                              <Text style={{ flex: 1, color: colors.textPrimary, fontSize: 13, fontWeight: '600' }}>{row.label}</Text>
+                              <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 14 }}>{row.pts}</Text>
+                            </View>
+                          ))}
+                        </View>
+
+                        {/* Streak multipliers */}
+                        <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 14, marginBottom: 8 }}>🔥 Multiplicadores de Racha</Text>
+                        <View style={{ gap: 6, marginBottom: 16 }}>
+                          {[
+                            { range: '3–7 días', mult: '×1.2', color: '#F59E0B' },
+                            { range: '8–14 días', mult: '×1.5', color: '#F97316' },
+                            { range: '15+ días', mult: '×2.0', color: '#EF4444' },
+                          ].map((row) => (
+                            <View key={row.range} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 8, backgroundColor: row.color + '15', borderRadius: 10 }}>
+                              <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{row.range}</Text>
+                              <Text style={{ color: row.color, fontWeight: '900', fontSize: 15 }}>{row.mult}</Text>
+                            </View>
+                          ))}
+                        </View>
+
+                        <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 20 }}>
+                          El multiplicador se aplica a cada punto ganado mientras tu racha esté activa. ¡Sé constante y sube más rápido!
                         </Text>
                         <TouchableOpacity
                           style={{ marginTop: 20, backgroundColor: colors.primary, borderRadius: 14, padding: 14, alignItems: 'center' }}
@@ -588,14 +714,14 @@ export default function FitGOCompetitive() {
                     <LeagueBadge tier={squad.league_tier} size="lg" />
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.leagueName, { color: '#fff', textShadowColor: leagueCfg.glow, textShadowRadius: 8 }]}>
-                        {leagueCfg.label}
+                        {t(leagueCfg.labelKey)}
                       </Text>
                       <Text style={[styles.leagueDesc, { color: 'rgba(255,255,255,0.65)' }]}>
-                        {leagueCfg.description}
+                        {t(leagueCfg.descriptionKey)}
                       </Text>
                       <View style={[styles.totalPoints, { backgroundColor: leagueCfg.glow + '25' }]}>
-                        <Text style={[styles.totalPointsText, { color: leagueCfg.glow }]}>
-                          {squad.points.toLocaleString()} pts totales del squad
+                        <Text style={{ color: leagueCfg.glow, fontWeight: '700', fontSize: 13 }}>
+                          {members.reduce((sum, m) => sum + (m.league_points || 0), 0).toLocaleString()} {t('competitive.squads.totalPoints', 'pts totales del squad')}
                         </Text>
                       </View>
                     </View>
@@ -610,7 +736,7 @@ export default function FitGOCompetitive() {
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <Users size={14} color={colors.textSecondary} />
                         <Text style={[styles.squadMeta, { color: colors.textSecondary }]}>
-                          {members.length}/5 miembros
+                          {members.length}/5 {t('competitive.squads.members', 'miembros')}
                         </Text>
                       </View>
                     </View>
@@ -648,19 +774,27 @@ export default function FitGOCompetitive() {
                     style={[styles.statCard, { borderColor: colors.primary + '30' }]}
                   >
                     <Text style={[styles.statValue, { color: colors.primary }]}>{myPoints.toLocaleString()}</Text>
-                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Mis puntos</Text>
+                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t('competitive.squads.myPoints', 'Mis puntos')}</Text>
                   </LinearGradient>
                   <LinearGradient
                     colors={['#FF6B0020', '#FF6B0008']}
                     style={[styles.statCard, { borderColor: '#FF6B0030' }]}
                   >
                     <Text style={[styles.statValue, { color: '#FF6B00' }]}>🔥 {myStreak}</Text>
-                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Días racha</Text>
+                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t('competitive.squads.streakDays', 'Días racha')}</Text>
                   </LinearGradient>
                 </View>
 
                 {/* Leaderboard */}
-                <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Clasificación del Squad</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>{t('competitive.squads.rankingTitle', 'Clasificación del Squad')}</Text>
+                  <TouchableOpacity
+                    style={{ backgroundColor: '#F59E0B18', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}
+                    onPress={() => setShowSquadInfo(true)}
+                  >
+                    <Text style={{ color: '#F59E0B', fontSize: 12, fontWeight: '800' }}>INFO</Text>
+                  </TouchableOpacity>
+                </View>
                 <View style={{ gap: 8 }}>
                   {members.map((m, i) => (
                     <MemberRow 
@@ -669,19 +803,22 @@ export default function FitGOCompetitive() {
                       rank={i + 1} 
                       isMe={m.user_id === profile?.id}
                       onRemove={squad.created_by === profile?.id ? () => {
-                        Alert.alert(
-                          'Expulsar integrante',
-                          `¿Estás seguro de que quieres expulsar a ${m.name} del squad?`,
-                          [
-                            { text: 'Cancelar', style: 'cancel' },
-                            { text: 'Expulsar', style: 'destructive', onPress: async () => {
-                              const success = await useLeagueStore.getState().removeMember(squad.id, m.user_id);
-                              if (success) {
-                                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                              }
-                            }}
-                          ]
-                        );
+                        setAlert({
+                          visible: true,
+                          type: 'warning',
+                          title: 'Expulsar integrante',
+                          message: `¿Estás seguro de que quieres expulsar a ${m.name} del squad?`,
+                          confirmText: 'Expulsar',
+                          cancelText: 'Cancelar',
+                          onConfirm: async () => {
+                            const success = await useLeagueStore.getState().removeMember(squad.id, m.user_id);
+                            if (success) {
+                              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                            }
+                            setAlert(prev => ({ ...prev, visible: false }));
+                          },
+                          onCancel: () => setAlert(prev => ({ ...prev, visible: false }))
+                        });
                       } : undefined}
                     />
                   ))}
@@ -717,10 +854,10 @@ export default function FitGOCompetitive() {
                       <LeagueBadge tier={tier} size="sm" />
                       <View style={{ flex: 1 }}>
                         <Text style={[styles.tierName, { color: isCurrent ? cfg.glow : colors.textPrimary }]}>
-                          {cfg.label} {isCurrent && '← Actual'}
+                          {t(cfg.labelKey)} {isCurrent && '← Actual'}
                         </Text>
                         <Text style={[styles.tierPts, { color: colors.textSecondary }]}>
-                          {cfg.pointsNeeded.toLocaleString()} puntos
+                          {cfg.pointsNeeded.toLocaleString()} {t('profile.points', 'puntos')}
                         </Text>
                       </View>
                       {reached && !isCurrent && (
@@ -743,6 +880,32 @@ export default function FitGOCompetitive() {
         )}
       </ScrollView>
       </GestureDetector>
+
+      {/* Squad Info Modal */}
+      <Modal visible={showSquadInfo} transparent animationType="fade">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+          <View style={{ width: '100%', backgroundColor: colors.surface, borderRadius: 24, padding: 24 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Trophy size={22} color="#F59E0B" />
+                <Text style={{ color: colors.textPrimary, fontSize: 17, fontWeight: '800' }}>{t('competitive.squads.squadPoints', 'Puntos del Squad')}</Text>
+              </View>
+              <TouchableOpacity onPress={() => setShowSquadInfo(false)} style={{ padding: 6, backgroundColor: colors.surfaceAlt, borderRadius: 14 }}>
+                <X size={18} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            <Text style={{ color: colors.textSecondary, fontSize: 14, lineHeight: 22 }}>
+              {t('competitive.squads.infoText', "Los puntos totales del squad son la suma de los puntos de todos sus integrantes.\n\nObtén más puntos al completar tus registros diarios, cumplir tus macros al pie de la letra y mantener una racha constante.\n\n¡Trabaja en equipo y motiva a tus amigos para subir juntos a la Liga Zenit!")}
+            </Text>
+            <TouchableOpacity
+              style={{ marginTop: 20, backgroundColor: colors.primary, borderRadius: 14, padding: 14, alignItems: 'center' }}
+              onPress={() => setShowSquadInfo(false)}
+            >
+              <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Entendido 👊</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* Create Modal */}
       <Modal visible={showCreate} transparent animationType="fade" onRequestClose={() => setShowCreate(false)}>
@@ -820,7 +983,7 @@ export default function FitGOCompetitive() {
                     </Text>
                     <View style={{ backgroundColor: cfg.glow + '20', paddingHorizontal: 14, paddingVertical: 5, borderRadius: 12, marginTop: 8 }}>
                       <Text style={{ color: cfg.glow, fontWeight: '800', fontSize: 13 }}>
-                        {cfg.label}  •  {inspectingSquad.points.toLocaleString()} pts
+                        {t(cfg.labelKey)}  •  {inspectingSquad.points.toLocaleString()} pts
                       </Text>
                     </View>
                   </View>
@@ -989,7 +1152,7 @@ export default function FitGOCompetitive() {
                   </View>
                   <View style={{ alignItems: 'center', flex: 1 }}>
                     <Text style={{ color: colors.secondary || '#A855F7', fontSize: 18, fontWeight: '900' }}>{Math.round(inspectingUser.points)}</Text>
-                    <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 4 }}>Puntos</Text>
+                    <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 4 }}>{t('profile.points', 'Puntos')}</Text>
                   </View>
                   <View style={{ alignItems: 'center', flex: 1 }}>
                     <View style={{ backgroundColor: grade.bg, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8 }}>

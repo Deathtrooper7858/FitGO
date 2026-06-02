@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Dimensions, Linking } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Spacing, Radius } from '../../constants';
 import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
@@ -11,9 +11,10 @@ import { TERMS_DATA, PRIVACY_DATA } from '../../constants/legalData';
 const { width } = Dimensions.get('window');
 
 export default function LegalScreen() {
+  const { tab } = useLocalSearchParams();
   const { t } = useTranslation();
   const colors = useTheme();
-  const [activeTab, setActiveTab] = useState<'terms' | 'privacy'>('terms');
+  const [activeTab, setActiveTab] = useState<'terms' | 'privacy'>(tab === 'privacy' ? 'privacy' : 'terms');
   
   const data = activeTab === 'terms' ? TERMS_DATA : PRIVACY_DATA;
 

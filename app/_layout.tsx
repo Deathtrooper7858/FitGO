@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, View, ActivityIndicator, Platform, LogBox, Image, Text } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 
 // Ignore specific warnings in the UI
 LogBox.ignoreLogs([
@@ -45,6 +46,7 @@ function NavigationGuard() {
   useEffect(() => {
     const inAuthGroup   = segments[0] === '(auth)';
     const inOnboarding  = segments[0] === 'onboarding';
+    const isTermsModal  = segments.join('/') === 'modals/terms' || (segments[0] === '(auth)' && segments[1] === 'terms');
     const allSegments   = segments as string[];
 
     // ── Fast-path: if we already have a cached profile + session, navigate
@@ -66,7 +68,7 @@ function NavigationGuard() {
       }
     } else if (!profile || !profile.onboardingDone || !profile.id) {
       // Session exists but profile is invalid or incomplete → onboarding
-      if (!inOnboarding) {
+      if (!inOnboarding && !isTermsModal) {
         router.replace('/onboarding');
       }
     } else {
@@ -85,6 +87,7 @@ export default function RootLayout() {
   const { initialize: initPurchases } = usePurchaseStore();
   const { language, theme } = useSettingsStore();
   const colors = useTheme();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (i18n.isInitialized) {
@@ -177,7 +180,7 @@ export default function RootLayout() {
             fontWeight: '600', 
             letterSpacing: 2,
             textTransform: 'uppercase'
-          }}>Tu mejor versión</Text>
+          }}>{t('common.slogan', 'Your best version')}</Text>
         </Animated.View>
 
         <View style={{ position: 'absolute', bottom: 60 }}>

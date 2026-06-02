@@ -11,8 +11,10 @@ import { useAuthStore, useSocialStore } from '../../store';
 import { GlassCard } from '../../components/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
 import { useAchievements, ALL_BADGES } from '../../hooks/useAchievements';
+import { useTranslation } from 'react-i18next';
 import { Radius } from '../../constants';
 import { CustomAlert } from '../../components/CustomAlert';
+import { AvatarViewerModal } from '../../components/AvatarViewerModal';
 // TEMPORARILY DISABLED FOR EXPO GO COMPATIBILITY
 // import LottieView from 'lottie-react-native';
 // import { LottieRegistry } from '../../hooks/LottieRegistry';
@@ -25,6 +27,7 @@ export default function UserProfileModal() {
 
   const colors = useTheme();
   const { profile: myProfile } = useAuthStore();
+  const { t } = useTranslation();
   const socialStore = useSocialStore();
   const { achievements: myAchievements } = useAchievements();
 
@@ -35,6 +38,7 @@ export default function UserProfileModal() {
   const [totalFriends, setTotalFriends] = useState(0);
   const [showAchievements, setShowAchievements] = useState(false);
   const [deleteFriendAlert, setDeleteFriendAlert] = useState<{ friendId: string; friendName: string } | null>(null);
+  const [avatarViewerVisible, setAvatarViewerVisible] = useState(false);
 
   const isMe = userId === myProfile?.id;
 
@@ -131,6 +135,7 @@ export default function UserProfileModal() {
   const rankIndex = socialStore.globalRanking.findIndex(u => u.id === userId);
 
   const getRank = (points: number) => {
+    if (points >= 15000) return { label: 'S++', color: '#FF0055', bg: '#FF005520' };
     if (points >= 10000) return { label: 'S+', color: '#FFD700', bg: '#FFD70020' };
     if (points >= 5000) return { label: 'S', color: '#A855F7', bg: '#A855F720' };
     if (points >= 2000) return { label: 'A', color: '#3B82F6', bg: '#3B82F620' };
@@ -141,13 +146,13 @@ export default function UserProfileModal() {
   };
 
   const userGrade = rankInfo ? getRank(rankInfo.points) : getRank(0);
-  const currentBadgeId = displayUser.selectedBadge || (displayUser.role === 'super_admin' ? 'super_admin' : displayUser.role === 'admin' ? 'admin' : displayUser.isPro ? 'pro' : 'verified');
+  const currentBadgeId = displayUser.selectedBadge || (displayUser.role === 'owner' ? 'owner' : displayUser.role === 'super_admin' ? 'super_admin' : displayUser.role === 'admin' ? 'admin' : displayUser.isPro ? 'pro' : 'verified');
   const currentBadge = ALL_BADGES[currentBadgeId] || ALL_BADGES.verified;
 
-  const theirUnlockedIds: string[] = displayUser.unlocked_achievements || [];
+  const theirUnlockedIds: string[] = Array.from(new Set(displayUser.unlocked_achievements || []));
   const theirUnlockedCount = isMe
     ? myAchievements.filter(a => a.unlocked).length
-    : theirUnlockedIds.length;
+    : myAchievements.filter(a => theirUnlockedIds.includes(a.id)).length;
   const totalAchievements = myAchievements.length;
 
   return (
@@ -156,7 +161,7 @@ export default function UserProfileModal() {
         <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
           <ArrowLeft size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={[s.title, { color: colors.textPrimary }]}>Perfil de Usuario</Text>
+        <Text style={[s.title, { color: colors.textPrimary }]}>{t('profile.userProfile', 'Perfil de Usuario')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -165,12 +170,16 @@ export default function UserProfileModal() {
         <GlassCard style={{ margin: 16, padding: 0, overflow: 'hidden' }}>
           <View style={{ alignItems: 'center', paddingHorizontal: 24, paddingBottom: 24, paddingTop: 28 }}>
             {/* Avatar */}
-            <View style={{
-              width: 88, height: 88, borderRadius: 44,
-              borderWidth: 3, borderColor: colors.background,
-              shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
-              marginBottom: 12,
-            }}>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => displayUser.avatar_url ? setAvatarViewerVisible(true) : null}
+              style={{
+                width: 88, height: 88, borderRadius: 44,
+                borderWidth: 3, borderColor: colors.background,
+                shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
+                marginBottom: 12,
+              }}
+            >
               {displayUser.avatar_url ? (
                 <Image source={{ uri: displayUser.avatar_url }} style={{ width: 82, height: 82, borderRadius: 41 }} />
               ) : (
@@ -178,7 +187,7 @@ export default function UserProfileModal() {
                   <Text style={{ fontSize: 32, color: '#fff', fontWeight: 'bold' }}>{displayUser.name?.[0]}</Text>
                 </View>
               )}
-            </View>
+            </TouchableOpacity>
 
             <Text style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '900', letterSpacing: -0.5 }}>{displayUser.name}</Text>
 
@@ -191,19 +200,19 @@ export default function UserProfileModal() {
             <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-around', marginTop: 20, paddingTop: 20, borderTopWidth: 1, borderTopColor: colors.border + '30' }}>
               <View style={{ alignItems: 'center' }}>
                 <Text style={{ color: colors.textPrimary, fontSize: 20, fontWeight: '900' }}>#{rankIndex >= 0 ? rankIndex + 1 : '-'}</Text>
-                <Text style={{ color: colors.textSecondary, fontSize: 11 }}>Ranking</Text>
+                <Text style={{ color: colors.textSecondary, fontSize: 11 }}>{t('profile.ranking', 'Ranking')}</Text>
               </View>
               <View style={{ width: 1, backgroundColor: colors.border + '30' }} />
               <View style={{ alignItems: 'center' }}>
                 <Text style={{ color: colors.primary, fontSize: 20, fontWeight: '900' }}>{Math.round(rankInfo?.points || 0)}</Text>
-                <Text style={{ color: colors.textSecondary, fontSize: 11 }}>Puntos</Text>
+                <Text style={{ color: colors.textSecondary, fontSize: 11 }}>{t('profile.points', 'Puntos')}</Text>
               </View>
               <View style={{ width: 1, backgroundColor: colors.border + '30' }} />
               <View style={{ alignItems: 'center' }}>
                 <View style={{ backgroundColor: userGrade.bg, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8 }}>
                   <Text style={{ color: userGrade.color, fontSize: 18, fontWeight: '900' }}>{userGrade.label}</Text>
                 </View>
-                <Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 4 }}>Clase</Text>
+                <Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 4 }}>{t('profile.class', 'Clase')}</Text>
               </View>
             </View>
           </View>
@@ -218,14 +227,14 @@ export default function UserProfileModal() {
                   <View style={{ flexDirection: 'row', gap: 12 }}>
                     <View style={[s.actionBtn, { flex: 1, backgroundColor: colors.success + '20' }]}>
                       <Check size={20} color={colors.success} />
-                      <Text style={[s.actionBtnText, { color: colors.success }]}>Son Amigos</Text>
+                      <Text style={[s.actionBtnText, { color: colors.success }]}>{t('profile.areFriends', 'Son Amigos')}</Text>
                     </View>
                     <TouchableOpacity 
                       style={[s.actionBtn, { flex: 1, backgroundColor: colors.primary }]}
                       onPress={() => router.push({ pathname: '/modals/chat', params: { friendId: userId, friendName: displayUser.name, friendAvatar: displayUser.avatar_url || '' } })}
                     >
                       <MessageSquare size={20} color="#fff" />
-                      <Text style={[s.actionBtnText, { color: '#fff' }]}>Mensaje</Text>
+                      <Text style={[s.actionBtnText, { color: '#fff' }]}>{t('profile.message', 'Mensaje')}</Text>
                     </TouchableOpacity>
                   </View>
                   <TouchableOpacity
@@ -233,12 +242,12 @@ export default function UserProfileModal() {
                     onPress={() => setDeleteFriendAlert({ friendId: friendStatus.id, friendName: displayUser.name || 'este usuario' })}
                   >
                     <Trash2 size={16} color={colors.error} />
-                    <Text style={{ color: colors.error, fontWeight: '700', fontSize: 15 }}>Eliminar Amigo</Text>
+                    <Text style={{ color: colors.error, fontWeight: '700', fontSize: 15 }}>{t('profile.removeFriend', 'Eliminar Amigo')}</Text>
                   </TouchableOpacity>
                 </View>
               ) : friendStatus?.status === 'pending' ? (
                 <View style={[s.actionBtn, { backgroundColor: colors.surfaceAlt }]}>
-                  <Text style={[s.actionBtnText, { color: colors.textSecondary }]}>Solicitud Pendiente</Text>
+                  <Text style={[s.actionBtnText, { color: colors.textSecondary }]}>{t('profile.pendingRequest', 'Solicitud Pendiente')}</Text>
                 </View>
               ) : (
                 <TouchableOpacity
@@ -253,7 +262,7 @@ export default function UserProfileModal() {
                     style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}
                   >
                     <UserPlus size={20} color="#fff" />
-                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16 }}>Enviar Solicitud de Amistad</Text>
+                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16 }}>{t('profile.sendFriendRequest', 'Enviar Solicitud de Amistad')}</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               )}
@@ -264,7 +273,7 @@ export default function UserProfileModal() {
           {displayUser.pinned_achievements && displayUser.pinned_achievements.length > 0 && (
             <View style={{ marginBottom: 16 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 Vitrina de Trofeos</Text>
+                <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 {t('achievements.trophyShowcase', 'Vitrina de Trofeos')}</Text>
               </View>
               <View style={{ flexDirection: 'row', gap: 12 }}>
                 {displayUser.pinned_achievements.map((id: string) => {
@@ -323,10 +332,10 @@ export default function UserProfileModal() {
             <Trophy size={22} color="#F59E0B" />
             <View style={{ flex: 1 }}>
               <Text style={{ color: '#F59E0B', fontWeight: '800', fontSize: 15 }}>
-                {isMe ? 'Mis Logros' : 'Logros'}
+                {isMe ? t('achievements.myAchievements', 'Mis Logros') : t('achievements.achievements', 'Logros')}
               </Text>
               <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 1 }}>
-                {showAchievements ? 'Toca para ocultar' : 'Toca para ver los logros'}
+                {showAchievements ? t('common.tapToHide', 'Toca para ocultar') : t('common.tapToView', 'Toca para ver los logros')}
               </Text>
             </View>
             <View style={{ backgroundColor: '#F59E0B', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 }}>
@@ -352,7 +361,7 @@ export default function UserProfileModal() {
                   </View>
                 </LinearGradient>
                 {myAchievements.filter(a => a.unlocked).length === 0 && (
-                   <Text style={{ color: colors.textMuted, textAlign: 'center', fontSize: 12, marginTop: 10 }}>Sin logros</Text>
+                   <Text style={{ color: colors.textMuted, textAlign: 'center', fontSize: 12, marginTop: 10 }}>{t('achievements.noAchievements', 'Sin logros')}</Text>
                 )}
                 {myAchievements.map(achievement => {
                   if (!achievement.unlocked) return null;
@@ -411,7 +420,7 @@ export default function UserProfileModal() {
                     </View>
                   </LinearGradient>
                   {theirUnlockedCount === 0 && (
-                     <Text style={{ color: colors.textMuted, textAlign: 'center', fontSize: 12, marginTop: 10 }}>Sin logros</Text>
+                     <Text style={{ color: colors.textMuted, textAlign: 'center', fontSize: 12, marginTop: 10 }}>{t('achievements.noAchievements', 'Sin logros')}</Text>
                   )}
                   {myAchievements.map(achievement => {
                     if (!theirUnlockedIds.includes(achievement.id)) return null;
@@ -465,7 +474,7 @@ export default function UserProfileModal() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <Users size={18} color={colors.primary} />
                 <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: '800' }}>
-                  Amigos · {totalFriends}
+                  {t('social.friends.friends', 'Amigos')} · {totalFriends}
                 </Text>
               </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -498,14 +507,14 @@ export default function UserProfileModal() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
               <MessageSquare size={18} color={colors.primary} />
               <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: '800' }}>
-                Publicaciones
+                {t('social.posts', 'Publicaciones')}
               </Text>
             </View>
             {userPosts.length === 0 ? (
               <GlassCard style={{ padding: 24, alignItems: 'center' }}>
                 <MessageSquare size={32} color={colors.textMuted} style={{ opacity: 0.4, marginBottom: 8 }} />
                 <Text style={{ color: colors.textMuted, fontSize: 14 }}>
-                  {isMe ? 'Aún no has publicado nada.' : 'Este usuario no ha publicado nada.'}
+                  {isMe ? t('social.noPostsMe', 'Aún no has publicado nada.') : t('social.noPosts', 'Este usuario no ha publicado nada.')}
                 </Text>
               </GlassCard>
             ) : (
@@ -529,20 +538,20 @@ export default function UserProfileModal() {
                     </View>
                     <Text style={{ color: colors.textPrimary, fontSize: 14, lineHeight: 20 }}>{post.content}</Text>
                     {post.image_url && (
-                      <Image source={{ uri: post.image_url }} style={{ width: '100%', height: 180, borderRadius: 10, marginTop: 10 }} resizeMode="cover" />
+                      <Image source={{ uri: post.image_url }} style={{ width: '100%', height: 180, borderRadius: 10, marginTop: 10 }} contentFit="cover" />
                     )}
                   </View>
                   <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.border + '33', paddingVertical: 10 }}>
                     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                       <Heart size={15} color={colors.textSecondary} />
                       <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
-                        {post.likes_count > 0 ? post.likes_count : ''} Me gusta
+                        {post.likes_count > 0 ? post.likes_count : ''} {t('social.likes', 'Me gusta')}
                       </Text>
                     </View>
                     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                       <MessageSquare size={15} color={colors.textSecondary} />
                       <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
-                        {post.comments_count > 0 ? post.comments_count : ''} Comentarios
+                        {post.comments_count > 0 ? post.comments_count : ''} {t('social.comments', 'Comentarios')}
                       </Text>
                     </View>
                   </View>
@@ -552,6 +561,14 @@ export default function UserProfileModal() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Avatar Viewer */}
+      <AvatarViewerModal
+        visible={avatarViewerVisible}
+        avatarUrl={displayUser.avatar_url}
+        name={displayUser.name}
+        onClose={() => setAvatarViewerVisible(false)}
+      />
     </SafeAreaView>
   );
 }

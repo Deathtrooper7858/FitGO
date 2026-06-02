@@ -518,7 +518,7 @@ export default function TrackerScreen() {
             <View style={[s.card, { borderWidth: 0, paddingVertical: 24 }]}>
             <View style={s.arcWrap}>
               <Svg width={RING_SIZE} height={RING_SIZE}>
-                <G rotation="-90" origin={`${RING_SIZE / 2}, ${RING_SIZE / 2}`}>
+                <G rotation="-90" originX={RING_SIZE / 2} originY={RING_SIZE / 2}>
                   {/* Ghost ring */}
                   <Circle
                     cx={RING_SIZE / 2}

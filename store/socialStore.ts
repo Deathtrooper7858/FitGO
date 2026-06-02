@@ -70,6 +70,8 @@ export interface DirectMessage {
   sender_id: string;
   receiver_id: string;
   content: string;
+  image_url?: string;
+  audio_url?: string;
   created_at: string;
   is_read: boolean;
 }
@@ -115,14 +117,17 @@ interface SocialState {
   editComment: (commentId: string, content: string) => Promise<void>;
   fetchComments: (postId: string) => Promise<PostComment[]>;
   uploadPostImage: (uri: string) => Promise<string | null>;
+  uploadChatImage: (uri: string) => Promise<string | null>;
+  uploadChatAudio: (uri: string) => Promise<string | null>;
   
   // Direct Messages
   fetchDirectMessages: (userId: string, friendId: string) => Promise<DirectMessage[]>;
-  sendDirectMessage: (senderId: string, receiverId: string, content: string) => Promise<void>;
+  sendDirectMessage: (senderId: string, receiverId: string, content: string, image_url?: string, audio_url?: string) => Promise<void>;
   fetchUnreadCounts: (userId: string) => Promise<void>;
   markAsRead: (userId: string, friendId: string) => Promise<void>;
   subscribeToUnreadMessages: (userId: string) => () => void;
   subscribeToSocialEvents: (userId: string) => () => void;
+  fetchSquadInvitations: (userId: string) => Promise<any[]>;
   
   reset: () => void;
 }
@@ -669,6 +674,59 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     }
   },
 
+  uploadChatImage: async (uri: string) => {
+    try {
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+      const filePath = `chat_media/${fileName}`;
+
+      const formData = new FormData();
+      formData.append('file', {
+        uri,
+        name: fileName,
+        type: 'image/jpeg',
+      } as any);
+
+      const { data, error } = await supabase.storage.from('social').upload(filePath, formData, {
+        upsert: false,
+      });
+
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage.from('social').getPublicUrl(filePath);
+      return urlData.publicUrl;
+    } catch (err) {
+      console.warn('[SocialStore] Error uploading chat image:', err);
+      return null;
+    }
+  },
+
+  uploadChatAudio: async (uri: string) => {
+    try {
+      const extension = uri.split('.').pop() || 'm4a';
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${extension}`;
+      const filePath = `chat_media/${fileName}`;
+
+      const formData = new FormData();
+      formData.append('file', {
+        uri,
+        name: fileName,
+        type: `audio/${extension}`,
+      } as any);
+
+      const { data, error } = await supabase.storage.from('social').upload(filePath, formData, {
+        upsert: false,
+      });
+
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage.from('social').getPublicUrl(filePath);
+      return urlData.publicUrl;
+    } catch (err) {
+      console.warn('[SocialStore] Error uploading chat audio:', err);
+      return null;
+    }
+  },
+
   fetchDirectMessages: async (userId: string, friendId: string) => {
     try {
       const { data, error } = await supabase
@@ -686,15 +744,35 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     }
   },
 
-  sendDirectMessage: async (senderId: string, receiverId: string, content: string) => {
+  sendDirectMessage: async (senderId: string, receiverId: string, content: string, image_url?: string, audio_url?: string) => {
     try {
       const { error } = await supabase
         .from('direct_messages')
-        .insert({ sender_id: senderId, receiver_id: receiverId, content });
+        .insert({ sender_id: senderId, receiver_id: receiverId, content, image_url, audio_url });
         
       if (error) throw error;
     } catch (err) {
       console.warn('[SocialStore] Error sending direct message:', err);
+    }
+  },
+
+  fetchSquadInvitations: async (userId: string) => {
+    try {
+      // NOTE: We filter by a universal pattern that is always appended to squad invitation
+      // messages regardless of language. The pattern '#INV-' is a stable code prefix.
+      // Old Spanish-only filter `.ilike('content', '%código de invitación:%')` was a bug.
+      const { data, error } = await supabase
+        .from('direct_messages')
+        .select('*, sender:sender_id(id, name, avatar_url)')
+        .eq('receiver_id', userId)
+        .or('content.ilike.%código de invitación:%,content.ilike.%invite code:%,content.ilike.%invitation code:%,content.ilike.%squad invite:%')
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
+      return data || [];
+    } catch (err) {
+      console.warn('[SocialStore] Error fetching squad invitations:', err);
+      return [];
     }
   },
 

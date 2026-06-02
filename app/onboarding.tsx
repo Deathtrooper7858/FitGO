@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
   ScrollView, Alert, ActivityIndicator, TextInput,
-  KeyboardAvoidingView, Platform, LayoutAnimation, UIManager
+  KeyboardAvoidingView, Platform, LayoutAnimation
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -27,9 +27,6 @@ import { supabase } from '../services/supabase';
 import { CustomAlert, AlertType } from '../components/CustomAlert';
 import * as Haptics from 'expo-haptics';
 import { BlurView } from 'expo-blur';
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 // ─── Step types ────────────────────────────────────────────────────────────────
 const STEPS = [
@@ -1509,14 +1506,14 @@ function TermsStep({ data, onChange }: { data: Partial<OnboardingData>; onChange
             He leído y acepto los{' '}
             <Text 
               style={{ color: colors.primary, fontWeight: '700', textDecorationLine: 'underline' }}
-              onPress={(e) => { e.stopPropagation(); router.push('/modals/terms'); }}
+              onPress={(e) => { e.stopPropagation(); router.push({ pathname: '/(auth)/terms', params: { tab: 'terms' } } as any); }}
             >
               Términos y Condiciones
             </Text>
             {' '}y la{' '}
             <Text 
               style={{ color: colors.primary, fontWeight: '700', textDecorationLine: 'underline' }}
-              onPress={(e) => { e.stopPropagation(); router.push('/modals/terms'); }}
+              onPress={(e) => { e.stopPropagation(); router.push({ pathname: '/(auth)/terms', params: { tab: 'privacy' } } as any); }}
             >
               Política de Privacidad
             </Text>

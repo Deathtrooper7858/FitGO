@@ -1,15 +1,17 @@
 import React, { useMemo, useState, memo, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as LucideIcons from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
-import { useAchievements, Achievement, ALL_BADGES } from '../../hooks/useAchievements';
+import { useAchievements, Achievement, ALL_BADGES, AchievementTier } from '../../hooks/useAchievements';
+import { useTranslation } from 'react-i18next';
 import { Spacing, Radius } from '../../constants';
 import { supabase } from '../../services/supabase';
 import { GlassCard } from '../../components/GlassCard';
 import { useAuthStore } from '../../store';
+import { TIER_POINTS } from '../../hooks/useAchievements';
 
 const { width } = Dimensions.get('window');
 
@@ -39,6 +41,7 @@ function getTierColors(tier: string): [string, string] {
 // ── Badge Card (for the Badges Accordion) ─────────────────────────────────────
 const BadgeCard = memo(({ badge, owned }: { badge: typeof ALL_BADGES[string]; owned: boolean }) => {
   const colors = useTheme();
+  const { t } = useTranslation();
   return (
     <View style={[
       bs.badgeCard,
@@ -52,7 +55,7 @@ const BadgeCard = memo(({ badge, owned }: { badge: typeof ALL_BADGES[string]; ow
         <Text style={{ fontSize: 22 }}>{badge.icon}</Text>
       </LinearGradient>
       <Text style={[bs.badgeLabel, { color: owned ? colors.textPrimary : colors.textSecondary }]} numberOfLines={2}>
-        {badge.label}
+        {t(`achievements.badges.${badge.id}.label`, badge.label)}
       </Text>
       {!owned && <LucideIcons.Lock size={10} color={colors.textMuted} style={{ marginTop: 2 }} />}
     </View>
@@ -64,6 +67,7 @@ const AchievementRow = memo(({ achievement, isPinned, onTogglePin }: {
   achievement: Achievement; isPinned: boolean; onTogglePin: () => void;
 }) => {
   const colors = useTheme();
+  const { t } = useTranslation();
   const tierColors = getTierColors(achievement.tier);
   const accentColor = tierColors[0];
 
@@ -83,12 +87,12 @@ const AchievementRow = memo(({ achievement, isPinned, onTogglePin }: {
                 <Text style={s.emojiHuge}>{achievement.icon}</Text>
               </LinearGradient>
             ) : (
-              <View style={[s.iconHex, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, borderWidth: 1 }]}>
-                <Text style={[s.emojiHuge, { opacity: 0.2 }]}>{achievement.icon}</Text>
+              <LinearGradient colors={tierColors} style={[s.iconHex, { opacity: 0.3 }]}>
+                <Text style={[s.emojiHuge, { opacity: 0.5 }]}>{achievement.icon}</Text>
                 <View style={s.lockBadge}>
                   <LucideIcons.Lock size={11} color="#FFF" />
                 </View>
-              </View>
+              </LinearGradient>
             )}
             {isPinned && (
               <View style={s.pinBadge}>
@@ -105,6 +109,9 @@ const AchievementRow = memo(({ achievement, isPinned, onTogglePin }: {
               </Text>
               {achievement.unlocked && <LucideIcons.CheckCircle2 size={15} color={accentColor} />}
             </View>
+            <Text style={[s.itemPoints, { color: accentColor }]}>
+              {TIER_POINTS[achievement.tier]} pts
+            </Text>
             <Text style={[s.itemDesc, { color: colors.textSecondary }]} numberOfLines={2}>
               {achievement.description}
             </Text>
@@ -114,7 +121,7 @@ const AchievementRow = memo(({ achievement, isPinned, onTogglePin }: {
                 borderColor: achievement.unlocked ? accentColor + '40' : colors.border,
               }]}>
                 <Text style={[s.rewardPillText, { color: achievement.unlocked ? accentColor : colors.textMuted }]}>
-                  🎁 {ALL_BADGES[achievement.rewardBadgeId]?.icon} {ALL_BADGES[achievement.rewardBadgeId]?.label}
+                  🎁 {ALL_BADGES[achievement.rewardBadgeId]?.icon} {t(`achievements.badges.${achievement.rewardBadgeId}.label`, ALL_BADGES[achievement.rewardBadgeId]?.label)}
                 </Text>
               </View>
             )}
@@ -133,6 +140,7 @@ const CategoryAccordion = memo(({ category, items, pinnedIds, onTogglePin }: {
   onTogglePin: (id: string) => void;
 }) => {
   const colors = useTheme();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const cfg = CAT_CONFIG[category] || { icon: '🏅', gradient: ['#7C5CFC', '#4338CA'] as [string, string] };
   const unlockedInCat = items.filter(i => i.unlocked).length;
@@ -146,9 +154,9 @@ const CategoryAccordion = memo(({ category, items, pinnedIds, onTogglePin }: {
           </LinearGradient>
         </View>
         <View style={{ flex: 1, marginLeft: 14 }}>
-          <Text style={[s.catTitle, { color: colors.textPrimary }]}>{category}</Text>
+          <Text style={[s.catTitle, { color: colors.textPrimary }]}>{t(`achievements.categories.${category}`, category)}</Text>
           <Text style={[s.catSub, { color: colors.textSecondary }]}>
-            {unlockedInCat}/{items.length} desbloqueados
+            {unlockedInCat}/{items.length} {t('achievements.unlocked', 'Unlocked').toLowerCase()}
           </Text>
         </View>
         {unlockedInCat > 0 && (
@@ -192,6 +200,7 @@ const CategoryAccordion = memo(({ category, items, pinnedIds, onTogglePin }: {
 // ── Badges Accordion ───────────────────────────────────────────────────────────
 const BadgesAccordion = memo(({ ownedBadgeIds }: { ownedBadgeIds: string[] }) => {
   const colors = useTheme();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const allBadges = Object.values(ALL_BADGES);
   const ownedCount = allBadges.filter(b => ownedBadgeIds.includes(b.id)).length;
@@ -205,8 +214,8 @@ const BadgesAccordion = memo(({ ownedBadgeIds }: { ownedBadgeIds: string[] }) =>
           </LinearGradient>
         </View>
         <View style={{ flex: 1, marginLeft: 14 }}>
-          <Text style={[s.catTitle, { color: colors.textPrimary }]}>Insignias</Text>
-          <Text style={[s.catSub, { color: colors.textSecondary }]}>{ownedCount}/{allBadges.length} disponibles</Text>
+          <Text style={[s.catTitle, { color: colors.textPrimary }]}>{t('achievements.badges', 'Badges')}</Text>
+          <Text style={[s.catSub, { color: colors.textSecondary }]}>{ownedCount}/{allBadges.length} {t('achievements.available', 'available')}</Text>
         </View>
         {ownedCount > 0 && (
           <View style={[s.catBadge, { backgroundColor: '#F59E0B30' }]}>
@@ -247,8 +256,10 @@ const BadgesAccordion = memo(({ ownedBadgeIds }: { ownedBadgeIds: string[] }) =>
 export default function AchievementsModal() {
   const router = useRouter();
   const colors = useTheme();
+  const { t } = useTranslation();
   const { achievements, unlockedCount } = useAchievements();
   const { profile, setProfile } = useAuthStore();
+  const [showInfo, setShowInfo] = useState(false);
 
   const handleTogglePin = useCallback(async (id: string) => {
     if (!profile) return;
@@ -296,11 +307,53 @@ export default function AchievementsModal() {
         <TouchableOpacity onPress={() => router.back()} style={[s.backBtn, { backgroundColor: colors.surface }]}>
           <LucideIcons.ArrowLeft color={colors.textPrimary} size={22} />
         </TouchableOpacity>
-        <Text style={[s.title, { color: colors.textPrimary }]}>Tus Logros</Text>
-        <View style={[s.countBadge, { backgroundColor: colors.primary }]}>
-          <Text style={s.countText}>{unlockedCount}</Text>
+        <Text style={[s.title, { color: colors.textPrimary }]}>{t('achievements.title', 'Your Achievements')}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <TouchableOpacity onPress={() => setShowInfo(true)} style={[s.infoBtn, { backgroundColor: colors.surface }]}>
+            <LucideIcons.Info color={colors.textPrimary} size={20} />
+          </TouchableOpacity>
+          <View style={[s.countBadge, { backgroundColor: colors.primary }]}>
+            <Text style={s.countText}>{unlockedCount}</Text>
+          </View>
         </View>
       </View>
+
+      {/* Info Modal */}
+      <Modal visible={showInfo} transparent animationType="fade" onRequestClose={() => setShowInfo(false)}>
+        <View style={s.modalOverlay}>
+          <View style={[s.infoModal, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={[s.infoModalTitle, { color: colors.textPrimary }]}>{t('achievements.systemTitle', 'Achievement System')}</Text>
+            <Text style={[s.infoModalDesc, { color: colors.textSecondary }]}>
+              {t('achievements.systemDesc', 'Achievements now grant ranking points based on their quality.')}
+            </Text>
+            <View style={s.infoTierList}>
+              <View style={s.infoTierRow}>
+                <LinearGradient colors={getTierColors('bronce')} style={s.infoTierGrad} />
+                <Text style={[s.infoTierLabel, { color: colors.textPrimary }]}>{t('achievements.tiers.bronze', 'Bronze')}</Text>
+                <Text style={[s.infoTierPoints, { color: getTierColors('bronce')[0] }]}>+{TIER_POINTS['bronce']} pts</Text>
+              </View>
+              <View style={s.infoTierRow}>
+                <LinearGradient colors={getTierColors('plata')} style={s.infoTierGrad} />
+                <Text style={[s.infoTierLabel, { color: colors.textPrimary }]}>{t('achievements.tiers.silver', 'Silver')}</Text>
+                <Text style={[s.infoTierPoints, { color: getTierColors('plata')[0] }]}>+{TIER_POINTS['plata']} pts</Text>
+              </View>
+              <View style={s.infoTierRow}>
+                <LinearGradient colors={getTierColors('oro')} style={s.infoTierGrad} />
+                <Text style={[s.infoTierLabel, { color: colors.textPrimary }]}>{t('achievements.tiers.gold', 'Gold')}</Text>
+                <Text style={[s.infoTierPoints, { color: getTierColors('oro')[0] }]}>+{TIER_POINTS['oro']} pts</Text>
+              </View>
+              <View style={s.infoTierRow}>
+                <LinearGradient colors={getTierColors('diamante')} style={s.infoTierGrad} />
+                <Text style={[s.infoTierLabel, { color: colors.textPrimary }]}>{t('achievements.tiers.diamond', 'Diamond')}</Text>
+                <Text style={[s.infoTierPoints, { color: getTierColors('diamante')[0] }]}>+{TIER_POINTS['diamante']} pts</Text>
+              </View>
+            </View>
+            <TouchableOpacity onPress={() => setShowInfo(false)} style={[s.infoCloseBtn, { backgroundColor: colors.primary }]}>
+              <Text style={s.infoCloseText}>{t('achievements.understood', 'Understood')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Hero Stats Card */}
@@ -308,17 +361,17 @@ export default function AchievementsModal() {
           <View style={s.heroRow}>
             <View style={s.heroStatCol}>
               <Text style={[s.heroStatValue, { color: '#FFD700' }]}>{unlockedCount}</Text>
-              <Text style={[s.heroStatLabel, { color: colors.textSecondary }]}>Desbloqueados</Text>
+              <Text style={[s.heroStatLabel, { color: colors.textSecondary }]}>{t('achievements.unlocked', 'Unlocked')}</Text>
             </View>
             <View style={[s.heroDivider, { backgroundColor: colors.border }]} />
             <View style={s.heroStatCol}>
               <Text style={[s.heroStatValue, { color: colors.textPrimary }]}>{achievements.length}</Text>
-              <Text style={[s.heroStatLabel, { color: colors.textSecondary }]}>Totales</Text>
+              <Text style={[s.heroStatLabel, { color: colors.textSecondary }]}>{t('achievements.total', 'Total')}</Text>
             </View>
             <View style={[s.heroDivider, { backgroundColor: colors.border }]} />
             <View style={s.heroStatCol}>
               <Text style={[s.heroStatValue, { color: colors.primary }]}>{Math.round(progressPct)}%</Text>
-              <Text style={[s.heroStatLabel, { color: colors.textSecondary }]}>Completado</Text>
+              <Text style={[s.heroStatLabel, { color: colors.textSecondary }]}>{t('achievements.completed', 'Completed')}</Text>
             </View>
           </View>
 
@@ -331,7 +384,7 @@ export default function AchievementsModal() {
             />
           </View>
           <Text style={[s.pinHint, { color: colors.textSecondary }]}>
-            📌 Toca un logro desbloqueado para fijarlo (máx. 3)
+            {t('achievements.pinHint', '📌 Tap an unlocked achievement to pin it (max 3)')}
           </Text>
         </LinearGradient>
 
@@ -361,9 +414,23 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1,
   },
   backBtn:        { width: 38, height: 38, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  title:          { fontSize: 18, fontWeight: '800', flex: 1, textAlign: 'center' },
+  title:          { fontSize: 18, fontWeight: '800', flex: 1, textAlign: 'center', marginLeft: 38 }, // offset for right btns
+  infoBtn:        { width: 38, height: 38, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   countBadge:     { minWidth: 32, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 8 },
   countText:      { color: '#FFF', fontSize: 13, fontWeight: '800' },
+
+  // Info Modal
+  modalOverlay:   { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  infoModal:      { width: '100%', borderRadius: 24, padding: 24, borderWidth: 1 },
+  infoModalTitle: { fontSize: 20, fontWeight: '900', marginBottom: 12, textAlign: 'center' },
+  infoModalDesc:  { fontSize: 14, lineHeight: 20, opacity: 0.8, marginBottom: 20, textAlign: 'center' },
+  infoTierList:   { gap: 12, marginBottom: 24 },
+  infoTierRow:    { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)', padding: 12, borderRadius: 12 },
+  infoTierGrad:   { width: 24, height: 24, borderRadius: 6, marginRight: 12 },
+  infoTierLabel:  { flex: 1, fontSize: 16, fontWeight: '700' },
+  infoTierPoints: { fontSize: 16, fontWeight: '900' },
+  infoCloseBtn:   { width: '100%', paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
+  infoCloseText:  { color: '#FFF', fontSize: 16, fontWeight: '800' },
 
   scrollContent:  { padding: 16, paddingBottom: 80 },
 
@@ -401,8 +468,9 @@ const s = StyleSheet.create({
   lockBadge:      { position: 'absolute', bottom: -4, right: -4, backgroundColor: '#1E293B', padding: 3, borderRadius: 9, borderWidth: 1, borderColor: '#334155' },
   pinBadge:       { position: 'absolute', top: -5, left: -5, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 10, padding: 2, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   textContent:    { alignItems: 'center', width: '100%' },
-  titleRow:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 4, gap: 4 },
+  titleRow:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 2, gap: 4 },
   itemTitle:      { fontSize: 13, fontWeight: '800', textAlign: 'center' },
+  itemPoints:     { fontSize: 11, fontWeight: '900', marginBottom: 4, letterSpacing: -0.3 },
   itemDesc:       { fontSize: 10, lineHeight: 13, textAlign: 'center', marginBottom: 6, opacity: 0.8 },
   rewardPill:     { alignSelf: 'center', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, borderWidth: 1 },
   rewardPillText: { fontSize: 9, fontWeight: '700' },

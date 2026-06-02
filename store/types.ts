@@ -42,7 +42,7 @@ export interface UserProfile extends HealthProfile {
   availableFoods?:  string[];
   preferences?:    string[];
   isPro:           boolean;
-  role:            'user' | 'admin' | 'super_admin';
+  role:            'user' | 'admin' | 'super_admin' | 'owner' | 'pro' | 'pro_user';
   onboardingDone:  boolean;
   widgetsOrder?:   string[];
   lifestyle?:      'seated' | 'standing_sometimes' | 'standing_mostly' | 'moving' | 'physical_work';
@@ -53,6 +53,7 @@ export interface UserProfile extends HealthProfile {
   selectedBadge?:  string;
   unlockedAchievements?: string[];
   pinnedAchievements?:   string[];
+  achievementPoints?:    number;
 }
 
 export interface FoodLog {
