@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Inter, DM_Sans } from "next/font/google";
-import "./globals.css";
-
+import "../globals.css";
+import {NextIntlClientProvider} from 'next-intl';
+import {getMessages} from 'next-intl/server';
+import {notFound} from 'next/navigation';
+import {routing} from '@/i18n/routing';
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans" });
 
@@ -34,15 +37,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
+  if (!(routing.locales as readonly string[]).includes(locale)) {
+    notFound();
+  }
+  const messages = await getMessages();
+
   return (
-    <html lang="es" className={`scroll-smooth ${inter.variable} ${dmSans.variable}`} suppressHydrationWarning>
+    <html lang={locale} className={`scroll-smooth ${inter.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <body className="bg-background text-text-primary antialiased" suppressHydrationWarning>
-        {children}
+        <NextIntlClientProvider messages={messages}>
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );
