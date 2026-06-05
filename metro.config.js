@@ -5,11 +5,10 @@ const { getDefaultConfig } = require('expo/metro-config');
 const config = getDefaultConfig(__dirname);
 
 // Prevenir caídas del vigilante de archivos (ENOENT) en Windows
-// ignorando las carpetas de compilación de Android/iOS
+// Solo bloquear las carpetas raíz de Android/iOS, no las de node_modules
 config.resolver.blockList = [
   ...Array.from(config.resolver.blockList || []),
-  /.*\/android\/.*/,
-  /.*\/ios\/.*/
+  new RegExp(`${__dirname.replace(/\\/g, '/')}/(android|ios)/.*`),
 ];
 
 config.resolver.assetExts.push('tflite');
