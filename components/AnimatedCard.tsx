@@ -1,18 +1,9 @@
-/**
- * AnimatedCard — Spring entrance animations using react-native-reanimated 4.
- *
- * Each card slides up + fades in with a staggered spring delay based on `index`.
- * Uses the new Reanimated 4 API (useAnimatedStyle + withSpring/withDelay/withTiming).
- */
-
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ViewStyle } from 'react-native';
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withDelay,
-  withSpring,
-  withTiming,
+  FadeInUp,
+  FadeInRight,
+  FadeIn,
 } from 'react-native-reanimated';
 
 interface AnimatedCardProps {
@@ -30,31 +21,19 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
   style,
   direction = 'up',
 }) => {
-  const opacity      = useSharedValue(0);
-  const translateY   = useSharedValue(direction === 'up'    ? 48 : 0);
-  const translateX   = useSharedValue(direction === 'right'  ? 48 : 0);
-  const scale        = useSharedValue(0.9);
-
   const stagger = delay + index * 55; // 55ms between each card
 
-  useEffect(() => {
-    opacity.value    = withDelay(stagger, withTiming(1, { duration: 400 }));
-    scale.value      = withDelay(stagger, withTiming(1, { duration: 400 }));
-    translateY.value = withDelay(stagger, withTiming(0, { duration: 450 }));
-    translateX.value = withDelay(stagger, withTiming(0, { duration: 450 }));
-  }, []);
-
-  const animStyle = useAnimatedStyle(() => ({
-    opacity:   opacity.value,
-    transform: [
-      { translateY: translateY.value },
-      { translateX: translateX.value },
-      { scale: scale.value },
-    ],
-  }));
+  let enteringAnim;
+  if (direction === 'up') {
+    enteringAnim = FadeInUp.delay(stagger).springify().damping(18).stiffness(200);
+  } else if (direction === 'right') {
+    enteringAnim = FadeInRight.delay(stagger).springify().damping(18).stiffness(200);
+  } else {
+    enteringAnim = FadeIn.delay(stagger).duration(400);
+  }
 
   return (
-    <Animated.View style={[animStyle, style]}>
+    <Animated.View style={style} entering={enteringAnim}>
       {children}
     </Animated.View>
   );

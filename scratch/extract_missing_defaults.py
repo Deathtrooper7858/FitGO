@@ -78,10 +78,14 @@ for root, dirs, files in os.walk(base_path):
             except Exception as e:
                 pass
 
-print('Found %d keys missing in at least one translation file:' % len(missing_keys_details))
-for key, detail in sorted(missing_keys_details.items()):
-    defaults = list(detail['defaults'])
-    files = list(detail['files'])
-    print(f"Key: {key}")
-    print(f"  Files: {files}")
-    print(f"  Defaults found: {defaults}")
+with open(os.path.join(base_path, 'scratch', 'missing_keys_output.txt'), 'w', encoding='utf-8') as out_f:
+    out_f.write('Found %d keys missing in at least one translation file:\n' % len(missing_keys_details))
+    for key, detail in sorted(missing_keys_details.items()):
+        defaults = list(detail['defaults'])
+        files = list(detail['files'])
+        out_f.write(f"Key: {key}\n")
+        out_f.write(f"  Files: {files}\n")
+        out_f.write(f"  Defaults found: {defaults}\n\n")
+
+print("Done! Output written to scratch/missing_keys_output.txt")
+

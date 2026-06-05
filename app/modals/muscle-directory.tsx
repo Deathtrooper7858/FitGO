@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation, UIManager, Platform, ScrollView, Modal, Pressable, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation, Platform, ScrollView, Modal, Pressable, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import Body from 'react-native-body-highlighter';
 import { supabase } from '../../services/supabase';
@@ -11,11 +11,6 @@ import { useTheme } from '../../hooks/useTheme';
 import { ChevronDown, Dumbbell, Activity, Flame, ChevronUp, X } from 'lucide-react-native';
 import { Radius, Shadow, Spacing } from '../../constants';
 
-if (Platform.OS === 'android') {
-  if (UIManager.setLayoutAnimationEnabledExperimental) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-  }
-}
 
 import exercisesData from '../../excercise/exercises.json';
 

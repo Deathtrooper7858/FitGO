@@ -3,7 +3,9 @@
  *
  * Central Zustand store for daily nutrition tracking, activity logging,
  * water/step/sleep metrics, and food favorites. Data is persisted locally
- * via AsyncStorage and synced to Supabase when the user is authenticated.
+ * via AsyncStorage (NOT SecureStore — SecureStore has a 2KB limit per key
+ * on Android which causes silent failures when todayLogs grows large)
+ * and synced to Supabase when the user is authenticated.
  */
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
@@ -15,6 +17,10 @@ import { useAuthStore } from './authStore';
 import { useLeagueStore, POINTS } from './leagueStore';
 import { supabase } from '../services/supabase';
 import * as Crypto from 'expo-crypto';
+
+// NOTE: We intentionally use AsyncStorage (not SecureStore) here.
+// SecureStore has a hard 2 KB per-key limit on Android which causes
+// silent persist failures once todayLogs / activityLogs grow beyond that.
 
 /** Returns true if the string is a valid UUID v4 format. */
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -238,7 +244,7 @@ export const useNutritionStore = create<NutritionState>()(
               logged_at: safeLog.loggedAt
             });
             if (error) {
-              console.error('[NutritionStore] addLog Supabase error:', error);
+              console.warn('[NutritionStore] addLog Supabase error:', error);
               throw error;
             }
 
@@ -260,7 +266,7 @@ export const useNutritionStore = create<NutritionState>()(
               console.warn('[NutritionStore] Failed to award gamification points:', e);
             }
           } catch (err) {
-            console.error('[NutritionStore] addLog sync error:', err);
+            console.warn('[NutritionStore] addLog sync error:', err);
             throw err;
           }
         }
@@ -418,10 +424,12 @@ export const useNutritionStore = create<NutritionState>()(
 
       fetchLogs: async (userId, date) => {
         try {
-          // Parallel fetch for better performance
+          // Parallel fetch for better performance.
+          // IMPORTANT: Use .maybeSingle() instead of .single() for daily_metrics —
+          // .single() throws an error when no row exists (common for dates without data).
           const [foodResult, metricsResult, actResult] = await Promise.all([
             supabase.from('food_logs').select('*').eq('user_id', userId).eq('logged_at', date),
-            supabase.from('daily_metrics').select('*').eq('user_id', userId).eq('date', date).single(),
+            supabase.from('daily_metrics').select('*').eq('user_id', userId).eq('date', date).maybeSingle(),
             supabase.from('activity_logs').select('*').eq('user_id', userId).eq('logged_at', date),
           ]);
 
@@ -534,7 +542,14 @@ export const useNutritionStore = create<NutritionState>()(
           if (hasActivityThisDay) {
             const currentActiveDays = get().activeDays;
             if (!currentActiveDays[date]) {
-              const newActiveDays = { ...currentActiveDays, [date]: true };
+              const rawActiveDays = { ...currentActiveDays, [date]: true };
+              // Trim activeDays to last 90 days to prevent unbounded storage growth
+              const cutoff = new Date();
+              cutoff.setDate(cutoff.getDate() - 90);
+              const cutoffStr = getLocalDateString(cutoff);
+              const newActiveDays = Object.fromEntries(
+                Object.entries(rawActiveDays).filter(([d]) => d >= cutoffStr)
+              );
               set({ 
                 activeDays: newActiveDays, 
                 plannedDays: Object.keys(newActiveDays).length,
@@ -645,25 +660,32 @@ export const useNutritionStore = create<NutritionState>()(
       }),
     }),
     {
-      name: 'ff-nutrition',
+      name: 'ff-nutrition-v2', // bumped version to clear old SecureStore key
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (s) => ({
-        todayLogs:     s.todayLogs,
-        streakDays:    s.streakDays,
-        dailyWater:    s.dailyWater,
-        dailySteps:    s.dailySteps,
-        dailySleep:    s.dailySleep,
-        activityCals:  s.activityCals,
-        dailyNeat:     s.dailyNeat,
-        dailyExercise: s.dailyExercise,
-        activityLogs:  s.activityLogs,
-        favoriteFoods: s.favoriteFoods,
-        activeDays:    s.activeDays,
-        plannedDays:   s.plannedDays,
-        aiPhotoUsageCount:  s.aiPhotoUsageCount,
-        aiTextUsageCount:   s.aiTextUsageCount,
-        lastAiUsageDate: s.lastAiUsageDate,
-      }),
+      partialize: (s) => {
+        // Only persist the last 7 days of food/activity logs to keep storage small.
+        // Older data is always fetched fresh from Supabase when needed.
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - 7);
+        const cutoffStr = getLocalDateString(cutoff);
+        return {
+          todayLogs:     s.todayLogs.filter(l => l.loggedAt >= cutoffStr),
+          streakDays:    s.streakDays,
+          dailyWater:    Object.fromEntries(Object.entries(s.dailyWater).filter(([d]) => d >= cutoffStr)),
+          dailySteps:    Object.fromEntries(Object.entries(s.dailySteps).filter(([d]) => d >= cutoffStr)),
+          dailySleep:    Object.fromEntries(Object.entries(s.dailySleep).filter(([d]) => d >= cutoffStr)),
+          activityCals:  s.activityCals,
+          dailyNeat:     Object.fromEntries(Object.entries(s.dailyNeat).filter(([d]) => d >= cutoffStr)),
+          dailyExercise: Object.fromEntries(Object.entries(s.dailyExercise).filter(([d]) => d >= cutoffStr)),
+          activityLogs:  s.activityLogs.filter(a => a.loggedAt >= cutoffStr),
+          favoriteFoods: s.favoriteFoods,
+          activeDays:    s.activeDays,
+          plannedDays:   s.plannedDays,
+          aiPhotoUsageCount:  s.aiPhotoUsageCount,
+          aiTextUsageCount:   s.aiTextUsageCount,
+          lastAiUsageDate: s.lastAiUsageDate,
+        };
+      },
     }
   )
 );

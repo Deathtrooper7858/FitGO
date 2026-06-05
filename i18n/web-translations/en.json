@@ -1,0 +1,368 @@
+{
+  "home": {
+    "badge": "Your best version",
+    "motto": "<highlight>The most fluid and gamified</highlight> fitness app. Progress, nutrition, and workouts — all synced in real-time.",
+    "cta": {
+      "start": "Start for free",
+      "demo": "View the app"
+    },
+    "features": {
+      "title": "Your gym in your pocket",
+      "subtitle": "EVERYTHING YOU NEED",
+      "desc": "Designed to be faster, more intuitive, and more motivating than any other app.",
+      "items": {
+        "progress": {
+          "title": "Progress Tracking",
+          "desc": "Track body weight, measurements, and detailed history with interactive charts.",
+          "badge": "Most popular"
+        },
+        "nutrition": {
+          "title": "Complete Nutrition",
+          "desc": "Food database, barcode scanner, and real-time macro tracking."
+        },
+        "workout": {
+          "title": "Workouts",
+          "desc": "Interactive muscle map, custom routines, and tracking for each session."
+        },
+        "coach": {
+          "title": "AI Coach",
+          "desc": "Get personalized tips, plan adjustments, and motivation from our clever AI.",
+          "badge": "New"
+        },
+        "gamification": {
+          "title": "Gamification",
+          "desc": "Macro Wars, Elite Leagues, and weekly quests to keep you motivated."
+        },
+        "burn": {
+          "title": "Calorie Burn",
+          "desc": "Accurate calculation of your TDEE, NEAT, and basal metabolism for real goals."
+        }
+      }
+    },
+    "stats": {
+      "users": "Active users",
+      "foods": "Foods in database",
+      "rating": "Average rating",
+      "satisfaction": "Satisfaction"
+    },
+    "premium": {
+      "title": "Premium design",
+      "heading": "Fast. Fluid. Gamified.",
+      "desc": "Built with the same passion we put into every workout. Surpasses Fitia, MyFitnessPal, and any alternative in fluidity and experience."
+    },
+    "pricing": {
+      "title": "Unlock your full <highlight>potential</highlight>",
+      "desc": "Unlimited access to the AI Coach, Macro Wars, Elite Leagues, and all premium features.",
+      "cta": "View plans"
+    },
+    "featurePills": {
+      "nutrition": "Smart Nutrition",
+      "coach": "AI Coach",
+      "progress": "Visual Progress",
+      "planner": "Planner",
+      "wars": "Macro Wars",
+      "leagues": "Elite Leagues"
+    },
+    "mockup": {
+      "badge": "Your best version",
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fats": "Fats",
+      "today": "Today",
+      "kcal": "kcal consumed"
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "app": "The App",
+    "about": "About Us",
+    "premium": "Premium",
+    "login": "Log in",
+    "logout": "Log out",
+    "register": "Start for free"
+  },
+  "footer": {
+    "desc": "Your smoothest and most gamified fitness platform. Progress, nutrition, and training all in one place.",
+    "groups": {
+      "app": "APP",
+      "account": "ACCOUNT",
+      "legal": "LEGAL"
+    },
+    "links": {
+      "features": "Features",
+      "premium": "Premium",
+      "about": "About Us",
+      "login": "Log In",
+      "register": "Create Account",
+      "forgotPassword": "Forgot Password",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    },
+    "rights": "All rights reserved.",
+    "madeWith1": "Made with",
+    "madeWith2": "for your best version"
+  },
+  "aboutApp": {
+    "hero": {
+      "label": "The App",
+      "title1": "Everything your",
+      "title2": "body needs",
+      "desc": "FitGO brings together in a single app everything you need to transform your body and keep motivation high, day after day."
+    },
+    "cta": {
+      "title": "Ready to start?",
+      "desc": "Create your free account and start today.",
+      "start": "Start for free",
+      "pro": "View Pro plans"
+    },
+    "pillars": {
+      "progreso": {
+        "title": "Progress Tracking",
+        "subtitle": "Your evolution, always visible",
+        "desc": "FitGO turns body tracking into a visual and motivating experience. Every data point feeds fluid charts that show your real transformation.",
+        "features": [
+          "Interactive body weight chart",
+          "Detailed body measurements (waist, chest, etc.)",
+          "Full history with week/month/year filters",
+          "Unlockable achievements and milestones"
+        ]
+      },
+      "nutricion": {
+        "title": "Smart Nutrition",
+        "subtitle": "Eat well, without the hassle",
+        "desc": "A massive food database — including meats, fruits, and local Latin American food — with a barcode scanner and real-time macro tracking.",
+        "features": [
+          "Barcode scanner",
+          "Food and meat database",
+          "Personalized macro goals (protein, carbs, fats)",
+          "Automatic calorie burn calculation"
+        ]
+      },
+      "entrenamiento": {
+        "title": "Training",
+        "subtitle": "Every muscle, under control",
+        "desc": "An interactive 3D muscle map that lets you select which muscle to work and get optimized routines instantly. Log every set, weight and rep.",
+        "features": [
+          "Interactive muscle map",
+          "Pre-designed and custom routines",
+          "Strength tracking per exercise",
+          "Weekly workout planner"
+        ]
+      },
+      "coach": {
+        "title": "AI Coach",
+        "subtitle": "Your personal trainer, always available",
+        "desc": "FitGO's Coach analyzes your history, goals and progress to give you personalized recommendations. Like having a nutritionist and trainer in your pocket.",
+        "features": [
+          "Personalized answers based on your profile",
+          "Smart progress analysis",
+          "Adaptive nutrition plans",
+          "Real-time motivation and adjustments"
+        ]
+      },
+      "social": {
+        "title": "Social Gamification",
+        "subtitle": "Compete, win, surpass yourself",
+        "desc": "FitGO goes beyond logging data. With Macro Wars and Elite Leagues, you turn your discipline into healthy competition with friends and the global community.",
+        "features": [
+          "Weekly Macro Wars",
+          "Elite Leagues with global ranking",
+          "Collectible achievements and badges",
+          "Real-time leaderboards"
+        ]
+      }
+    }
+  },
+  "aboutUs": {
+    "hero": {
+      "label": "The Team",
+      "title1": "Behind",
+      "desc": "We are a small team with a huge mission: to create the best fitness experience that ever existed."
+    },
+    "mission": {
+      "title": "Our Mission",
+      "desc": "Making fitness accessible, motivating, and fun for everyone. Creating a tool so good you won't want to use anything else. Beating existing apps in speed, design, and user experience."
+    },
+    "teamLabel": "Who we are",
+    "teamTitle": "The Team",
+    "valuesLabel": "What defines us",
+    "valuesTitle": "Our values",
+    "historyLabel": "Our history",
+    "historyTitle": "The road so far",
+    "values": {
+      "speed": {
+        "title": "Speed above all",
+        "desc": "Every screen in FitGO is designed so you log your progress in seconds, not minutes."
+      },
+      "effort": {
+        "title": "For those who put in the work",
+        "desc": "FitGO is built for people who take their physical progress seriously, regardless of level."
+      },
+      "passion": {
+        "title": "Made with passion",
+        "desc": "Every feature, every animation, every detail reflects our love for fitness and design."
+      },
+      "improving": {
+        "title": "Always improving",
+        "desc": "We ship constant updates based on our community feedback."
+      }
+    },
+    "timeline": {
+      "2024": {
+        "title": "The idea is born",
+        "desc": "Frustrated with existing fitness apps, we started sketching FitGO on paper."
+      },
+      "2025Q1": {
+        "title": "First prototype",
+        "desc": "The first build of FitGO runs on our phones. The weight tracker works for the first time."
+      },
+      "2025Q2": {
+        "title": "Private beta",
+        "desc": "We invite the first 100 users. Feedback shifts our product perspective."
+      },
+      "2025Q3": {
+        "title": "Public launch",
+        "desc": "FitGO arrives on App Store and Google Play. The community grows organically."
+      },
+      "2026": {
+        "title": "FitGO Web",
+        "desc": "We launch the web platform so you can manage your account and subscription from a browser."
+      }
+    },
+    "team": {
+      "title": "FitGO Team",
+      "subtitle": "Founders & Developers",
+      "desc": "We are passionate about fitness and technology. We created FitGO because no existing app convinced us — too slow, too generic, soulless. We wanted to change that.",
+      "tags": [
+        "React Native",
+        "Supabase",
+        "TypeScript",
+        "AI"
+      ]
+    }
+  },
+  "pricingPage": {
+    "hero": {
+      "badge": "FitGO Pro",
+      "title1": "Choose your",
+      "title2": "plan",
+      "desc": "Start for free. Unlock everything with Pro."
+    },
+    "billing": {
+      "monthly": "Monthly",
+      "annual": "Annually"
+    },
+    "free": {
+      "title": "Free",
+      "desc": "To start your journey",
+      "forever": "forever",
+      "btn": "Create account"
+    },
+    "pro": {
+      "title": "Pro",
+      "popular": "Most popular",
+      "desc": "Unlock all your potential",
+      "month": "month",
+      "billedAnnually": "Billed annually",
+      "btn": "Get Pro",
+      "secure": "Secure payment · Cancel anytime"
+    },
+    "faq": {
+      "label": "Frequently asked questions",
+      "title": "FAQ",
+      "items": [
+        {
+          "q": "Can I cancel anytime?",
+          "a": "Yes. You can cancel your subscription at any time from your profile. You will keep Pro access until the end of the paid period."
+        },
+        {
+          "q": "Does the web subscription work on the mobile app?",
+          "a": "Absolutely. When you buy Pro on the web, your account is automatically updated in Supabase and you will get Premium benefits immediately when you open the app."
+        },
+        {
+          "q": "What payment methods do you accept?",
+          "a": "We accept all major credit and debit cards (Visa, Mastercard, AmEx) via Stripe, the world's most secure payment processor."
+        },
+        {
+          "q": "Is there a free trial for the Pro plan?",
+          "a": "The free plan already includes the essential features forever. We constantly upgrade the features available in the free version."
+        }
+      ]
+    },
+    "freeFeatures": [
+      "Body weight tracking",
+      "Basic macro tracking",
+      "Food database",
+      "Workout routines",
+      "History (last 30 days)",
+      "AI Coach",
+      "Macro Wars",
+      "Elite Leagues",
+      "Unlimited history",
+      "Advanced progress analysis"
+    ],
+    "freeIncluded": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "proFeatures": [
+      "Everything in the free plan",
+      "Unlimited AI Coach",
+      "Macro Wars",
+      "Elite Leagues",
+      "Unlimited history",
+      "Advanced progress analysis",
+      "Barcode scanner",
+      "AI nutrition planner",
+      "Priority support",
+      "No ads"
+    ],
+    "highlights": {
+      "coach": "Coach AI",
+      "macroWars": "Macro Wars",
+      "leagues": "Elite Leagues",
+      "analysis": "Pro Analysis",
+      "nutrition": "AI Nutrition",
+      "unlimited": "No limits"
+    },
+    "secure": "Secure payment · Cancel anytime"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back to your best version.",
+      "email": "Email address",
+      "password": "Password",
+      "forgot": "Forgot your password?",
+      "btn": "Log In",
+      "loading": "Logging in...",
+      "noAccount": "Don't have an account?",
+      "register": "Sign Up"
+    },
+    "register": {
+      "title": "Start your transformation today.",
+      "name": "Full name",
+      "email": "Email address",
+      "password": "Password",
+      "btn": "Create account",
+      "loading": "Creating account...",
+      "hasAccount": "Already have an account?",
+      "login": "Log in"
+    },
+    "forgot": {
+      "title": "Recover your access to FitGO.",
+      "desc": "Enter your email address and we will send you a link to reset your password.",
+      "email": "Email address",
+      "btn": "Send link",
+      "loading": "Sending...",
+      "back": "Back to login"
+    }
+  }
+}

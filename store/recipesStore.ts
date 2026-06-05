@@ -1,32 +1,48 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { Recipe } from './types';
 
+// Secure storage adapter for Zustand
+const secureStorage = {
+  getItem: async (name: string) => {
+    return (await SecureStore.getItemAsync(name)) || null;
+  },
+  setItem: async (name: string, value: string) => {
+    await SecureStore.setItemAsync(name, value);
+  },
+  removeItem: async (name: string) => {
+    await SecureStore.deleteItemAsync(name);
+  },
+};
+
 interface RecipesState {
-  recipes:     Recipe[];
-  favorites:   string[]; // IDs
-  setRecipes:  (recipes: Recipe[]) => void;
-  toggleFav:   (id: string) => void;
-  reset:       () => void;
+  recipes:       Recipe[];
+  pinnedRecipes: Recipe[];
+  setRecipes:    (recipes: Recipe[]) => void;
+  togglePin:     (recipe: Recipe) => void;
+  reset:         () => void;
 }
 
 export const useRecipesStore = create<RecipesState>()(
   persist(
     (set) => ({
-      recipes:    [],
-      favorites:  [],
-      setRecipes: (recipes) => set({ recipes }),
-      toggleFav:  (id) => set((s) => ({
-        favorites: s.favorites.includes(id)
-          ? s.favorites.filter(fid => fid !== id)
-          : [...s.favorites, id],
-      })),
-      reset: () => set({ recipes: [], favorites: [] }),
+      recipes:       [],
+      pinnedRecipes: [],
+      setRecipes:    (recipes) => set({ recipes }),
+      togglePin:     (recipe) => set((s) => {
+        const isPinned = s.pinnedRecipes.some(r => r.id === recipe.id);
+        return {
+          pinnedRecipes: isPinned
+            ? s.pinnedRecipes.filter(r => r.id !== recipe.id)
+            : [...s.pinnedRecipes, recipe],
+        };
+      }),
+      reset: () => set({ recipes: [], pinnedRecipes: [] }),
     }),
     {
       name: 'ff-recipes',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => secureStorage),
     }
   )
 );

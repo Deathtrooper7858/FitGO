@@ -5,12 +5,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { X, Star, Zap, ListChecks, HeartPulse, BrainCircuit, ShieldCheck, Sparkles } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { usePurchaseStore } from '../../store';
+import { useTranslation } from 'react-i18next';
 import { Spacing, Radius } from '../../constants';
 
 const { width } = Dimensions.get('window');
 
 export default function PaywallModal() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const { grantPro } = usePurchaseStore();
 
   const handleDismiss = () => {
@@ -23,12 +25,12 @@ export default function PaywallModal() {
   };
 
   const features = [
-    { text: 'Planes de nutrición ilimitados con IA', icon: Star },
-    { text: 'Rutinas de ejercicio ultra-personalizadas', icon: Zap },
-    { text: 'Generador de lista de compras en PDF', icon: ListChecks },
-    { text: 'Acceso a coaches virtuales (Nutriólogo, Entrenador y Médico)', icon: HeartPulse },
-    { text: 'Análisis semanal con Inteligencia Artificial', icon: BrainCircuit },
-    { text: 'Sin anuncios ni límites diarios', icon: ShieldCheck }
+    { text: t('paywall.feature1', 'Planes de nutrición ilimitados con IA'), icon: Star },
+    { text: t('paywall.feature2', 'Rutinas de ejercicio ultra-personalizadas'), icon: Zap },
+    { text: t('paywall.feature3', 'Generador de lista de compras en PDF'), icon: ListChecks },
+    { text: t('paywall.feature4', 'Acceso a coaches virtuales (Nutriólogo, Entrenador y Médico)'), icon: HeartPulse },
+    { text: t('paywall.feature5', 'Análisis semanal con Inteligencia Artificial'), icon: BrainCircuit },
+    { text: t('paywall.feature6', 'Sin anuncios ni límites diarios'), icon: ShieldCheck }
   ];
 
   return (
@@ -45,10 +47,10 @@ export default function PaywallModal() {
             <Sparkles size={42} color={colors.primary} />
           </View>
           <Text style={[s.title, { color: colors.textPrimary }]}>
-            Desbloquea <Text style={{ color: colors.primary }}>FitGO Pro</Text>
+            {t('paywall.titleUnlock', 'Desbloquea')} <Text style={{ color: colors.primary }}>{t('paywall.titlePro', 'FitGO Pro')}</Text>
           </Text>
           <Text style={[s.subtitle, { color: colors.textSecondary }]}>
-            Lleva tus resultados al siguiente nivel con nuestras herramientas impulsadas por IA diseñadas para tu éxito.
+            {t('paywall.subtitle', 'Lleva tus resultados al siguiente nivel con nuestras herramientas impulsadas por IA diseñadas para tu éxito.')}
           </Text>
         </View>
 
@@ -72,9 +74,9 @@ export default function PaywallModal() {
             style={s.planGradient}
           />
           <View style={s.planHeader}>
-            <Text style={[s.planName, { color: colors.textPrimary }]}>Acceso Total</Text>
+            <Text style={[s.planName, { color: colors.textPrimary }]}>{t('paywall.fullAccess', 'Acceso Total')}</Text>
             <LinearGradient colors={colors.gradientPrimary} style={s.badge} start={{x:0,y:0}} end={{x:1,y:1}}>
-              <Text style={s.badgeText}>OFERTA ESPECIAL</Text>
+              <Text style={s.badgeText}>{t('paywall.specialOffer', 'OFERTA ESPECIAL')}</Text>
             </LinearGradient>
           </View>
           
@@ -82,12 +84,12 @@ export default function PaywallModal() {
             <Text style={[s.oldPrice, { color: colors.textMuted }]}>$6.99</Text>
             <View style={s.currentPriceRow}>
               <Text style={[s.planPrice, { color: colors.primary }]}>$2.99</Text>
-              <Text style={[s.planPeriod, { color: colors.textSecondary }]}> / mes</Text>
+              <Text style={[s.planPeriod, { color: colors.textSecondary }]}>{t('paywall.perMonth', ' / mes')}</Text>
             </View>
           </View>
           
           <Text style={[s.planDesc, { color: colors.textSecondary }]}>
-            Cancela en cualquier momento. Sin compromisos.
+            {t('paywall.cancelAnytime', 'Cancela en cualquier momento. Sin compromisos.')}
           </Text>
         </View>
 
@@ -96,11 +98,11 @@ export default function PaywallModal() {
       <View style={[s.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
         <TouchableOpacity style={s.purchaseBtn} onPress={handlePurchase} activeOpacity={0.8}>
           <LinearGradient colors={colors.gradientPrimary} style={s.purchaseGrad} start={{x:0,y:0}} end={{x:1,y:1}}>
-            <Text style={s.purchaseText}>Desbloquear Ahora</Text>
+            <Text style={s.purchaseText}>{t('paywall.unlockNow', 'Desbloquear Ahora')}</Text>
           </LinearGradient>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleDismiss} style={{ marginTop: 16 }}>
-          <Text style={[s.footerLink, { color: colors.textMuted }]}>Restaurar compras</Text>
+          <Text style={[s.footerLink, { color: colors.textMuted }]}>{t('paywall.restorePurchases', 'Restaurar compras')}</Text>
         </TouchableOpacity>
       </View>
     </View>

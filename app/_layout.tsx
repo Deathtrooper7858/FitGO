@@ -3,18 +3,34 @@ import { Stack, router, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet, View, ActivityIndicator, Platform, LogBox, KeyboardAvoidingView, Image, Text } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, Platform, LogBox, Image, Text } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 
-// Ignore specific Supabase Auth errors that occur during development fast-refresh
-LogBox.ignoreLogs(['AuthApiError: Invalid Refresh Token: Refresh Token Not Found']);
+// Ignore specific warnings in the UI
+LogBox.ignoreLogs([
+  'AuthApiError: Invalid Refresh Token: Refresh Token Not Found',
+  'setLayoutAnimationEnabledExperimental is currently a no-op',
+  'is not supported with edge-to-edge enabled',
+  'Prop "resizeMode" is deprecated'
+]);
+
+// Suppress specific warnings in the Metro console
+const originalWarn = console.warn;
+console.warn = (...args) => {
+  if (typeof args[0] === 'string') {
+    if (args[0].includes('setLayoutAnimationEnabledExperimental is currently a no-op')) return;
+    if (args[0].includes('is not supported with edge-to-edge enabled')) return;
+  }
+  originalWarn(...args);
+};
 import { supabase } from '../services/supabase';
 import { useAuthStore, useSettingsStore, usePurchaseStore } from '../store';
 import { Colors } from '../constants';
-import '../i18n';
-import i18n from 'i18next';
+import i18n from '../i18n';
 import { useTheme } from '../hooks/useTheme';
 import * as NavigationBar from 'expo-navigation-bar';
+import { AchievementToast } from '../components/AchievementToast';
 
 // Safely detect if edge-to-edge is enabled
 let isEdgeToEdgeActive = false;
@@ -30,6 +46,7 @@ function NavigationGuard() {
   useEffect(() => {
     const inAuthGroup   = segments[0] === '(auth)';
     const inOnboarding  = segments[0] === 'onboarding';
+    const isTermsModal  = segments.join('/') === 'modals/terms' || (segments[0] === '(auth)' && segments[1] === 'terms');
     const allSegments   = segments as string[];
 
     // ── Fast-path: if we already have a cached profile + session, navigate
@@ -51,7 +68,7 @@ function NavigationGuard() {
       }
     } else if (!profile || !profile.onboardingDone || !profile.id) {
       // Session exists but profile is invalid or incomplete → onboarding
-      if (!inOnboarding) {
+      if (!inOnboarding && !isTermsModal) {
         router.replace('/onboarding');
       }
     } else {
@@ -64,14 +81,18 @@ function NavigationGuard() {
   return null;
 }
 
+
 export default function RootLayout() {
   const { setSession, setLoading, setProfile, fetchProfile, isLoading } = useAuthStore();
   const { initialize: initPurchases } = usePurchaseStore();
   const { language, theme } = useSettingsStore();
   const colors = useTheme();
+  const { t } = useTranslation();
 
   useEffect(() => {
-    i18n.changeLanguage(language);
+    if (i18n.isInitialized) {
+      i18n.changeLanguage(language);
+    }
   }, [language]);
 
   const segments = useSegments();
@@ -159,7 +180,7 @@ export default function RootLayout() {
             fontWeight: '600', 
             letterSpacing: 2,
             textTransform: 'uppercase'
-          }}>Tu mejor versión</Text>
+          }}>{t('common.slogan', 'Your best version')}</Text>
         </Animated.View>
 
         <View style={{ position: 'absolute', bottom: 60 }}>
@@ -171,13 +192,9 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={[styles.root, { backgroundColor: colors.background }]}>
-      <KeyboardAvoidingView
-        style={styles.root}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={0}
-      >
         <StatusBar style={theme === 'dark' ? 'light' : 'dark'} backgroundColor={colors.background} />
         <NavigationGuard />
+        <AchievementToast />
         <Stack screenOptions={{ 
           headerShown: false, 
           animation: 'fade',
@@ -244,8 +261,31 @@ export default function RootLayout() {
             name="modals/reminders"
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />
+          <Stack.Screen
+            name="modals/terms"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="modals/chat"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="modals/health-profile"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="modals/muscle-directory"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="modals/recipes"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="modals/user-profile"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
         </Stack>
-      </KeyboardAvoidingView>
     </GestureHandlerRootView>
   );
 }

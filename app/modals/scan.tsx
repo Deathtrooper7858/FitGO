@@ -19,7 +19,7 @@ import { CustomAlert, AlertType } from '../../components/CustomAlert';
 import { useAudioRecorder, useAudioRecorderState, AudioModule, RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync } from 'expo-audio';
 import { transcribeAudio, parseVoiceLog } from '../../services/groq';
 
-type ScanMode = 'barcode' | 'photo' | 'text';
+type ScanMode = 'barcode' | 'photo' | 'text' | 'search';
 type Meal = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
 export default function ScanModal() {
@@ -30,6 +30,12 @@ export default function ScanModal() {
   const [loading, setLoading]           = useState(false);
   const [mode, setMode]                 = useState<ScanMode>('photo');
   const [textInput, setTextInput]       = useState('');
+  
+  // Search Mode State
+  const [searchQuery, setSearchQuery]   = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching]   = useState(false);
+
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(recorder, 500);
 
@@ -55,7 +61,7 @@ export default function ScanModal() {
   const { addLog, fetchLogs, selectedDate, aiPhotoUsageCount, aiTextUsageCount, incrementAiUsage } = useNutritionStore();
   const { profile } = useAuthStore();
   const { isPro } = usePurchaseStore();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin';
+  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const [showSuccess, setShowSuccess] = useState(false);
   const [flash, setFlash] = useState<'off' | 'on' | 'auto'>('off');
   const [facing, setFacing] = useState<'back' | 'front'>('back');
@@ -108,6 +114,26 @@ export default function ScanModal() {
   useEffect(() => {
     if (!permission?.granted) requestPermission();
   }, []);
+
+  // Search Debounce Effect
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const delayDebounceFn = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const results = await searchFood(searchQuery, language);
+        setSearchResults(results);
+      } catch (err) {
+        console.error('Search error', err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 600);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, language]);
 
   const checkAiLimit = (scanMode: 'photo' | 'text'): boolean => {
     if (isProActually) return true;
@@ -562,6 +588,14 @@ export default function ScanModal() {
             <Text style={[s.totalLabel, { color: colors.textSecondary }]}>{t('scan.totalCalories')}</Text>
             <Text style={[s.totalValue, { color: colors.accent }]}>{editedFoods.reduce((acc, f) => acc + f.calories, 0)} kcal</Text>
           </LinearGradient>
+          <View style={[s.disclaimerBox, { backgroundColor: colors.warning + '18', borderColor: colors.warning + '44' }]}>
+            <Text style={{ fontSize: 14 }}>⚠️</Text>
+            <Text style={[s.disclaimerText, { color: colors.warning }]}>
+              {language === 'es'
+                ? 'El análisis por foto es una estimación. Los valores nutricionales pueden no ser 100% precisos.'
+                : 'Photo analysis is an estimate. Nutritional values may not be 100% accurate.'}
+            </Text>
+          </View>
           {photoResult.notes && <Text style={[s.notesText, { color: colors.textSecondary }]}>💡 {photoResult.notes}</Text>}
         </ScrollView>
         <View style={[s.resultFooter, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
@@ -627,6 +661,12 @@ export default function ScanModal() {
               >
                 <Text style={[s.modeText, mode === 'text' && s.modeTextActive]} numberOfLines={1} adjustsFontSizeToFit>✍️ {t('scan.text')}</Text>
               </TouchableOpacity>
+              <TouchableOpacity 
+                style={[s.modePill, mode === 'search' && [s.modePillActive, { backgroundColor: colors.tabActive }]]} 
+                onPress={() => setMode('search')}
+              >
+                <Text style={[s.modeText, mode === 'search' && s.modeTextActive]} numberOfLines={1} adjustsFontSizeToFit>🔎 {t('common.search') || 'Buscar'}</Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -674,7 +714,7 @@ export default function ScanModal() {
                   {!isProActually && <Text style={s.limitNote}>{t('scan.aiLimitNote', { count: 5 - aiPhotoUsageCount }) || `${5 - aiPhotoUsageCount} AI scans left today`}</Text>}
                 </View>
               </>
-            ) : (
+            ) : mode === 'text' ? (
               <ScrollView contentContainerStyle={s.textInputWrap} style={{ width: '100%' }}>
                 <View style={[s.textCard, { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: colors.border }]}>
                   <TextInput
@@ -701,6 +741,71 @@ export default function ScanModal() {
                 </TouchableOpacity>
                 {!profile?.isPro && <Text style={s.limitNote}>{t('scan.aiLimitNote', { count: 10 - aiTextUsageCount }) || `${10 - aiTextUsageCount} AI scans left today`}</Text>}
               </ScrollView>
+            ) : (
+              <View style={[s.searchWrap, { backgroundColor: 'rgba(0,0,0,0.6)', flex: 1, width: '100%' }]}>
+                <View style={[s.searchInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text style={{ fontSize: 20, marginRight: 8 }}>🔎</Text>
+                  <TextInput
+                    style={[s.searchTextInput, { color: colors.textPrimary }]}
+                    placeholder={t('scan.searchPlaceholder') || "Buscar alimento en la base de datos..."}
+                    placeholderTextColor={colors.textSecondary}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                  />
+                  {isSearching && <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 8 }} />}
+                </View>
+                
+                <ScrollView contentContainerStyle={s.searchResultsList} style={{ flex: 1, width: '100%' }}>
+                  {searchResults.map((item) => (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[s.searchResultItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                      onPress={() => {
+                        router.replace({
+                          pathname: '/modals/food-detail',
+                          params: { 
+                            foodJson: JSON.stringify(item),
+                            meal: initialMeal || getAutoMeal(),
+                            date: date
+                          },
+                        });
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      {item.imageUrl ? (
+                        <Image source={{ uri: item.imageUrl }} style={s.searchResultImage} />
+                      ) : (
+                        <View style={[s.searchResultImage, { backgroundColor: colors.surfaceAlt, justifyContent: 'center', alignItems: 'center' }]}>
+                          <Text style={{ fontSize: 24 }}>🍽️</Text>
+                        </View>
+                      )}
+                      <View style={{ flex: 1, marginLeft: 12 }}>
+                        <Text style={[s.searchResultName, { color: colors.textPrimary }]} numberOfLines={1}>{item.name}</Text>
+                        <Text style={[s.searchResultBrand, { color: colors.textSecondary }]} numberOfLines={1}>
+                          {item.brand ? `${item.brand} • ` : ''}{item.calories} kcal
+                        </Text>
+                        <View style={{ flexDirection: 'row', gap: 6, marginTop: 4 }}>
+                          <View style={[s.macroBadge, { backgroundColor: colors.protein + '15' }]}>
+                            <Text style={[s.macroBadgeText, { color: colors.protein }]}>P {item.protein}g</Text>
+                          </View>
+                          <View style={[s.macroBadge, { backgroundColor: colors.carbs + '15' }]}>
+                            <Text style={[s.macroBadgeText, { color: colors.carbs }]}>C {item.carbs}g</Text>
+                          </View>
+                          <View style={[s.macroBadge, { backgroundColor: colors.fat + '15' }]}>
+                            <Text style={[s.macroBadgeText, { color: colors.fat }]}>G {item.fat}g</Text>
+                          </View>
+                        </View>
+                      </View>
+                      <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.searchResultAddBtn}>
+                        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 18 }}>+</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  ))}
+                  {searchQuery.length > 0 && searchResults.length === 0 && !isSearching && (
+                    <Text style={{ textAlign: 'center', color: colors.textSecondary, marginTop: 20 }}>{t('common.noResultsFound', 'No se encontraron resultados')}</Text>
+                  )}
+                </ScrollView>
+              </View>
             )}
           </View>
         </View>
@@ -798,6 +903,17 @@ const s = StyleSheet.create({
   totalValue:    { fontSize: 28, fontWeight: '800' },
   notesText:     { fontSize: 14, fontStyle: 'italic', paddingHorizontal: 10, lineHeight: 22 },
   resultFooter:  { flexDirection: 'row', gap: 10, padding: Spacing.base, borderTopWidth: 1, paddingBottom: 36 },
+  searchWrap: { padding: Spacing.md },
+  searchInputContainer: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: Radius.lg, borderWidth: 1, marginBottom: Spacing.md },
+  searchTextInput: { flex: 1, fontSize: 16 },
+  searchResultsList: { paddingBottom: 40 },
+  searchResultItem: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: Radius.lg, borderWidth: 1, marginBottom: 12 },
+  searchResultImage: { width: 64, height: 64, borderRadius: Radius.md },
+  searchResultName: { fontSize: 16, fontWeight: '700', marginBottom: 2 },
+  searchResultBrand: { fontSize: 13, marginBottom: 2 },
+  macroBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+  macroBadgeText: { fontSize: 10, fontWeight: '700' },
+  searchResultAddBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
   retryBtn:      { flex: 1, paddingVertical: 14, borderRadius: Radius.md, borderWidth: 1.5, alignItems: 'center' },
   retryText:     { fontWeight: '600', fontSize: 15 },
   addAllBtn:     { flex: 2, borderRadius: Radius.md, overflow: 'hidden' },
@@ -815,4 +931,6 @@ const s = StyleSheet.create({
   analyzeText:   { color: '#fff', fontWeight: '800', fontSize: 16, letterSpacing: 0.5 },
   recordingStatus: { textAlign: 'center', fontSize: 15, fontWeight: '700', letterSpacing: 1 },
   limitNote:     { textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 12, fontWeight: '600' },
+  disclaimerBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, borderRadius: Radius.md, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10, marginTop: -8, marginBottom: 16 },
+  disclaimerText: { flex: 1, fontSize: 13, fontWeight: '500', lineHeight: 18 },
 });

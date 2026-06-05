@@ -34,7 +34,7 @@
         "backgroundColor": "#0D0F14"
       },
       "predictiveBackGestureEnabled": false,
-      "softwareKeyboardLayoutMode": "pan",
+      "softwareKeyboardLayoutMode": "resize",
       "permissions": [
         "CAMERA",
         "RECORD_AUDIO",
@@ -77,7 +77,9 @@
           "icon": "./assets/notification-icon.png",
           "color": "#7C5CFC"
         }
-      ]
+      ],
+      "react-native-fast-tflite",
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true
@@ -85,12 +87,11 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "c7070968-231a-43c2-a62e-37108264a8db"
+        "projectId": "b322d830-a5f8-4c68-83b5-8686ce3d38f3"
       }
     },
     "runtimeVersion": {
       "policy": "appVersion"
-    },
-    "owner": "elubiz"
+    }
   }
 }
