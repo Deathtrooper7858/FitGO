@@ -402,7 +402,7 @@ export default function FitGOSocial() {
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                 <View style={[s.chip, { backgroundColor: currentBadge.colors[0] + '20', flexDirection: 'row', alignItems: 'center', gap: 4 }]}>
                   <Text style={{ fontSize: 12 }}>{currentBadge.icon}</Text>
-                  <Text style={{ color: currentBadge.colors[0], fontSize: 12, fontWeight: '700' }}>{currentBadge.label}</Text>
+                  <Text style={{ color: currentBadge.colors[0], fontSize: 12, fontWeight: '700' }}>{String(t(`achievements.badges.${currentBadgeId}.label`, currentBadge.label))}</Text>
                 </View>
               </View>
             </View>
@@ -461,7 +461,9 @@ export default function FitGOSocial() {
                       )}
                     </LinearGradient>
                     <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' }} numberOfLines={1}>{ach.title}</Text>
-                    <Text style={{ fontSize: 9, color: tierColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>{ach.tier}</Text>
+                    <Text style={{ fontSize: 9, color: tierColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>
+                      {String(t(`achievements.tiers.${ach.tier === 'bronce' ? 'bronze' : ach.tier === 'plata' ? 'silver' : ach.tier === 'oro' ? 'gold' : ach.tier === 'diamante' ? 'diamond' : ach.tier}`, ach.tier))}
+                    </Text>
                   </View>
                 );
               })}
