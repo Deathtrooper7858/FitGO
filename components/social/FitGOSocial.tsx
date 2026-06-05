@@ -558,6 +558,10 @@ export default function FitGOSocial() {
       <FlatList
         data={socialStore.posts}
         keyExtractor={post => post.id}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={true}
         contentContainerStyle={{ paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={() => (

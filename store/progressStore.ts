@@ -1,20 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ProgressPhoto, ProgressEvaluation } from './types';
-
-// Secure storage adapter for Zustand
-const secureStorage = {
-  getItem: async (name: string) => {
-    return (await SecureStore.getItemAsync(name)) || null;
-  },
-  setItem: async (name: string, value: string) => {
-    await SecureStore.setItemAsync(name, value);
-  },
-  removeItem: async (name: string) => {
-    await SecureStore.deleteItemAsync(name);
-  },
-};
 
 interface ProgressState {
   photos:     ProgressPhoto[];
@@ -39,7 +26,7 @@ export const useProgressStore = create<ProgressState>()(
     }),
     {
       name: 'ff-progress',
-      storage: createJSONStorage(() => secureStorage),
+      storage: createJSONStorage(() => AsyncStorage),
       partialize: (s) => ({ photos: s.photos, evaluations: s.evaluations }),
     }
   )

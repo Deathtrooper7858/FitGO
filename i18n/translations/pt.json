@@ -23,9 +23,33 @@
     "slogan": "Sua melhor versão",
     "greeting": "Olá",
     "warning": "Aviso",
-    "understood": "Entendido",
+    "understood": "Entendido 👊",
     "tapToHide": "Toque para ocultar",
-    "tapToView": "Toque para ver conquistas"
+    "tapToView": "Toque para ver conquistas",
+    "accept": "Aceitar",
+    "invalid": "Inválido",
+    "create": "Criar",
+    "copied": "Copiado!",
+    "me": "Eu",
+    "acceptAndUnderstood": "Aceitar e Entendido",
+    "you": "Você",
+    "noResultsFound": "Nenhum resultado",
+    "send": "Enviar",
+    "noResults": "Sem resultados",
+    "tryAnotherTerm": "Tente outro termo",
+    "camera": "Câmera",
+    "gallery": "Galeria",
+    "cameraPermissionDenied": "A permissão da câmera é necessária.",
+    "galleryPermissionDenied": "A permissão da galeria é necessária.",
+    "date": "Data",
+    "less": "Menos",
+    "more": "Mais",
+    "notes": "Notas",
+    "ok": "Entendi",
+    "retake": "Alterar",
+    "today": "Hoje",
+    "upgrade": "Atualizar para Pro",
+    "viewAll": "Histórico"
   },
   "tabs": {
     "dashboard": "Painel",
@@ -36,7 +60,7 @@
     "nutritionist": "Nutricionista",
     "trainer": "Treinador",
     "doctor": "Médico",
-    "social": "Social"
+    "social": "Comunidade"
   },
   "profile": {
     "title": "Perfil",
@@ -186,7 +210,7 @@
     "restoreSubscription": "Restaurar suscripción",
     "userId": "ID Usuario",
     "updateEmailPassword": "Actualizar correo o contraseña",
-    "terms": "Términos de Servicio",
+    "terms": "Termos de Serviço",
     "others": "Otros",
     "idCopied": "ID copiado al portapapeles",
     "activeGoal": "Objetivo ativo",
@@ -198,7 +222,31 @@
     "message": "Mensagem",
     "removeFriend": "Remover Amigo",
     "pendingRequest": "Solicitação Pendente",
-    "sendFriendRequest": "Enviar Solicitação de Amizade"
+    "sendFriendRequest": "Enviar Solicitação de Amizade",
+    "selectBadgeSubtitle": "Choose the badge you want to highlight on your public profile.",
+    "galleryPermission": "São necessárias permissões de galeria para selecionar fotos.",
+    "galleryFailed": "Não foi possível abrir a galeria",
+    "cameraPermission": "São necessárias permissões de câmera para tirar fotos.",
+    "cameraFailed": "Não foi possível abrir a câmera",
+    "other": "Outro",
+    "exporting": "A exportar dados...",
+    "field": "Campo",
+    "value": "Valor",
+    "sheetProfile": "Perfil",
+    "sheetWeight": "Peso",
+    "sheetNutrition": "Nutrição",
+    "sheetMetrics": "Métricas",
+    "exportFailed": "Falha ao exportar dados",
+    "updateEmailPasswordInfo": "Para atualizar o seu e-mail ou palavra-passe, enviaremos um link de recuperação.",
+    "addMeasurement": "Adicionar medição",
+    "privacy": "Política de Privacidade",
+    "photoSourceTitle": "Foto de perfil",
+    "photoSourceSubtitle": "Como gostaria de selecionar a sua nova foto de perfil?",
+    "takePhoto": "Tirar foto",
+    "takePhotoDesc": "Use a câmera do seu dispositivo",
+    "chooseGallery": "Escolher da galeria",
+    "chooseGalleryDesc": "Selecionar uma imagem existente",
+    "goalReached": "Alcançado!"
   },
   "coach": {
     "title": "Fitz Coach",
@@ -230,7 +278,17 @@
       "suggest2": "Há interações com meus medicamentos? 💊",
       "suggest3": "Como melhorar a qualidade do sono? 🛋️",
       "suggest4": "Quais os sinais de desidratação? 💧"
-    }
+    },
+    "camera": "Câmera",
+    "gallery": "Galeria",
+    "history": "Histórico",
+    "newChat": "Nova conversa",
+    "noHistory": "Nenhum histórico ainda",
+    "pickImageTitle": "Selecionar imagem",
+    "pickImageSub": "De onde você quer enviar a foto?",
+    "suggestionsTitle": "Sugestões para começar",
+    "taglineBadge": "IA personalizada • Groq",
+    "confirmDeleteSession": "Tem certeza de que deseja excluir esta conversa?"
   },
   "about": {
     "title": "Sobre o FitGO",
@@ -239,7 +297,8 @@
     "instagram": "Instagram",
     "email": "E-mail de Suporte",
     "hashtag": "Hashtags",
-    "moreInfo": "Mais informações"
+    "moreInfo": "Mais informações",
+    "version": "Versão"
   },
   "exercise": {
     "title": "Exercício",
@@ -291,7 +350,23 @@
     "padel": "Pádel",
     "volleyball": "Voleibol",
     "golf": "Golfe",
-    "martial_arts": "Artes Marciais"
+    "martial_arts": "Artes Marciais",
+    "steps": "Passos",
+    "calories": "Calorias",
+    "aiInstructions": "Toque no microfone para falar (ex: \"Correr 40 minutos no parque\") ou descreva no campo de texto.",
+    "customDesc": "Descreva sua atividade por voz ou texto e calcule as calorias automaticamente.",
+    "customPlaceholder": "Ex: Boxe intensivo, caminhada rápida...",
+    "estimate": "Calcular calorias com IA",
+    "estimateError": "Erro ao conectar com a IA.",
+    "estimateFailed": "Não pudemos calcular as calorias. Tente ser mais específico.",
+    "noExercises": "Nenhuma atividade corresponde à sua busca.",
+    "searchResults": "Resultados da busca",
+    "selectDescription": "Selecione ou descreva um exercício para registrar seu progresso",
+    "whatDidYouDo": "Qual atividade você fez?",
+    "all": "Todos",
+    "cardio": "Cardio",
+    "strength": "Força",
+    "sports": "Esportes"
   },
   "welcome": {
     "motto": "Fit-Go: Sua melhor versão",
@@ -300,6 +375,8 @@
     "feature2": "Coach Nutricional com IA",
     "feature3": "Composição Corporal",
     "feature4": "Planejador de Refeições",
+    "feature5": "Guerras de Macros",
+    "feature6": "Ligas de Elite",
     "getStarted": "Começar — É Grátis",
     "haveAccount": "Eu já tenho uma conta",
     "legal": "Ao continuar, você concorda com nossos Termos de Serviço e Política de Privacidade."
@@ -333,7 +410,11 @@
     "emailSentSub": "Enviamos um link de redefinição para",
     "backToLogin": "Voltar ao login",
     "termsRead": "Li e aceito os",
-    "termsLink": "Termos e Condições"
+    "termsLink": "Termos e Condições",
+    "privacyLink": "Política de Privacidade",
+    "termsAnd": "e a",
+    "mustAcceptTerms": "Você deve aceitar os Termos e a Política de Privacidade para continuar.",
+    "emailRequired": "Por favor, insira o seu endereço de e-mail."
   },
   "dashboard": {
     "greetingMorning": "Bom dia",
@@ -388,14 +469,15 @@
     "viewAchievements": "Ver Medalhas",
     "achievementsSub": "Desafios concluídos",
     "muscleDirectorySub": "Toque em um grupo muscular na figura para ver os exercícios ou encontre-os na lista.",
-    "recipeSearchWidget": "Buscar receitas",
+    "recipeSearchWidget": "Pesquisar Receitas",
     "muscleDirWidget": "Exercícios",
     "muscleDirTitle": "Diretório",
     "muscleDirSub": "Por músculos",
     "evaluationWidget": "Avaliação IA",
-    "evaluatePhysique": "Avaliar físico",
+    "evaluatePhysique": "Avaliar Físico",
     "getAIFeedback": "Receber feedback IA",
-    "withAI": "Com IA"
+    "withAI": "Com IA",
+    "muscleDirectory": "Diretório Muscular"
   },
   "tracker": {
     "title": "Hoje",
@@ -432,7 +514,7 @@
     "lifestyle": "Estilo de vida",
     "kcal": "kcal",
     "sugar": "Açúcar",
-    "fiber": "Fibras",
+    "fiber": "Fibra",
     "saturatedFat": "Gord. Sat.",
     "sodium": "Sódio",
     "iron": "Ferro",
@@ -458,7 +540,23 @@
     "snack3": "Lanche 3",
     "vsGoals": "vs. metas diárias",
     "calcium": "Cálcio",
-    "macroBalance": "Balanço de Macros"
+    "macroBalance": "Balanço de Macros",
+    "consistency": "Consistência",
+    "last28": "Últimos 28 dias",
+    "proFeature": "Recurso Exclusivo Pro",
+    "proHeatmapDesc": "Desbloqueie análises detalhadas sobre sua consistência e hábitos com o FitGO Pro.",
+    "calories": "Calorias",
+    "carbs": "Carboidratos",
+    "enterSteps": "Insira o número de passos:",
+    "enterWater": "Insira a quantidade de água em ml:",
+    "fat": "Gorduras",
+    "food": "Alimento",
+    "grams": "Gramas",
+    "meal": "Refeição",
+    "protein": "Proteínas",
+    "sleep": "Sono (h)",
+    "target": "Meta de calorias",
+    "yesterday": "Ontem"
   },
   "planner": {
     "title": "Planejador de Refeições",
@@ -509,22 +607,64 @@
     "sets": "Séries",
     "exercises": "Exercícios",
     "addAnotherMeal": "Adicionar outra refeição",
-    "askCustomMeal": "Sugira outra refeição saudável para hoje que encaixe nos meus macros restantes."
+    "askCustomMeal": "Sugira outra refeição saudável para hoje que encaixe nos meus macros restantes.",
+    "homeWorkoutTitle": "Treino em Casa",
+    "homeWorkoutSub": "Apenas calistenia e peso corporal",
+    "equipmentTitle": "Equipamento Adicional",
+    "equipmentSub": "Que equipamento tens disponível?",
+    "equipmentPlaceholder": "Ex: Halteres de 5kg, tapete...",
+    "planFor": "Plano para:",
+    "eqDumbbells": "Halteres",
+    "eqPullup": "Barra de elevações",
+    "eqBands": "Bandas elásticas",
+    "eqParallel": "Barras paralelas",
+    "eqKettlebell": "Kettlebell",
+    "aiDisclaimerTitle": "Plano gerado por IA",
+    "aiDisclaimerText": "Este plano é orientativo e não substitui o conselho de um nutricionista ou médico profissional. Consulte um especialista antes de fazer mudanças significativas na sua alimentação ou treino.",
+    "workoutWarningTitle": "Aviso de Treino",
+    "workoutWarningText": "Realize os exercícios sob sua própria responsabilidade. Se sentir dor, pare imediatamente. Certifique-se de aquecer antes de começar.",
+    "confirmGenNutritionTitle": "Gerar plano nutricional?",
+    "confirmGenWorkoutTitle": "Gerar plano de treino?",
+    "confirmCalorieInfo": "O plano será calculado para",
+    "confirmCalorieInfo2": "com base no seu perfil e objetivos.",
+    "confirmFoodsLabel": "Alimentos disponíveis",
+    "confirmNoFoods": "Não especificou alimentos. A IA escolherá opções saudáveis e variadas.",
+    "confirmContextTitle": "Plano otimizado para",
+    "confirmMedicalLabel": "Condições a considerar",
+    "confirmEquipmentLabel": "Equipamento disponível (Casa)",
+    "confirmNoEquipment": "Certifique-se de ter o equipamento necessário. Se nenhum for especificado, o plano será apenas com peso corporal.",
+    "confirmDisclaimer": "Este plano é gerado por IA e não substitui o conselho de um profissional de saúde. Consulte um nutricionista ou médico antes de o seguir.",
+    "confirmGenerate": "Gerar plano agora",
+    "confirmChangeFoods": "Alterar alimentos disponíveis",
+    "resetWarningTitle": "Plano semanal prestes a expirar!",
+    "resetWarningDesc": "Esta noite às 23:59 (domingo) o seu plano semanal será reiniciado automaticamente. Na próxima semana terá de gerar um novo plano personalizado.",
+    "pdfDisclaimer": "Este plano é gerado por inteligência artificial. Não substitui o conselho de um treinador certificado ou médico. Consulte um profissional antes de seguir este plano.",
+    "askExercise": "Como fazer?",
+    "fullDisclaimerTitle": "Aviso Legal",
+    "fullDisclaimerText": "O plano gerado pelo FitGO é produzido por inteligência artificial para fins informativos e de orientação geral. Não constitui aconselhamento médico, nutricional ou de saúde profissional. Os resultados individuais podem variar. Consulte sempre um nutricionista registado, nutricionista certificado ou médico antes de fazer alterações significativas à sua dieta ou rotina de exercício. O FitGO não é responsável por quaisquer danos ou consequências resultantes da utilização destes planos. Este plano renova-se automaticamente todos os domingos às 23:59.",
+    "exportShoppingList": "Lista de compras PDF",
+    "exportMenu": "Menu PDF",
+    "askRecipe": "Como preparar?"
   },
   "recipes": {
-    "title": "Receitas IA",
+    "title": "Receitas",
     "refresh": "Atualizar ✨",
     "loading": "Criando receitas personalizadas...",
     "proTitle": "Receitas são um recurso Pro",
     "proSub": "Desbloqueie receitas personalizadas geradas por IA para atingir seus macros perfeitamente.",
     "unlockNow": "Desbloquear Pro Agora",
     "prepTime": "min",
-    "searchPlaceholder": "Ej: Pollo, Avena...",
+    "searchPlaceholder": "Ex: Frango, Aveia...",
     "search": "Buscar",
     "pinned": "Tus recetas fijadas",
     "searchTab": "Buscar",
-    "pinnedTab": "Fijadas",
-    "noPinned": "No tienes recetas fijadas aún."
+    "pinnedTab": "Fixadas",
+    "noPinned": "Você ainda não tem receitas fixadas.",
+    "protein": "PROTEÍNA",
+    "carbs": "CARBO",
+    "fat": "GORDURA",
+    "promptHowToPrepare": "Olá Coach, você pode me dar as instruções passo a passo para preparar esta receita: \"{{name}}\"? Descrição e detalhes: {{desc}} (P: {{p}}g, C: {{c}}g, F: {{f}}g, {{kcal}} kcal).",
+    "askCoach": "Como prepará-lo?"
   },
   "onboarding": {
     "goalTitle": "Qual é o seu objetivo ?",
@@ -869,7 +1009,10 @@
     "termsSub": "Leia e aceite para continuar",
     "termsAgreement": "Li e aceito os Termos de Serviço e a Política de Privacidade do FitGO. Entendo que meus dados serão usados para personalizar minhas recomendações.",
     "dairy": "Lácteos",
-    "beverages": "Bebidas"
+    "beverages": "Bebidas",
+    "creatingPlan": "Criando plano...",
+    "goal": "Objetivo",
+    "selectedCount": "selecionados"
   },
   "reminders": {
     "stayOnTrack": "Mantenha-se no caminho",
@@ -925,7 +1068,11 @@
     "noVoiceDetected": "Nenhuma voz detectada. Fale mais claramente.",
     "audioFileError": "Erro de hardware: o arquivo de áudio não foi criado.",
     "audioProcessError": "Erro ao processar áudio: {{error}}",
-    "searchPlaceholder": "Buscar alimento en la base de datos..."
+    "searchPlaceholder": "Buscar alimento en la base de datos...",
+    "transcribing": "A transcrever áudio...",
+    "tapToRecord": "Toque no microfone para ditar por voz",
+    "limitReachedSubPhoto": "Atingiu o seu limite mensal de digitalizações.",
+    "limitReachedSubText": "Atualize para Pro para digitalizações ilimitadas."
   },
   "foodDetail": {
     "per": "Por",
@@ -960,7 +1107,22 @@
     "trial": "🎁 7 dias de teste grátis — cancele a qualquer momento",
     "startTrial": "Iniciar Teste Grátis",
     "restore": "Restaurar Compra",
-    "legal": "O pagamento será cobrado em sua conta. A assinatura é renovada automaticamente, a menos que seja cancelada 24 horas antes da renovação."
+    "legal": "O pagamento será cobrado em sua conta. A assinatura é renovada automaticamente, a menos que seja cancelada 24 horas antes da renovação.",
+    "fullAccess": "Acesso Total",
+    "unlockNow": "Desbloquear Agora",
+    "restorePurchases": "Restaurar compras",
+    "titleUnlock": "Desbloquear",
+    "titlePro": "FitGO Pro",
+    "subtitle": "Leve seus resultados ao próximo nível com nossas ferramentas de IA.",
+    "feature1": "Planos de nutrição de IA ilimitados",
+    "feature2": "Rotinas de treino ultra-personalizadas",
+    "feature3": "Gerador de lista de compras em PDF",
+    "feature4": "Acesso a treinadores virtuais (Nutricionista, Treinador, Médico)",
+    "feature5": "Análise semanal de IA",
+    "feature6": "Sem anúncios e sem limites",
+    "specialOffer": "OFERTA ESPECIAL",
+    "perMonth": " / mês",
+    "cancelAnytime": "Cancele a qualquer momento. Sem compromissos."
   },
   "muscleDirectory": {
     "chest": "Peito",
@@ -968,7 +1130,7 @@
     "legs": "Pernas",
     "shoulders": "Ombros",
     "arms": "Braços",
-    "core": "Core / Abdômen",
+    "core": "Abdômen",
     "stretching": "Alongamento",
     "yoga": "Yoga",
     "exercisesCount": "exercícios"
@@ -2467,21 +2629,51 @@
     "band vertical pallof press - seated variation": "press pallof vertical con banda - variación sentado",
     "barbell reverse wrist curl - prone variation": "Curl de muñeca inverso con barra - variación boca abajo",
     "firm style hanging oblique knee raise": "Elevación de rodilla oblicua colgante estilo firme",
-    "horizontal dumbbell standing alternate overhead press": "Press de hombros alterno de pie con mancuernas horizontales"
+    "horizontal dumbbell standing alternate overhead press": "Press de hombros alterno de pie con mancuernas horizontales",
+    "Press de Banca": "Bench Press",
+    "Aperturas con Mancuernas": "Dumbbell Flyes",
+    "Flexiones": "Push-ups",
+    "Cruces en Polea": "Cable Crossovers",
+    "Press Inclinado": "Incline Press",
+    "Dominadas": "Pull-ups",
+    "Remo con Barra": "Barbell Row",
+    "Jalón al Pecho": "Lat Pulldown",
+    "Peso Muerto": "Deadlift",
+    "Remo en Polea Baja": "Seated Cable Row",
+    "Sentadillas": "Squats",
+    "Prensa Inclinada": "Leg Press",
+    "Extensiones de Cuádriceps": "Leg Extensions",
+    "Curl Femoral": "Leg Curls",
+    "Elevación de Gemelos": "Calf Raises",
+    "Press Militar": "Military Press",
+    "Elevaciones Laterales": "Lateral Raises",
+    "Pájaros": "Reverse Flyes",
+    "Elevaciones Frontales": "Front Raises",
+    "Encogimientos": "Shrugs",
+    "Curl de Bíceps con Barra": "Barbell Biceps Curl",
+    "Martillo": "Hammer Curl",
+    "Extensión de Tríceps": "Triceps Extension",
+    "Fondos": "Dips",
+    "Press Francés": "Skull Crushers",
+    "Plancha (Plank)": "Plank",
+    "Crunches": "Crunches",
+    "Elevación de Piernas": "Leg Raises",
+    "Rueda Abdominal": "Ab Wheel Rollout",
+    "Russian Twists": "Russian Twists"
   },
   "equipment": {
-    "band": "Banda",
+    "band": "Elástico",
     "barbell": "Barra",
-    "body weight": "Peso corporal",
-    "cable": "Polea",
-    "kettlebell": "Pesa rusa",
-    "dumbbell": "Mancuerna",
+    "body weight": "Peso Corporal",
+    "cable": "Cabo",
+    "kettlebell": "Kettlebell",
+    "dumbbell": "Haltere",
     "leverage machine": "Máquina de palanca",
     "bosu ball": "Balón Bosu",
     "hammer": "Martillo",
     "stationary bike": "stationary bike",
     "smith machine": "Máquina Smith",
-    "assisted": "assisted",
+    "assisted": "Assistido",
     "ez barbell": "Barra EZ",
     "stability ball": "stability ball",
     "weighted": "weighted",
@@ -2497,7 +2689,11 @@
     "upper body ergometer": "upper body ergometer",
     "trap bar": "trap bar",
     "skierg machine": "skierg machine",
-    "elliptical machine": "elliptical machine"
+    "elliptical machine": "elliptical machine",
+    "leverage": "Máquina de alavanca",
+    "machine": "Máquina",
+    "medicine": "Bola medicinal",
+    "other": "Outro"
   },
   "nutritionist": "Alimentação",
   "doctor": "Bem-estar",
@@ -2544,7 +2740,15 @@
       "sentRequests": "Solicitações Enviadas",
       "pending": "Pendente",
       "myFriends": "Meus Amigos",
-      "noFriends": "Você ainda não tem amigos."
+      "noFriends": "Você ainda não tem amigos.",
+      "friend": "amigo",
+      "friends": "Amigos",
+      "search": "Pesquisar",
+      "requests": "Pedidos",
+      "noResults": "Nenhum resultado encontrado.",
+      "noReceived": "Nenhum pedido recebido.",
+      "noSent": "Nenhum pedido enviado.",
+      "addFriend": "Adicionar como amigo"
     },
     "ranking": {
       "currentRank": "Sua Classificação Atual",
@@ -2583,7 +2787,30 @@
       "challengeFriendsOnly": "⚔️ Desafiar {count} amigo(s) (sem mim)",
       "start": "🎯 Começar",
       "activeChallenges": "Desafios Ativos",
-      "noActiveChallenges": "Nenhum desafio ativo."
+      "noActiveChallenges": "Nenhum desafio ativo.",
+      "aiFallback": "Caminhe 10.000 passos por 3 dias consecutivos.",
+      "aiChallengePrefix": "Desafio de IA",
+      "stepsPerDay": "Passos por dia",
+      "calsPerDay": "Calorias por dia",
+      "startSolo": "Começar (apenas eu)",
+      "challenge": "Desafiar",
+      "withoutMe": "sem mim",
+      "challengeOf": "Desafio de",
+      "selectSelfOrFriends": "Selecione a si mesmo e/ou seus amigos para este desafio.",
+      "participateInChallenge": "Participar do desafio",
+      "acceptSolo": "Aceitar (apenas eu)",
+      "aiSuggestion": "Sugestão do Fitz (IA)",
+      "createNew": "Criar novo desafio",
+      "customGoalLabel": "Objetivo personalizado",
+      "goalTitle": "Objetivo",
+      "caloriesPerDay": "Calorias por dia",
+      "whoParticipates": "Quem participa?",
+      "tapToSelect": "Toque para selecionar. Pode incluir-se a si mesmo e a vários amigos.",
+      "meAndFriends": "Eu + {{count}} amigos",
+      "challengeFriends": "Desafiar {{count}} amigos",
+      "alreadyFriends": "Já são amigos",
+      "add": "Adicionar amigo",
+      "participate": "Participar no desafio"
     },
     "profileModal": {
       "fullProfile": "Ver Perfil Completo",
@@ -2602,7 +2829,40 @@
     "noPostsMe": "Você ainda não publicou nada.",
     "noPosts": "Este usuário não publicou nada.",
     "likes": "Curtidas",
-    "comments": "Comentários"
+    "comments": "Comentários",
+    "friend": "Amigo",
+    "viewFullProfile": "Ver Perfil Completo",
+    "friends.alreadyFriends": "Já são amigos",
+    "friends.pending": "Pendente",
+    "friends.addFriend": "Adicionar amigo",
+    "friends.friend": "amigo",
+    "challenges.createNewChallenge": "Criar novo desafio",
+    "challenges.challengeTitle": "Título do desafio",
+    "challenges.description": "Descrição",
+    "challenges.type": "Tipo",
+    "challenges.days": "Dias",
+    "challenges.customGoal": "Objetivo personalizado",
+    "challenges.customGoalPlaceholder": "Ex. Fazer 100 flexões no total, completar 5 km...",
+    "challenges.goal": "Objetivo",
+    "challenges.stepsPerDay": "Passos por dia",
+    "challenges.calsPerDay": "Calorias por dia",
+    "challenges.whoParticipates": "Quem participa?",
+    "challenges.tapToSelect": "Toque para selecionar. Você pode incluir a si mesmo e vários amigos.",
+    "challenges.me": "Eu",
+    "challenges.startSolo": "Começar (só eu)",
+    "challenges.start": "Começar",
+    "challenges.challenge": "Desafiar",
+    "challenges.withoutMe": "sem mim",
+    "challenges.challengeOf": "Desafio de",
+    "challenges.selectSelfOrFriends": "Selecione você mesmo e/ou seus amigos para este desafio.",
+    "challenges.participateInChallenge": "Participar do desafio",
+    "challenges.acceptSolo": "Aceitar (só eu)",
+    "receivedRequests": "Solicitações recebidas",
+    "sentRequests": "Solicitações enviadas",
+    "myFriends": "Meus amigos",
+    "fitgoChallenges": "Desafios FitGo",
+    "activeChallenges": "Desafios ativos",
+    "pendingRequest": "Solicitação pendente"
   },
   "terms": {
     "titleTerms": "Termos e Condições",
@@ -2619,7 +2879,172 @@
       "diamond": "Diamante"
     },
     "title": "Suas conquistas",
-    "badges": "Emblemas",
+    "badges": {
+      "super_admin": {
+        "label": "Super Admin",
+        "description": "Acceso total al sistema y herramientas de administración."
+      },
+      "admin": {
+        "label": "Administrador",
+        "description": "Control de moderación de contenido y soporte."
+      },
+      "pro": {
+        "label": "Miembro Pro",
+        "description": "Suscripción activa en FitGO Premium."
+      },
+      "beast_mode": {
+        "label": "Beast Mode",
+        "description": "Otorgado por completar entrenamientos intensos y consistencia."
+      },
+      "verified": {
+        "label": "Verificado",
+        "description": "Usuario con cuenta verificada en FitGO."
+      },
+      "early_adopter": {
+        "label": "Pionero",
+        "description": "Parte de los primeros usuarios de la plataforma."
+      },
+      "fitness_enthusiast": {
+        "label": "Entusiasta Fitness",
+        "description": "Registra entrenamientos regulares y dedicación."
+      },
+      "water_champion": {
+        "label": "Aquamán",
+        "description": "Desbloqueado por lograr una hidratación perfecta (>2L)."
+      },
+      "sleep_legend": {
+        "label": "Leyenda del Sueño",
+        "description": "Desbloqueado por dormir más de 8 horas de forma óptima."
+      },
+      "protein_boss": {
+        "label": "Jefe de la Proteína",
+        "description": "Desbloqueado por alcanzar tu meta proteica diaria."
+      },
+      "streak_master": {
+        "label": "Mes de Hierro",
+        "description": "Desbloqueado por mantener una racha de 30 días."
+      },
+      "step_hero": {
+        "label": "Héroe del Paso",
+        "description": "Desbloqueado por superar los 15,000 pasos en un día."
+      },
+      "weight_master": {
+        "label": "Señor de la Meta",
+        "description": "Desbloqueado por estar a menos de 1kg de tu peso objetivo."
+      },
+      "social_star": {
+        "label": "Estrella Social",
+        "description": "Desbloqueado por publicar activamente en la comunidad."
+      },
+      "macro_expert": {
+        "label": "Experto en Macros",
+        "description": "Desbloqueado por tener un día de macros perfectos."
+      },
+      "workout_warrior": {
+        "label": "Guerrero de Acero",
+        "description": "Desbloqueado por realizar un entrenamiento de más de 60 minutos."
+      },
+      "body_sculptor": {
+        "label": "Escultor Corporal",
+        "description": "Desbloqueado por registrar tus medidas corporales."
+      },
+      "photo_pioneer": {
+        "label": "Modelo de Cambio",
+        "description": "Desbloqueado por subir tu primera foto de progreso."
+      },
+      "century_club": {
+        "label": "Club 100",
+        "description": "Otorgado por alcanzar una racha de 100 días."
+      },
+      "year_of_fitness": {
+        "label": "Año de Hierro",
+        "description": "Otorgado por una racha perfecta de 365 días."
+      },
+      "half_marathoner": {
+        "label": "Medio Maratón",
+        "description": "Desbloqueado por registrar más de 25,000 pasos en un día."
+      },
+      "weight_transformer": {
+        "label": "Transformador",
+        "description": "Desbloqueado por un cambio de peso significativo (10kg)."
+      },
+      "hydration_god": {
+        "label": "Dios del Océano",
+        "description": "Desbloqueado por registrar 3 litros de agua en un día."
+      },
+      "friend_magnet": {
+        "label": "Imán de Amigos",
+        "description": "Desbloqueado por tener 5 o más amigos en FitGO."
+      },
+      "community_pillar": {
+        "label": "Pilar Comunitario",
+        "description": "Desbloqueado por hacer 10 publicaciones en la comunidad."
+      },
+      "workout_machine": {
+        "label": "Máquina",
+        "description": "Desbloqueado por entrenar más de 2 horas en un solo día."
+      },
+      "sleep_god": {
+        "label": "Dios del Sueño",
+        "description": "Desbloqueado por dormir más de 9 horas."
+      },
+      "early_bird": {
+        "label": "Madrugador",
+        "description": "Desayunaste antes de las 9 AM."
+      },
+      "diet_expert": {
+        "label": "Experto en Dietas",
+        "description": "30 días seguidos registrando comidas."
+      },
+      "night_owl": {
+        "label": "Ave Nocturna",
+        "description": "Registraste actividad entre las 2 y 4 AM."
+      },
+      "zen_master": {
+        "label": "Maestro Zen",
+        "description": "10 horas de Yoga registradas."
+      },
+      "iron_lungs": {
+        "label": "Pulmones de Acero",
+        "description": "Registraste una sesión de natación intensa."
+      },
+      "mountain_king": {
+        "label": "Rey de la Montaña",
+        "description": "50,000 pasos en una semana."
+      },
+      "spartan": {
+        "label": "Espartano",
+        "description": "300 días de racha perfecta."
+      },
+      "data_scientist": {
+        "label": "Científico de Datos",
+        "description": "Exportaste tus datos a Excel."
+      },
+      "ghost": {
+        "label": "Fantasma",
+        "description": "5 días activo sin publicar nada social."
+      },
+      "carnivore": {
+        "label": "Depredador",
+        "description": "Más de 250g de proteína en un día."
+      },
+      "zen_streaker": {
+        "label": "Yoga Semanal",
+        "description": "3 sesiones de yoga en una semana."
+      },
+      "speed_demon": {
+        "label": "Velocidad Flash",
+        "description": "Registro express de comida."
+      },
+      "love_reactor": {
+        "label": "Repartidor de Amor",
+        "description": "Diste tu primer like."
+      },
+      "legend_commenter": {
+        "label": "Rompe Hielos",
+        "description": "Dejaste tu primer comentario."
+      }
+    },
     "unlocked": "Desbloqueado",
     "total": "Total",
     "completed": "Concluído",
@@ -2642,7 +3067,627 @@
       "Descanso": "Descanso",
       "Comunidad": "Comunidade",
       "Especial": "Especial"
-    }
+    },
+    "badgesTitle": "Emblemas",
+    "items": {
+      "welcome": {
+        "title": "¡Bienvenido!",
+        "description": "Te has unido a la comunidad FitGO."
+      },
+      "premium_club": {
+        "title": "Miembro Pro",
+        "description": "Eres parte del club exclusivo de FitGO."
+      },
+      "dark_mode_lover": {
+        "title": "Amante de las Sombras",
+        "description": "Activaste el Modo Oscuro."
+      },
+      "profile_complete": {
+        "title": "Perfeccionista",
+        "description": "Completaste todos los campos de tu perfil."
+      },
+      "streak_3": {
+        "title": "Imparable",
+        "description": "Has mantenido una racha de 3 días."
+      },
+      "streak_7": {
+        "title": "Semana Perfecta",
+        "description": "Has mantenido una racha de 7 días."
+      },
+      "streak_30": {
+        "title": "Mes de Hierro",
+        "description": "Has mantenido una racha de 30 días."
+      },
+      "streak_100": {
+        "title": "Centurión",
+        "description": "Has mantenido una racha de 100 días."
+      },
+      "streak_365": {
+        "title": "Año de Hierro",
+        "description": "Has mantenido una racha de 365 días."
+      },
+      "streak_500": {
+        "title": "Titán de la Disciplina",
+        "description": "Has mantenido una racha de 500 días."
+      },
+      "streak_1000": {
+        "title": "Dios del Olimpo",
+        "description": "Has mantenido una racha de 1000 días."
+      },
+      "first_log": {
+        "title": "Primer Paso",
+        "description": "Registraste tu primera comida hoy."
+      },
+      "early_bird": {
+        "title": "Madrugador",
+        "description": "Registraste tu desayuno antes de las 9 AM."
+      },
+      "protein_goal": {
+        "title": "Proteína Pura",
+        "description": "Alcanzaste tu meta de proteína hoy."
+      },
+      "healthy_eater": {
+        "title": "Comedor Saludable",
+        "description": "Cumpliste tu meta calórica con un margen del 10%."
+      },
+      "perfect_macros": {
+        "title": "Macros Perfectas",
+        "description": "Cumpliste tus metas calóricas y macros con margen del 10%."
+      },
+      "water_habit": {
+        "title": "Hidratado",
+        "description": "Has registrado agua hoy."
+      },
+      "water_champion": {
+        "title": "Super Hidratado",
+        "description": "Registraste más de 2000 ml de agua en un día."
+      },
+      "water_god": {
+        "title": "Dios del Océano",
+        "description": "Registraste 3000 ml (3L) de agua en un día."
+      },
+      "water_ocean": {
+        "title": "Océano Interno",
+        "description": "Registraste más de 4000ml (4L) de agua en un día."
+      },
+      "diet_expert": {
+        "title": "Experto en Dietas",
+        "description": "Has registrado comidas durante 30 días seguidos."
+      },
+      "hydration_streak_7": {
+        "title": "Río Constante",
+        "description": "Alcanzaste tu meta de agua 7 días seguidos."
+      },
+      "nutrition_scholar": {
+        "title": "Erudito Nutricional",
+        "description": "Descubriste y registraste alimentos exóticos o nuevos."
+      },
+      "carnival_eater": {
+        "title": "Día de Trampa",
+        "description": "Consumiste más de 3500 calorías en un día."
+      },
+      "vegan_day": {
+        "title": "Todo Verde",
+        "description": "Registraste puras comidas plant-based en un día."
+      },
+      "protein_pancake": {
+        "title": "Chef Fitness",
+        "description": "Registraste Pancakes de Proteína para desayunar."
+      },
+      "late_snack": {
+        "title": "Antojo de Medianoche",
+        "description": "Registraste un snack después de las 11 PM."
+      },
+      "perfect_week_macros": {
+        "title": "Precisión Quirúrgica",
+        "description": "Lograste Macros perfectos durante 7 días seguidos."
+      },
+      "carnivore": {
+        "title": "Depredador Alfa",
+        "description": "Consumiste más de 250g de proteína en un día."
+      },
+      "sweet_tooth": {
+        "title": "Antojo Dulce",
+        "description": "Registraste un postre pero aún cumpliste tus macros."
+      },
+      "coffee_addict": {
+        "title": "Sangre de Cafeína",
+        "description": "Registraste más de 3 cafés en un solo día."
+      },
+      "fasting_monk": {
+        "title": "Monje del Ayuno",
+        "description": "Pasaste 16 horas sin registrar comidas."
+      },
+      "chef_kiss": {
+        "title": "Beso del Chef",
+        "description": "Creaste tu primera receta personalizada en la app."
+      },
+      "goal_reached": {
+        "title": "En la Meta",
+        "description": "Estás a menos de 1kg de tu peso objetivo."
+      },
+      "weight_loss_1": {
+        "title": "Primeros Resultados",
+        "description": "Has perdido tus primeros 2kg."
+      },
+      "muscle_gain_1": {
+        "title": "Creciendo",
+        "description": "Has ganado tus primeros 2kg de músculo."
+      },
+      "weight_loss_10": {
+        "title": "Transformación Total",
+        "description": "Has perdido 10kg desde que iniciaste."
+      },
+      "muscle_gain_10": {
+        "title": "Titán",
+        "description": "Has ganado 10kg de masa desde que iniciaste."
+      },
+      "body_sculptor": {
+        "title": "Escultor Corporal",
+        "description": "Registraste tus medidas corporales."
+      },
+      "photo_pioneer": {
+        "title": "Modelo de Cambio",
+        "description": "Subiste tu primera foto de progreso."
+      },
+      "step_master": {
+        "title": "Caminante",
+        "description": "Has superado los 10,000 pasos en un día."
+      },
+      "step_marathon": {
+        "title": "Maratonista Urbano",
+        "description": "Superaste los 15,000 pasos en un solo día."
+      },
+      "step_half_marathon": {
+        "title": "Medio Maratón",
+        "description": "Superaste los 25,000 pasos en un día."
+      },
+      "workout_warrior": {
+        "title": "Guerrero de Acero",
+        "description": "Entrenaste más de 60 minutos."
+      },
+      "workout_machine": {
+        "title": "Máquina Imparable",
+        "description": "Entrenaste más de 120 minutos."
+      },
+      "sleep_master": {
+        "title": "Gran Descanso",
+        "description": "Dormiste más de 7 horas."
+      },
+      "sleep_champion": {
+        "title": "Bello Durmiente",
+        "description": "Dormiste más de 8 horas."
+      },
+      "sleep_god": {
+        "title": "Hibernación",
+        "description": "Dormiste más de 9 horas en una noche."
+      },
+      "social_star": {
+        "title": "Estrella Social",
+        "description": "Has publicado contenido en la comunidad."
+      },
+      "social_influence": {
+        "title": "Líder de Opinión",
+        "description": "Tienes más de 2 publicaciones."
+      },
+      "friend_magnet": {
+        "title": "Imán de Amigos",
+        "description": "Tienes 5 o más amigos en FitGO."
+      },
+      "community_pillar": {
+        "title": "Pilar Comunitario",
+        "description": "Has realizado 10 publicaciones."
+      },
+      "beta_tester": {
+        "title": "Pionero",
+        "description": "Participaste en la fase beta de FitGO."
+      },
+      "developer_god": {
+        "title": "Arquitecto del Sistema",
+        "description": "Eres uno de los creadores de FitGO."
+      },
+      "bug_hunter": {
+        "title": "Cazador de Bugs",
+        "description": "Encontraste y reportaste un error crítico."
+      },
+      "night_owl": {
+        "title": "Ave Nocturna",
+        "description": "Registraste una comida o entrenamiento entre las 2 AM y las 4 AM."
+      },
+      "easter_egg_hunter": {
+        "title": "Cazador de Secretos",
+        "description": "Encontraste un menú oculto en la aplicación."
+      },
+      "ghost_mode": {
+        "title": "Modo Fantasma",
+        "description": "Usaste la app 5 días seguidos sin publicar nada en la sección social."
+      },
+      "matrix_glitch": {
+        "title": "Fallo en la Matrix",
+        "description": "Quemaste exactamente 999 calorías en un entrenamiento."
+      },
+      "time_traveler": {
+        "title": "Viajero en el Tiempo",
+        "description": "Añadiste un registro con fecha de ayer."
+      },
+      "heavy_lifter": {
+        "title": "Fuerza Bruta",
+        "description": "Levantaste más de 200kg en peso muerto."
+      },
+      "flash_speed": {
+        "title": "Velocidad de la Luz",
+        "description": "Corriste 5km en menos de 20 minutos."
+      },
+      "zen_mode": {
+        "title": "Maestro Zen",
+        "description": "Registraste 10 horas de Yoga en total."
+      },
+      "iron_lungs": {
+        "title": "Pulmones de Acero",
+        "description": "Registraste una sesión de natación intensa."
+      },
+      "mountain_climber": {
+        "title": "Alpinista",
+        "description": "Superaste los 50,000 pasos en una semana."
+      },
+      "viral_post": {
+        "title": "Fenómeno Viral",
+        "description": "Tu publicación alcanzó 50 likes."
+      },
+      "first_comment": {
+        "title": "Rompiendo el Hielo",
+        "description": "Dejaste tu primer comentario en el post de otra persona."
+      },
+      "helper": {
+        "title": "Buen Samaritano",
+        "description": "Recibiste una medalla de \"Gracias\" de otro usuario."
+      },
+      "profile_stalker": {
+        "title": "Curioso",
+        "description": "Visitaste 10 perfiles distintos en un día."
+      },
+      "fitgo_veteran": {
+        "title": "Leyenda Viva",
+        "description": "Has usado la aplicación durante más de 2 años continuos."
+      },
+      "data_nerd": {
+        "title": "Científico de Datos",
+        "description": "Exportaste tu historial de progresos a Excel."
+      },
+      "fast_logger": {
+        "title": "Velocidad Flash",
+        "description": "Registraste una comida en tiempo récord."
+      },
+      "first_like": {
+        "title": "Repartiendo Amor",
+        "description": "Diste tu primer \"Me Gusta\" a otro usuario."
+      },
+      "like_bomber": {
+        "title": "Ametralladora de Likes",
+        "description": "Has dado más de 100 \"Me Gusta\"."
+      },
+      "squad_creator": {
+        "title": "Fundador",
+        "description": "Creaste o administras tu propia Liga."
+      },
+      "squad_champion": {
+        "title": "Campeón de la Liga",
+        "description": "Quedaste en primer lugar del ranking semanal."
+      },
+      "trend_setter": {
+        "title": "Influencer Fitness",
+        "description": "10 personas guardaron tu publicación."
+      },
+      "chatty": {
+        "title": "Conversador",
+        "description": "Enviaste 50 mensajes en el chat de tu Liga."
+      },
+      "early_lifter": {
+        "title": "El Club de las 5 AM",
+        "description": "Entrenaste antes de que salga el sol."
+      },
+      "leg_day_survivor": {
+        "title": "Sobreviviente",
+        "description": "Completaste una rutina brutal de Día de Pierna."
+      },
+      "cardio_bunny": {
+        "title": "Motor Inagotable",
+        "description": "Hiciste más de 60 minutos de cardio puro."
+      },
+      "rest_day_respect": {
+        "title": "Mente y Cuerpo",
+        "description": "Registraste oficialmente un día de descanso."
+      },
+      "yoga_streak": {
+        "title": "Paz Interior",
+        "description": "Hiciste Yoga 3 días en una misma semana."
+      },
+      "100k_steps_week": {
+        "title": "Caminante Blanco",
+        "description": "Lograste 100,000 pasos en una sola semana."
+      },
+      "waist_shredder": {
+        "title": "Cintura de Avispa",
+        "description": "Redujiste al menos 5cm de cintura."
+      },
+      "biceps_pump": {
+        "title": "Las Armas",
+        "description": "Tus brazos crecieron en tus registros."
+      },
+      "scale_fearless": {
+        "title": "Sin Miedo",
+        "description": "Registraste tu peso corporal 10 días seguidos."
+      },
+      "first_compliment": {
+        "title": "Admiración",
+        "description": "Alguien comentó positivamente en tu foto de progreso."
+      },
+      "bmi_normal": {
+        "title": "En Rango",
+        "description": "Tu IMC entró en el rango saludable."
+      },
+      "body_fat_15": {
+        "title": "Atleta Definido",
+        "description": "Registraste un porcentaje de grasa menor a 15%."
+      },
+      "spartan_300": {
+        "title": "Espartano 300",
+        "description": "Lograste 300 días de racha perfecta sin fallar un solo registro."
+      },
+      "kryptonian": {
+        "title": "Kryptoniano",
+        "description": "Levantaste volúmenes de peso de nivel sobrehumano en una sesión."
+      },
+      "goggins_mode": {
+        "title": "Modo Goggins",
+        "description": "Corriste un ultramaratón o lograste 50,000 pasos en un solo día."
+      },
+      "body_alchemist": {
+        "title": "Alquimista Corporal",
+        "description": "Bajaste del 10% de grasa corporal y mantuviste tu masa muscular."
+      },
+      "mr_olympia": {
+        "title": "Mr. Olympia",
+        "description": "Registraste 1,000 entrenamientos de fuerza totales en FitGO."
+      },
+      "the_one_percent": {
+        "title": "El 1%",
+        "description": "Alcanzaste el Top 1 del ranking global."
+      },
+      "iron_monk": {
+        "title": "Monje de Hierro",
+        "description": "Entrenaste 365 días del año, sin tomar ni un solo día inactivo."
+      },
+      "immortal": {
+        "title": "Inmortal",
+        "description": "No fallaste tus macros durante 100 días consecutivos."
+      },
+      "perfect_machine": {
+        "title": "Máquina Perfecta",
+        "description": "Lograste 100/100 en sueño, nutrición y actividad en un mismo día."
+      },
+      "triceratops": {
+        "title": "Triceratops",
+        "description": "Dominaste los 3 grandes (Sentadilla, Banca, Peso Muerto) con élite."
+      },
+      "supernova": {
+        "title": "Supernova",
+        "description": "Alcanzaste un impacto astronómico en la comunidad (100K Likes)."
+      },
+      "god_of_war": {
+        "title": "Dios de la Guerra",
+        "description": "Ganaste 5 Ligas Diamante de manera consecutiva."
+      },
+      "holy_grail": {
+        "title": "El Santo Grial",
+        "description": "Alcanzaste tu peso, medidas y grasa objetivo con exactitud matemática."
+      },
+      "five_meals": {
+        "title": "Cinco Comidas",
+        "description": "Registraste 5 comidas en un solo día."
+      },
+      "balanced_day": {
+        "title": "Día Equilibrado",
+        "description": "Registraste desayuno, almuerzo, cena y snack en el mismo día."
+      },
+      "smoothie_lover": {
+        "title": "Rey del Smoothie",
+        "description": "Registraste un batido proteico para desayunar."
+      },
+      "three_workouts_week": {
+        "title": "Semana Activa",
+        "description": "Entrenaste 3 días en una misma semana."
+      },
+      "bike_rider": {
+        "title": "Ciclista Urbano",
+        "description": "Registraste una sesión de ciclismo."
+      },
+      "ten_workouts": {
+        "title": "Veterano del Gym",
+        "description": "Completaste 10 entrenamientos en total."
+      },
+      "fifty_workouts": {
+        "title": "Atleta Consagrado",
+        "description": "Completaste 50 entrenamientos en total."
+      },
+      "weight_loss_5": {
+        "title": "Medio Camino",
+        "description": "Has perdido 5kg desde que iniciaste."
+      },
+      "muscle_gain_5": {
+        "title": "Ganador Neto",
+        "description": "Ganaste 5kg de masa desde que iniciaste."
+      },
+      "five_measurements": {
+        "title": "Historial Rico",
+        "description": "Registraste 5 o más medidas corporales históricas."
+      },
+      "language_switcher": {
+        "title": "Políglota",
+        "description": "Cambiaste el idioma de la app."
+      },
+      "night_mode": {
+        "title": "Modo Oscuro",
+        "description": "Activaste el modo oscuro."
+      },
+      "first_week_user": {
+        "title": "Primera Semana",
+        "description": "Usaste la app durante 7 días seguidos."
+      },
+      "sleep_week": {
+        "title": "Semana de Ensueño",
+        "description": "Dormiste más de 7 horas durante 7 días seguidos."
+      },
+      "power_nap": {
+        "title": "Siesta Estratégica",
+        "description": "Registraste menos de 6h de sueño pero aún entrenaste."
+      },
+      "first_friend": {
+        "title": "Primer Amigo",
+        "description": "Agregaste a tu primer amigo en FitGO."
+      },
+      "three_friends": {
+        "title": "Equipo de Élite",
+        "description": "Tienes 3 o más amigos en FitGO."
+      },
+      "friend_maker": {
+        "title": "Connector",
+        "description": "You added your first friend in FitGO."
+      },
+      "team_player": {
+        "title": "Team Player",
+        "description": "You joined a Squad."
+      },
+      "community_leader": {
+        "title": "Community Leader",
+        "description": "You reached the global Top 10."
+      },
+      "motivator": {
+        "title": "Motivator",
+        "description": "You gave 10 likes to your friends' posts."
+      },
+      "challenge_starter": {
+        "title": "Challenge Starter",
+        "description": "You created your first challenge."
+      },
+      "challenge_winner": {
+        "title": "Champion",
+        "description": "You won a challenge."
+      },
+      "challenge_5": {
+        "title": "Challenger",
+        "description": "You participated in 5 challenges."
+      },
+      "consistent_challenger": {
+        "title": "Iron Challenger",
+        "description": "You completed a 7-day challenge."
+      },
+      "squad_top": {
+        "title": "Squad MVP",
+        "description": "You were the top scorer in your Squad."
+      },
+      "competitive_spirit": {
+        "title": "Competitive Spirit",
+        "description": "You reached the Global Top 10 in the ranking."
+      },
+      "data_scientist": {
+        "title": "Data Scientist",
+        "description": "You performed a weekly analysis 3 times."
+      },
+      "planner_pro": {
+        "title": "Planner Pro",
+        "description": "You generated a nutritional plan."
+      },
+      "ai_enthusiast": {
+        "title": "AI Enthusiast",
+        "description": "You used the AI Coach 10 times."
+      },
+      "mystery_item": {
+        "title": "???",
+        "description": "Complete mysterious challenges to unlock this."
+      },
+      "comeback_kid": {
+        "title": "Comeback Kid",
+        "description": "You came back after a 7+ day streak."
+      },
+      "perfect_month": {
+        "title": "Perfect Month",
+        "description": "You logged every day of the month."
+      },
+      "super_admin": {
+        "title": "Super Admin",
+        "description": "You are a FitGO super administrator."
+      },
+      "system_builder": {
+        "title": "System Architect",
+        "description": "You built the entire FitGO system."
+      },
+      "bug_slayer": {
+        "title": "Bug Slayer",
+        "description": "You fixed 100 bugs in FitGO."
+      },
+      "data_guardian": {
+        "title": "Data Guardian",
+        "description": "You protected the data of all FitGO users."
+      },
+      "innovation_lab": {
+        "title": "Innovation Lab Pioneer",
+        "description": "You launched FitGO's first exclusive feature."
+      },
+      "app_first_launch": {
+        "title": "First Launch",
+        "description": "You opened FitGO for the first time."
+      },
+      "first_ai_chat": {
+        "title": "First AI Chat",
+        "description": "You had your first conversation with Fitz AI."
+      },
+      "notifications_enabled": {
+        "title": "Always Connected",
+        "description": "You enabled FitGO notifications."
+      },
+      "language_changed": {
+        "title": "Polyglot",
+        "description": "You changed the app language."
+      },
+      "theme_changer": {
+        "title": "Style Icon",
+        "description": "You changed the app theme."
+      },
+      "first_plan": {
+        "title": "First Plan",
+        "description": "You generated your first meal plan."
+      },
+      "first_workout": {
+        "title": "First Workout",
+        "description": "You generated your first workout plan."
+      },
+      "share_progress": {
+        "title": "Show Off",
+        "description": "You shared your progress with the community."
+      },
+      "biometric_update": {
+        "title": "Body Scanner",
+        "description": "You updated your weight 5 times."
+      },
+      "calorie_deficit_7": {
+        "title": "Calorie Deficit Master",
+        "description": "You maintained a calorie deficit for 7 days."
+      },
+      "calorie_surplus_7": {
+        "title": "Calorie Surplus Master",
+        "description": "You maintained a calorie surplus for 7 days."
+      },
+      "weight_stability": {
+        "title": "Weight Stability",
+        "description": "You maintained your weight for 30 days."
+      },
+      "anniversary": {
+        "title": "Anniversary",
+        "description": "1 year using FitGO. Congratulations!"
+      }
+    },
+    "newAchievement": "NOVA CONQUISTA DESBLOQUEADA!"
   },
   "competitive": {
     "mySquad": "Meu Squad",
@@ -2650,23 +3695,23 @@
     "leagues": {
       "carbono": {
         "name": "Liga Carbono",
-        "desc": "Escudo geométrico escuro."
+        "desc": "Seu ponto de partida no FitGO. Ganhe pontos para subir!"
       },
       "neon": {
         "name": "Liga Neon",
-        "desc": "Poder fluorescente."
+        "desc": "Liga intermediária. Continue assim!"
       },
       "titanio": {
         "name": "Liga Titânio",
-        "desc": "Monólito metálico."
+        "desc": "Liga avançada. Você está se tornando elite!"
       },
       "cuarzo": {
         "name": "Liga Quartzo",
-        "desc": "Cristal holográfico."
+        "desc": "Liga competitiva de alto nível."
       },
       "zenit": {
         "name": "Liga Elite Zênite",
-        "desc": "Coroa de ouro branco. O ápice do FitGO."
+        "desc": "O ápice da competição FitGO."
       }
     },
     "squads": {
@@ -2684,7 +3729,292 @@
       "streakDays": "Dias de sequência",
       "rankingTitle": "Classificação do Squad",
       "infoText": "Os pontos totais do squad são a soma dos pontos de todos os seus membros.",
-      "squadPoints": "Pontos do Squad"
+      "squadPoints": "Pontos do Squad",
+      "pathToElite": "Caminho para a Elite",
+      "inviteFriends": "Convidar Amigos",
+      "inviteFriendsTitle": "Convidar Amigos para o Squad",
+      "leaveSquad": "Sair do Squad",
+      "leaveSquadTitle": "Sair do Squad",
+      "leaveSquadMsg": "Tem certeza de que deseja sair do squad?",
+      "current": "← Atual",
+      "points": "Pontos",
+      "invitedToSquad": "convidou-o para um squad.",
+      "leave": "Sair",
+      "noSquads": "Ainda não há squads no ranking.",
+      "beFirst": "Seja o primeiro!",
+      "generalRanking": "Classificação Geral",
+      "removeMemberTitle": "Remover membro",
+      "removeMemberMsg": "Tem a certeza que quer remover {{name}} do squad?",
+      "remove": "Remover",
+      "squadNamePlaceholder": "Nome do seu Squad...",
+      "joinWithCode": "Entrar com código",
+      "codePlaceholder": "Código do Squad (ex: ab12cd34)",
+      "join": "Entrar",
+      "noMembers": "Nenhum membro visível.",
+      "youAreHere": "Você está neste squad",
+      "requestJoin": "Solicitar entrada",
+      "noFriendsToInvite": "Ainda não tem amigos para convidar.",
+      "sent": "Enviado ✓",
+      "inviteBtn": "Convidar"
+    },
+    "howItWorks": "Como funciona?",
+    "streakMultipliers": "Multiplicadores de sequência",
+    "streakDesc": "O multiplicador se aplica a cada ponto ganho enquanto sua sequência estiver ativa. Seja consistente e suba mais rápido!",
+    "current": "← Atual",
+    "you": "VOCÊ",
+    "ranking": "Ranking",
+    "class": "Classe",
+    "individual.subtitle": "Ranking individual de usuários",
+    "points": {
+      "logMeal": "Registar uma refeição",
+      "perfectMacros": "Macros perfeitos (±5%)",
+      "squadSynergy": "Sinergia de Squad"
+    },
+    "points.logMeal": "Registrar uma refeição",
+    "points.perfectMacros": "Macros perfeitos (±5%)",
+    "points.squadSynergy": "Sinergia do Squad",
+    "streak": {
+      "days3to7": "3–7 dias",
+      "days8to14": "8–14 dias",
+      "days15plus": "15+ dias"
+    },
+    "streak.days3to7": "3–7 dias",
+    "streak.days8to14": "8–14 dias",
+    "streak.days15plus": "15+ dias",
+    "squads.leaveSquadTitle": "Sair do Squad",
+    "squads.leaveSquadMsg": "Tem certeza de que deseja sair do squad?",
+    "squads.leave": "Sair",
+    "squads.leaveSquad": "Sair do Squad",
+    "squads.noSquads": "Ainda não há squads no ranking.",
+    "squads.beFirst": "Seja o primeiro!",
+    "squads.generalRanking": "Classificação Geral",
+    "squads.invitedToSquad": "Te convidou para um squad.",
+    "squads.removeMemberTitle": "Remover membro",
+    "squads.removeMemberMsg": "Tem certeza de que deseja remover {{name}} do squad?",
+    "squads.remove": "Remover",
+    "squads.inviteFriends": "Convidar amigos",
+    "squads.pathToElite": "Caminho para a Elite",
+    "squads.createSquad": "Criar Squad",
+    "squads.squadNamePlaceholder": "Nome do seu Squad...",
+    "squads.joinWithCode": "Entrar com código",
+    "squads.codePlaceholder": "Código do Squad (ex: ab12cd34)",
+    "squads.join": "Entrar",
+    "squads.members": "Membros do Squad",
+    "squads.noMembers": "Nenhum membro visível.",
+    "squads.youAreHere": "Você está neste squad",
+    "squads.requestJoin": "Solicitar entrada",
+    "squads.inviteFriendsTitle": "Convidar amigos para o Squad",
+    "squads.noFriendsToInvite": "Você ainda não tem amigos para convidar.",
+    "squads.sent": "Enviado ✓",
+    "squads.inviteBtn": "Convidar",
+    "squads.copiedText": "Copiado!",
+    "squads.podiumTitle": "Pódio de Ligas",
+    "squads.podiumSub": "Os melhores squads do FitGO Competitive"
+  },
+  "calendar": {
+    "myStreaks": "Minhas Séries",
+    "currentStreak": "Série atual",
+    "record": "Recorde:",
+    "activeDays": "Dias ativos",
+    "totalLogged": "Total registrado",
+    "streak": "Série",
+    "active": "Ativos",
+    "recordShort": "Recorde",
+    "activeDay": "Dia ativo",
+    "today": "Hoje",
+    "selected": "Selecionado"
+  },
+  "evaluation": {
+    "feedbackTitle": "Veredito do Treinador",
+    "estFat": "Gordura Est.",
+    "strengths": "Pontos Fortes",
+    "improvements": "Áreas de Melhoria",
+    "newAnalysis": "Nova Análise",
+    "history": "Histórico de Avaliações",
+    "noHistory": "Nenhuma avaliação ainda.",
+    "instruction": "Envie ou tire uma foto do seu físico atual para receber uma análise detalhada de IA sobre seus pontos fortes e áreas de melhoria.",
+    "viewHistory": "Ver Histórico",
+    "analyzeBtn": "Analisar Físico",
+    "analyzing": "Analisando seu desenvolvimento muscular...",
+    "backToMain": "Voltar ao Início",
+    "error": "Ocurreu um erro ao analisar a imagem.",
+    "fatLabel": "Gordura"
+  },
+  "legal": {
+    "termsAndConditions": "Termos e Condições",
+    "privacyPolicy": "Política de Privacidade",
+    "terms": "Termos",
+    "privacy": "Privacidade"
+  },
+  "sleep": {
+    "totalRegistered": "Total registrado",
+    "bedtime": "Hora de dormir",
+    "waketime": "Hora de acordar",
+    "tip": "Os adultos precisam de 7 a 9 horas de sono para uma recuperação ideal."
+  },
+  "workout": {
+    "instructions": "Instruções"
+  },
+  "badges": {
+    "verified": {
+      "label": "Verificado",
+      "description": "Usuário com uma conta FitGO verificada."
+    },
+    "early_adopter": {
+      "label": "Pioneiro",
+      "description": "Parte dos primeiros usuários da plataforma."
+    },
+    "social_star": {
+      "label": "Estrela Social",
+      "description": "Desbloqueado publicando ativamente."
+    },
+    "super_admin": {
+      "label": "Super Admin",
+      "description": "Acesso total ao sistema."
+    },
+    "admin": {
+      "label": "Administrador",
+      "description": "Moderação e suporte."
+    },
+    "pro": {
+      "label": "Membro Pro",
+      "description": "Assinatura FitGO Premium ativa."
+    },
+    "beast_mode": {
+      "label": "Modo Fera",
+      "description": "Concedido por treinos intensos e consistência."
+    },
+    "fitness_enthusiast": {
+      "label": "Entusiasta Fitness",
+      "description": "Registra treinos regulares e dedicação."
+    },
+    "water_champion": {
+      "label": "Aquaman",
+      "description": "Desbloqueado por hidratação perfeita (>2L)."
+    },
+    "sleep_legend": {
+      "label": "Lenda do Sono",
+      "description": "Desbloqueado por sono ideal >8h."
+    },
+    "protein_boss": {
+      "label": "Chefe da Proteína",
+      "description": "Desbloqueado ao atingir a meta de proteína."
+    },
+    "weight_master": {
+      "label": "Mestre do Objetivo",
+      "description": "A menos de 1kg do peso objetivo."
+    },
+    "hydration_god": {
+      "label": "Deus do Oceano",
+      "description": "Desbloqueado por 3 litros de água num dia."
+    },
+    "workout_machine": {
+      "label": "Máquina",
+      "description": "Desbloqueado por treinar >2h num dia."
+    },
+    "sleep_god": {
+      "label": "Deus do Sono",
+      "description": "Desbloqueado por sono >9h."
+    },
+    "carnivore": {
+      "label": "Predador",
+      "description": "Mais de 250g de proteína num dia."
+    },
+    "workout_warrior": {
+      "label": "Guerreiro de Aço",
+      "description": "Desbloqueado por um treino >60 min."
+    },
+    "step_hero": {
+      "label": "Herói dos Passos",
+      "description": "Desbloqueado por mais de 15.000 passos num dia."
+    },
+    "macro_expert": {
+      "label": "Macro Expert",
+      "description": "Perfect macros day."
+    },
+    "body_sculptor": {
+      "label": "Body Sculptor",
+      "description": "Log body measurements."
+    },
+    "photo_pioneer": {
+      "label": "Change Model",
+      "description": "Upload first progress photo."
+    },
+    "century_club": {
+      "label": "100 Club",
+      "description": "100-day streak."
+    },
+    "year_of_fitness": {
+      "label": "Year of Iron",
+      "description": "365-day streak."
+    },
+    "half_marathoner": {
+      "label": "Half Marathon",
+      "description": "Over 25,000 steps in a day."
+    },
+    "weight_transformer": {
+      "label": "Transformer",
+      "description": "10kg weight change."
+    },
+    "friend_magnet": {
+      "label": "Friend Magnet",
+      "description": "Have 5 or more friends."
+    },
+    "community_pillar": {
+      "label": "Community Pillar",
+      "description": "10 community posts."
+    },
+    "early_bird": {
+      "label": "Early Bird",
+      "description": "Breakfast before 9 AM."
+    },
+    "diet_expert": {
+      "label": "Diet Expert",
+      "description": "30 days logging meals."
+    },
+    "night_owl": {
+      "label": "Night Owl",
+      "description": "Activity between 2 and 4 AM."
+    },
+    "zen_master": {
+      "label": "Zen Master",
+      "description": "10 hours of Yoga."
+    },
+    "iron_lungs": {
+      "label": "Iron Lungs",
+      "description": "Intense swimming session."
+    },
+    "mountain_king": {
+      "label": "Mountain King",
+      "description": "50,000 steps in a week."
+    },
+    "spartan": {
+      "label": "Spartan",
+      "description": "300-day perfect streak."
+    },
+    "data_scientist": {
+      "label": "Data Scientist",
+      "description": "Exported your data."
+    },
+    "ghost": {
+      "label": "Ghost",
+      "description": "Active 5 days without posting."
+    },
+    "zen_streaker": {
+      "label": "Weekly Yoga",
+      "description": "3 yoga sessions in a week."
+    },
+    "speed_demon": {
+      "label": "Speed Demon",
+      "description": "Express meal log."
+    },
+    "love_reactor": {
+      "label": "Love Dispenser",
+      "description": "Gave your first like."
+    },
+    "legend_commenter": {
+      "label": "Ice Breaker",
+      "description": "Left your first comment."
     }
   }
 }

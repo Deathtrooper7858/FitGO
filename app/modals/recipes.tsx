@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -34,6 +34,21 @@ export default function RecipesModal() {
       setLoading(false);
     }
   };
+
+  // Track previous language to detect changes
+  const prevLang = useRef(language);
+
+  // When language changes, clear cached recipes and reload in new language
+  useEffect(() => {
+    if (prevLang.current !== language) {
+      prevLang.current = language;
+      if (isPro && activeTab === 'search') {
+        setRecipes([]);
+        // Small delay so setRecipes settles before we call the API
+        setTimeout(() => loadRecipes(), 100);
+      }
+    }
+  }, [language]);
 
   // Debounce logic for automatic search
   useEffect(() => {
@@ -215,15 +230,15 @@ function RecipeCard({ recipe, isFav, onFav, index }: { recipe: Recipe; isFav: bo
 
           <View style={rc.macros}>
             <View style={[rc.macroPill, { backgroundColor: colors.protein + '15', borderColor: colors.protein + '40', borderWidth: 1 }]}>
-              <Text style={[rc.macroLabel, { color: colors.protein }]}>PROTEÍNA</Text>
+              <Text style={[rc.macroLabel, { color: colors.protein }]}>{t('recipes.protein', 'PROTEÍNA')}</Text>
               <Text style={[rc.macroText, { color: colors.protein }]}>{recipe.protein}g</Text>
             </View>
             <View style={[rc.macroPill, { backgroundColor: colors.carbs + '15', borderColor: colors.carbs + '40', borderWidth: 1 }]}>
-               <Text style={[rc.macroLabel, { color: colors.carbs }]}>CARBOS</Text>
+               <Text style={[rc.macroLabel, { color: colors.carbs }]}>{t('recipes.carbs', 'CARBOS')}</Text>
               <Text style={[rc.macroText, { color: colors.carbs }]}>{recipe.carbs}g</Text>
             </View>
             <View style={[rc.macroPill, { backgroundColor: colors.fat + '15', borderColor: colors.fat + '40', borderWidth: 1 }]}>
-               <Text style={[rc.macroLabel, { color: colors.fat }]}>GRASA</Text>
+               <Text style={[rc.macroLabel, { color: colors.fat }]}>{t('recipes.fat', 'GRASA')}</Text>
               <Text style={[rc.macroText, { color: colors.fat }]}>{recipe.fat}g</Text>
             </View>
           </View>
@@ -231,7 +246,10 @@ function RecipeCard({ recipe, isFav, onFav, index }: { recipe: Recipe; isFav: bo
           <TouchableOpacity 
             style={[rc.askCoachBtn, { backgroundColor: '#7C5CFC' }]}
             onPress={() => {
-              const prompt = `Hola Coach, ¿me puedes dar las instrucciones paso a paso para preparar esta receta: "${recipe.name}"? Descripción y detalles: ${recipe.description} (P: ${recipe.protein}g, C: ${recipe.carbs}g, F: ${recipe.fat}g, ${recipe.calories} kcal).`;
+              const prompt = t('recipes.promptHowToPrepare', {
+                defaultValue: `Hola Coach, ¿me puedes dar las instrucciones paso a paso para preparar esta receta: "{{name}}"? Descripción y detalles: {{desc}} (P: {{p}}g, C: {{c}}g, F: {{f}}g, {{kcal}} kcal).`,
+                name: recipe.name, desc: recipe.description, p: recipe.protein, c: recipe.carbs, f: recipe.fat, kcal: recipe.calories
+              });
               router.push(`/(tabs)/coach?initialTab=nutritionist&prompt=${encodeURIComponent(prompt)}`);
             }}
           >

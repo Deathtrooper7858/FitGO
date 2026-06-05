@@ -78,7 +78,8 @@
           "color": "#7C5CFC"
         }
       ],
-      "react-native-fast-tflite"
+      "react-native-fast-tflite",
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true

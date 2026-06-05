@@ -404,10 +404,10 @@ function BadgeSelectionModal({
                         fontWeight: isSelected ? '800' : '700' 
                       }
                     ]}>
-                      {badge.label}
+                      {t(`badges.${badgeId}.label`, badge.label)}
                     </Text>
                     <Text style={[bm.badgeDescription, { color: colors.textSecondary }]}>
-                      {badge.description}
+                      {t(`badges.${badgeId}.description`, badge.description)}
                     </Text>
                   </View>
 

@@ -139,7 +139,7 @@ function MessageBubble({ msg, isLastUser, onEdit, onImagePress }: { msg: CoachMe
               <Image
                 source={{ uri: msg.imageUrl }}
                 style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }}
-                contentFit="cover"
+                resizeMode="cover"
               />
             </TouchableOpacity>
           )}
@@ -180,7 +180,7 @@ function MessageBubble({ msg, isLastUser, onEdit, onImagePress }: { msg: CoachMe
             <Image
               source={{ uri: msg.imageUrl }}
               style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }}
-              contentFit="cover"
+              resizeMode="cover"
             />
           </TouchableOpacity>
         )}
@@ -198,7 +198,7 @@ function MessageBubble({ msg, isLastUser, onEdit, onImagePress }: { msg: CoachMe
     <View style={[bubble.row, isUser && bubble.rowUser]}>
       {!isUser && (
         <View style={[bubble.avatarContainer, { borderColor: colors.primary + '30' }]}>
-          <Image source={require('../assets/trainer_badge.jpg')} style={bubble.avatar} contentFit="cover" />
+          <Image source={require('../assets/trainer_badge.jpg')} style={bubble.avatar} resizeMode="cover" />
         </View>
       )}
       {renderBubbleBody()}
@@ -231,7 +231,7 @@ function TypingIndicator() {
   return (
     <View style={[bubble.row, { paddingHorizontal: Spacing.base, marginTop: 6 }]}>
       <View style={[bubble.avatarContainer, { borderColor: colors.primary + '30' }]}>
-        <Image source={require('../assets/trainer_badge.jpg')} style={bubble.avatar} contentFit="cover" />
+        <Image source={require('../assets/trainer_badge.jpg')} style={bubble.avatar} resizeMode="cover" />
       </View>
       <View 
         style={[
@@ -386,7 +386,7 @@ export default function TrainerScreen() {
     try {
       const { granted } = await ImagePicker.requestCameraPermissionsAsync();
       if (!granted) {
-        Alert.alert('Permission needed', 'Please allow camera access in Settings.');
+        Alert.alert(t('common.warning', 'Advertencia'), t('profile.cameraPermission', 'Se necesitan permisos de cámara para tomar fotos.'));
         return;
       }
       const result = await ImagePicker.launchCameraAsync({
@@ -396,7 +396,7 @@ export default function TrainerScreen() {
         setSelectedImage(result.assets[0].base64!);
       }
     } catch {
-      Alert.alert('Error', 'Could not open camera.');
+      Alert.alert(t('common.error', 'Error'), t('profile.cameraFailed', 'Error al abrir la cámara'));
     }
   };
 
@@ -404,7 +404,7 @@ export default function TrainerScreen() {
     try {
       const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!granted) {
-        Alert.alert('Permission needed', 'Please allow photo library access in Settings.');
+        Alert.alert(t('common.warning', 'Advertencia'), t('profile.galleryPermission', 'Se necesitan permisos de galería para seleccionar fotos.'));
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -414,7 +414,7 @@ export default function TrainerScreen() {
         setSelectedImage(result.assets[0].base64!);
       }
     } catch {
-      Alert.alert('Error', 'Could not open gallery.');
+      Alert.alert(t('common.error', 'Error'), t('profile.galleryFailed', 'Error al abrir la galería'));
     }
   };
 
@@ -426,7 +426,7 @@ export default function TrainerScreen() {
     try {
       const permission = await requestRecordingPermissionsAsync();
       if (permission.status !== 'granted') {
-        Alert.alert('Permission needed', 'Please allow microphone access to use voice features.');
+        Alert.alert(t('common.warning', 'Advertencia'), t('tracker.micPermissionSub', 'Por favor permite acceso al micrófono para usar el registro por voz.'));
         return;
       }
       await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
@@ -450,7 +450,7 @@ export default function TrainerScreen() {
             setInput(text);
           }
         } catch (err) {
-          Alert.alert('Transcription failed', 'Could not convert voice to text.');
+          Alert.alert(t('common.error', 'Error'), t('tracker.voiceFailedSub', 'No pudimos procesar tu voz. Inténtalo de nuevo.'));
         } finally {
           setIsTranscribing(false);
           await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: false }).catch(() => {});
@@ -625,7 +625,7 @@ export default function TrainerScreen() {
           style={s.header}
         >
           <View style={[s.headerAvatarContainer, { borderColor: colors.primary + '40' }]}>
-            <Image source={require('../assets/trainer_badge.jpg')} style={s.headerAvatar} contentFit="cover" />
+            <Image source={require('../assets/trainer_badge.jpg')} style={s.headerAvatar} resizeMode="cover" />
             <View style={[s.headerOnlineDot, { backgroundColor: colors.success }]} />
           </View>
           
@@ -674,6 +674,10 @@ export default function TrainerScreen() {
           ref={flatRef}
           data={messages}
           style={{ flex: 1 }}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
           keyExtractor={(m) => m.id}
           renderItem={({ item, index }) => {
             const isLastUser = item.role === 'user' && (index === messages.length - 1 || (index === messages.length - 2 && messages[index+1].role === 'model'));
@@ -763,7 +767,7 @@ export default function TrainerScreen() {
                   <Image
                     source={{ uri: `data:image/jpeg;base64,${selectedImage}` }}
                     style={s.imagePreview}
-                    contentFit="cover"
+                    resizeMode="cover"
                   />
                   <TouchableOpacity
                     onPress={() => setSelectedImage(null)}

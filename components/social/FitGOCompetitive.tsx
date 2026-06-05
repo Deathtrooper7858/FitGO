@@ -196,7 +196,7 @@ function EmptySquad({ onCreate, onJoin }: { onCreate: () => void; onJoin: () => 
                 )}
                 <View style={{ flex: 1, marginLeft: 12, paddingRight: 8 }}>
                   <Text style={{ color: colors.textPrimary, fontWeight: 'bold' }}>{inv.sender?.name}</Text>
-                  <Text style={{ color: colors.textSecondary, fontSize: 12 }} numberOfLines={1}>Te ha invitado a un squad.</Text>
+                  <Text style={{ color: colors.textSecondary, fontSize: 12 }} numberOfLines={1}>{t('competitive.squads.invitedToSquad', 'Te ha invitado a un squad.')}</Text>
                 </View>
                 {code ? (
                   <TouchableOpacity
@@ -214,10 +214,10 @@ function EmptySquad({ onCreate, onJoin }: { onCreate: () => void; onJoin: () => 
                       }
                     }}
                   >
-                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>Aceptar</Text>
+                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>{t('common.accept', 'Aceptar')}</Text>
                   </TouchableOpacity>
                 ) : (
-                  <Text style={{ color: colors.textSecondary, fontSize: 11, fontStyle: 'italic' }}>Inválido</Text>
+                  <Text style={{ color: colors.textSecondary, fontSize: 11, fontStyle: 'italic' }}>{t('common.invalid', 'Inválido')}</Text>
                 )}
               </View>
             );
@@ -384,10 +384,10 @@ export default function FitGOCompetitive() {
     setAlert({
       visible: true,
       type: 'warning',
-      title: 'Salir del Squad',
-      message: '¿Estás seguro de que deseas salir del squad?',
-      confirmText: 'Salir',
-      cancelText: 'Cancelar',
+      title: t('competitive.squads.leaveSquadTitle', 'Salir del Squad'),
+      message: t('competitive.squads.leaveSquadMsg', '¿Estás seguro de que deseas salir del squad?'),
+      confirmText: t('competitive.squads.leave', 'Salir'),
+      cancelText: t('common.cancel', 'Cancelar'),
       onConfirm: () => {
         if (profile?.id) leaveSquad(profile.id);
         setAlert(prev => ({ ...prev, visible: false }));
@@ -498,7 +498,7 @@ export default function FitGOCompetitive() {
                   <View style={{ alignItems: 'center', paddingVertical: 40 }}>
                     <Trophy size={48} color={colors.textMuted} style={{ opacity: 0.3 }} />
                     <Text style={{ color: colors.textMuted, marginTop: 12, fontSize: 15, textAlign: 'center' }}>
-                      Aún no hay squads en el ranking.{'\n'}¡Sé el primero!
+                      {t('competitive.squads.noSquads', 'Aún no hay squads en el ranking.') + '\n' + t('competitive.squads.beFirst', '¡Sé el primero!')}
                     </Text>
                   </View>
                 ) : loading && topSquads.length === 0 ? (
@@ -513,7 +513,7 @@ export default function FitGOCompetitive() {
 
                     {rest.length > 0 && (
                       <View style={[styles.restList, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                        <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 12 }]}>Clasificación General</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 12 }]}>{t('competitive.squads.generalRanking', 'Clasificación General')}</Text>
                         {rest.map((s, i) => {
                           const cfg = LEAGUE_CONFIG[s.league_tier];
                           return (
@@ -549,8 +549,8 @@ export default function FitGOCompetitive() {
                   <View style={styles.rankingHeader}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                       <View>
-                        <Text style={[styles.rankingTitle, { color: colors.textPrimary }]}>🌍 Ranking Global</Text>
-                        <Text style={[styles.rankingSub, { color: colors.textSecondary }]}>Ranking individual de usuarios</Text>
+                        <Text style={[styles.rankingTitle, { color: colors.textPrimary }]}>🌍 {t('social.ranking.globalRanking', 'Ranking Global')}</Text>
+                        <Text style={[styles.rankingSub, { color: colors.textSecondary }]}>{t('competitive.individual.subtitle', 'Ranking individual de usuarios')}</Text>
                       </View>
                       <TouchableOpacity
                         style={{ backgroundColor: '#F59E0B18', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}
@@ -617,7 +617,7 @@ export default function FitGOCompetitive() {
                             </View>
                             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                               <Text style={[styles.restName, { color: colors.textPrimary }]} numberOfLines={1}>{user.name}</Text>
-                              {isMe && <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '800' }}>TÚ</Text>}
+                              {isMe && <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '800' }}>{t('competitive.you', 'TÚ')}</Text>}
                               <View style={{ backgroundColor: grade.bg, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
                                 <Text style={{ color: grade.color, fontSize: 10, fontWeight: '900' }}>{grade.label}</Text>
                               </View>
@@ -639,7 +639,7 @@ export default function FitGOCompetitive() {
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                             <Trophy size={22} color="#F59E0B" />
-                            <Text style={{ color: colors.textPrimary, fontSize: 17, fontWeight: '800' }}>¿Cómo funciona?</Text>
+                            <Text style={{ color: colors.textPrimary, fontSize: 17, fontWeight: '800' }}>{t('competitive.howItWorks', '¿Cómo funciona?')}</Text>
                           </View>
                           <TouchableOpacity onPress={() => setShowRankingInfo(false)} style={{ padding: 6, backgroundColor: colors.surfaceAlt, borderRadius: 14 }}>
                             <X size={18} color={colors.textSecondary} />
@@ -649,9 +649,9 @@ export default function FitGOCompetitive() {
                         {/* Points breakdown */}
                         <View style={{ gap: 10, marginBottom: 16 }}>
                           {[
-                            { icon: '🍽️', label: 'Registrar una comida', pts: '+10 pts' },
-                            { icon: '🎯', label: 'Macros perfectos (±5%)', pts: '+100 pts' },
-                            { icon: '⚡', label: 'Sinergia de Squad', pts: '+50 pts' },
+                            { icon: '🍽️', label: t('competitive.points.logMeal', 'Registrar una comida'), pts: '+10 pts' },
+                            { icon: '🎯', label: t('competitive.points.perfectMacros', 'Macros perfectos (±5%)'), pts: '+100 pts' },
+                            { icon: '⚡', label: t('competitive.points.squadSynergy', 'Sinergia de Squad'), pts: '+50 pts' },
                           ].map((row) => (
                             <View key={row.label} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surfaceAlt, borderRadius: 12, padding: 12, gap: 10 }}>
                               <Text style={{ fontSize: 20 }}>{row.icon}</Text>
@@ -662,12 +662,12 @@ export default function FitGOCompetitive() {
                         </View>
 
                         {/* Streak multipliers */}
-                        <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 14, marginBottom: 8 }}>🔥 Multiplicadores de Racha</Text>
+                        <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 14, marginBottom: 8 }}>🔥 {t('competitive.streakMultipliers', 'Multiplicadores de Racha')}</Text>
                         <View style={{ gap: 6, marginBottom: 16 }}>
                           {[
-                            { range: '3–7 días', mult: '×1.2', color: '#F59E0B' },
-                            { range: '8–14 días', mult: '×1.5', color: '#F97316' },
-                            { range: '15+ días', mult: '×2.0', color: '#EF4444' },
+                            { range: t('competitive.streak.days3to7', '3–7 días'), mult: '×1.2', color: '#F59E0B' },
+                            { range: t('competitive.streak.days8to14', '8–14 días'), mult: '×1.5', color: '#F97316' },
+                            { range: t('competitive.streak.days15plus', '15+ días'), mult: '×2.0', color: '#EF4444' },
                           ].map((row) => (
                             <View key={row.range} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 8, backgroundColor: row.color + '15', borderRadius: 10 }}>
                               <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{row.range}</Text>
@@ -677,13 +677,13 @@ export default function FitGOCompetitive() {
                         </View>
 
                         <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 20 }}>
-                          El multiplicador se aplica a cada punto ganado mientras tu racha esté activa. ¡Sé constante y sube más rápido!
+                          {t('competitive.streakDesc', 'El multiplicador se aplica a cada punto ganado mientras tu racha esté activa. ¡Sé constante y sube más rápido!')}
                         </Text>
                         <TouchableOpacity
                           style={{ marginTop: 20, backgroundColor: colors.primary, borderRadius: 14, padding: 14, alignItems: 'center' }}
                           onPress={() => setShowRankingInfo(false)}
                         >
-                          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Entendido 👊</Text>
+                          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>{t('common.understood', 'Entendido 👊')}</Text>
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -806,10 +806,10 @@ export default function FitGOCompetitive() {
                         setAlert({
                           visible: true,
                           type: 'warning',
-                          title: 'Expulsar integrante',
-                          message: `¿Estás seguro de que quieres expulsar a ${m.name} del squad?`,
-                          confirmText: 'Expulsar',
-                          cancelText: 'Cancelar',
+                          title: t('competitive.squads.removeMemberTitle', 'Expulsar integrante'),
+                          message: t('competitive.squads.removeMemberMsg', '¿Estás seguro de que quieres expulsar a {{name}} del squad?').replace('{{name}}', m.name),
+                          confirmText: t('competitive.squads.remove', 'Expulsar'),
+                          cancelText: t('common.cancel', 'Cancelar'),
                           onConfirm: async () => {
                             const success = await useLeagueStore.getState().removeMember(squad.id, m.user_id);
                             if (success) {
@@ -833,12 +833,12 @@ export default function FitGOCompetitive() {
                     }}
                   >
                     <Plus size={18} color={colors.primary} />
-                    <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 15 }}>Invitar Amigos</Text>
+                    <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 15 }}>{t('competitive.squads.inviteFriends', 'Invitar Amigos')}</Text>
                   </TouchableOpacity>
                 )}
 
                 {/* Leagues Progress */}
-                <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginTop: 28 }]}>Camino a la Élite</Text>
+                <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginTop: 28 }]}>{t('competitive.squads.pathToElite', 'Camino a la Élite')}</Text>
                 {(Object.entries(LEAGUE_CONFIG) as [LeagueTier, typeof LEAGUE_CONFIG[LeagueTier]][]).map(([tier, cfg]) => {
                   const isCurrent = tier === squad.league_tier;
                   const reached = squad.points >= cfg.pointsNeeded;
@@ -854,7 +854,7 @@ export default function FitGOCompetitive() {
                       <LeagueBadge tier={tier} size="sm" />
                       <View style={{ flex: 1 }}>
                         <Text style={[styles.tierName, { color: isCurrent ? cfg.glow : colors.textPrimary }]}>
-                          {t(cfg.labelKey)} {isCurrent && '← Actual'}
+                          {t(cfg.labelKey)} {isCurrent && t('competitive.current', '← Actual')}
                         </Text>
                         <Text style={[styles.tierPts, { color: colors.textSecondary }]}>
                           {cfg.pointsNeeded.toLocaleString()} {t('profile.points', 'puntos')}
@@ -870,7 +870,7 @@ export default function FitGOCompetitive() {
                 {/* Leave */}
                 <TouchableOpacity style={[styles.leaveBtn, { borderColor: colors.error + '50' }]} onPress={handleLeave}>
                   <LogOut size={16} color={colors.error} />
-                  <Text style={[styles.leaveBtnText, { color: colors.error }]}>Salir del Squad</Text>
+                  <Text style={[styles.leaveBtnText, { color: colors.error }]}>{t('competitive.squads.leaveSquad', 'Salir del Squad')}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -901,7 +901,7 @@ export default function FitGOCompetitive() {
               style={{ marginTop: 20, backgroundColor: colors.primary, borderRadius: 14, padding: 14, alignItems: 'center' }}
               onPress={() => setShowSquadInfo(false)}
             >
-              <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Entendido 👊</Text>
+              <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>{t('common.understood', 'Entendido 👊')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -911,20 +911,20 @@ export default function FitGOCompetitive() {
       <Modal visible={showCreate} transparent animationType="fade" onRequestClose={() => setShowCreate(false)}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
           <View style={{ width: '100%', backgroundColor: colors.surface, borderRadius: 24, padding: 24, borderWidth: 1.5, borderColor: colors.border, gap: 14 }}>
-            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Crear Squad</Text>
+            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>{t('competitive.squads.createSquad', 'Crear Squad')}</Text>
             <TextInput
               style={[styles.input, { color: colors.textPrimary, borderColor: colors.border, backgroundColor: colors.background }]}
-              placeholder="Nombre de tu Squad..."
+              placeholder={t('competitive.squads.squadNamePlaceholder', 'Nombre de tu Squad...')}
               placeholderTextColor={colors.textMuted}
               value={squadName}
               onChangeText={setSquadName}
             />
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <TouchableOpacity style={[styles.modalBtn, { backgroundColor: colors.primary }]} onPress={handleCreate}>
-                <Text style={styles.modalBtnText}>Crear</Text>
+                <Text style={styles.modalBtnText}>{t('common.create', 'Crear')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.modalBtnOutline, { borderColor: colors.border }]} onPress={() => setShowCreate(false)}>
-                <Text style={[styles.modalBtnText, { color: colors.textSecondary }]}>Cancelar</Text>
+                <Text style={[styles.modalBtnText, { color: colors.textSecondary }]}>{t('common.cancel', 'Cancelar')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -935,10 +935,10 @@ export default function FitGOCompetitive() {
       <Modal visible={showJoin} transparent animationType="fade" onRequestClose={() => setShowJoin(false)}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
           <View style={{ width: '100%', backgroundColor: colors.surface, borderRadius: 24, padding: 24, borderWidth: 1.5, borderColor: colors.border, gap: 14 }}>
-            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Unirme con Código</Text>
+            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>{t('competitive.squads.joinWithCode', 'Unirme con Código')}</Text>
             <TextInput
               style={[styles.input, { color: colors.textPrimary, borderColor: colors.border, backgroundColor: colors.background }]}
-              placeholder="Código del Squad (ej: ab12cd34)"
+              placeholder={t('competitive.squads.codePlaceholder', 'Código del Squad (ej: ab12cd34)')}
               placeholderTextColor={colors.textMuted}
               value={joinCode}
               onChangeText={setJoinCode}
@@ -946,10 +946,10 @@ export default function FitGOCompetitive() {
             />
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <TouchableOpacity style={[styles.modalBtn, { backgroundColor: colors.primary }]} onPress={handleJoin}>
-                <Text style={styles.modalBtnText}>Unirme</Text>
+                <Text style={styles.modalBtnText}>{t('competitive.squads.join', 'Unirme')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.modalBtnOutline, { borderColor: colors.border }]} onPress={() => setShowJoin(false)}>
-                <Text style={[styles.modalBtnText, { color: colors.textSecondary }]}>Cancelar</Text>
+                <Text style={[styles.modalBtnText, { color: colors.textSecondary }]}>{t('common.cancel', 'Cancelar')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -988,7 +988,7 @@ export default function FitGOCompetitive() {
                     </View>
                   </View>
 
-                  <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 16, paddingHorizontal: 4 }]}>Integrantes del Squad</Text>
+                  <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 16, paddingHorizontal: 4 }]}>{t('competitive.squads.members', 'Integrantes del Squad')}</Text>
                   
                   {loadingInspectMembers ? (
                     <ActivityIndicator color={colors.primary} style={{ marginVertical: 30 }} />
@@ -997,7 +997,7 @@ export default function FitGOCompetitive() {
                       {inspectingSquadMembers.length > 0 ? inspectingSquadMembers.map((m, i) => (
                         <MemberRow key={m.user_id} member={m} rank={i + 1} />
                       )) : (
-                        <Text style={{ color: colors.textSecondary, textAlign: 'center' }}>No hay integrantes visibles.</Text>
+                        <Text style={{ color: colors.textSecondary, textAlign: 'center' }}>{t('competitive.squads.noMembers', 'No hay integrantes visibles.')}</Text>
                       )}
                     </View>
                   )}
@@ -1005,7 +1005,7 @@ export default function FitGOCompetitive() {
                   {isMySquad ? (
                     <View style={[styles.infoChip, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}>
                       <Star size={14} color={colors.primary} fill={colors.primary} />
-                      <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 13 }}>Estás en este squad</Text>
+                      <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 13 }}>{t('competitive.squads.youAreHere', 'Estás en este squad')}</Text>
                     </View>
                   ) : (
                     <TouchableOpacity
@@ -1023,7 +1023,7 @@ export default function FitGOCompetitive() {
                         style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                       >
                         <Plus size={18} color="#fff" />
-                        <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>Solicitar Unirse</Text>
+                        <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>{t('competitive.squads.requestJoin', 'Solicitar Unirse')}</Text>
                       </LinearGradient>
                     </TouchableOpacity>
                   )}
@@ -1046,13 +1046,13 @@ export default function FitGOCompetitive() {
               <X size={18} color={colors.textSecondary} />
             </TouchableOpacity>
 
-            <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 16, paddingHorizontal: 4 }]}>Invitar Amigos al Squad</Text>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 16, paddingHorizontal: 4 }]}>{t('competitive.squads.inviteFriendsTitle', 'Invitar Amigos al Squad')}</Text>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
               {socialStore.isFriendsLoading ? (
                 <ActivityIndicator color={colors.primary} style={{ marginVertical: 30 }} />
               ) : socialStore.friends.filter(f => f.status === 'accepted').length === 0 ? (
-                <Text style={{ color: colors.textSecondary, textAlign: 'center', marginTop: 20 }}>No tienes amigos agregados aún para invitar.</Text>
+                <Text style={{ color: colors.textSecondary, textAlign: 'center', marginTop: 20 }}>{t('competitive.squads.noFriendsToInvite', 'No tienes amigos agregados aún para invitar.')}</Text>
               ) : (
                 <View style={{ gap: 12 }}>
                   {socialStore.friends.filter(f => f.status === 'accepted').map(f => {
@@ -1085,7 +1085,7 @@ export default function FitGOCompetitive() {
                           }}
                         >
                           <Text style={{ color: isInvited ? colors.textSecondary : '#fff', fontWeight: 'bold', fontSize: 13 }}>
-                            {isInvited ? 'Enviado ✓' : 'Invitar'}
+                            {isInvited ? t('competitive.squads.sent', 'Enviado ✓') : t('competitive.squads.inviteBtn', 'Invitar')}
                           </Text>
                         </TouchableOpacity>
                       </View>
@@ -1148,7 +1148,7 @@ export default function FitGOCompetitive() {
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 32 }}>
                   <View style={{ alignItems: 'center', flex: 1 }}>
                     <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: '900' }}>{rankPos}</Text>
-                    <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 4 }}>Ranking</Text>
+                    <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 4 }}>{t('competitive.ranking', 'Ranking')}</Text>
                   </View>
                   <View style={{ alignItems: 'center', flex: 1 }}>
                     <Text style={{ color: colors.secondary || '#A855F7', fontSize: 18, fontWeight: '900' }}>{Math.round(inspectingUser.points)}</Text>
@@ -1158,7 +1158,7 @@ export default function FitGOCompetitive() {
                     <View style={{ backgroundColor: grade.bg, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8 }}>
                       <Text style={{ color: grade.color, fontSize: 16, fontWeight: '900' }}>{grade.label}</Text>
                     </View>
-                    <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 4 }}>Clase</Text>
+                    <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 4 }}>{t('competitive.class', 'Clase')}</Text>
                   </View>
                 </View>
 
@@ -1175,7 +1175,7 @@ export default function FitGOCompetitive() {
                     }}
                   >
                     <Users size={18} color={colors.textPrimary} />
-                    <Text style={{ color: colors.textPrimary, fontSize: 15, fontWeight: '800' }}>Ver Perfil Completo</Text>
+                    <Text style={{ color: colors.textPrimary, fontSize: 15, fontWeight: '800' }}>{t('social.viewFullProfile', 'Ver Perfil Completo')}</Text>
                   </TouchableOpacity>
 
                   {!isMe && (
@@ -1194,17 +1194,17 @@ export default function FitGOCompetitive() {
                       {isFriend ? (
                         <>
                           <Text style={{ color: '#10B981', fontSize: 18 }}>✓</Text>
-                          <Text style={{ color: '#10B981', fontSize: 15, fontWeight: '800' }}>Son Amigos</Text>
+                          <Text style={{ color: '#10B981', fontSize: 15, fontWeight: '800' }}>{t('social.friends.alreadyFriends', 'Son Amigos')}</Text>
                         </>
                       ) : isPending ? (
                         <>
                           <Text style={{ color: '#F59E0B', fontSize: 18 }}>⌛</Text>
-                          <Text style={{ color: '#F59E0B', fontSize: 15, fontWeight: '800' }}>Pendiente</Text>
+                          <Text style={{ color: '#F59E0B', fontSize: 15, fontWeight: '800' }}>{t('social.friends.pending', 'Pendiente')}</Text>
                         </>
                       ) : (
                         <>
                           <Plus size={18} color={colors.primary} />
-                          <Text style={{ color: colors.primary, fontSize: 15, fontWeight: '800' }}>Añadir a Amigos</Text>
+                          <Text style={{ color: colors.primary, fontSize: 15, fontWeight: '800' }}>{t('social.friends.addFriend', 'Añadir a Amigos')}</Text>
                         </>
                       )}
                     </TouchableOpacity>

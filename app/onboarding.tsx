@@ -1100,7 +1100,7 @@ function DietStep({ data, onChange }: { data: Partial<OnboardingData>; onChange:
           <Text style={[step.sub, { color: colors.textSecondary }]}>{t('onboarding.foodsSub')}</Text>
           {totalSelected > 0 && (
             <View style={[step.selectedBadge, { backgroundColor: colors.primary }]}>
-              <Text style={step.selectedBadgeText}>{totalSelected} seleccionados</Text>
+              <Text style={step.selectedBadgeText}>{totalSelected} {t('onboarding.selectedCount')}</Text>
             </View>
           )}
         </LinearGradient>
@@ -1111,7 +1111,7 @@ function DietStep({ data, onChange }: { data: Partial<OnboardingData>; onChange:
         <Search size={18} color={searchQuery ? colors.primary : colors.textSecondary} />
         <TextInput
           style={[step.searchInput, { color: colors.textPrimary }]}
-          placeholder="Buscar alimento..."
+          placeholder={t('onboarding.searchFood')}
           placeholderTextColor={colors.textSecondary}
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -1127,8 +1127,8 @@ function DietStep({ data, onChange }: { data: Partial<OnboardingData>; onChange:
       {searchQuery.trim() && filteredCategories.length === 0 && (
         <View style={{ alignItems: 'center', paddingVertical: 40 }}>
           <Text style={{ fontSize: 32, marginBottom: 10 }}>🔍</Text>
-          <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 17 }}>Sin resultados</Text>
-          <Text style={{ color: colors.textSecondary, marginTop: 4 }}>Intenta con otro término</Text>
+          <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 17 }}>{t('common.noResults', 'Sin resultados')}</Text>
+          <Text style={{ color: colors.textSecondary, marginTop: 4 }}>{t('common.tryAnotherTerm', 'Intenta con otro término')}</Text>
         </View>
       )}
 
@@ -1150,7 +1150,7 @@ function DietStep({ data, onChange }: { data: Partial<OnboardingData>; onChange:
               <View style={{ flex: 1, marginLeft: 12 }}>
                 <Text style={[step.catTitle, { color: colors.textPrimary }]}>{t(`onboarding.${cat.title}`)}</Text>
                 <Text style={[step.catSub, { color: colors.textSecondary }]}>
-                  {catSelected}/{cat.items.length} seleccionados{cat.min > 0 ? ` • min ${cat.min}` : ''}
+                  {catSelected}/{cat.items.length} {t('onboarding.selectedCount')}{cat.min > 0 ? ` • min ${cat.min}` : ''}
                 </Text>
               </View>
               {catSelected > 0 && (
@@ -1179,7 +1179,7 @@ function DietStep({ data, onChange }: { data: Partial<OnboardingData>; onChange:
               <View style={step.itemsSection}>
                 <TouchableOpacity onPress={() => selectAll(cat.items)} style={step.selectAllBtn}>
                   <Text style={[step.selectAllText, { color: meta.gradient[0] }]}>
-                    {cat.items.every(i => (data.availableFoods ?? []).includes(i.id)) ? '✓ Todo seleccionado' : 'Seleccionar todo'}
+                    {cat.items.every(i => (data.availableFoods ?? []).includes(i.id)) ? `✓ ${t('onboarding.allSelected')}` : t('onboarding.selectAll')}
                   </Text>
                 </TouchableOpacity>
                 <View style={step.dietGrid}>
@@ -1503,19 +1503,19 @@ function TermsStep({ data, onChange }: { data: Partial<OnboardingData>; onChange
 
         <View style={{ flex: 1 }}>
           <Text style={{ color: colors.textPrimary, fontSize: 15, lineHeight: 22 }}>
-            He leído y acepto los{' '}
+            {t('auth.termsRead')}{' '}
             <Text 
               style={{ color: colors.primary, fontWeight: '700', textDecorationLine: 'underline' }}
               onPress={(e) => { e.stopPropagation(); router.push({ pathname: '/(auth)/terms', params: { tab: 'terms' } } as any); }}
             >
-              Términos y Condiciones
+              {t('auth.termsLink')}
             </Text>
-            {' '}y la{' '}
+            {' '}{t('auth.termsAnd')}{' '}
             <Text 
               style={{ color: colors.primary, fontWeight: '700', textDecorationLine: 'underline' }}
               onPress={(e) => { e.stopPropagation(); router.push({ pathname: '/(auth)/terms', params: { tab: 'privacy' } } as any); }}
             >
-              Política de Privacidad
+              {t('auth.privacyLink')}
             </Text>
             .
           </Text>

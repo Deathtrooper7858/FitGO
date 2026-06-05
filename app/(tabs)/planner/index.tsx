@@ -700,7 +700,13 @@ export default function PlannerScreen() {
                 <Text style={[s.equipmentSub, { color: colors.textSecondary }]}>{t('planner.equipmentSub', '¿Qué equipo tienes disponible?')}</Text>
                 
                 <View style={s.equipmentChips}>
-                  {['Mancuernas', 'Barra de dominadas', 'Bandas elásticas', 'Barras paralelas', 'Kettlebell'].map((item) => {
+                  {[
+                    t('planner.eqDumbbells', 'Mancuernas'),
+                    t('planner.eqPullup', 'Barra de dominadas'),
+                    t('planner.eqBands', 'Bandas elásticas'),
+                    t('planner.eqParallel', 'Barras paralelas'),
+                    t('planner.eqKettlebell', 'Kettlebell')
+                  ].map((item) => {
                     const isSelected = homeEquipment.toLowerCase().includes(item.toLowerCase());
                     return (
                       <TouchableOpacity

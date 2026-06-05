@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import * as SecureStore from 'expo-secure-store';
 import { ThemeMode, AppLanguage, MassUnit, VolumeUnit, LengthUnit, EnergyUnit, TempUnit, Reminder } from './types';
+import { useRecipesStore } from './recipesStore';
+
 
 // Secure storage adapter for Zustand
 const secureStorage = {
@@ -55,7 +57,11 @@ export const useSettingsStore = create<SettingsState>()(
       tempUnit: 'c',
       reminders: DEFAULT_REMINDERS,
       setTheme: (theme) => set({ theme }),
-      setLanguage: (language) => set({ language }),
+      setLanguage: (language) => {
+        // Clear cached search recipes so they regenerate in the new language
+        useRecipesStore.getState().setRecipes([]);
+        set({ language });
+      },
       setMassUnit: (massUnit) => set({ massUnit }),
       setVolumeUnit: (volumeUnit) => set({ volumeUnit }),
       setLengthUnit: (lengthUnit) => set({ lengthUnit }),

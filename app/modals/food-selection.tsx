@@ -298,8 +298,8 @@ export default function FoodSelectionModal() {
         {searchQuery.trim() && filteredCategories.length === 0 && (
           <View style={s.noResultsWrap}>
             <Text style={{ fontSize: 32, marginBottom: 12 }}>🔍</Text>
-            <Text style={[s.noResultsText, { color: colors.textPrimary }]}>Sin resultados</Text>
-            <Text style={[s.noResultsSub, { color: colors.textSecondary }]}>Intenta con otro término</Text>
+            <Text style={[s.noResultsText, { color: colors.textPrimary }]}>{t('common.noResults', 'Sin resultados')}</Text>
+            <Text style={[s.noResultsSub, { color: colors.textSecondary }]}>{t('common.tryAnotherTerm', 'Intenta con otro término')}</Text>
           </View>
         )}
 

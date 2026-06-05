@@ -95,7 +95,7 @@ export default function ProgressEvaluationModal() {
       addEvaluation(newEvaluation);
     } catch (error) {
       console.error(error);
-      alert(t('common.error', 'Ocurrió un error al analizar la imagen.'));
+      alert(t('evaluation.error', 'Ocurrió un error al analizar la imagen.'));
     } finally {
       setIsAnalyzing(false);
     }
@@ -181,7 +181,7 @@ export default function ProgressEvaluationModal() {
                    <Image source={{ uri: e.base64ImageData || e.uri }} style={s.historyThumb} />
                    <View style={s.historyInfo}>
                      <Text style={[s.historyDate, { color: colors.textPrimary }]}>{e.date}</Text>
-                     <Text style={[s.historyFat, { color: colors.textSecondary }]}>Grasa: {e.estimatedFatPercentage}</Text>
+                     <Text style={[s.historyFat, { color: colors.textSecondary }]}>{t('evaluation.fatLabel', 'Grasa')}: {e.estimatedFatPercentage}</Text>
                    </View>
                    <ChevronRight size={20} color={colors.textSecondary} />
                  </TouchableOpacity>
@@ -215,7 +215,7 @@ export default function ProgressEvaluationModal() {
           </View>
         ) : (
           <View style={s.imageSection}>
-            <Image source={{ uri: imageUri }} style={s.previewImage} />
+            <Image source={{ uri: imageUri }} style={s.previewImage} resizeMode="cover" />
             
             {!result && !isAnalyzing && (
               <View style={s.buttonRowImage}>
@@ -267,7 +267,7 @@ const s = StyleSheet.create({
   historyBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: Spacing.xl, padding: Spacing.md, borderRadius: Radius.lg, width: '100%', justifyContent: 'center' },
   historyBtnText: { fontSize: 16, fontWeight: '600' },
   imageSection: { alignItems: 'center' },
-  previewImage: { width: '100%', height: 400, borderRadius: Radius.xl, contentFit: 'cover' },
+  previewImage: { width: '100%', height: 400, borderRadius: Radius.xl },
   buttonRowImage: { flexDirection: 'row', gap: Spacing.md, width: '100%', marginTop: Spacing.lg },
   secondaryBtn: { flex: 1, height: 50, borderRadius: Radius.full, justifyContent: 'center', alignItems: 'center' },
   secondaryBtnText: { fontSize: 16, fontWeight: '600' },

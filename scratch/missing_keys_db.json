@@ -1,157 +1,137 @@
 {
-  "profile.changeToKg": {
-    "files": [
-      "onboarding.tsx"
-    ],
-    "defaults": []
-  },
-  "profile.changeToLbs": {
-    "files": [
-      "onboarding.tsx"
-    ],
-    "defaults": []
-  },
-  "profile.changeToCm": {
-    "files": [
-      "onboarding.tsx"
-    ],
-    "defaults": []
-  },
-  "profile.changeToFt": {
-    "files": [
-      "onboarding.tsx"
-    ],
-    "defaults": []
-  },
-  "common.warning": {
-    "files": [
-      "onboarding.tsx",
-      "index.tsx",
-      "health-profile.tsx"
-    ],
-    "defaults": [
-      "Advertencia",
-      "Aviso"
-    ]
-  },
-  "common.today": {
-    "files": [
-      "onboarding.tsx"
-    ],
-    "defaults": [
-      "Hoy"
-    ]
-  },
   "auth.emailRequired": {
     "files": [
       "forgot-password.tsx"
     ],
     "defaults": []
   },
-  "tracker.yesterday": {
+  "planner.confirmGenNutritionTitle": {
     "files": [
       "index.tsx"
     ],
     "defaults": [
-      "Ayer"
+      "¿Generar Plan Nutricional?"
     ]
   },
-  "dashboard.evaluationWidget": {
+  "planner.confirmGenWorkoutTitle": {
     "files": [
       "index.tsx"
     ],
     "defaults": [
-      "Evaluación IA"
+      "¿Generar Plan de Entrenamiento?"
     ]
   },
-  "dashboard.evaluatePhysique": {
+  "planner.confirmCalorieInfo": {
     "files": [
-      "progress-evaluation.tsx",
       "index.tsx"
     ],
     "defaults": [
-      "Evaluación Físca IA",
-      "Evaluar Físico"
+      "El plan será calculado para"
     ]
   },
-  "dashboard.getAIFeedback": {
+  "planner.confirmCalorieInfo2": {
     "files": [
       "index.tsx"
     ],
     "defaults": [
-      "Recibe feedback IA"
+      "según tu perfil y objetivos."
     ]
   },
-  "dashboard.muscleDirWidget": {
+  "planner.confirmFoodsLabel": {
     "files": [
       "index.tsx"
     ],
     "defaults": [
-      "Ejercicios"
+      "Alimentos disponibles"
     ]
   },
-  "dashboard.muscleDirTitle": {
+  "planner.confirmNoFoods": {
     "files": [
       "index.tsx"
     ],
     "defaults": [
-      "Directorio"
+      "No has especificado alimentos. La IA elegirá opciones saludables y variadas."
     ]
   },
-  "dashboard.muscleDirSub": {
+  "planner.confirmContextTitle": {
     "files": [
       "index.tsx"
     ],
     "defaults": [
-      "Por músculos"
+      "Plan optimizado para"
     ]
   },
-  "profile.activeGoal": {
+  "planner.confirmMedicalLabel": {
     "files": [
       "index.tsx"
     ],
     "defaults": [
-      "Objetivo Activo"
+      "Condiciones a considerar"
     ]
   },
-  "dashboard.weight": {
+  "planner.confirmEquipmentLabel": {
     "files": [
       "index.tsx"
     ],
     "defaults": [
-      "Peso"
+      "Implementos disponibles (Casa)"
     ]
   },
-  "common.greeting": {
+  "planner.confirmNoEquipment": {
     "files": [
       "index.tsx"
     ],
     "defaults": [
-      "Hola"
+      "Verifica que tienes los implementos necesarios. Si no indicas ninguno, el plan será solo con peso corporal."
     ]
   },
-  "planner.planFor": {
+  "planner.confirmDisclaimer": {
     "files": [
       "index.tsx"
     ],
     "defaults": [
-      "Plan para:"
+      "Este plan es generado por IA y no reemplaza el consejo de un profesional de la salud. Consulta a un dietista o médico antes de seguirlo."
     ]
   },
-  "planner.homeWorkoutTitle": {
+  "planner.confirmGenerate": {
     "files": [
       "index.tsx"
     ],
     "defaults": [
-      "Entrenamiento en Casa"
+      "Generar Plan Ahora"
     ]
   },
-  "planner.homeWorkoutSub": {
+  "planner.confirmChangeFoods": {
     "files": [
       "index.tsx"
     ],
     "defaults": [
-      "Solo calistenia y peso corporal"
+      "Cambiar Alimentos Disponibles"
+    ]
+  },
+  "planner.resetWarningTitle": {
+    "files": [
+      "index.tsx"
+    ],
+    "defaults": [
+      "¡Plan semanal por expirar!"
+    ]
+  },
+  "planner.resetWarningDesc": {
+    "files": [
+      "index.tsx"
+    ],
+    "defaults": [
+      "Esta noche a las 23:59 (domingo) tu plan semanal se reiniciará automáticamente. La próxima semana deberás generar un nuevo plan personalizado."
+    ]
+  },
+  "planner.pdfDisclaimer": {
+    "files": [
+      "index.tsx"
+    ],
+    "defaults": [
+      "Este plan es generado por inteligencia artificial. No reemplaza el consejo de un dietista registrado o médico. Consulte a un profesional de la salud antes de seguir este plan.",
+      "Este plan es generado por inteligencia artificial. No reemplaza el consejo de un entrenador certificado o médico. Consulte a un profesional antes de seguir este plan."
     ]
   },
   "planner.askExercise": {
@@ -160,6 +140,22 @@
     ],
     "defaults": [
       "¿Cómo hacerlo?"
+    ]
+  },
+  "planner.fullDisclaimerTitle": {
+    "files": [
+      "index.tsx"
+    ],
+    "defaults": [
+      "Descargo de responsabilidad"
+    ]
+  },
+  "planner.fullDisclaimerText": {
+    "files": [
+      "index.tsx"
+    ],
+    "defaults": [
+      "El plan generado por FitGO es producido por inteligencia artificial con fines informativos y de orientación general. No constituye consejo médico, nutricional o de salud profesional. Los resultados individuales pueden variar. Siempre consulte a un dietista registrado, nutricionista certificado o médico antes de realizar cambios significativos en su dieta o rutina de ejercicio. FitGO no se responsabiliza de ningún daño o consecuencia derivada del uso de estos planes. Este plan se renueva automáticamente cada domingo a las 23:59."
     ]
   },
   "planner.exportShoppingList": {
@@ -196,7 +192,10 @@
   },
   "profile.galleryPermission": {
     "files": [
-      "index.tsx"
+      "DoctorScreen.tsx",
+      "index.tsx",
+      "NutritionistScreen.tsx",
+      "TrainerScreen.tsx"
     ],
     "defaults": [
       "Se necesitan permisos de galería para seleccionar fotos."
@@ -204,7 +203,10 @@
   },
   "profile.galleryFailed": {
     "files": [
-      "index.tsx"
+      "DoctorScreen.tsx",
+      "index.tsx",
+      "NutritionistScreen.tsx",
+      "TrainerScreen.tsx"
     ],
     "defaults": [
       "Error al abrir la galería"
@@ -212,7 +214,10 @@
   },
   "profile.cameraPermission": {
     "files": [
-      "index.tsx"
+      "DoctorScreen.tsx",
+      "index.tsx",
+      "NutritionistScreen.tsx",
+      "TrainerScreen.tsx"
     ],
     "defaults": [
       "Se necesitan permisos de cámara para tomar fotos."
@@ -220,10 +225,21 @@
   },
   "profile.cameraFailed": {
     "files": [
-      "index.tsx"
+      "DoctorScreen.tsx",
+      "index.tsx",
+      "NutritionistScreen.tsx",
+      "TrainerScreen.tsx"
     ],
     "defaults": [
       "Error al abrir la cámara"
+    ]
+  },
+  "profile.other": {
+    "files": [
+      "index.tsx"
+    ],
+    "defaults": [
+      "Otro"
     ]
   },
   "profile.exporting": {
@@ -250,102 +266,6 @@
       "Valor"
     ]
   },
-  "onboarding.goal": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Meta"
-    ]
-  },
-  "tracker.target": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Objetivo Calorías"
-    ]
-  },
-  "common.date": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Fecha"
-    ]
-  },
-  "common.notes": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Notas"
-    ]
-  },
-  "tracker.meal": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Comida"
-    ]
-  },
-  "tracker.food": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Alimento"
-    ]
-  },
-  "tracker.grams": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Gramos"
-    ]
-  },
-  "tracker.calories": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Calorías"
-    ]
-  },
-  "tracker.protein": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Proteínas"
-    ]
-  },
-  "tracker.carbs": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Carbohidratos"
-    ]
-  },
-  "tracker.fat": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Grasas"
-    ]
-  },
-  "tracker.sleep": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Sueño (h)"
-    ]
-  },
   "profile.sheetProfile": {
     "files": [
       "index.tsx"
@@ -370,42 +290,12 @@
     ],
     "defaults": []
   },
-  "profile.exportData": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Exportar Data (Excel)"
-    ]
-  },
   "profile.exportFailed": {
     "files": [
       "index.tsx"
     ],
     "defaults": [
       "Error al exportar datos"
-    ]
-  },
-  "profile.idCopied": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": []
-  },
-  "common.ok": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Entendido"
-    ]
-  },
-  "profile.updateEmailPassword": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Actualizar correo o contraseña"
     ]
   },
   "profile.updateEmailPasswordInfo": {
@@ -416,14 +306,6 @@
       "Para actualizar tu correo o contraseña, te enviaremos un enlace de recuperación."
     ]
   },
-  "common.viewAll": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Historial"
-    ]
-  },
   "profile.addMeasurement": {
     "files": [
       "index.tsx"
@@ -432,116 +314,12 @@
       "Añadir Medición"
     ]
   },
-  "profile.userId": {
+  "profile.privacy": {
     "files": [
       "index.tsx"
     ],
     "defaults": [
-      "ID Usuario"
-    ]
-  },
-  "profile.termsAndConditions": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Términos y Condiciones"
-    ]
-  },
-  "about.version": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Versión"
-    ]
-  },
-  "tracker.consistency": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Consistencia"
-    ]
-  },
-  "tracker.last28": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Últimos 28 días"
-    ]
-  },
-  "common.less": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Menos"
-    ]
-  },
-  "common.more": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Más"
-    ]
-  },
-  "tracker.proFeature": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Función Exclusiva Pro"
-    ]
-  },
-  "tracker.proHeatmapDesc": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Desbloquea el análisis detallado de tu constancia y hábitos con FitGO Pro."
-    ]
-  },
-  "common.upgrade": {
-    "files": [
-      "index.tsx"
-    ],
-    "defaults": [
-      "Mejorar a Pro"
-    ]
-  },
-  "activities.estimateFailed": {
-    "files": [
-      "add-activity.tsx"
-    ],
-    "defaults": [
-      "No pudimos calcular las calorías. Intenta ser más específico."
-    ]
-  },
-  "activities.estimateError": {
-    "files": [
-      "add-activity.tsx"
-    ],
-    "defaults": [
-      "Error al conectar con la IA."
-    ]
-  },
-  "activities.whatDidYouDo": {
-    "files": [
-      "add-activity.tsx"
-    ],
-    "defaults": [
-      "¿Qué actividad hiciste?"
-    ]
-  },
-  "activities.aiInstructions": {
-    "files": [
-      "add-activity.tsx"
-    ],
-    "defaults": [
-      "Toca el micrófono para dictar con tu voz (ej: \"Trotemos 40 minutos en el parque\") o descríbelo en el campo de texto."
+      "Política de Privacidad"
     ]
   },
   "scan.transcribing": {
@@ -560,213 +338,12 @@
       "Toca el micrófono para dictar con voz"
     ]
   },
-  "activities.customPlaceholder": {
-    "files": [
-      "add-activity.tsx"
-    ],
-    "defaults": [
-      "Ej: Boxeo intensivo, Caminata rápida..."
-    ]
-  },
-  "activities.estimate": {
-    "files": [
-      "add-activity.tsx"
-    ],
-    "defaults": [
-      "Calcular calorías con IA"
-    ]
-  },
-  "activities.selectDescription": {
-    "files": [
-      "add-activity.tsx"
-    ],
-    "defaults": [
-      "Selecciona o describe un ejercicio para registrar tu progreso"
-    ]
-  },
-  "activities.customDesc": {
-    "files": [
-      "add-activity.tsx"
-    ],
-    "defaults": [
-      "Describe tu ejercicio por voz o texto y calcula calorías automáticamente"
-    ]
-  },
-  "activities.searchResults": {
-    "files": [
-      "add-activity.tsx"
-    ],
-    "defaults": [
-      "Resultados de búsqueda"
-    ]
-  },
-  "activities.noExercises": {
-    "files": [
-      "add-activity.tsx"
-    ],
-    "defaults": [
-      "No encontramos actividades que coincidan."
-    ]
-  },
-  "profile.editHealthProfile": {
-    "files": [
-      "health-profile.tsx"
-    ],
-    "defaults": [
-      "Edit Health Profile"
-    ]
-  },
-  "dashboard.muscleDirectory": {
-    "files": [
-      "MuscleDirectoryWidget.tsx",
-      "muscle-directory.tsx"
-    ],
-    "defaults": [
-      "Directorio Muscular"
-    ]
-  },
   "workout.instructions": {
     "files": [
       "muscle-directory.tsx"
     ],
     "defaults": [
       "Instrucciones"
-    ]
-  },
-  "common.cameraPermissionDenied": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Se necesita permiso para la cámara."
-    ]
-  },
-  "common.galleryPermissionDenied": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Se necesita permiso para la galería."
-    ]
-  },
-  "evaluation.feedbackTitle": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Veredicto del Coach"
-    ]
-  },
-  "evaluation.estFat": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Grasa Est."
-    ]
-  },
-  "evaluation.strengths": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Puntos Fuertes"
-    ]
-  },
-  "evaluation.improvements": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Áreas de Mejora"
-    ]
-  },
-  "evaluation.newAnalysis": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Nuevo Análisis"
-    ]
-  },
-  "evaluation.history": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Historial de Evaluaciones"
-    ]
-  },
-  "evaluation.noHistory": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Aún no hay evaluaciones."
-    ]
-  },
-  "evaluation.instruction": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Sube o toma una foto de tu físico actual para recibir un análisis detallado de la IA sobre tus puntos fuertes y áreas a mejorar."
-    ]
-  },
-  "common.camera": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Cámara"
-    ]
-  },
-  "common.gallery": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Galería"
-    ]
-  },
-  "evaluation.viewHistory": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Ver Historial"
-    ]
-  },
-  "common.retake": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Cambiar"
-    ]
-  },
-  "evaluation.analyzeBtn": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Analizar Físico"
-    ]
-  },
-  "evaluation.analyzing": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Analizando tu desarrollo muscular..."
-    ]
-  },
-  "evaluation.backToMain": {
-    "files": [
-      "progress-evaluation.tsx"
-    ],
-    "defaults": [
-      "Volver al Inicio"
     ]
   },
   "scan.limitReachedSubPhoto": {
@@ -781,112 +358,111 @@
     ],
     "defaults": []
   },
-  "sleep.bedtime": {
+  "social.challenges.aiSuggestion": {
     "files": [
-      "sleep.tsx"
+      "social.tsx"
     ],
     "defaults": [
-      "Hora de dormir"
+      "Sugerencia de Fitz (IA)"
     ]
   },
-  "sleep.waketime": {
+  "social.challenges.createNew": {
     "files": [
-      "sleep.tsx"
+      "social.tsx"
     ],
     "defaults": [
-      "Hora de despertar"
+      "Crear Nuevo Reto"
     ]
   },
-  "sleep.tip": {
+  "social.challenges.customGoalLabel": {
     "files": [
-      "sleep.tsx"
+      "social.tsx"
     ],
     "defaults": [
-      "Los adultos necesitan entre 7 y 9 horas de sueño para una recuperación óptima."
+      "Objetivo personalizado"
     ]
   },
-  "coach.history": {
+  "social.challenges.goalTitle": {
     "files": [
-      "CoachHistoryModal.tsx"
+      "social.tsx"
     ],
     "defaults": [
-      "History"
+      "Objetivo"
     ]
   },
-  "coach.newChat": {
+  "social.challenges.caloriesPerDay": {
     "files": [
-      "CoachHistoryModal.tsx"
+      "social.tsx"
     ],
     "defaults": [
-      "New Chat"
+      "Calorías por día"
     ]
   },
-  "coach.noHistory": {
+  "social.challenges.whoParticipates": {
     "files": [
-      "CoachHistoryModal.tsx"
+      "FitGOChallenges.tsx",
+      "social.tsx"
     ],
     "defaults": [
-      "No history yet"
+      "¿Quiénes participan?"
     ]
   },
-  "coach.confirmDeleteSession": {
+  "social.challenges.tapToSelect": {
     "files": [
-      "CoachHistoryModal.tsx"
+      "FitGOChallenges.tsx",
+      "social.tsx"
     ],
     "defaults": [
-      "Are you sure you want to delete this chat?"
+      "Toca para seleccionar. Puedes incluirte a ti y a varios amigos."
     ]
   },
-  "coach.taglineBadge": {
+  "social.challenges.meAndFriends": {
     "files": [
-      "DoctorScreen.tsx",
-      "NutritionistScreen.tsx",
-      "TrainerScreen.tsx"
+      "social.tsx"
     ],
     "defaults": [
-      "IA Personalizada • Groq"
+      "Yo + {{count}} amigos"
     ]
   },
-  "coach.suggestionsTitle": {
+  "social.challenges.challengeFriends": {
     "files": [
-      "DoctorScreen.tsx",
-      "NutritionistScreen.tsx",
-      "TrainerScreen.tsx"
+      "social.tsx"
     ],
     "defaults": [
-      "Sugerencias para empezar"
+      "Retar a {{count}} amigos"
     ]
   },
-  "coach.pickImageTitle": {
+  "social.friends.alreadyFriends": {
     "files": [
-      "ImagePickerModal.tsx"
+      "social.tsx",
+      "FitGOCompetitive.tsx"
     ],
     "defaults": [
-      "Seleccionar Imagen"
+      "Son Amigos"
     ]
   },
-  "coach.pickImageSub": {
+  "social.friends.add": {
     "files": [
-      "ImagePickerModal.tsx"
+      "social.tsx"
     ],
     "defaults": [
-      "¿Desde dónde quieres subir la foto?"
+      "Añadir Amigo"
     ]
   },
-  "coach.camera": {
+  "social.challenges.participate": {
     "files": [
-      "ImagePickerModal.tsx"
+      "social.tsx"
     ],
     "defaults": [
-      "Cámara"
+      "Participar en el reto"
     ]
   },
-  "coach.gallery": {
+  "social.friends.friends": {
     "files": [
-      "ImagePickerModal.tsx"
+      "user-profile.tsx"
     ],
     "defaults": [
-      "Galería"
+      "Amigos"
     ]
   },
   "profile.photoSourceTitle": {
@@ -936,5 +512,275 @@
     "defaults": [
       "Selecciona una imagen existente"
     ]
+  },
+  "profile.goalReached": {
+    "files": [
+      "WeightProgressPath.tsx"
+    ],
+    "defaults": [
+      "¡Logrado!"
+    ]
+  },
+  "social.challenges.goal": {
+    "files": [
+      "FitGOChallenges.tsx"
+    ],
+    "defaults": [
+      "Objetivo"
+    ]
+  },
+  "competitive.squads.invitedToSquad": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Te ha invitado a un squad."
+    ]
+  },
+  "competitive.squads.leave": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Salir"
+    ]
+  },
+  "competitive.squads.noSquads": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Aún no hay squads en el ranking."
+    ]
+  },
+  "competitive.squads.beFirst": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "¡Sé el primero!"
+    ]
+  },
+  "competitive.squads.generalRanking": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Clasificación General"
+    ]
+  },
+  "competitive.individual.subtitle": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Ranking individual de usuarios"
+    ]
+  },
+  "competitive.points.logMeal": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Registrar una comida"
+    ]
+  },
+  "competitive.points.perfectMacros": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Macros perfectos (±5%)"
+    ]
+  },
+  "competitive.points.squadSynergy": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Sinergia de Squad"
+    ]
+  },
+  "competitive.streak.days3to7": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "3–7 días"
+    ]
+  },
+  "competitive.streak.days8to14": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "8–14 días"
+    ]
+  },
+  "competitive.streak.days15plus": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "15+ días"
+    ]
+  },
+  "competitive.squads.removeMemberTitle": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Expulsar integrante"
+    ]
+  },
+  "competitive.squads.removeMemberMsg": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "¿Estás seguro de que quieres expulsar a {{name}} del squad?"
+    ]
+  },
+  "competitive.squads.remove": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Expulsar"
+    ]
+  },
+  "competitive.squads.squadNamePlaceholder": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Nombre de tu Squad..."
+    ]
+  },
+  "competitive.squads.joinWithCode": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Unirme con Código"
+    ]
+  },
+  "competitive.squads.codePlaceholder": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Código del Squad (ej: ab12cd34)"
+    ]
+  },
+  "competitive.squads.join": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Unirme"
+    ]
+  },
+  "competitive.squads.noMembers": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "No hay integrantes visibles."
+    ]
+  },
+  "competitive.squads.youAreHere": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Estás en este squad"
+    ]
+  },
+  "competitive.squads.requestJoin": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Solicitar Unirse"
+    ]
+  },
+  "competitive.squads.noFriendsToInvite": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "No tienes amigos agregados aún para invitar."
+    ]
+  },
+  "competitive.squads.sent": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Enviado ✓"
+    ]
+  },
+  "competitive.squads.inviteBtn": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Invitar"
+    ]
+  },
+  "social.friends.addFriend": {
+    "files": [
+      "FitGOCompetitive.tsx"
+    ],
+    "defaults": [
+      "Añadir a Amigos"
+    ]
+  },
+  "social.friends.search": {
+    "files": [
+      "FitGOSocial.tsx"
+    ],
+    "defaults": [
+      "Search"
+    ]
+  },
+  "social.friends.requests": {
+    "files": [
+      "FitGOSocial.tsx"
+    ],
+    "defaults": [
+      "Requests"
+    ]
+  },
+  "social.friends.noResults": {
+    "files": [
+      "FitGOSocial.tsx"
+    ],
+    "defaults": [
+      "No results found."
+    ]
+  },
+  "social.friends.noReceived": {
+    "files": [
+      "FitGOSocial.tsx"
+    ],
+    "defaults": [
+      "No received requests."
+    ]
+  },
+  "social.friends.noSent": {
+    "files": [
+      "FitGOSocial.tsx"
+    ],
+    "defaults": [
+      "No sent requests."
+    ]
+  },
+  "social.tabs.": {
+    "files": [
+      "FitGOSocial.tsx"
+    ],
+    "defaults": []
   }
 }
