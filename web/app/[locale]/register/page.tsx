@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Zap, Mail, Lock, AlertCircle, ArrowRight, User } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import { useTranslations } from "next-intl";
 
 export default function RegisterPage() {
+  const t = useTranslations("auth.register");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -69,7 +71,7 @@ export default function RegisterPage() {
             </h1>
           </Link>
           <p className="text-text-secondary mt-2">
-            Únete a la revolución del fitness gamificado.
+            {t("title")}
           </p>
         </div>
 
@@ -90,7 +92,7 @@ export default function RegisterPage() {
                 <input
                   type="text"
                   required
-                  placeholder="Nombre completo"
+                  placeholder={t("name")}
                   className="input-dark pl-11"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -104,7 +106,7 @@ export default function RegisterPage() {
                 <input
                   type="email"
                   required
-                  placeholder="Correo electrónico"
+                  placeholder={t("email")}
                   className="input-dark pl-11"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -118,7 +120,7 @@ export default function RegisterPage() {
                 <input
                   type="password"
                   required
-                  placeholder="Contraseña"
+                  placeholder={t("password")}
                   className="input-dark pl-11"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -132,18 +134,18 @@ export default function RegisterPage() {
               className="btn-primary w-full justify-center mt-4 text-base"
               style={{ opacity: loading ? 0.7 : 1 }}
             >
-              {loading ? "Creando cuenta..." : "Comenzar gratis"}
+              {loading ? t("loading") : t("btn")}
               {!loading && <ArrowRight size={18} />}
             </button>
           </form>
 
           <div className="mt-8 text-center text-sm text-text-secondary">
-            ¿Ya tienes cuenta?{" "}
+            {t("hasAccount")}{" "}
             <Link
               href="/login"
               className="text-primary font-bold hover:text-primary-light transition-colors"
             >
-              Inicia sesión
+              {t("login")}
             </Link>
           </div>
         </div>
