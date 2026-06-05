@@ -1,0 +1,166 @@
+{
+  "super_admin": {
+    "label": "Super Admin",
+    "description": "Acceso total al sistema y herramientas de administración."
+  },
+  "admin": {
+    "label": "Administrador",
+    "description": "Control de moderación de contenido y soporte."
+  },
+  "pro": {
+    "label": "Miembro Pro",
+    "description": "Suscripción activa en FitGO Premium."
+  },
+  "beast_mode": {
+    "label": "Beast Mode",
+    "description": "Otorgado por completar entrenamientos intensos y consistencia."
+  },
+  "verified": {
+    "label": "Verificado",
+    "description": "Usuario con cuenta verificada en FitGO."
+  },
+  "early_adopter": {
+    "label": "Pionero",
+    "description": "Parte de los primeros usuarios de la plataforma."
+  },
+  "fitness_enthusiast": {
+    "label": "Entusiasta Fitness",
+    "description": "Registra entrenamientos regulares y dedicación."
+  },
+  "water_champion": {
+    "label": "Aquamán",
+    "description": "Desbloqueado por lograr una hidratación perfecta (>2L)."
+  },
+  "sleep_legend": {
+    "label": "Leyenda del Sueño",
+    "description": "Desbloqueado por dormir más de 8 horas de forma óptima."
+  },
+  "protein_boss": {
+    "label": "Jefe de la Proteína",
+    "description": "Desbloqueado por alcanzar tu meta proteica diaria."
+  },
+  "streak_master": {
+    "label": "Mes de Hierro",
+    "description": "Desbloqueado por mantener una racha de 30 días."
+  },
+  "step_hero": {
+    "label": "Héroe del Paso",
+    "description": "Desbloqueado por superar los 15,000 pasos en un día."
+  },
+  "weight_master": {
+    "label": "Señor de la Meta",
+    "description": "Desbloqueado por estar a menos de 1kg de tu peso objetivo."
+  },
+  "social_star": {
+    "label": "Estrella Social",
+    "description": "Desbloqueado por publicar activamente en la comunidad."
+  },
+  "macro_expert": {
+    "label": "Experto en Macros",
+    "description": "Desbloqueado por tener un día de macros perfectos."
+  },
+  "workout_warrior": {
+    "label": "Guerrero de Acero",
+    "description": "Desbloqueado por realizar un entrenamiento de más de 60 minutos."
+  },
+  "body_sculptor": {
+    "label": "Escultor Corporal",
+    "description": "Desbloqueado por registrar tus medidas corporales."
+  },
+  "photo_pioneer": {
+    "label": "Modelo de Cambio",
+    "description": "Desbloqueado por subir tu primera foto de progreso."
+  },
+  "century_club": {
+    "label": "Club 100",
+    "description": "Otorgado por alcanzar una racha de 100 días."
+  },
+  "year_of_fitness": {
+    "label": "Año de Hierro",
+    "description": "Otorgado por una racha perfecta de 365 días."
+  },
+  "half_marathoner": {
+    "label": "Medio Maratón",
+    "description": "Desbloqueado por registrar más de 25,000 pasos en un día."
+  },
+  "weight_transformer": {
+    "label": "Transformador",
+    "description": "Desbloqueado por un cambio de peso significativo (10kg)."
+  },
+  "hydration_god": {
+    "label": "Dios del Océano",
+    "description": "Desbloqueado por registrar 3 litros de agua en un día."
+  },
+  "friend_magnet": {
+    "label": "Imán de Amigos",
+    "description": "Desbloqueado por tener 5 o más amigos en FitGO."
+  },
+  "community_pillar": {
+    "label": "Pilar Comunitario",
+    "description": "Desbloqueado por hacer 10 publicaciones en la comunidad."
+  },
+  "workout_machine": {
+    "label": "Máquina",
+    "description": "Desbloqueado por entrenar más de 2 horas en un solo día."
+  },
+  "sleep_god": {
+    "label": "Dios del Sueño",
+    "description": "Desbloqueado por dormir más de 9 horas."
+  },
+  "early_bird": {
+    "label": "Madrugador",
+    "description": "Desayunaste antes de las 9 AM."
+  },
+  "diet_expert": {
+    "label": "Experto en Dietas",
+    "description": "30 días seguidos registrando comidas."
+  },
+  "night_owl": {
+    "label": "Ave Nocturna",
+    "description": "Registraste actividad entre las 2 y 4 AM."
+  },
+  "zen_master": {
+    "label": "Maestro Zen",
+    "description": "10 horas de Yoga registradas."
+  },
+  "iron_lungs": {
+    "label": "Pulmones de Acero",
+    "description": "Registraste una sesión de natación intensa."
+  },
+  "mountain_king": {
+    "label": "Rey de la Montaña",
+    "description": "50,000 pasos en una semana."
+  },
+  "spartan": {
+    "label": "Espartano",
+    "description": "300 días de racha perfecta."
+  },
+  "data_scientist": {
+    "label": "Científico de Datos",
+    "description": "Exportaste tus datos a Excel."
+  },
+  "ghost": {
+    "label": "Fantasma",
+    "description": "5 días activo sin publicar nada social."
+  },
+  "carnivore": {
+    "label": "Depredador",
+    "description": "Más de 250g de proteína en un día."
+  },
+  "zen_streaker": {
+    "label": "Yoga Semanal",
+    "description": "3 sesiones de yoga en una semana."
+  },
+  "speed_demon": {
+    "label": "Velocidad Flash",
+    "description": "Registro express de comida."
+  },
+  "love_reactor": {
+    "label": "Repartidor de Amor",
+    "description": "Diste tu primer like."
+  },
+  "legend_commenter": {
+    "label": "Rompe Hielos",
+    "description": "Dejaste tu primer comentario."
+  }
+}

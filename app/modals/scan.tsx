@@ -547,7 +547,7 @@ export default function ScanModal() {
           <View style={{ width: 40 }} />
         </View>
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: Spacing.base, paddingBottom: 100 }}>
-          <Image source={{ uri: capturedUri }} style={s.capturedImage} contentFit="cover" />
+          <Image source={{ uri: capturedUri }} style={s.capturedImage} resizeMode="cover" />
           <View style={[s.confidenceBadge, { borderColor: confidenceColor }]}>
             <View style={[s.confidenceDot, { backgroundColor: confidenceColor }]} />
             <Text style={[s.confidenceText, { color: confidenceColor }]}>{photoResult.confidence.toUpperCase()} {t('scan.confidence')}</Text>
@@ -802,7 +802,7 @@ export default function ScanModal() {
                     </TouchableOpacity>
                   ))}
                   {searchQuery.length > 0 && searchResults.length === 0 && !isSearching && (
-                    <Text style={{ textAlign: 'center', color: colors.textSecondary, marginTop: 20 }}>No se encontraron resultados</Text>
+                    <Text style={{ textAlign: 'center', color: colors.textSecondary, marginTop: 20 }}>{t('common.noResultsFound', 'No se encontraron resultados')}</Text>
                   )}
                 </ScrollView>
               </View>

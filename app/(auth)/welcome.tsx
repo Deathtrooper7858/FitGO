@@ -21,8 +21,8 @@ export default function WelcomeScreen() {
     { icon: <Bot size={16} color="#4ECDC4" />, label: t('welcome.feature2') },
     { icon: <BarChart3 size={16} color="#FFE66D" />, label: t('welcome.feature3') },
     { icon: <Calendar size={16} color="#C7F464" />, label: t('welcome.feature4') },
-    { icon: <Zap size={16} color="#FF9F1C" />, label: 'Guerras de Macros' },
-    { icon: <ShieldCheck size={16} color="#7C5CFC" />, label: 'Ligas Élite' },
+    { icon: <Zap size={16} color="#FF9F1C" />, label: t('welcome.feature5') },
+    { icon: <ShieldCheck size={16} color="#7C5CFC" />, label: t('welcome.feature6') },
   ];
 
   return (

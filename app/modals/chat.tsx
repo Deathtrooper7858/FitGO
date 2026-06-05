@@ -7,6 +7,7 @@ import {
 import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Send, Image as ImageIcon, Mic, Play, Pause, X } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
 import { useKeyboardNavBar } from '../../hooks/useKeyboardNavBar';
 import { Radius } from '../../constants';
@@ -79,6 +80,7 @@ const vStyles = StyleSheet.create({
 export default function ChatModal() {
   const { friendId, friendName, friendAvatar } = useLocalSearchParams<{ friendId: string; friendName: string; friendAvatar: string }>();
   const colors = useTheme();
+  const { t } = useTranslation();
   const { profile } = useAuthStore();
   const socialStore = useSocialStore();
   const insets = useSafeAreaInsets();
@@ -334,7 +336,7 @@ export default function ChatModal() {
                       onPress={() => setPreviewImage(msg.image_url!)}
                       activeOpacity={0.9}
                     >
-                      <Image source={{ uri: msg.image_url }} style={styles.chatImage} contentFit="cover" />
+                      <Image source={{ uri: msg.image_url }} style={styles.chatImage} resizeMode="cover" />
                       <Text style={[styles.messageTime, styles.imageTime]}>
                         {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </Text>
@@ -455,13 +457,13 @@ export default function ChatModal() {
               <X size={20} color="#fff" />
             </TouchableOpacity>
             {previewImage && (
-              <Image source={{ uri: previewImage }} style={styles.previewImage} contentFit="contain" />
+              <Image source={{ uri: previewImage }} style={styles.previewImage} resizeMode="contain" />
             )}
             {/* Only show send button for newly picked images (not received ones) */}
             {previewImage && !messages.some(m => m.image_url === previewImage) && (
               <TouchableOpacity style={[styles.previewSendBtn, { backgroundColor: colors.primary }]} onPress={handleSendPreviewImage}>
                 <Send size={18} color="#fff" />
-                <Text style={styles.previewSendText}>Enviar</Text>
+                <Text style={styles.previewSendText}>{t('common.send', 'Enviar')}</Text>
               </TouchableOpacity>
             )}
           </View>

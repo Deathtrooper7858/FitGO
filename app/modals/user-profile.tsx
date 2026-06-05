@@ -118,7 +118,7 @@ export default function UserProfileModal() {
       <View style={[s.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
         <Text style={{ color: colors.textPrimary }}>Usuario no encontrado.</Text>
         <TouchableOpacity style={{ marginTop: 20 }} onPress={() => router.back()}>
-          <Text style={{ color: colors.primary }}>Volver</Text>
+          <Text style={{ color: colors.primary }}>{t('common.back', 'Volver')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -353,7 +353,7 @@ export default function UserProfileModal() {
                   colors={[colors.primary + '30', colors.surfaceAlt]}
                   style={{ padding: 12, borderRadius: Radius.lg, alignItems: 'center', marginBottom: 4, borderWidth: 1, borderColor: colors.primary + '40' }}
                 >
-                  <Text style={{ fontWeight: '900', color: colors.textPrimary, fontSize: 16 }}>Tú</Text>
+                  <Text style={{ fontWeight: '900', color: colors.textPrimary, fontSize: 16 }}>{t('common.you', 'Tú')}</Text>
                   <View style={{ backgroundColor: colors.background, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginTop: 4 }}>
                     <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '800' }}>
                       {myAchievements.filter(a => a.unlocked).length} / {totalAchievements}

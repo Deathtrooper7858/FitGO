@@ -681,6 +681,10 @@ export default function DoctorScreen() {
           ref={flatRef}
           data={messages}
           style={{ flex: 1 }}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
           keyExtractor={(m) => m.id}
           renderItem={({ item, index }) => {
             const isLastUser = item.role === 'user' && (index === messages.length - 1 || (index === messages.length - 2 && messages[index+1].role === 'model'));

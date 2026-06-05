@@ -443,7 +443,7 @@ export default function DashboardScreen() {
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                 <Text style={{ fontSize: 32, color: colors.textSecondary }}>🥗</Text>
                 <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginTop: 8 }}>{t('dashboard.recipeSearchWidget', 'Buscar Recetas')}</Text>
-                <Text style={[w.subValue, { color: colors.textSecondary }]}>Con IA</Text>
+                <Text style={[w.subValue, { color: colors.textSecondary }]}>{t('dashboard.withAI', 'Con IA')}</Text>
               </View>
             }
             onPress={() => router.push('/modals/recipes' as any)}

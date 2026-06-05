@@ -20,8 +20,10 @@ const CAT_CONFIG: Record<string, { icon: string; gradient: [string, string] }> =
   'General':      { icon: '⭐', gradient: ['#F59E0B', '#D97706'] },
   'Constancia':   { icon: '🔥', gradient: ['#EF4444', '#B91C1C'] },
   'Nutrición':    { icon: '🥗', gradient: ['#10B981', '#047857'] },
+  'Nutricion':    { icon: '🥗', gradient: ['#10B981', '#047857'] },
   'Misterio':     { icon: '🔮', gradient: ['#A855F7', '#6B21A8'] },
   'Físico':       { icon: '📐', gradient: ['#3B82F6', '#1D4ED8'] },
+  'Fisico':       { icon: '📐', gradient: ['#3B82F6', '#1D4ED8'] },
   'Actividad':    { icon: '👟', gradient: ['#06B6D4', '#0E7490'] },
   'Descanso':     { icon: '🌙', gradient: ['#6366F1', '#4338CA'] },
   'Comunidad':    { icon: '🌟', gradient: ['#EC4899', '#BE185D'] },
@@ -105,7 +107,7 @@ const AchievementRow = memo(({ achievement, isPinned, onTogglePin }: {
           <View style={s.textContent}>
             <View style={s.titleRow}>
               <Text style={[s.itemTitle, { color: achievement.unlocked ? colors.textPrimary : colors.textSecondary }]} numberOfLines={1}>
-                {achievement.title}
+                {t(`achievements.items.${achievement.id}.title`, achievement.title)}
               </Text>
               {achievement.unlocked && <LucideIcons.CheckCircle2 size={15} color={accentColor} />}
             </View>
@@ -113,7 +115,7 @@ const AchievementRow = memo(({ achievement, isPinned, onTogglePin }: {
               {TIER_POINTS[achievement.tier]} pts
             </Text>
             <Text style={[s.itemDesc, { color: colors.textSecondary }]} numberOfLines={2}>
-              {achievement.description}
+              {t(`achievements.items.${achievement.id}.description`, achievement.description)}
             </Text>
             {achievement.rewardBadgeId && (
               <View style={[s.rewardPill, {
@@ -214,7 +216,7 @@ const BadgesAccordion = memo(({ ownedBadgeIds }: { ownedBadgeIds: string[] }) =>
           </LinearGradient>
         </View>
         <View style={{ flex: 1, marginLeft: 14 }}>
-          <Text style={[s.catTitle, { color: colors.textPrimary }]}>{t('achievements.badges', 'Badges')}</Text>
+          <Text style={[s.catTitle, { color: colors.textPrimary }]}>{t('achievements.badgesTitle', 'Badges')}</Text>
           <Text style={[s.catSub, { color: colors.textSecondary }]}>{ownedCount}/{allBadges.length} {t('achievements.available', 'available')}</Text>
         </View>
         {ownedCount > 0 && (

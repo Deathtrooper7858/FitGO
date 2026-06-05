@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Animated, Dimensions, TouchableOpacity } from '
 import { useToastStore } from '../store/toastStore';
 import { Achievement } from '../hooks/useAchievements';
 import { useTheme } from '../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as LucideIcons from 'lucide-react-native';
 import { X } from 'lucide-react-native';
@@ -21,6 +22,7 @@ function getTierColor(tier: string) {
 
 export function AchievementToast() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const { toastQueue, showNext } = useToastStore();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(-50)).current;
@@ -99,7 +101,7 @@ export function AchievementToast() {
       </LinearGradient>
       
       <View style={styles.content}>
-        <Text style={[styles.headerText, { color: tierColor }]}>¡NUEVO LOGRO DESBLOQUEADO!</Text>
+        <Text style={[styles.headerText, { color: tierColor }]}>{t('achievements.newAchievement', '¡NUEVO LOGRO DESBLOQUEADO!')}</Text>
         <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={1}>{currentToast.title}</Text>
         <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={2}>{currentToast.description}</Text>
       </View>

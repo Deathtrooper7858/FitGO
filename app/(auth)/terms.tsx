@@ -12,11 +12,12 @@ const { width } = Dimensions.get('window');
 
 export default function LegalScreen() {
   const { tab } = useLocalSearchParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const colors = useTheme();
   const [activeTab, setActiveTab] = useState<'terms' | 'privacy'>(tab === 'privacy' ? 'privacy' : 'terms');
   
-  const data = activeTab === 'terms' ? TERMS_DATA : PRIVACY_DATA;
+  const lang = i18n.language?.startsWith('en') ? 'en' : 'es';
+  const data = activeTab === 'terms' ? (TERMS_DATA[lang] || TERMS_DATA['es']) : (PRIVACY_DATA[lang] || PRIVACY_DATA['es']);
 
   const renderText = (text: string) => {
     if (!text) return null;
@@ -75,7 +76,7 @@ export default function LegalScreen() {
             <Lock color={colors.primary} size={32} />
           )}
           <Text style={[s.mainTitle, { color: colors.textPrimary }]}>
-            {activeTab === 'terms' ? 'Términos y Condiciones' : 'Política de Privacidad'}
+            {activeTab === 'terms' ? t('legal.termsAndConditions', 'Términos y Condiciones') : t('legal.privacyPolicy', 'Política de Privacidad')}
           </Text>
         </View>
 
@@ -87,7 +88,7 @@ export default function LegalScreen() {
             activeOpacity={0.8}
           >
             <Text style={[s.tabText, activeTab === 'terms' ? { color: '#fff' } : { color: colors.textSecondary }]}>
-              Términos
+              {t('legal.terms', 'Términos')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity 
@@ -96,7 +97,7 @@ export default function LegalScreen() {
             activeOpacity={0.8}
           >
             <Text style={[s.tabText, activeTab === 'privacy' ? { color: '#fff' } : { color: colors.textSecondary }]}>
-              Privacidad
+              {t('legal.privacy', 'Privacidad')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -132,7 +133,7 @@ export default function LegalScreen() {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
           >
-            <Text style={s.btnText}>Aceptar y Entendido</Text>
+            <Text style={s.btnText}>{t('common.acceptAndUnderstood', 'Aceptar y Entendido')}</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>

@@ -90,7 +90,7 @@ export default function CalendarModal() {
         <TouchableOpacity onPress={() => router.back()} style={s.closeBtn}>
           <Text style={[s.closeText, { color: colors.textPrimary }]}>✕</Text>
         </TouchableOpacity>
-        <Text style={[s.title, { color: colors.textPrimary }]}>Mis Rachas</Text>
+        <Text style={[s.title, { color: colors.textPrimary }]}>{t('calendar.myStreaks', 'Mis Rachas')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -112,12 +112,12 @@ export default function CalendarModal() {
               <Text style={s.iconEmoji}>🔥</Text>
             </View>
             <Text style={[s.cardValue, { color: '#FF8C42' }]}>{streakDays}</Text>
-            <Text style={[s.cardLabel, { color: colors.textPrimary }]}>Racha actual</Text>
+            <Text style={[s.cardLabel, { color: colors.textPrimary }]}>{t('calendar.currentStreak', 'Racha actual')}</Text>
             <View style={s.cardDivider} />
             <View style={s.bestRow}>
               <Text style={s.trophy}>🏆</Text>
               <Text style={[s.bestText, { color: colors.textSecondary }]}>
-                Récord: <Text style={{ color: '#FF8C42', fontWeight: '700' }}>{bestStreak}</Text>
+                {t('calendar.record', 'Récord:')} <Text style={{ color: '#FF8C42', fontWeight: '700' }}>{bestStreak}</Text>
               </Text>
             </View>
           </LinearGradient>
@@ -134,12 +134,12 @@ export default function CalendarModal() {
               <Text style={s.iconEmoji}>📅</Text>
             </View>
             <Text style={[s.cardValue, { color: '#22C55E' }]}>{plannedDays}</Text>
-            <Text style={[s.cardLabel, { color: colors.textPrimary }]}>Días activos</Text>
+            <Text style={[s.cardLabel, { color: colors.textPrimary }]}>{t('calendar.activeDays', 'Días activos')}</Text>
             <View style={s.cardDivider} />
             <View style={s.bestRow}>
               <Text style={s.trophy}>⭐</Text>
               <Text style={[s.bestText, { color: colors.textSecondary }]}>
-                Total registrado
+                {t('calendar.totalLogged', 'Total registrado')}
               </Text>
             </View>
           </LinearGradient>
@@ -149,17 +149,17 @@ export default function CalendarModal() {
         <View style={[s.statsBar, { backgroundColor: colors.surface, borderColor: '#2C2C2E' }]}>
           <View style={s.statItem}>
             <Text style={[s.statNum, { color: colors.primary }]}>{streakDays}</Text>
-            <Text style={[s.statLbl, { color: colors.textSecondary }]}>Racha</Text>
+            <Text style={[s.statLbl, { color: colors.textSecondary }]}>{t('calendar.streak', 'Racha')}</Text>
           </View>
           <View style={[s.statDivider, { backgroundColor: '#2C2C2E' }]} />
           <View style={s.statItem}>
             <Text style={[s.statNum, { color: '#22C55E' }]}>{plannedDays}</Text>
-            <Text style={[s.statLbl, { color: colors.textSecondary }]}>Activos</Text>
+            <Text style={[s.statLbl, { color: colors.textSecondary }]}>{t('calendar.active', 'Activos')}</Text>
           </View>
           <View style={[s.statDivider, { backgroundColor: '#2C2C2E' }]} />
           <View style={s.statItem}>
             <Text style={[s.statNum, { color: '#F59E0B' }]}>{bestStreak}</Text>
-            <Text style={[s.statLbl, { color: colors.textSecondary }]}>Récord</Text>
+            <Text style={[s.statLbl, { color: colors.textSecondary }]}>{t('calendar.recordShort', 'Récord')}</Text>
           </View>
         </View>
 
@@ -254,15 +254,15 @@ export default function CalendarModal() {
           <View style={s.legend}>
             <View style={s.legendItem}>
               <View style={[s.legendDot, { backgroundColor: '#22C55E' }]} />
-              <Text style={[s.legendText, { color: colors.textSecondary }]}>Día activo</Text>
+              <Text style={[s.legendText, { color: colors.textSecondary }]}>{t('calendar.activeDay', 'Día activo')}</Text>
             </View>
             <View style={s.legendItem}>
               <View style={[s.legendCircle, { borderColor: colors.primary }]} />
-              <Text style={[s.legendText, { color: colors.textSecondary }]}>Hoy</Text>
+              <Text style={[s.legendText, { color: colors.textSecondary }]}>{t('calendar.today', 'Hoy')}</Text>
             </View>
             <View style={s.legendItem}>
               <LinearGradient colors={[colors.primary, colors.primary + 'CC']} style={s.legendFill} />
-              <Text style={[s.legendText, { color: colors.textSecondary }]}>Seleccionado</Text>
+              <Text style={[s.legendText, { color: colors.textSecondary }]}>{t('calendar.selected', 'Seleccionado')}</Text>
             </View>
           </View>
         </View>

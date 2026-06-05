@@ -19,24 +19,48 @@
     "confirm": "Bestätigen",
     "delete": "Löschen",
     "edit": "Bearbeiten",
-    "search": "Buscar",
+    "search": "Suche",
     "slogan": "Deine beste Version",
     "greeting": "Hallo",
     "warning": "Warnung",
-    "understood": "Verstanden",
+    "understood": "Verstanden 👊",
     "tapToHide": "Zum Ausblenden tippen",
-    "tapToView": "Zum Anzeigen tippen"
+    "tapToView": "Zum Anzeigen tippen",
+    "accept": "Akzeptieren",
+    "invalid": "Ungültig",
+    "create": "Erstellen",
+    "copied": "Kopiert!",
+    "me": "Ich",
+    "acceptAndUnderstood": "Akzeptieren und Verstanden",
+    "you": "Du",
+    "noResultsFound": "Keine Ergebnisse gefunden",
+    "send": "Senden",
+    "noResults": "Keine Ergebnisse",
+    "tryAnotherTerm": "Anderen Begriff versuchen",
+    "camera": "Kamera",
+    "gallery": "Galerie",
+    "cameraPermissionDenied": "Kameraberechtigung ist erforderlich.",
+    "galleryPermissionDenied": "Galerieberechtigung ist erforderlich.",
+    "date": "Datum",
+    "less": "Weniger",
+    "more": "Mehr",
+    "notes": "Notizen",
+    "ok": "Verstanden",
+    "retake": "Ändern",
+    "today": "Heute",
+    "upgrade": "Auf Pro upgraden",
+    "viewAll": "Verlauf"
   },
   "tabs": {
     "dashboard": "Dashboard",
     "tracker": "Tracker",
-    "coach": "Coach",
+    "coach": "Trainer",
     "planner": "Planer",
     "profile": "Profil",
     "nutritionist": "Ernährungsberater",
     "trainer": "Trainer",
     "doctor": "Arzt",
-    "social": "Community"
+    "social": "Gemeinschaft"
   },
   "profile": {
     "title": "Profil",
@@ -175,33 +199,57 @@
     "specifyGender": "Geschlecht angeben...",
     "medicationsSupplements": "Medikamente & Nahrungsergänzungsmittel",
     "selectBadge": "Wähle dein Badge",
-    "changeToKg": "Cambiar a kg",
-    "changeToLbs": "Cambiar a lbs",
-    "changeToCm": "Cambiar a cm",
-    "changeToFt": "Cambiar a ft",
-    "noneSelected": "Ninguno seleccionado",
-    "editHealthProfile": "Editar Perfil de Salud",
-    "importData": "Importar Datos",
-    "exportData": "Exportar Data (Excel)",
-    "restoreSubscription": "Restaurar suscripción",
-    "userId": "ID Usuario",
-    "updateEmailPassword": "Actualizar correo o contraseña",
-    "terms": "Términos de Servicio",
-    "others": "Otros",
-    "idCopied": "ID copiado al portapapeles",
+    "changeToKg": "Wechseln Sie zu kg",
+    "changeToLbs": "Wechseln Sie zu lbs",
+    "changeToCm": "Wechseln Sie zu cm",
+    "changeToFt": "Wechseln Sie zu ft",
+    "noneSelected": "Keine ausgewählt",
+    "editHealthProfile": "Gesundheitsprofil bearbeiten",
+    "importData": "Daten importieren",
+    "exportData": "Daten exportieren (Excel)",
+    "restoreSubscription": "Abonnement wiederherstellen",
+    "userId": "Benutzer-ID",
+    "updateEmailPassword": "E-Mail oder Passwort aktualisieren",
+    "terms": "Nutzungsbedingungen",
+    "others": "Andere",
+    "idCopied": "ID in die Zwischenablage kopiert",
     "activeGoal": "Aktives Ziel",
     "userProfile": "Benutzerprofil",
-    "ranking": "Ranking",
+    "ranking": "Rangfolge",
     "points": "Punkte",
     "class": "Klasse",
     "areFriends": "Befreundet",
     "message": "Nachricht",
     "removeFriend": "Freund entfernen",
     "pendingRequest": "Anfrage ausstehend",
-    "sendFriendRequest": "Freundschaftsanfrage senden"
+    "sendFriendRequest": "Freundschaftsanfrage senden",
+    "selectBadgeSubtitle": "Choose the badge you want to highlight on your public profile.",
+    "galleryPermission": "Galerie-Berechtigungen sind erforderlich, um Fotos auszuwählen.",
+    "galleryFailed": "Galerie konnte nicht geöffnet werden",
+    "cameraPermission": "Kamera-Berechtigungen sind erforderlich, um Fotos aufzunehmen.",
+    "cameraFailed": "Kamera konnte nicht geöffnet werden",
+    "other": "Sonstiges",
+    "exporting": "Daten werden exportiert...",
+    "field": "Feld",
+    "value": "Wert",
+    "sheetProfile": "Profil",
+    "sheetWeight": "Gewicht",
+    "sheetNutrition": "Ernährung",
+    "sheetMetrics": "Metriken",
+    "exportFailed": "Datenexport fehlgeschlagen",
+    "updateEmailPasswordInfo": "Um deine E-Mail oder dein Passwort zu aktualisieren, senden wir dir einen Wiederherstellungslink.",
+    "addMeasurement": "Messung hinzufügen",
+    "privacy": "Datenschutzrichtlinie",
+    "photoSourceTitle": "Profilfoto",
+    "photoSourceSubtitle": "Wie möchtest du dein neues Profilfoto auswählen?",
+    "takePhoto": "Foto aufnehmen",
+    "takePhotoDesc": "Verwende die Kamera deines Geräts",
+    "chooseGallery": "Aus Galerie wählen",
+    "chooseGalleryDesc": "Wähle ein vorhandenes Bild",
+    "goalReached": "Erreicht!"
   },
   "coach": {
-    "title": "Fitz Coach",
+    "title": "Fitz-Trainer",
     "typing": "Fitz denkt nach...",
     "inputPlaceholder": "Frage alles über Ernährung...",
     "limitReached": "Tageslimit erreicht",
@@ -230,7 +278,17 @@
       "suggest2": "Gibt es Wechselwirkungen mit meinen Medikamenten? 💊",
       "suggest3": "Wie kann ich meinen Schlaf verbessern? 🛋️",
       "suggest4": "Was sind Anzeichen einer Dehydration? 💧"
-    }
+    },
+    "camera": "Kamera",
+    "gallery": "Galerie",
+    "history": "Verlauf",
+    "newChat": "Neuer Chat",
+    "noHistory": "Noch kein Verlauf",
+    "pickImageTitle": "Bild auswählen",
+    "pickImageSub": "Woher möchten Sie das Foto hochladen?",
+    "suggestionsTitle": "Vorschläge für den Start",
+    "taglineBadge": "Personalisierte KI • Groq",
+    "confirmDeleteSession": "Sind Sie sicher, dass Sie diesen Chat löschen möchten?"
   },
   "about": {
     "title": "Über FitGO",
@@ -239,7 +297,8 @@
     "instagram": "Instagram",
     "email": "Support-E-Mail",
     "hashtag": "Hashtags",
-    "moreInfo": "Mehr Informationen"
+    "moreInfo": "Mehr Informationen",
+    "version": "Version"
   },
   "exercise": {
     "title": "Sport",
@@ -291,7 +350,23 @@
     "padel": "Padel",
     "volleyball": "Volleyball",
     "golf": "Golf",
-    "martial_arts": "Kampfsport"
+    "martial_arts": "Kampfsport",
+    "steps": "Schritte",
+    "calories": "Kalorien",
+    "aiInstructions": "Tippen Sie auf das Mikrofon, um zu sprechen (z. B. „40 Minuten im Park gelaufen“) oder beschreiben Sie es im Textfeld.",
+    "customDesc": "Beschreiben Sie Ihre Aktivität per Sprache oder Text und berechnen Sie die Kalorien automatisch.",
+    "customPlaceholder": "Z. B. Intensives Boxen, schnelles Gehen...",
+    "estimate": "Kalorien mit KI berechnen",
+    "estimateError": "Fehler beim Verbinden mit der KI.",
+    "estimateFailed": "Wir konnten die Kalorien nicht schätzen. Versuchen Sie, genauer zu sein.",
+    "noExercises": "Keine Aktivitäten entsprechen Ihrer Suche.",
+    "searchResults": "Suchergebnisse",
+    "selectDescription": "Wählen Sie eine Übung aus oder beschreiben Sie sie, um Ihren Fortschritt aufzuzeichnen",
+    "whatDidYouDo": "Welche Aktivität haben Sie gemacht?",
+    "all": "Alle",
+    "cardio": "Cardio",
+    "strength": "Kraft",
+    "sports": "Sport"
   },
   "welcome": {
     "motto": "Fit-Go: Deine beste Version",
@@ -300,6 +375,8 @@
     "feature2": "KI Ernährungs-Coach",
     "feature3": "Körperanalyse",
     "feature4": "Mahlzeitenplaner",
+    "feature5": "Makro-Kriege",
+    "feature6": "Elite-Ligen",
     "getStarted": "Loslegen — Kostenlos",
     "haveAccount": "Ich habe bereits ein Konto",
     "legal": "Durch Fortfahren akzeptieren Sie unsere Nutzungsbedingungen und Datenschutzrichtlinien."
@@ -333,7 +410,11 @@
     "emailSentSub": "Wir haben einen Link gesendet an",
     "backToLogin": "Zurück zum Login",
     "termsRead": "Ich habe die gelesen und akzeptiere die",
-    "termsLink": "Nutzungsbedingungen"
+    "termsLink": "Nutzungsbedingungen",
+    "privacyLink": "Datenschutzrichtlinie",
+    "termsAnd": "und die",
+    "mustAcceptTerms": "Sie müssen die Nutzungsbedingungen und Datenschutzrichtlinie akzeptieren, um fortzufahren.",
+    "emailRequired": "Bitte gib deine E-Mail-Adresse ein."
   },
   "dashboard": {
     "greetingMorning": "Guten Morgen",
@@ -383,19 +464,20 @@
     "tapToAdd": "Zum Hinzufügen tippen",
     "loggedToday": "Heute eingetragen",
     "seeHistory": "Verlauf anzeigen",
-    "measurementsSub": "Taille, Brust, etc.",
+    "measurementsSub": "Taille, Brust, usw.",
     "achievementsWidget": "Erfolge",
     "viewAchievements": "Medaillen ansehen",
     "achievementsSub": "Abgeschlossene Herausforderungen",
     "muscleDirectorySub": "Tippen Sie auf eine Muskelgruppe in der Abbildung, um die Übungen zu sehen, oder suchen Sie sie in der Liste.",
-    "recipeSearchWidget": "Rezepte suchen",
+    "recipeSearchWidget": "Rezeptsuche",
     "muscleDirWidget": "Übungen",
     "muscleDirTitle": "Verzeichnis",
     "muscleDirSub": "Nach Muskeln",
     "evaluationWidget": "KI-Bewertung",
-    "evaluatePhysique": "Physique bewerten",
+    "evaluatePhysique": "Körperbau bewerten",
     "getAIFeedback": "KI-Feedback erhalten",
-    "withAI": "Mit KI"
+    "withAI": "Mit KI",
+    "muscleDirectory": "Muskelverzeichnis"
   },
   "tracker": {
     "title": "Heute",
@@ -458,7 +540,23 @@
     "snack3": "Snack 3",
     "vsGoals": "vs. Tagesziele",
     "calcium": "Kalzium",
-    "macroBalance": "Makro-Balance"
+    "macroBalance": "Makro-Balance",
+    "consistency": "Konsistenz",
+    "last28": "Letzte 28 Tage",
+    "proFeature": "Pro-exklusive Funktion",
+    "proHeatmapDesc": "Schalten Sie eine detaillierte Analyse Ihrer Konstanz und Gewohnheiten mit FitGO Pro frei.",
+    "calories": "Kalorien",
+    "carbs": "Kohlenhydrate",
+    "enterSteps": "Geben Sie die Anzahl der Schritte ein:",
+    "enterWater": "Geben Sie die Wassermenge in ml ein:",
+    "fat": "Fette",
+    "food": "Lebensmittel",
+    "grams": "Gramm",
+    "meal": "Mahlzeit",
+    "protein": "Eiweiß",
+    "sleep": "Schlaf (h)",
+    "target": "Kalorienziel",
+    "yesterday": "Gestern"
   },
   "planner": {
     "title": "Mahlzeitenplaner",
@@ -509,22 +607,64 @@
     "sets": "Sätze",
     "exercises": "Übungen",
     "addAnotherMeal": "Weitere Mahlzeit hinzufügen",
-    "askCustomMeal": "Schlage eine weitere gesunde Mahlzeit für heute vor, die zu meinen verbleibenden Makros passt."
+    "askCustomMeal": "Schlage eine weitere gesunde Mahlzeit für heute vor, die zu meinen verbleibenden Makros passt.",
+    "homeWorkoutTitle": "Heimtraining",
+    "homeWorkoutSub": "Nur Calisthenics und Körpergewicht",
+    "equipmentTitle": "Zusätzliche Ausrüstung",
+    "equipmentSub": "Welche Ausrüstung steht Ihnen zur Verfügung?",
+    "equipmentPlaceholder": "Bsp.: 5kg Hanteln, Yogamatte...",
+    "planFor": "Plan für:",
+    "eqDumbbells": "Hanteln",
+    "eqPullup": "Klimmzugstange",
+    "eqBands": "Widerstandsbänder",
+    "eqParallel": "Parallelbarren",
+    "eqKettlebell": "Kettlebell",
+    "aiDisclaimerTitle": "KI-generierter Plan",
+    "aiDisclaimerText": "Dieser Plan ist nur zur Orientierung und ersetzt nicht die Beratung durch einen Ernährungsberater oder Arzt. Konsultieren Sie einen Spezialisten, bevor Sie wesentliche Änderungen an Ihrer Ernährung oder Ihrem Training vornehmen.",
+    "workoutWarningTitle": "Trainingswarnung",
+    "workoutWarningText": "Führen Sie Übungen auf eigene Verantwortung durch. Wenn Sie Schmerzen spüren, hören Sie sofort auf. Wärmen Sie sich vor dem Training auf.",
+    "confirmGenNutritionTitle": "Ernährungsplan generieren?",
+    "confirmGenWorkoutTitle": "Trainingsplan generieren?",
+    "confirmCalorieInfo": "Der Plan wird berechnet für",
+    "confirmCalorieInfo2": "basierend auf deinem Profil und deinen Zielen.",
+    "confirmFoodsLabel": "Verfügbare Lebensmittel",
+    "confirmNoFoods": "Du hast keine Lebensmittel angegeben. Die KI wählt gesunde und abwechslungsreiche Optionen.",
+    "confirmContextTitle": "Plan optimiert für",
+    "confirmMedicalLabel": "Zu berücksichtigende Erkrankungen",
+    "confirmEquipmentLabel": "Verfügbares Equipment (Zuhause)",
+    "confirmNoEquipment": "Stelle sicher, dass du das notwendige Equipment hast. Wenn keines angegeben wird, wird der Plan nur mit Körpergewicht erstellt.",
+    "confirmDisclaimer": "Dieser Plan wird durch KI generiert und ersetzt nicht den Rat eines Gesundheitsprofis. Konsultiere einen Ernährungsberater oder Arzt, bevor du ihn befolgst.",
+    "confirmGenerate": "Plan jetzt generieren",
+    "confirmChangeFoods": "Verfügbare Lebensmittel ändern",
+    "resetWarningTitle": "Wochenplan läuft bald ab!",
+    "resetWarningDesc": "Heute Nacht um 23:59 (Sonntag) wird dein Wochenplan automatisch zurückgesetzt. Nächste Woche musst du einen neuen personalisierten Plan generieren.",
+    "pdfDisclaimer": "Dieser Plan wird durch künstliche Intelligenz generiert. Er ersetzt nicht den Rat eines zertifizierten Trainers oder Arztes. Konsultiere einen Profi, bevor du diesem Plan folgst.",
+    "askExercise": "Wie geht das?",
+    "fullDisclaimerTitle": "Haftungsausschluss",
+    "fullDisclaimerText": "Der von FitGO generierte Plan wird von künstlicher Intelligenz zu Informations- und allgemeinen Orientierungszwecken produziert. Er stellt keine medizinische, ernährungswissenschaftliche oder professionelle Gesundheitsberatung dar. Individuelle Ergebnisse können variieren. Konsultiere immer einen registrierten Ernährungsberater, zertifizierten Ernährungswissenschaftler oder Arzt, bevor du wesentliche Änderungen an deiner Ernährung oder deiner Trainingsroutine vornimmst. FitGO übernimmt keine Haftung für Schäden oder Folgen aus der Nutzung dieser Pläne. Dieser Plan erneuert sich automatisch jeden Sonntag um 23:59.",
+    "exportShoppingList": "Einkaufsliste PDF",
+    "exportMenu": "Menü PDF",
+    "askRecipe": "Wie zubereiten?"
   },
   "recipes": {
-    "title": "KI Rezepte",
+    "title": "Rezepte",
     "refresh": "Aktualisieren ✨",
     "loading": "Rezepte werden erstellt...",
     "proTitle": "Rezepte sind ein Pro-Feature",
     "proSub": "KI-Rezepte freischalten, um Makros perfekt zu treffen.",
     "unlockNow": "Jetzt Pro freischalten",
-    "prepTime": "Min.",
-    "searchPlaceholder": "Ej: Pollo, Avena...",
-    "search": "Buscar",
-    "pinned": "Tus recetas fijadas",
-    "searchTab": "Buscar",
-    "pinnedTab": "Fijadas",
-    "noPinned": "No tienes recetas fijadas aún."
+    "prepTime": "Min",
+    "searchPlaceholder": "Z.B. Huhn, Hafer...",
+    "search": "Suchen",
+    "pinned": "Deine gepinnten Rezepte",
+    "searchTab": "Suchen",
+    "pinnedTab": "Angeheftet",
+    "noPinned": "Du hast noch keine angehefteten Rezepte.",
+    "protein": "PROTEIN",
+    "carbs": "KOHLENHYDRATE",
+    "fat": "FETT",
+    "promptHowToPrepare": "Hallo Coach, kannst du mir eine Schritt-für-Schritt-Anleitung für dieses Rezept geben: \"{{name}}\"? Beschreibung und Details: {{desc}} (P: {{p}}g, C: {{c}}g, F: {{f}}g, {{kcal}} kcal).",
+    "askCoach": "Wie bereite ich das zu?"
   },
   "onboarding": {
     "goalTitle": "Was ist dein Ziel?",
@@ -592,14 +732,14 @@
       "beans": "Bohnen",
       "lentils": "Linsen",
       "corn": "Mais",
-      "tortilla": "Tortilla",
+      "tortilla": "Omelett",
       "almonds": "Mandeln",
       "peanut_butter": "Erdnussbutter",
       "olive_oil": "Olivenöl",
       "yogurt": "Joghurt",
       "chia_seeds": "Chiasamen",
       "coconut_oil": "Kokosöl",
-      "mango": "Mango",
+      "mango": "Griff",
       "pineapple": "Ananas",
       "pear": "Birne",
       "kiwi": "Kiwi",
@@ -615,143 +755,143 @@
       "hot_sauce": "Scharfe Sauce",
       "mayonnaise": "Mayonnaise",
       "ketchup": "Ketchup",
-      "salmon": "Salmón",
-      "tuna": "Atún",
-      "greek_yogurt": "Yogur Griego",
-      "cottage_cheese": "Queso Cottage",
+      "salmon": "Lachs",
+      "tuna": "Thunfisch",
+      "greek_yogurt": "Griechischer Joghurt",
+      "cottage_cheese": "Hüttenkäse",
       "tempeh": "Tempeh",
-      "lamb": "Cordero",
-      "sardines": "Sardinas",
-      "crab": "Cangrejo",
-      "octopus": "Pulpo",
+      "lamb": "Lamm",
+      "sardines": "Sardinen",
+      "crab": "Krabbe",
+      "octopus": "Oktopus",
       "tilapia": "Tilapia",
-      "duck": "Pato",
-      "bison": "Bisonte",
-      "venison": "Venado",
+      "duck": "Ente",
+      "bison": "Bison",
+      "venison": "Hirsch",
       "skyr": "Skyr",
       "edamame": "Edamame",
-      "lox": "Lox (Salmón Curado)",
-      "anchovies": "Anchoas",
-      "mussels": "Mejillones",
-      "chicken_liver": "Hígado de Pollo",
-      "beef_liver": "Hígado de Res",
-      "couscous": "Cuscús",
+      "lox": "Lachs (gepökelter Lachs)",
+      "anchovies": "Sardellen",
+      "mussels": "Muscheln",
+      "chicken_liver": "Hühnerleber",
+      "beef_liver": "Rinderleber",
+      "couscous": "Couscous",
       "bulgur": "Bulgur",
-      "rice_cakes": "Tortitas de Arroz",
-      "plantain": "Plátano Macho",
-      "chickpeas": "Garbanzos",
-      "brown_rice": "Arroz Integral",
-      "whole_wheat_pasta": "Pasta Integral",
-      "barley": "Cebada",
-      "rye_bread": "Pan de Centeno",
-      "granola": "Granola",
+      "rice_cakes": "Reiskuchen",
+      "plantain": "Männliche Banane",
+      "chickpeas": "Kichererbsen",
+      "brown_rice": "Brauner Reis",
+      "whole_wheat_pasta": "Vollkornnudeln",
+      "barley": "Gerste",
+      "rye_bread": "Roggenbrot",
+      "granola": "Müsli",
       "farro": "Farro",
-      "sourdough": "Pan de Masa Madre",
-      "pita_bread": "Pan Pita",
-      "millet": "Mijo",
-      "tapioca": "Tapioca",
-      "cassava": "Yuca",
+      "sourdough": "Sauerteigbrot",
+      "pita_bread": "Pita-Brot",
+      "millet": "Hirse",
+      "tapioca": "Tapioka",
+      "cassava": "Yucca",
       "taro": "Taro",
-      "walnuts": "Nueces de Castilla",
-      "pumpkin_seeds": "Semillas de Calabaza",
-      "sunflower_seeds": "Semillas de Girasol",
+      "walnuts": "Kastilien-Walnüsse",
+      "pumpkin_seeds": "Kürbiskerne",
+      "sunflower_seeds": "Sonnenblumenkerne",
       "ghee": "Ghee",
-      "butter": "Mantequilla",
-      "cashews": "Anacardos/Cajú",
-      "pistachios": "Pistaches",
-      "macadamia": "Nuez de Macadamia",
-      "brazil_nuts": "Nuez de Brasil",
-      "pecans": "Nuez Pecana",
-      "hemp_seeds": "Semillas de Cáñamo",
-      "flaxseeds": "Linaza",
+      "butter": "Butter",
+      "cashews": "Cashewnüsse/Cashewnüsse",
+      "pistachios": "Pistazien",
+      "macadamia": "Macadamianuss",
+      "brazil_nuts": "Paranuss",
+      "pecans": "Pekannuss",
+      "hemp_seeds": "Hanfsamen",
+      "flaxseeds": "Leinsamen",
       "tahini": "Tahini",
-      "sesame_oil": "Aceite de Sésamo",
-      "dark_chocolate": "Chocolate Amargo",
-      "coconut_milk": "Leche de Coco",
-      "almond_butter": "Mantequilla de Almendra",
-      "grapes": "Uvas",
-      "watermelon": "Sandía",
-      "peach": "Durazno/Melocotón",
-      "cherry": "Cereza",
-      "blueberries": "Arándanos",
-      "raspberries": "Frambuesas",
+      "sesame_oil": "Sesamöl",
+      "dark_chocolate": "Dunkle Schokolade",
+      "coconut_milk": "Kokosmilch",
+      "almond_butter": "Mandelbutter",
+      "grapes": "Trauben",
+      "watermelon": "Wassermelone",
+      "peach": "Pfirsich/Pfirsich",
+      "cherry": "Kirsche",
+      "blueberries": "Blaubeeren",
+      "raspberries": "Himbeeren",
       "papaya": "Papaya",
-      "pomegranate": "Granada",
-      "lemon": "Limón",
+      "pomegranate": "Granate",
+      "lemon": "Zitrone",
       "lime": "Lima",
-      "grapefruit": "Toronja/Pomelo",
-      "plum": "Ciruela",
-      "fig": "Higo",
-      "date": "Dátil",
-      "apricot": "Chabacano/Albaricoque",
-      "coconut": "Coco",
+      "grapefruit": "Grapefruit/Grapefruit",
+      "plum": "Pflaume",
+      "fig": "Feige",
+      "date": "Datum",
+      "apricot": "Aprikose/Aprikose",
+      "coconut": "Kokosnuss",
       "dragonfruit": "Pitahaya",
-      "passion_fruit": "Maracuyá",
-      "kale": "Kale/Col Rizada",
-      "asparagus": "Espárragos",
-      "cauliflower": "Coliflor",
-      "mushroom": "Champiñones/Setas",
-      "eggplant": "Berenjena",
-      "celery": "Apio",
-      "beet": "Betabel/Remolacha",
-      "radish": "Rábano",
-      "artichoke": "Alcachofa",
-      "peas": "Chícharos/Arvejas",
-      "green_beans": "Ejotes/Judías Verdes",
-      "leek": "Puerro",
+      "passion_fruit": "Passionsfrucht",
+      "kale": "Grünkohl/Grünkohl",
+      "asparagus": "Spargel",
+      "cauliflower": "Blumenkohl",
+      "mushroom": "Pilze/Pilze",
+      "eggplant": "Aubergine",
+      "celery": "Sellerie",
+      "beet": "Rübe/Rübe",
+      "radish": "Rettich",
+      "artichoke": "Artischocke",
+      "peas": "Erbsen/Erbsen",
+      "green_beans": "Grüne Bohnen",
+      "leek": "Lauch",
       "bok_choy": "Bok Choy",
-      "brussels_sprouts": "Coles de Bruselas",
-      "sweet_corn": "Elote Dulce",
-      "pumpkin": "Calabaza",
-      "cabbage": "Repollo/Col",
-      "arugula": "Arúgula/Rúcula",
+      "brussels_sprouts": "Rosenkohl",
+      "sweet_corn": "Zuckermais",
+      "pumpkin": "Kürbis",
+      "cabbage": "Kohl/Kohl",
+      "arugula": "Rucola/Rucola",
       "sriracha": "Sriracha",
-      "balsamic": "Vinagre Balsámico",
-      "cinnamon": "Canela",
-      "turmeric": "Cúrcuma",
-      "ginger": "Jengibre",
-      "honey": "Miel",
+      "balsamic": "Balsamico-Essig",
+      "cinnamon": "Zimt",
+      "turmeric": "Kurkuma",
+      "ginger": "Ingwer",
+      "honey": "Schatz",
       "agave": "Agave",
-      "maple_syrup": "Jarabe de Maple",
-      "apple_cider_vinegar": "Vinagre de Manzana",
-      "worcestershire": "Salsa Inglesa",
-      "fish_sauce": "Salsa de Pescado",
+      "maple_syrup": "Ahornsirup",
+      "apple_cider_vinegar": "Apfelessig",
+      "worcestershire": "Englische Soße",
+      "fish_sauce": "Fischsauce",
       "tamari": "Tamari",
       "miso": "Miso",
-      "cumin": "Comino",
-      "paprika": "Pimentón/Paprika",
-      "oregano": "Orégano",
-      "basil": "Albahaca",
-      "thyme": "Tomillo",
-      "rosemary": "Romero",
-      "milk": "Leche",
-      "heavy_cream": "Crema para Batir",
-      "almond_milk": "Leche de Almendra",
-      "oat_milk": "Leche de Avena",
-      "soy_milk": "Leche de Soya",
+      "cumin": "Kreuzkümmel",
+      "paprika": "Paprika/Paprika",
+      "oregano": "Oregano",
+      "basil": "Basilikum",
+      "thyme": "Thymian",
+      "rosemary": "Rosmarin",
+      "milk": "Milch",
+      "heavy_cream": "Schlagsahne",
+      "almond_milk": "Mandelmilch",
+      "oat_milk": "Hafermilch",
+      "soy_milk": "Sojamilch",
       "mozzarella": "Mozzarella",
-      "parmesan": "Parmesano",
+      "parmesan": "Parmesan",
       "cheddar": "Cheddar",
-      "feta": "Queso Feta",
+      "feta": "Feta-Käse",
       "ricotta": "Ricotta",
-      "cream_cheese": "Queso Crema",
-      "whipping_cream": "Crema Chantilly",
-      "kefir": "Kéfir",
-      "ice_cream": "Helado",
-      "water": "Agua",
-      "coffee": "Café",
-      "green_tea": "Té Verde",
-      "black_tea": "Té Negro",
+      "cream_cheese": "Frischkäse",
+      "whipping_cream": "Chantilly-Creme",
+      "kefir": "Kefir",
+      "ice_cream": "Eis",
+      "water": "Wasser",
+      "coffee": "Kaffee",
+      "green_tea": "Grüner Tee",
+      "black_tea": "Schwarzer Tee",
       "matcha": "Matcha",
-      "orange_juice": "Jugo de Naranja",
-      "protein_shake": "Batido de Proteína",
+      "orange_juice": "Orangensaft",
+      "protein_shake": "Proteinshake",
       "smoothie": "Smoothie",
-      "coconut_water": "Agua de Coco",
-      "sports_drink": "Bebida Deportiva",
-      "bone_broth": "Caldo de Hueso",
+      "coconut_water": "Kokoswasser",
+      "sports_drink": "Sportgetränk",
+      "bone_broth": "Knochenbrühe",
       "kombucha": "Kombucha",
-      "dairy": "Lácteos",
-      "beverages": "Bebidas"
+      "dairy": "Milchprodukte",
+      "beverages": "Getränke"
     },
     "foodsTitle": "Lieblingsessen",
     "foodsSub": "Wähle, was du gerne isst.",
@@ -868,8 +1008,11 @@
     "termsTitle": "Nutzungsbedingungen",
     "termsSub": "Bitte lesen und akzeptieren, um fortzufahren",
     "termsAgreement": "Ich habe die Nutzungsbedingungen und Datenschutzrichtlinie von FitGO gelesen und akzeptiere sie.",
-    "dairy": "Lácteos",
-    "beverages": "Bebidas"
+    "dairy": "Milchprodukte",
+    "beverages": "Getränke",
+    "creatingPlan": "Plan wird erstellt...",
+    "goal": "Ziel",
+    "selectedCount": "ausgewählt"
   },
   "reminders": {
     "stayOnTrack": "Bleib auf Kurs",
@@ -881,10 +1024,10 @@
     "water": "Wasser",
     "workout": "Training",
     "testNotif": "Testbenachrichtigung",
-    "snack": "Merienda",
-    "vitamins": "Vitaminas y Suplementos",
-    "walk": "Caminata y Pasos",
-    "sleep": "Descanso y Sueño"
+    "snack": "Snack",
+    "vitamins": "Vitamine und Nahrungsergänzungsmittel",
+    "walk": "Gehen und Schritte",
+    "sleep": "Ruhe und Schlaf"
   },
   "scan": {
     "title": "Essen scannen",
@@ -925,7 +1068,11 @@
     "noVoiceDetected": "Keine Sprache erkannt.",
     "audioFileError": "Hardware-Fehler: Datei nicht erstellt.",
     "audioProcessError": "Audio-Fehler: {{error}}",
-    "searchPlaceholder": "Buscar alimento en la base de datos..."
+    "searchPlaceholder": "Suche nach Lebensmitteln in der Datenbank...",
+    "transcribing": "Audio wird transkribiert...",
+    "tapToRecord": "Tippe auf das Mikrofon zum Diktieren",
+    "limitReachedSubPhoto": "Du hast dein monatliches Scan-Limit erreicht.",
+    "limitReachedSubText": "Upgrade auf Pro für unbegrenzte Scans."
   },
   "foodDetail": {
     "per": "Pro",
@@ -960,7 +1107,22 @@
     "trial": "🎁 7 Tage kostenlos testen",
     "startTrial": "Gratis-Test starten",
     "restore": "Kauf wiederherstellen",
-    "legal": "Abo verlängert sich automatisch, wenn nicht 24h vorher gekündigt."
+    "legal": "Abo verlängert sich automatisch, wenn nicht 24h vorher gekündigt.",
+    "fullAccess": "Voller Zugriff",
+    "unlockNow": "Jetzt freischalten",
+    "restorePurchases": "Einkäufe wiederherstellen",
+    "titleUnlock": "Freischalten",
+    "titlePro": "FitGO Pro",
+    "subtitle": "Bringen Sie Ihre Ergebnisse auf die nächste Stufe mit unseren KI-gestützten Tools.",
+    "feature1": "Unbegrenzte KI-Ernährungspläne",
+    "feature2": "Ultra-personalisierte Trainingsroutinen",
+    "feature3": "PDF-Einkaufslisten-Generator",
+    "feature4": "Zugang zu virtuellen Coaches (Ernährungsberater, Trainer, Arzt)",
+    "feature5": "Wöchentliche KI-Analyse",
+    "feature6": "Keine Werbung und keine Tageslimits",
+    "specialOffer": "SONDERANGEBOT",
+    "perMonth": " / monat",
+    "cancelAnytime": "Jederzeit kündbar. Keine Verpflichtungen."
   },
   "muscleDirectory": {
     "chest": "Brust",
@@ -968,7 +1130,7 @@
     "legs": "Beine",
     "shoulders": "Schultern",
     "arms": "Arme",
-    "core": "Rumpf / Bauch",
+    "core": "Rumpf",
     "stretching": "Dehnen",
     "yoga": "Yoga",
     "exercisesCount": "Übungen"
@@ -2046,442 +2208,472 @@
     "shoulder tap push-up": "Schultertipp-Liegestütz",
     "cable seated shoulder internal rotation": "Kabelsitzende Schulterinnenrotation",
     "cable decline seated wide-grip row": "Kabelabsenkung sitzendes Rudern mit breitem Griff",
-    "inverse leg curl (bench support)": "curl de piernas inverso (apoyo en banco)",
-    "ez bar standing french press": "Prensa francesa de pie con barra ez",
-    "ski ergometer": "esquí ergómetro",
-    "hanging straight leg hip raise": "elevación de cadera con pierna recta colgando",
-    "lying leg raise flat bench": "banco plano con elevación de piernas acostado",
-    "dumbbell biceps curl (with arm blaster)": "Curl de bíceps con mancuernas (con brazo blaster)",
-    "cable one arm press on exercise ball": "Press con cable con un brazo sobre una pelota de ejercicio",
-    "one arm dip": "inmersión con un brazo",
-    "cable concentration curl": "curvatura de concentración del cable",
-    "dumbbell decline shrug v. 2": "declinación con mancuernas encogimiento de hombros v. 2",
-    "dumbbell close grip press": "press con agarre cerrado con mancuernas",
-    "sissy squat": "sentadilla mariquita",
-    "cable hip adduction": "aducción de cadera con cable",
-    "barbell sitted alternate leg raise": "sentado con barra elevación de piernas alternas",
-    "band alternating biceps curl": "curl de bíceps alterno con banda",
-    "march sit (wall)": "marchar sentado (pared)",
-    "dynamic chest stretch (male)": "estiramiento dinámico del pecho (masculino)",
-    "medicine ball overhead slam": "Golpe por encima de la cabeza con balón medicinal",
-    "dumbbell one arm lateral raise with support": "elevación lateral con mancuerna a un brazo con apoyo",
-    "ez-bar biceps curl (with arm blaster)": "Curl de bíceps con barra ez (con brazo blaster)",
-    "bench hip extension": "extensión de cadera en banco",
-    "behind head chest stretch": "estiramiento del pecho detrás de la cabeza",
-    "medicine ball chest push multiple response": "balón medicinal empuje en el pecho respuesta múltiple",
-    "smith sprint lunge": "estocada de velocidad de smith",
-    "assisted lying calves stretch": "estiramiento de pantorrillas en tumbado asistido",
-    "walk elliptical cross trainer": "bicicleta elíptica para caminar",
-    "dumbbell standing alternate hammer curl and press": "de pie con mancuernas alternando curl martillo y press",
-    "scapular pull-up": "dominadas escapulares",
-    "barbell incline close grip bench press": "Press de banca inclinado con agarre cerrado y barra",
-    "kettlebell one arm row": "remo con pesas rusas a un brazo",
-    "half sit-up (male)": "medio abdominal (masculino)",
-    "cable high row (kneeling)": "cable fila alta (arrodillado)",
-    "cable bar lateral pulldown": "descenso lateral de la barra de cables",
-    "bodyweight drop jump squat": "sentadilla con salto y caída con peso corporal",
-    "hanging leg hip raise": "elevación de cadera con pierna colgando",
-    "dumbbell incline y-raise": "inclinación con mancuernas elevación en Y",
-    "dumbbell lunge": "estocada con mancuernas",
-    "one leg donkey calf raise": "elevación de pantorrilla en burro con una pierna",
-    "barbell narrow stance squat": "sentadilla en postura estrecha con barra",
-    "dumbbell one arm hammer preacher curl": "curl predicador martillo con un brazo con mancuernas",
-    "barbell decline wide-grip pullover": "jersey con agarre ancho y descenso con barra",
-    "shoulder tap": "golpecito en el hombro",
-    "smith full squat": "sentadilla completa smith",
-    "self assisted inverse leg curl": "Curl de piernas inverso autoasistido",
-    "exercise ball hug": "abrazo con pelota de ejercicio",
-    "monster walk": "paseo de monstruos",
-    "bodyweight standing calf raise": "elevación de pantorrillas de pie con peso corporal",
-    "lever bent-over row with v-bar": "fila inclinada con palanca con barra en V",
-    "smith decline reverse-grip press": "Prensa Smith Declive con agarre inverso",
-    "negative crunch": "crisis negativa",
-    "pull up (neutral grip)": "pull up (agarre neutral)",
-    "dumbbell incline fly": "vuelo inclinado con mancuernas",
-    "band straight leg deadlift": "peso muerto con pierna recta con banda",
-    "dumbbell seated bent over alternate kickback": "mancuerna sentada inclinada sobre contragolpe alternativo",
-    "smith back shrug": "smith se encoge de hombros",
-    "dumbbell one arm chest fly on exercise ball": "mancuerna con un brazo en el pecho sobre una pelota de ejercicios",
-    "cable one arm bent over row": "cable con un brazo doblado sobre la fila",
-    "hyght dumbbell fly": "vuelo alto con mancuernas",
-    "band kneeling one arm pulldown": "banda arrodillada con un brazo tirado",
-    "dumbbell standing one arm palm in press": "mancuerna de pie con un brazo con la palma en prensa",
-    "3/4 sit-up": "3/4 abdominales",
-    "barbell one arm snatch": "arranque con barra con un brazo",
-    "inverted row with straps": "fila invertida con tirantes",
-    "dumbbell standing calf raise": "elevación de pantorrilla de pie con mancuernas",
-    "smith standing leg calf raise": "Elevación de pantorrilla con pierna de pie",
-    "flexion leg sit up (straight arm)": "flexión pierna sentada (brazo estirado)",
-    "circles knee stretch": "estiramiento de rodillas en círculos",
-    "weighted russian twist": "giro ruso ponderado",
-    "arm slingers hanging straight legs": "honderos que cuelgan con las piernas rectas",
-    "roller hip stretch": "estiramiento de cadera con rodillo",
-    "smith machine reverse decline close grip bench press": "Press de banca con agarre cerrado y descenso inverso con máquina Smith",
-    "star jump (male)": "salto de estrella (masculino)",
-    "one leg floor calf raise": "Elevación de pantorrilla en el suelo con una pierna",
-    "walking high knees lunge": "estocada caminando con las rodillas altas",
-    "elbow lift - reverse push-up": "elevación de codo - flexión inversa",
-    "weighted one hand pull up": "dominada con una mano con peso",
-    "barbell curl": "curl con barra",
-    "dumbbell one arm reverse fly (with support)": "mancuerna con un brazo hacia atrás (con soporte)",
-    "dumbbell bicep curl on exercise ball with leg raised": "Curl de bíceps con mancuernas sobre una pelota de ejercicios con la pierna levantada",
-    "exercise ball hip flexor stretch": "pelota de ejercicio estiramiento del flexor de la cadera",
-    "lever lying two-one leg curl": "curl de dos piernas acostado con palanca",
-    "cable standing back wrist curl": "curl de muñeca con cable de pie hacia atrás",
-    "lever seated dip": "inmersión con palanca asentada",
-    "standing calves": "pantorrillas de pie",
-    "dumbbell palms in incline bench press": "palmas con mancuernas en press de banca inclinado",
-    "barbell standing twist": "giro de pie con barra",
-    "lever kneeling twist": "giro de palanca de rodillas",
-    "incline leg hip raise (leg straight)": "inclinar pierna elevación de cadera (pierna estirada)",
-    "dumbbell straight arm pullover": "jersey con mancuernas y brazos rectos",
-    "dumbbell goblet squat": "sentadilla en copa con mancuernas",
-    "barbell decline bench press": "press de banca declinado con barra",
-    "lever assisted chin-up": "dominadas asistidas por palanca",
-    "lever alternate leg press": "press de piernas alternativo con palanca",
-    "chest tap push-up (male)": "flexión de pecho (masculino)",
-    "dumbbell seated preacher curl": "Curl de predicador sentado con mancuernas",
-    "weighted front raise": "elevación frontal ponderada",
-    "reverse dip": "inmersión inversa",
-    "dumbbell seated reverse grip one arm overhead tricep extension": "Mancuerna sentado agarre inverso extensión de tríceps por encima de la cabeza con un brazo",
-    "kettlebell one arm push press": "Press de empuje con un brazo con pesa rusa",
-    "dumbbell alternate seated hammer curl": "Curl martillo sentado alternativo con mancuernas",
-    "reverse grip pull-up": "dominadas con agarre inverso",
-    "captains chair straight leg raise": "silla de capitán elevación de pierna recta",
-    "power clean": "limpieza eléctrica",
-    "ez bar seated close grip concentration curl": "ez barra sentado agarre cerrado concentración curl",
-    "forward lunge (male)": "estocada hacia adelante (masculino)",
-    "dumbbell alternating bicep curl with leg raised on exercise ball": "curl de bíceps alterno con mancuernas y pierna levantada sobre una pelota de ejercicio",
-    "triceps dip": "inmersión de tríceps",
-    "lever seated row": "fila sentada con palanca",
-    "ez barbell decline close grip face press": "Press facial con agarre cerrado y descenso con barra ez",
-    "smith one leg floor calf raise": "Elevación de pantorrilla en el suelo con una pierna smith",
-    "hanging straight twisting leg hip raise": "colgando recto girando la pierna elevación de cadera",
-    "lever seated crunch (chest pad)": "abdominales sentado con palanca (almohadilla para el pecho)",
-    "cable one arm fly on exercise ball": "cable con un brazo y mosca sobre una pelota de ejercicio",
-    "oblique crunch v. 2": "crujido oblicuo v. 2",
-    "cable cross-over variation": "variación del cruce de cables",
-    "dumbbell over bench wrist curl": "curl de muñeca con mancuernas sobre banco",
-    "barbell single leg split squat": "sentadilla dividida con una sola pierna con barra",
-    "dumbbell lying single extension": "extensión simple tumbado con mancuernas",
-    "dumbbell incline one arm hammer press": "Press de martillo inclinado con un brazo con mancuernas",
-    "sled 45в° calf press": "trineo 45° prensa para pantorrillas",
-    "pike-to-cobra push-up": "flexión de pica a cobra",
-    "barbell seated overhead press": "Press por encima de la cabeza sentado con barra",
-    "smith shoulder press": "press de hombros smith",
-    "cable pushdown (straight arm) v. 2": "Empuje de cable (brazo recto) v. 2",
-    "weighted hyperextension (on stability ball)": "hiperextensión ponderada (sobre balón de estabilidad)",
-    "frog crunch": "crujido de rana",
-    "dumbbell lying hammer press": "Press de martillo acostado con mancuernas",
-    "dumbbell one arm kickback": "retroceso con un brazo con mancuernas",
-    "chest and front of shoulder stretch": "estiramiento del pecho y la parte delantera del hombro",
-    "dumbbell standing front raise above head": "elevación frontal con mancuernas de pie por encima de la cabeza",
-    "ankle circles": "círculos en los tobillos",
-    "roller hip lat stretch": "estiramiento lateral de cadera con rodillo",
-    "cable incline bench row": "fila de banco inclinado con cable",
-    "lever bent over row": "palanca inclinada sobre la fila",
-    "barbell standing wide military press": "press militar con barra de pie",
-    "barbell sitted alternate leg raise (female)": "sentado con barra elevación de pierna alterna (mujer)",
-    "ez barbell seated curls": "Curl sentado con barra ez",
-    "assisted parallel close grip pull-up": "dominadas paralelas asistidas con agarre cerrado",
-    "dumbbells seated triceps extension": "extensión de tríceps sentado con mancuernas",
-    "hanging pike": "lucio colgante",
-    "weighted standing hand squeeze": "apretón de manos de pie con peso",
-    "dumbbell biceps curl": "Curl de bíceps con mancuernas",
-    "cable straight arm pulldown (with rope)": "Jalón con brazo recto con cable (con cuerda)",
-    "lever narrow grip seated row": "palanca de agarre estrecho fila sentada",
-    "box jump down with one leg stabilization": "salto de caja hacia abajo con estabilización de una pierna",
-    "dumbbell seated kickback": "Contragolpe sentado con mancuernas",
-    "dumbbell clean": "limpieza con mancuernas",
-    "elbow-to-knee": "codo a rodilla",
-    "lever seated reverse fly": "marcha atrás con palanca asentada",
-    "resistance band seated straight back row": "banda de resistencia sentada en la última fila",
-    "weighted russian twist v. 2": "giro ruso ponderado v. 2",
-    "world greatest stretch": "mayor tramo del mundo",
-    "lever incline chest press": "Press de pecho inclinado con palanca",
-    "back pec stretch": "estiramiento de pectorales de espalda",
-    "cable curl": "enrollamiento del cable",
-    "exercise ball supine triceps extension": "pelota de ejercicio extensión de tríceps en decúbito supino",
-    "twisted leg raise": "elevación de pierna torcida",
-    "cable side bend crunch (bosu ball)": "Crunch con flexión lateral del cable (bola bosu)",
-    "clap push up": "aplaudir flexionar hacia arriba",
-    "dumbbell hammer curl": "curl martillo con mancuernas",
-    "rear pull-up": "dominada trasera",
-    "dumbbell one arm zottman preacher curl": "curl predicador zottman con un brazo con mancuernas",
-    "barbell lateral lunge": "Estocada lateral con barra",
-    "push-up medicine ball": "balón medicinal para flexiones",
-    "lever standing calf raise": "elevación de pantorrilla de pie con palanca",
-    "kettlebell alternating hang clean": "pesas rusas alternadas colgar limpio",
-    "dumbbell rear delt row_shoulder": "remo delt trasero con mancuernas",
-    "cable reverse wrist curl": "curl de muñeca inverso con cable",
-    "cable standing crunch (with rope attachment)": "crujido de cable de pie (con accesorio de cuerda)",
-    "kettlebell advanced windmill": "molino de viento avanzado con pesas rusas",
-    "standing hamstring and calf stretch with strap": "Estiramiento de isquiotibiales y pantorrillas de pie con correa",
-    "ez bar french press on exercise ball": "Press francés con barra ez sobre pelota de ejercicio",
-    "single leg platform slide": "tobogán de plataforma de una sola pierna",
-    "lever one arm lateral wide pulldown": "palanca con un brazo hacia abajo lateralmente amplio",
-    "cable standing one leg calf raise": "elevación de pantorrilla con una pierna de pie con cable",
-    "cable pulldown": "descenso del cable",
-    "london bridge": "puente de londres",
-    "ez bar reverse grip bent over row": "Agarre inverso con barra ez inclinado sobre la fila",
-    "band single leg calf raise": "elevación de pantorrilla con una sola pierna con banda",
-    "band one arm twisting seated row": "banda con giro de un brazo en remo sentado",
-    "dumbbell pullover on exercise ball": "jersey con mancuernas sobre pelota de ejercicios",
-    "quarter sit-up": "cuarto de abdominales",
-    "all fours squad stretch": "estiramiento del equipo a cuatro patas",
-    "lever seated reverse fly (parallel grip)": "marcha atrás con palanca asentada (agarre paralelo)",
-    "dumbbell decline one arm hammer press": "Press de martillo con un brazo en descenso con mancuernas",
-    "jump squat v. 2": "sentadilla con salto v. 2",
-    "cable rear drive": "tracción trasera por cable",
-    "barbell skier": "esquiador con barra",
-    "dumbbell over bench one arm wrist curl": "curl de muñeca con mancuerna sobre banco con un brazo",
-    "dumbbell incline bench press": "press de banca inclinado con mancuernas",
-    "cable rope seated row": "cable cuerda fila sentada",
-    "smith behind neck press": "smith detrás de la prensa del cuello",
-    "farmers walk": "caminata de agricultores",
-    "cable squat row (with rope attachment)": "remo en cuclillas con cable (con accesorio de cuerda)",
-    "cable straight back seated row": "fila de asientos con respaldo recto",
-    "lever decline chest press": "press de pecho con palanca inclinada",
-    "lever lateral raise": "elevación lateral de la palanca",
-    "inchworm v. 2": "gusano pulgada v. 2",
-    "kneeling plank tap shoulder (male)": "tabla de rodillas golpea el hombro (masculino)",
-    "handstand push-up": "flexión de manos",
-    "sled closer hack squat": "sentadilla hack más cerca del trineo",
-    "dumbbell rear delt raise": "elevación delt delt trasero con mancuernas",
-    "medicine ball chest push single response": "Empuje de pecho con balón medicinal respuesta única",
-    "rocking frog stretch": "estiramiento de rana mecedora",
-    "dumbbell one arm shoulder press v. 2": "Press de hombros con un brazo con mancuernas v. 2",
-    "dumbbell step-up split squat": "sentadilla dividida con mancuernas",
-    "standing behind neck press": "prensa de pie detrás del cuello",
-    "biceps narrow pull-ups": "dominadas estrechas de bíceps",
-    "hands clasped circular toe touch (male)": "manos entrelazadas toque circular del dedo del pie (masculino)",
-    "l-pull-up": "dominadas en l",
-    "smith leg press": "prensa de piernas smith",
-    "dumbbell reverse grip row (female)": "remo con agarre inverso con mancuernas (femenino)",
-    "dumbbell reverse bench press": "press de banca inverso con mancuernas",
-    "dumbbell cross body hammer curl v. 2": "Curl martillo con cuerpo cruzado y mancuernas v. 2",
-    "dumbbell lying pronation": "pronación acostada con mancuernas",
-    "cable kneeling triceps extension": "extensión de tríceps arrodillado con cable",
-    "dumbbell decline one arm fly": "descenso con mancuernas con un brazo",
-    "straddle planche": "plancha a horcajadas",
-    "cable hammer curl (with rope)": "enrollamiento de martillo de cable (con cuerda)",
-    "swimmer kicks v. 2 (male)": "patadas de nadador v. 2 (masculino)",
-    "smith machine bicep curl": "Curl de bíceps con máquina Smith",
-    "dumbbell one leg fly on exercise ball": "vuelo con una pierna con mancuernas sobre una pelota de ejercicio",
-    "cable lying fly": "mosca tendido cable",
-    "dumbbell reverse wrist curl": "Curl de muñeca inverso con mancuernas",
-    "dumbbell one arm pullover on exercise ball": "Jersey con mancuernas de un brazo sobre una pelota de ejercicio",
-    "incline reverse grip push-up": "flexión inclinada con agarre inverso",
-    "quads": "cuádriceps",
-    "kettlebell figure 8": "pesa rusa figura 8",
-    "dumbbell high curl": "curl alto con mancuernas",
-    "cross body crunch": "abdominales cruzados",
-    "cable standing rear delt row (with rope)": "remo de deltoides trasero de pie con cable (con cuerda)",
-    "russian twist": "giro ruso",
-    "ez barbell anti gravity press": "Press antigravedad con barra ez",
-    "backward jump": "salto hacia atrás",
-    "kettlebell thruster": "propulsor de pesas rusas",
-    "barbell rack pull": "tirón del estante con barra",
-    "resistance band seated shoulder press": "Press de hombros sentado con banda de resistencia",
-    "triceps press": "prensa de tríceps",
-    "dumbbell one arm bench fly": "vuelo en banco con un brazo y mancuernas",
-    "arms overhead full sit-up (male)": "abdominales completos con brazos por encima de la cabeza (masculino)",
-    "impossible dips": "caídas imposibles",
-    "dumbbell lying one arm rear lateral raise": "mancuerna tumbada con un brazo en elevación lateral trasera",
-    "dumbbell press on exercise ball": "press con mancuernas sobre una pelota de ejercicios",
-    "lever seated calf press": "press de pantorrillas sentado con palanca",
-    "dumbbell alternate side press": "Press lateral alterno con mancuernas",
-    "low glute bridge on floor": "puente bajo de glúteos en el suelo",
-    "macro style weighted one hand pull up": "estilo macro ponderado con una mano hacia arriba",
-    "inverted style smith seated shoulder press": "Press de hombros sentado Smith estilo invertido",
-    "cable low seated row controlled": "cable fila baja sentada controlada",
-    "wall style dumbbell pullover hip extension on exercise ball": "Extensión de cadera con jersey con mancuernas estilo pared sobre pelota de ejercicios",
-    "cable kneeling crunch - gentle variation": "Crujido con cable arrodillado - variación suave",
-    "band alternating v-up with simple": "banda alternando v-up con simple",
-    "ez barbell close grip preacher curl - precision variation": "Curl predicador con agarre cerrado y barra ez - variación de precisión",
-    "hanging pike with intense": "lucio colgante con intenso",
-    "side cable high row (kneeling)": "fila alta con cable lateral (de rodillas)",
-    "blunt cable standing crunch": "Crujido de cable contundente",
-    "barbell lying triceps extension double": "extensión de tríceps tumbado con barra doble",
-    "fierce weighted straight bar dip": "Inmersión feroz con barra recta ponderada",
-    "slow leg pull in flat bench": "tirón lento de piernas en banco plano",
-    "cable twisting pull with intensified": "tirón de torsión del cable con intensificación",
-    "suspended abdominal fallout - inclined variation": "caída abdominal suspendida - variación inclinada",
-    "inclined style pelvic tilt into bridge": "Inclinación pélvica de estilo inclinado hacia el puente",
-    "dumbbell incline one arm press on exercise ball modified": "inclinado con mancuernas press con un brazo sobre pelota de ejercicio modificada",
-    "cable kneeling rear delt row (with rope) (male) expanded": "remo de deltoides trasero arrodillado con cable (con cuerda) (macho) expandido",
-    "rotated dumbbell pronate-grip triceps extension": "Extensión de tríceps con agarre pronado y rotación con mancuernas",
-    "sled 45 degrees one leg press pointed": "trineo 45 grados prensa con una pierna puntiaguda",
-    "stretched full planche push-up": "flexión de plancha completa estirada",
-    "calf push stretch with hands against wall elite": "estiramiento de pantorrilla con manos contra la pared élite",
-    "clock push-up extreme": "flexiones de reloj extremas",
-    "lever military press with strength": "press militar de palanca con fuerza",
-    "half knee bends (male) with blunt": "dobla media rodilla (masculino) con contundente",
-    "dynamic style band side triceps extension": "Extensión de tríceps lateral con banda estilo dinámico",
-    "exercise ball seated triceps stretch wide": "pelota de ejercicios estiramiento de tríceps sentado ancho",
-    "band underhand pulldown with classic": "pulldown de banda por debajo con clásico",
-    "chest stretch with exercise ball partial": "estiramiento de pecho con pelota de ejercicios parcial",
-    "weighted lunge with swing twisted": "estocada ponderada con swing torcido",
-    "controlled band straight back stiff leg deadlift": "Peso muerto con pierna rígida y espalda recta con banda controlada",
-    "gentle style dumbbell one leg fly on exercise ball": "mancuerna de estilo suave con una pierna sobre una pelota de ejercicio",
-    "intense kettlebell two arm row": "intenso remo de dos brazos con pesa rusa",
-    "contracted kettlebell extended range one arm press on floor": "Press con un brazo de rango extendido con pesa rusa contraído en el suelo",
-    "triple style sled one leg calf press on leg press": "Prensa de pantorrilla con una pierna estilo trineo triple en prensa de piernas",
-    "resistance band leg extension declined": "extensión de pierna con banda de resistencia rechazada",
-    "dumbbell iron cross - improved variation": "cruz de hierro con mancuernas - variación mejorada",
-    "quick feet v. 2 with bent": "pies rápidos v. 2 con doblado",
-    "barbell wide reverse grip bench press horizontal": "Press de banca con agarre inverso ancho y barra horizontal",
-    "sissy squat isolation": "aislamiento en cuclillas mariquita",
-    "chair leg extended stretch with modified": "pierna de silla extendida estirada con modificado",
-    "cable concentration curl tempo": "concentración de cable tempo de curl",
-    "intense barbell straight leg deadlift": "Peso muerto intenso con barra y pierna recta",
-    "precision style lever bent-over row with v-bar": "Remo inclinado con palanca estilo precisión con barra en V",
-    "high style scapula push-up": "push-up de escápula de estilo alto",
-    "barbell reverse preacher curl inclined": "curl predicador inverso con barra inclinado",
-    "lever reverse grip preacher curl with precision": "palanca de agarre inverso predicador curl con precisión",
-    "narrow style band jack knife sit-up": "Abdominales estilo navaja con banda estrecha",
-    "forward lunge (male) with bench": "estocada hacia adelante (masculino) con banco",
-    "alternating bear crawl": "rastreo de oso alterno",
-    "single style cable standing crunch (with rope attachment)": "Crujiente de cable de estilo único (con accesorio de cuerda)",
-    "rough band push sit-up": "abdominales con empuje de banda áspera",
-    "fast style resistance band seated hip abduction": "Abducción de cadera sentado con banda de resistencia de estilo rápido",
-    "pure chin-up": "pura dominada",
-    "light lever standing chest press": "Press de pecho de pie con palanca ligera",
-    "resistance band seated shoulder press with declined": "Press de hombros sentado con banda de resistencia y declinado",
-    "barbell prone incline curl with intensive": "Curl inclinado boca abajo con barra con intensivo",
-    "barbell standing reverse grip curl resistance": "resistencia al curl con agarre inverso con barra",
-    "exercise ball hip flexor stretch pointed": "pelota de ejercicio estiramiento del flexor de la cadera puntiagudo",
-    "rough band hip lift": "levantamiento de cadera con banda rugosa",
-    "flexible assisted prone hamstring": "isquiotibiales flexibles en prono asistido",
-    "incline push-up (on box) - active variation": "Flexión inclinada (en caja) - variación activa",
-    "barbell bent arm pullover - powerful variation": "Jersey con barra y brazo doblado - variación potente",
-    "core barbell upright row v. 2": "remo vertical con barra central v. 2",
-    "dumbbell step up single leg balance with bicep curl - chair variation": "aumento con mancuernas equilibrio sobre una sola pierna con curl de bíceps - variación en silla",
-    "band one arm standing low row - lateral variation": "banda un brazo de pie fila baja - variación lateral",
-    "endurance style one arm dip": "inmersión con un brazo estilo resistencia",
-    "cable side bend smooth": "Curva lateral del cable suave",
-    "dumbbell decline shrug - rigid variation": "Encogimiento de hombros con mancuernas - variación rígida",
-    "pulse style walk elliptical cross trainer": "Bicicleta elíptica estilo pulso para caminar",
-    "balance cable incline fly": "cable de equilibrio vuelo inclinado",
-    "cocoons with mega": "capullos con mega",
-    "cable incline bench row - elite variation": "remo en banco inclinado con cable - variación élite",
-    "flexible cable triceps pushdown (v-bar)": "Flexión de tríceps con cable flexible (barra en V)",
-    "advanced dumbbell stiff leg deadlift": "Peso muerto avanzado con piernas rígidas y mancuernas",
-    "hold style dumbbell alternating seated bicep curl on exercise ball": "mantenga el estilo con mancuernas alternando curl de bíceps sentado sobre una pelota de ejercicio",
-    "active style cable pushdown": "Empuje de cable estilo activo",
-    "stability style band kneeling one arm pulldown": "banda estilo estabilidad arrodillado con un brazo pulldown",
-    "rounded twisted leg raise (female)": "elevación de pierna redondeada y torcida (mujer)",
-    "wide-grip chest dip on high parallel bars - low variation": "fondos de pecho con agarre ancho en barras paralelas altas - variación baja",
-    "cable one arm incline press with rigid": "Prensa inclinada de un brazo con cable con rígido",
-    "exercise ball alternating arm ups with fast": "pelota de ejercicio alternando brazos arriba con rápido",
-    "hanging pike weak": "lucio colgante débil",
-    "one arm against wall compressed": "un brazo contra la pared comprimido",
-    "ez barbell decline close grip face press - mini variation": "Press facial con agarre cerrado y descenso con barra ez - mini variación",
-    "weighted one hand pull up fast": "con una mano pesada, levántela rápidamente",
-    "incline push up depth jump with complex": "Salto en profundidad con flexión inclinada y complejo",
-    "pointed cable palm rotational row": "fila rotacional de palma de cable puntiagudo",
-    "intermediate style dumbbell preacher curl over exercise ball": "Curl predicador con mancuernas de estilo intermedio sobre pelota de ejercicios",
-    "iron cross stretch - deep variation": "Estiramiento de cruz de hierro - variación profunda",
-    "all fours squad stretch - elevated variation": "estiramiento del escuadrón a cuatro patas - variación elevada",
-    "isolation assisted seated pectoralis major stretch with stability ball": "Estiramiento del pectoral mayor sentado asistido por aislamiento con balón de estabilidad",
-    "one leg squat - expanded variation": "Sentadilla con una pierna - variación ampliada",
-    "targeted style smith close-grip bench press": "Press de banca con agarre cerrado estilo Smith dirigido",
-    "dumbbell one arm prone hammer curl - macro variation": "Curl de martillo boca abajo con un brazo con mancuernas - variación macro",
-    "push-up (wall) with static": "flexiones (pared) con estática",
-    "fierce style forward lunge (male)": "Estocada hacia adelante con estilo feroz (masculino)",
-    "chin-up diagonal": "dominadas diagonales",
-    "cable judo flip with static": "cable judo flip con estática",
-    "dumbbell over bench one arm wrist curl - strength variation": "curl de muñeca con un brazo y mancuerna sobre banco - variación de fuerza",
-    "lying leg-hip raise - contracted variation": "Elevación de pierna y cadera acostado - variación contraída",
-    "prone medicine ball close grip push up": "balón medicinal boca abajo, agarre cerrado, flexión hacia arriba",
-    "triceps dip (between benches) - extreme variation": "fondos de tríceps (entre bancos) - variación extrema",
-    "micro style barbell speed squat": "Sentadilla rápida estilo micro con barra",
-    "rough cable decline fly": "mosca de descenso de cable rugoso",
-    "stability lever narrow grip seated row": "palanca de estabilidad agarre estrecho fila sentada",
-    "twisted side-to-side chin": "mentón torcido de lado a lado",
-    "prone dumbbell upright shoulder external rotation": "rotación externa del hombro erguido con mancuernas boca abajo",
-    "controlled wrist rollerer": "rodillo de muñeca controlado",
-    "barbell incline bench press seated": "press de banca inclinado con barra sentado",
-    "barbell sitted alternate leg raise (female) with intermediate": "sentado con barra elevación de piernas alterna (femenino) con intermedio",
-    "push-up to side plank - athletic variation": "flexión de brazos hacia la plancha lateral - variación atlética",
-    "dumbbell seated one leg calf raise - hammer grip deep": "Elevación de pantorrilla con una pierna sentado con mancuernas - agarre de martillo profundo",
-    "gentle style cable pulldown (pro lat bar)": "Jalón con cable de estilo suave (barra pro lat)",
-    "inverted style inverse leg curl (on pull-up cable machine)": "Curl de piernas inverso estilo invertido (en máquina de dominadas con cable)",
-    "barbell high bar squat core": "sentadilla con barra alta con barra",
-    "sharp style dumbbell sumo pull through": "Sumo con mancuernas de estilo afilado se logra",
-    "rough cable standing one arm triceps extension": "extensión de tríceps con un brazo de pie con cable rugoso",
-    "assisted standing chin-up with focused": "dominadas de pie asistidas con concentración",
-    "single smith shoulder press": "press de hombros single smith",
-    "complete style ez bar lying close grip triceps extension behind head": "barra ez de estilo completo, extensión de tríceps con agarre cerrado detrás de la cabeza",
-    "smith one arm row linear": "smith fila de un brazo lineal",
-    "assisted pull-up inclined": "dominada asistida inclinada",
-    "cable seated row with reverse": "remo sentado con cable con reversa",
-    "dumbbell hammer curl with traditional": "Curl de martillo con mancuernas con tradicional",
-    "smith machine incline tricep extension - straight variation": "Extensión de tríceps inclinada con máquina Smith - variación recta",
-    "push-up on lower arms - resistance variation": "flexión de brazos en los antebrazos - variación de la resistencia",
-    "sled 45в° leg wide press - blunt variation": "Press de piernas en trineo a 45° - variación contundente",
-    "dumbbell lunge with firm": "Estocada con mancuernas con firmeza",
-    "improved sphinx": "esfinge mejorada",
-    "band seated twist pure": "banda asentada con giro puro",
-    "walk elliptical cross trainer - expanded variation": "Bicicleta elíptica para caminar - variación ampliada",
-    "smith bent over row with declined": "Smith se inclinó sobre la fila con rechazo",
-    "dumbbell incline one arm press on exercise ball with extended": "inclinación con mancuernas, presión con un brazo sobre la pelota de ejercicios con extensión",
-    "athletic style battling ropes": "cuerdas de lucha de estilo atlético",
-    "dumbbell reverse grip row (female) hold": "Remo con agarre inverso con mancuernas (femenino)",
-    "lever narrow grip seated row - strength variation": "remo sentado con palanca de agarre estrecho - variación de fuerza",
-    "traditional barbell romanian deadlift": "Peso muerto rumano tradicional con barra",
-    "exercise ball one leg prone lower body rotation fierce": "pelota de ejercicios una pierna propensa a la rotación de la parte inferior del cuerpo feroz",
-    "kettlebell arnold press - beginner variation": "Press Arnold con pesas rusas - variación para principiantes",
-    "fluid dumbbell step-up lunge": "estocada fluida con mancuernas",
-    "quads complex": "complejo de quads",
-    "lever assisted chin-up with twisted": "dominadas asistidas por palanca con giro",
-    "push up on bosu ball with improved": "Empuje hacia arriba en la pelota bosu con mejora",
-    "dynamic style barbell lying back of the head tricep extension": "Extensión de tríceps con barra estilo dinámico recostada detrás de la cabeza",
-    "deep smith machine reverse decline close grip bench press": "Press de banca con agarre cerrado y descenso inverso en máquina Deep Smith",
-    "hanging straight leg raise with elevated": "Elevación de pierna recta colgando con elevación",
-    "upright smith incline bench press": "press de banca inclinado vertical smith",
-    "extended style inverted row": "fila invertida de estilo extendido",
-    "dumbbell one arm fly on exercise ball improved": "Mancuerna con un brazo sobre pelota de ejercicio mejorada",
-    "hanging straight twisting leg hip raise with compound": "elevación de cadera con pierna recta y torcida colgando con compuesto",
-    "fast band straight leg deadlift": "Peso muerto con pierna recta y banda rápida",
-    "cable lateral pulldown (with rope attachment) core": "núcleo de tracción lateral del cable (con sujeción de cuerda)",
-    "dumbbell around pullover - intensive variation": "mancuerna alrededor del jersey - variación intensiva",
-    "sit-up with arms on chest with mini": "abdominales con los brazos sobre el pecho con mini",
-    "squared reverse grip machine lat pulldown": "Jalón lateral con máquina de agarre inverso cuadrado",
-    "targeted style single leg calf raise (on a dumbbell)": "Elevación de pantorrilla con una sola pierna con estilo dirigido (con mancuernas)",
-    "chest and front of shoulder stretch micro": "micro elástico en el pecho y la parte delantera del hombro",
-    "kettlebell seated press with high": "Press sentado con pesas rusas con altura",
-    "barbell squat (on knees) with pure": "sentadilla con barra (de rodillas) con pura",
-    "tough cable one arm lateral raise": "cable resistente elevación lateral con un brazo",
-    "kipping muscle up with triple": "levantando músculos con triple",
-    "intermediate style kneeling plank tap shoulder (male)": "Tablón de rodillas de estilo intermedio golpeando el hombro (masculino)",
-    "intensified style kettlebell extended range one arm press on floor": "Press con un brazo en el suelo con pesas rusas de rango extendido estilo intensificado",
-    "supine style band alternating v-up": "banda estilo supino alternando v-up",
-    "assisted standing triceps extension (with towel) with horizontal": "extensión de tríceps de pie asistida (con toalla) con horizontal",
-    "wall style dumbbell one arm french press on exercise ball": "Press francés con un brazo con mancuernas estilo pared sobre pelota de ejercicios",
-    "side-to-side chin with reverse": "mentón de lado a lado con reverso",
-    "macro style close-grip push-up": "Flexiones estilo macro con agarre cerrado",
-    "gentle prone twist on stability ball": "giro suave en decúbito prono sobre la pelota de estabilidad",
-    "cable rope incline tricep extension - reverse variation": "Extensión de tríceps inclinada con cuerda y cable - variación inversa",
-    "cable squat row (with rope attachment) heavy": "remo en cuclillas con cable (con sujeción de cuerda) pesado",
-    "band vertical pallof press - seated variation": "press pallof vertical con banda - variación sentado",
-    "barbell reverse wrist curl - prone variation": "Curl de muñeca inverso con barra - variación boca abajo",
-    "firm style hanging oblique knee raise": "Elevación de rodilla oblicua colgante estilo firme",
-    "horizontal dumbbell standing alternate overhead press": "Press de hombros alterno de pie con mancuernas horizontales"
+    "inverse leg curl (bench support)": "umgekehrter Beinbeuger (Bankruhe)",
+    "ez bar standing french press": "Stehende French Press mit ez Bar",
+    "ski ergometer": "Ski-Ergometer",
+    "hanging straight leg hip raise": "Hängendes Hüftheben mit geradem Bein",
+    "lying leg raise flat bench": "Flachbank mit liegendem Beinheben",
+    "dumbbell biceps curl (with arm blaster)": "Kurzhantel-Bizeps-Curl (mit Armblaster)",
+    "cable one arm press on exercise ball": "Einarmiges Kabeldrücken auf einem Gymnastikball",
+    "one arm dip": "einarmiger Tauchgang",
+    "cable concentration curl": "Kabelkonzentrationskrümmung",
+    "dumbbell decline shrug v. 2": "Schulterzucken mit Kurzhanteln v. 2",
+    "dumbbell close grip press": "Kurzhanteldrücken mit engem Griff",
+    "sissy squat": "Sissy-Kniebeuge",
+    "cable hip adduction": "Kabel-Hüftadduktion",
+    "barbell sitted alternate leg raise": "Abwechselndes Beinheben mit der Langhantel im Sitzen",
+    "band alternating biceps curl": "Abwechselnder Bizepscurl mit Band",
+    "march sit (wall)": "marschieren sitzend (Wand)",
+    "dynamic chest stretch (male)": "dynamische Brustdehnung (männlich)",
+    "medicine ball overhead slam": "Überkopfschlag mit Medizinball",
+    "dumbbell one arm lateral raise with support": "Einarmiges Hantel-Seitheben mit Unterstützung",
+    "ez-bar biceps curl (with arm blaster)": "EZ-Bar-Bizeps-Curl (mit Blaster-Arm)",
+    "bench hip extension": "Bank-Hüftverlängerung",
+    "behind head chest stretch": "Brustdehnung hinter dem Kopf",
+    "medicine ball chest push multiple response": "Medizinball Brustdrücken Mehrfachantwort",
+    "smith sprint lunge": "Smith-Speed-Ausfallschritt",
+    "assisted lying calves stretch": "Unterstützte Wadendehnung im Liegen",
+    "walk elliptical cross trainer": "Ellipsentrainer",
+    "dumbbell standing alternate hammer curl and press": "Stehend mit Kurzhanteln, abwechselnd Hammercurls und Pressen",
+    "scapular pull-up": "Schulterblatt-Klimmzüge",
+    "barbell incline close grip bench press": "Schrägbankdrücken mit der Langhantel und engem Griff",
+    "kettlebell one arm row": "Einarmiges Kettlebell-Rudern",
+    "half sit-up (male)": "mittlerer Bauch (männlich)",
+    "cable high row (kneeling)": "hohes Reihenkabel (kniend)",
+    "cable bar lateral pulldown": "seitliches Absenken der Kabelschiene",
+    "bodyweight drop jump squat": "Sprung- und Kniebeugen im Körpergewicht",
+    "hanging leg hip raise": "Hüftheben des hängenden Beins",
+    "dumbbell incline y-raise": "Hantelneigung Y-Raise",
+    "dumbbell lunge": "Ausfallschritt mit Kurzhanteln",
+    "one leg donkey calf raise": "Einbeiniges Esel-Wadenheben",
+    "barbell narrow stance squat": "Langhantelkniebeuge mit schmalem Stand",
+    "dumbbell one arm hammer preacher curl": "Einarmiger Hammercurl mit Kurzhanteln",
+    "barbell decline wide-grip pullover": "Pullover mit breitem Griff und Langhantelabstieg",
+    "shoulder tap": "tippe auf die Schulter",
+    "smith full squat": "Smith volle Kniebeuge",
+    "self assisted inverse leg curl": "Selbstunterstützter umgekehrter Beinbeuger",
+    "exercise ball hug": "Gymnastikball-Umarmung",
+    "monster walk": "Monsterfahrt",
+    "bodyweight standing calf raise": "Wadenheben im Stehen im Körpergewicht",
+    "lever bent-over row with v-bar": "geneigte Reihe mit V-Bar-Hebel",
+    "smith decline reverse-grip press": "Smith Decline Press mit Reverse Grip",
+    "negative crunch": "negative Krise",
+    "pull up (neutral grip)": "hochziehen (neutraler Griff)",
+    "dumbbell incline fly": "Schräghantelfliegen",
+    "band straight leg deadlift": "Kreuzheben mit gestrecktem Bein und Band",
+    "dumbbell seated bent over alternate kickback": "Hantel im Sitzen, vorgebeugt, alternativer Rückschlag",
+    "smith back shrug": "Smith zuckt mit den Schultern",
+    "dumbbell one arm chest fly on exercise ball": "Hantel mit einem Arm auf der Brust auf einem Gymnastikball",
+    "cable one arm bent over row": "Kabel mit einem Arm über die Reihe gebeugt",
+    "hyght dumbbell fly": "Hochflug mit Hanteln",
+    "band kneeling one arm pulldown": "Knieband mit gezogenem Arm",
+    "dumbbell standing one arm palm in press": "Stehende Hantel mit einem Arm und Handballenpresse",
+    "3/4 sit-up": "3/4 Bauchmuskeln",
+    "barbell one arm snatch": "Einarmiges Langhantelreißen",
+    "inverted row with straps": "umgekehrte Zeile mit geschweiften Klammern",
+    "dumbbell standing calf raise": "Wadenheben mit Kurzhanteln im Stehen",
+    "smith standing leg calf raise": "Wadenheben im Stehen",
+    "flexion leg sit up (straight arm)": "Sitzende Beinbeugung (gestreckter Arm)",
+    "circles knee stretch": "Kniedehnung im Kreis",
+    "weighted russian twist": "gewichteter russischer Twist",
+    "arm slingers hanging straight legs": "Schleuderer hängen mit geraden Beinen",
+    "roller hip stretch": "Roll-Hüftdehnung",
+    "smith machine reverse decline close grip bench press": "Smith Machine Close Grip Reverse Lowering Bankdrücken",
+    "star jump (male)": "Sternsprung (männlich)",
+    "one leg floor calf raise": "Wadenheben am Boden mit einem Bein",
+    "walking high knees lunge": "Ausfallschritt mit hohen Knien",
+    "elbow lift - reverse push-up": "Ellenbogenheben – Rückwärtsbeugung",
+    "weighted one hand pull up": "Einhand-Klimmzug mit Gewicht",
+    "barbell curl": "Langhantelcurl",
+    "dumbbell one arm reverse fly (with support)": "Hantel mit einem Arm nach hinten (mit Unterstützung)",
+    "dumbbell bicep curl on exercise ball with leg raised": "Kurzhantel-Bizepscurl auf einem Gymnastikball mit angehobenem Bein",
+    "exercise ball hip flexor stretch": "Hüftbeuger-Stretch-Gymnastikball",
+    "lever lying two-one leg curl": "Zweibeiniger Hebelcurl im Liegen",
+    "cable standing back wrist curl": "Stehender Kabel-Handgelenkscurl nach hinten",
+    "lever seated dip": "Hebel sitzend Dip",
+    "standing calves": "stehende Kälber",
+    "dumbbell palms in incline bench press": "Hantel-Handflächen beim Schrägbankdrücken",
+    "barbell standing twist": "Langhantel-Stehdrehung",
+    "lever kneeling twist": "Kniehebeldrehung",
+    "incline leg hip raise (leg straight)": "Kippbein-Hüftheben (gestrecktes Bein)",
+    "dumbbell straight arm pullover": "Hantelpullover mit gestreckten Armen",
+    "dumbbell goblet squat": "Goblet Squat mit Hanteln",
+    "barbell decline bench press": "Bankdrücken mit der Langhantel",
+    "lever assisted chin-up": "Hebelunterstützte Klimmzüge",
+    "lever alternate leg press": "Hebel alternative Beinpresse",
+    "chest tap push-up (male)": "Brustbeugung (männlich)",
+    "dumbbell seated preacher curl": "Sitzender Kurzhantel-Preacher-Curl",
+    "weighted front raise": "gewichteter Frontlift",
+    "reverse dip": "umgekehrtes Eintauchen",
+    "dumbbell seated reverse grip one arm overhead tricep extension": "Kurzhantel sitzend, umgekehrter Griff, einarmiger Überkopf-Trizeps-Strecken",
+    "kettlebell one arm push press": "Kettlebell One Arm Push Press",
+    "dumbbell alternate seated hammer curl": "Abwechselnder Hammercurl mit Kurzhanteln im Sitzen",
+    "reverse grip pull-up": "Klimmzüge mit umgekehrtem Griff",
+    "captains chair straight leg raise": "Kapitänsstuhl mit geradem Beinlift",
+    "power clean": "elektrische Reinigung",
+    "ez bar seated close grip concentration curl": "Ez-Bar, sitzend, enger Griff, Konzentration, Curl",
+    "forward lunge (male)": "Ausfallschritt nach vorne (männlich)",
+    "dumbbell alternating bicep curl with leg raised on exercise ball": "Abwechselnder Bizepscurl mit Kurzhanteln und angehobenem Bein auf einem Gymnastikball",
+    "triceps dip": "Trizeps-Dip",
+    "lever seated row": "Sitzreihe mit Hebel",
+    "ez barbell decline close grip face press": "Close Grip Face Press und EZ Bar Drop",
+    "smith one leg floor calf raise": "Boden-Wadenheben mit One Leg Smith",
+    "hanging straight twisting leg hip raise": "Hängendes, gerades, rotierendes Bein, Hüftheben",
+    "lever seated crunch (chest pad)": "Hebelsitz-Crunches (Brustpolster)",
+    "cable one arm fly on exercise ball": "ein Armkabel und fliege über einen Gymnastikball",
+    "oblique crunch v. 2": "Schräges Knirschen v. 2",
+    "cable cross-over variation": "Variation der Kabelkreuzung",
+    "dumbbell over bench wrist curl": "Hantel-Handgelenkcurl auf der Bank",
+    "barbell single leg split squat": "Einbeinige geteilte Langhantel-Kniebeuge",
+    "dumbbell lying single extension": "einfache Hantelverlängerung im Liegen",
+    "dumbbell incline one arm hammer press": "Einarmige Schräghantel-Hammerpresse",
+    "sled 45в° calf press": "Schlitten 45° Wadenpresse",
+    "pike-to-cobra push-up": "Hecht-zu-Kobra-Flexion",
+    "barbell seated overhead press": "Langhantel-Überkopfdrücken im Sitzen",
+    "smith shoulder press": "Smith Schulterdrücken",
+    "cable pushdown (straight arm) v. 2": "Kabelschub (gerader Arm) v. 2",
+    "weighted hyperextension (on stability ball)": "gewichtete Hyperextension (auf dem Stabilitätsball)",
+    "frog crunch": "Froschknirschen",
+    "dumbbell lying hammer press": "Liegendes Hantelhammerdrücken",
+    "dumbbell one arm kickback": "einarmiger Hantelrückschlag",
+    "chest and front of shoulder stretch": "Dehnung der Brust und der vorderen Schulter",
+    "dumbbell standing front raise above head": "Überkopfhantel-Frontheben im Stehen",
+    "ankle circles": "Kreise an den Knöcheln",
+    "roller hip lat stretch": "seitliche Hüftdehnung mit Rolle",
+    "cable incline bench row": "Kabelschrägbankreihe",
+    "lever bent over row": "über die Reihe geneigter Hebel",
+    "barbell standing wide military press": "Stehendes Langhantel-Militärdrücken",
+    "barbell sitted alternate leg raise (female)": "Alternativer Beinheben mit der Langhantel im Sitzen (Frau)",
+    "ez barbell seated curls": "Ez-Bar-Curl im Sitzen",
+    "assisted parallel close grip pull-up": "Unterstützte Parallelklimmzüge mit engem Griff",
+    "dumbbells seated triceps extension": "Sitzende Trizepsstreckung mit Kurzhanteln",
+    "hanging pike": "hängender Hecht",
+    "weighted standing hand squeeze": "Stehender Händedruck mit Gewicht",
+    "dumbbell biceps curl": "Kurzhantel-Bizeps-Curl",
+    "cable straight arm pulldown (with rope)": "Kabelzug mit geradem Arm (mit Seil)",
+    "lever narrow grip seated row": "schmaler Griffhebel Sitzreihe",
+    "box jump down with one leg stabilization": "Abwärts-Boxsprung mit einbeiniger Stabilisierung",
+    "dumbbell seated kickback": "Sitzender Hantel-Kickback",
+    "dumbbell clean": "Hantel sauber",
+    "elbow-to-knee": "Ellenbogen bis Knie",
+    "lever seated reverse fly": "Rückwärtsgang mit sitzendem Hebel",
+    "resistance band seated straight back row": "Widerstandsband sitzt in der hinteren Reihe",
+    "weighted russian twist v. 2": "gewichteter russischer Twist v. 2",
+    "world greatest stretch": "größte Strecke der Welt",
+    "lever incline chest press": "Schräghebel-Brustpresse",
+    "back pec stretch": "Rücken-Brustdehnung",
+    "cable curl": "Kabelaufwicklung",
+    "exercise ball supine triceps extension": "Übungsball für Trizepsverlängerung in Rückenlage",
+    "twisted leg raise": "verdrehtes Beinheben",
+    "cable side bend crunch (bosu ball)": "Cable Side Bend Crunch (Bosu Ball)",
+    "clap push up": "klatschen, nach oben beugen",
+    "dumbbell hammer curl": "Hammercurl mit Kurzhanteln",
+    "rear pull-up": "Hinterer Klimmzug",
+    "dumbbell one arm zottman preacher curl": "Zottman-Prediger-Curl mit einem Arm und Hanteln",
+    "barbell lateral lunge": "Seitlicher Ausfallschritt mit der Langhantel",
+    "push-up medicine ball": "Medizinball für Liegestütze",
+    "lever standing calf raise": "Hebel stehendes Wadenheben",
+    "kettlebell alternating hang clean": "abwechselnd Kettlebell hängen sauber",
+    "dumbbell rear delt row_shoulder": "Hintere Schulterreihe mit Kurzhanteln",
+    "cable reverse wrist curl": "Kabel-Reverse-Handgelenkscurl",
+    "cable standing crunch (with rope attachment)": "stehendes Kabelknarren (mit Seilbefestigung)",
+    "kettlebell advanced windmill": "Fortgeschrittene Windmühle mit Kettlebell",
+    "standing hamstring and calf stretch with strap": "Stehende Kniesehnen- und Wadendehnung mit Riemen",
+    "ez bar french press on exercise ball": "EZ Bar French Press auf Gymnastikball",
+    "single leg platform slide": "einbeinige Plattformrutsche",
+    "lever one arm lateral wide pulldown": "Hebel mit einem Arm seitlich nach unten weit",
+    "cable standing one leg calf raise": "Einbeiniges Wadenheben am Kabelzug",
+    "cable pulldown": "Kabelabstieg",
+    "london bridge": "Londoner Brücke",
+    "ez bar reverse grip bent over row": "Vorgebeugter Ruder-Reverse-EZ-Lenkergriff",
+    "band single leg calf raise": "einbeiniges Wadenheben mit Bändern",
+    "band one arm twisting seated row": "Band mit einarmiger Drehung in sitzender Reihe",
+    "dumbbell pullover on exercise ball": "Hantelpullover auf Gymnastikball",
+    "quarter sit-up": "Bauchraum",
+    "all fours squad stretch": "Teamdehnung auf allen Vieren",
+    "lever seated reverse fly (parallel grip)": "Rückwärtsgang mit sitzendem Hebel (Parallelgriff)",
+    "dumbbell decline one arm hammer press": "Hantel-Downhill-Einarm-Hammerdrücken",
+    "jump squat v. 2": "Kniebeuge mit Sprung v. 2",
+    "cable rear drive": "hinterer Kabelantrieb",
+    "barbell skier": "Skifahrer mit Bar",
+    "dumbbell over bench one arm wrist curl": "Einarmige Hantel-Handgelenkbeuge auf der Bank",
+    "dumbbell incline bench press": "Schräghantelbankdrücken",
+    "cable rope seated row": "Kabelseil-Sitzreihe",
+    "smith behind neck press": "Smith hinter dem Nacken drücken",
+    "farmers walk": "Bauernspaziergang",
+    "cable squat row (with rope attachment)": "Cable Squat Row (mit Seilbefestigung)",
+    "cable straight back seated row": "Sitzreihe mit gerader Rückenlehne",
+    "lever decline chest press": "Schräghebel-Brustpresse",
+    "lever lateral raise": "Seitenhebellift",
+    "inchworm v. 2": "Zollwurm v. 2",
+    "kneeling plank tap shoulder (male)": "Kniebrett trifft Schulter (männlich)",
+    "handstand push-up": "Hand-Liegestütz",
+    "sled closer hack squat": "Hack-Kniebeuge näher an den Schlitten",
+    "dumbbell rear delt raise": "Hantel-Deltaheben hinten",
+    "medicine ball chest push single response": "Brustdrücken mit Medizinball, Einzellösung",
+    "rocking frog stretch": "Schaukelfrosch-Stretch",
+    "dumbbell one arm shoulder press v. 2": "Einarmiges Schulterdrücken mit Kurzhanteln V. 2",
+    "dumbbell step-up split squat": "Split-Kniebeuge mit Kurzhanteln",
+    "standing behind neck press": "stehend hinter den Nacken drücken",
+    "biceps narrow pull-ups": "schmale Bizeps-Klimmzüge",
+    "hands clasped circular toe touch (male)": "verschränkte Hände, kreisförmige Zehenberührung (männlich)",
+    "l-pull-up": "dominiert in l",
+    "smith leg press": "Smith Beinpresse",
+    "dumbbell reverse grip row (female)": "Kurzhantelrudern mit umgekehrtem Griff (weiblich)",
+    "dumbbell reverse bench press": "umgekehrtes Hantelbankdrücken",
+    "dumbbell cross body hammer curl v. 2": "Hammercurl mit Kreuzkörper und Kurzhanteln v. 2",
+    "dumbbell lying pronation": "Liegende Pronation mit Hanteln",
+    "cable kneeling triceps extension": "Kabelgebundene kniende Trizepsverlängerung",
+    "dumbbell decline one arm fly": "Einarmiger Hantel-Dip",
+    "straddle planche": "Spreizbrett",
+    "cable hammer curl (with rope)": "Kabelhammerwicklung (mit Seil)",
+    "swimmer kicks v. 2 (male)": "Schwimmertritte v. 2 (männlich)",
+    "smith machine bicep curl": "Smith Machine Bizeps Curl",
+    "dumbbell one leg fly on exercise ball": "Einbeinige Hantelfliege auf einem Gymnastikball",
+    "cable lying fly": "Kabelverlegefliege",
+    "dumbbell reverse wrist curl": "Umgekehrter Kurzhantel-Handgelenkscurl",
+    "dumbbell one arm pullover on exercise ball": "Einarmiger Hantelpullover auf einem Gymnastikball",
+    "incline reverse grip push-up": "Schrägliegestütz mit umgekehrtem Griff",
+    "quads": "Quadrizeps",
+    "kettlebell figure 8": "Kettlebell Figur 8",
+    "dumbbell high curl": "hoher Kurzhantelcurl",
+    "cross body crunch": "gekreuzte Bauchmuskeln",
+    "cable standing rear delt row (with rope)": "Kabel stehende hintere Deltareihe (mit Seil)",
+    "russian twist": "Russische Wendung",
+    "ez barbell anti gravity press": "Antigravitationspresse mit ez Bar",
+    "backward jump": "zurückspringen",
+    "kettlebell thruster": "Kettlebell-Triebwerk",
+    "barbell rack pull": "Langhantelständer ziehen",
+    "resistance band seated shoulder press": "Schulterdrücken im Sitzen mit Widerstandsband",
+    "triceps press": "Trizepsdrücken",
+    "dumbbell one arm bench fly": "Bankfliegen mit einem Arm und Hanteln",
+    "arms overhead full sit-up (male)": "Volle Sit-ups mit Armen über dem Kopf (männlich)",
+    "impossible dips": "unmögliche Stürze",
+    "dumbbell lying one arm rear lateral raise": "Hantel liegend mit einem Arm im hinteren Seitheben",
+    "dumbbell press on exercise ball": "Hanteldrücken auf einem Gymnastikball",
+    "lever seated calf press": "Wadenpresse mit Hebelsitz",
+    "dumbbell alternate side press": "Abwechselndes seitliches Hanteldrücken",
+    "low glute bridge on floor": "niedrige Gesäßbrücke auf dem Boden",
+    "macro style weighted one hand pull up": "gewichteter Makrostil mit einer Hand nach oben",
+    "inverted style smith seated shoulder press": "Inverted Smith Schulterdrücken im Sitzen",
+    "cable low seated row controlled": "Kontrolliertes sitzendes niedriges Reihenkabel",
+    "wall style dumbbell pullover hip extension on exercise ball": "Wand-Hantel-Pullover-Hüftverlängerung auf Gymnastikball",
+    "cable kneeling crunch - gentle variation": "Kniender Cable Crunch – Sanfte Variante",
+    "band alternating v-up with simple": "Band abwechselnd V-Up mit einfachem",
+    "ez barbell close grip preacher curl - precision variation": "Preacher Curl mit engem Griff und EZ-Stange – Präzisionsvariante",
+    "hanging pike with intense": "hängender Hecht mit intensivem",
+    "side cable high row (kneeling)": "seitliches Kabel hohes Rudern (kniend)",
+    "blunt cable standing crunch": "Stumpfes Kabelknirschen",
+    "barbell lying triceps extension double": "Doppelstange liegende Trizepsverlängerung",
+    "fierce weighted straight bar dip": "Heftiger Dip mit gewichteter gerader Stange",
+    "slow leg pull in flat bench": "Langsamer Beinzug auf der Flachbank",
+    "cable twisting pull with intensified": "verdrehender Seilzug mit Verstärkung",
+    "suspended abdominal fallout - inclined variation": "schwebender Bauchabfall – Neigungsvariation",
+    "inclined style pelvic tilt into bridge": "Beckenneigung im Brückenstil",
+    "dumbbell incline one arm press on exercise ball modified": "Schräghantel mit einem Arm auf den modifizierten Gymnastikball drücken",
+    "cable kneeling rear delt row (with rope) (male) expanded": "Cable Kneeling Rear Delt Row (mit Seil) (männlich) erweitert",
+    "rotated dumbbell pronate-grip triceps extension": "Pronierter Griff, Trizepsverlängerung und Hantelrotation",
+    "sled 45 degrees one leg press pointed": "Schlitten 45-Grad-Presse mit einem spitzen Bein",
+    "stretched full planche push-up": "gestreckter Full Plank Curl",
+    "calf push stretch with hands against wall elite": "Wadendehnung mit den Händen gegen die Wand Elite",
+    "clock push-up extreme": "extreme Uhr-Liegestütze",
+    "lever military press with strength": "Militärische Hebelpresse mit Kraft",
+    "half knee bends (male) with blunt": "Beuge das halbe Knie (männlich) mit Kraft",
+    "dynamic style band side triceps extension": "Seitliche Trizepsstreckung mit banddynamischem Stil",
+    "exercise ball seated triceps stretch wide": "weit sitzender Trizeps-Stretch-Gymnastikball",
+    "band underhand pulldown with classic": "Band-Pulldown unten mit klassischem",
+    "chest stretch with exercise ball partial": "Teilweise Dehnung der Brust mit dem Gymnastikball",
+    "weighted lunge with swing twisted": "Ausfallschritt mit Gewicht und krummem Schwung",
+    "controlled band straight back stiff leg deadlift": "Kreuzheben mit steifem Bein und geradem Rücken mit kontrolliertem Band",
+    "gentle style dumbbell one leg fly on exercise ball": "Hantel im sanften Stil mit einem Bein auf einem Gymnastikball",
+    "intense kettlebell two arm row": "intensives zweiarmiges Kettlebell-Rudern",
+    "contracted kettlebell extended range one arm press on floor": "Einarmiges Kettlebelldrücken mit erweiterter Reichweite auf dem Boden",
+    "triple style sled one leg calf press on leg press": "Einbeinige Wadenpresse, Dreifachschlitten-Beinpresse",
+    "resistance band leg extension declined": "Widerstandsband-Beinstreckung abgelehnt",
+    "dumbbell iron cross - improved variation": "Eisernes Kreuz mit Hanteln – verbesserte Variante",
+    "quick feet v. 2 with bent": "schnelle Füße v. 2 mit gefaltetem",
+    "barbell wide reverse grip bench press horizontal": "Reckbankdrücken mit weitem Rückwärtsgriff",
+    "sissy squat isolation": "Sissy-Squat-Isolation",
+    "chair leg extended stretch with modified": "verlängertes Stuhlbein gestreckt mit modifiziertem",
+    "cable concentration curl tempo": "Cable Curl Tempo Konzentration",
+    "intense barbell straight leg deadlift": "Intensives Kreuzheben mit Langhantel und gestrecktem Bein",
+    "precision style lever bent-over row with v-bar": "Über die Reihe gebogener V-Bar-Präzisionshebel",
+    "high style scapula push-up": "Schulterblatt-Push-up im hohen Stil",
+    "barbell reverse preacher curl inclined": "Schräghantel-Reverse-Preacher-Curl",
+    "lever reverse grip preacher curl with precision": "Reverse-Grip-Preacher-Curl-Hebel mit Präzision",
+    "narrow style band jack knife sit-up": "Schmalbandige Crunches im Rasiermesserstil",
+    "forward lunge (male) with bench": "Ausfallschritt nach vorne (männlich) mit Bank",
+    "alternating bear crawl": "alternatives Bärenkriechen",
+    "single style cable standing crunch (with rope attachment)": "Kabelschärfer im einzigartigen Stil (mit Seilbefestigung)",
+    "rough band push sit-up": "grobe Band-Push-Crunches",
+    "fast style resistance band seated hip abduction": "Sitzende Hüftabduktion mit Quick Style-Widerstandsband",
+    "pure chin-up": "pure Herrschaft",
+    "light lever standing chest press": "Stehende Brustpresse mit leichtem Hebel",
+    "resistance band seated shoulder press with declined": "Schulterdrücken und Absenken mit Widerstandsband im Sitzen",
+    "barbell prone incline curl with intensive": "Schräges Langhantel-Curl mit Intensiv",
+    "barbell standing reverse grip curl resistance": "Langhantel-Reverse-Grip-Curl-Widerstand",
+    "exercise ball hip flexor stretch pointed": "Spitzer Hüftbeuger-Stretch-Gymnastikball",
+    "rough band hip lift": "Grober Band-Hüftlift",
+    "flexible assisted prone hamstring": "flexible hintere Oberschenkelmuskulatur bei unterstützter Bauchlage",
+    "incline push-up (on box) - active variation": "Schräglage-Liegestütze (Box) – aktive Variante",
+    "barbell bent arm pullover - powerful variation": "Pullover mit Hantel und angewinkeltem Arm – kraftvolle Variante",
+    "core barbell upright row v. 2": "aufrechte Reihe mit Mittelsteg v. 2",
+    "dumbbell step up single leg balance with bicep curl - chair variation": "Hantelheben, einbeiniges Gleichgewicht mit Bizepscurls – Stuhlvariante",
+    "band one arm standing low row - lateral variation": "Band einarmig stehend niedrige Reihe - seitliche Variation",
+    "endurance style one arm dip": "Einarmiger Dip im Widerstandsstil",
+    "cable side bend smooth": "Weiche Kabelseitenbiegung",
+    "dumbbell decline shrug - rigid variation": "Kurzhantel-Shrug – Steife Variante",
+    "pulse style walk elliptical cross trainer": "Elliptisches Laufrad im Pulse-Stil",
+    "balance cable incline fly": "Schrägflug-Balancekabel",
+    "cocoons with mega": "Kokons mit Mega",
+    "cable incline bench row - elite variation": "Cable Incline Bench Row – Elite-Variante",
+    "flexible cable triceps pushdown (v-bar)": "Flexibler Kabel-Trizeps-Curl (V-Bar)",
+    "advanced dumbbell stiff leg deadlift": "Fortgeschrittenes Kreuzheben mit Kurzhanteln für steife Beine",
+    "hold style dumbbell alternating seated bicep curl on exercise ball": "Behalten Sie abwechselnd Bizepscurls im Hantelstil bei, während Sie auf einem Gymnastikball sitzen",
+    "active style cable pushdown": "Aktiver Kabelschieber",
+    "stability style band kneeling one arm pulldown": "Kniestabilität im Bandstil mit einarmigem Pulldown",
+    "rounded twisted leg raise (female)": "rundes und krummes Beinheben (Frau)",
+    "wide-grip chest dip on high parallel bars - low variation": "Brust-Dips mit weitem Griff am hohen Barren – geringe Variation",
+    "cable one arm incline press with rigid": "Kabel-Einarm-Schrägpresse mit starrem",
+    "exercise ball alternating arm ups with fast": "Gymnastikball abwechselnd mit den Armen nach oben",
+    "hanging pike weak": "schwach hängender Hecht",
+    "one arm against wall compressed": "ein Arm gegen die Wand gedrückt",
+    "ez barbell decline close grip face press - mini variation": "Close Grip Face Press und EZ Bar Lowering – Mini-Variante",
+    "weighted one hand pull up fast": "Heben Sie es mit schwerer Hand schnell an",
+    "incline push up depth jump with complex": "Tiefensprung mit geneigter und komplexer Flexion",
+    "pointed cable palm rotational row": "spitzes Kabel-Handflächen-Rotationsrudern",
+    "intermediate style dumbbell preacher curl over exercise ball": "Kurzhantel-Preacher-Curl auf dem Gymnastikball für Fortgeschrittene",
+    "iron cross stretch - deep variation": "Dehnung des Eisernen Kreuzes – Tiefe Variation",
+    "all fours squad stretch - elevated variation": "Squad Stretch auf allen Vieren – erhöhte Variation",
+    "isolation assisted seated pectoralis major stretch with stability ball": "Stabilitätsball-Isolation, unterstützte Dehnung des großen Brustmuskels im Sitzen",
+    "one leg squat - expanded variation": "Einbeinige Kniebeuge – erweiterte Variante",
+    "targeted style smith close-grip bench press": "Gezieltes Smith-Bankdrücken mit engem Griff",
+    "dumbbell one arm prone hammer curl - macro variation": "Hammercurl mit einarmiger Hantel in Bauchlage – Makrovariante",
+    "push-up (wall) with static": "Liegestütze (Wand) mit statischer Aufladung",
+    "fierce style forward lunge (male)": "Ausfallschritt nach vorne mit heftigem Stil (männlich)",
+    "chin-up diagonal": "Diagonalklimmzüge",
+    "cable judo flip with static": "Judo-Flipkabel mit Statik",
+    "dumbbell over bench one arm wrist curl - strength variation": "Einarmiger Hantel-Handgelenkscurl auf der Bank – Kraftvariation",
+    "lying leg-hip raise - contracted variation": "Bein- und Hüftheben im Liegen – kontrahierte Variante",
+    "prone medicine ball close grip push up": "Medizinball mit der Vorderseite nach unten, enger Griff, nach oben drücken",
+    "triceps dip (between benches) - extreme variation": "Trizeps-Dips (zwischen Bänken) – extreme Variation",
+    "micro style barbell speed squat": "Schnelle Langhantel-Mikrokniebeuge",
+    "rough cable decline fly": "grobe Kabelabwurffliege",
+    "stability lever narrow grip seated row": "Stabilitätshebel schmaler Griff Sitzreihe",
+    "twisted side-to-side chin": "Kinn von einer Seite zur anderen verdreht",
+    "prone dumbbell upright shoulder external rotation": "Aufrechte Außenrotation der Schulter mit Hanteln in Bauchlage",
+    "controlled wrist rollerer": "kontrollierte Handgelenkrolle",
+    "barbell incline bench press seated": "Schrägbankdrücken mit der Langhantel im Sitzen",
+    "barbell sitted alternate leg raise (female) with intermediate": "Langhantel im Sitzen, abwechselnd Beinheben (weiblich) mit mittlerem",
+    "push-up to side plank - athletic variation": "Seitlicher Liegestütz – sportliche Variante",
+    "dumbbell seated one leg calf raise - hammer grip deep": "Wadenheben mit der Hantel im Sitzen, einbeinig – tiefer Hammergriff",
+    "gentle style cable pulldown (pro lat bar)": "Sanfter Kabelzug (Pro Lat Bar)",
+    "inverted style inverse leg curl (on pull-up cable machine)": "Umgekehrter Beinbeuger im umgekehrten Stil (an der Kabelzugmaschine)",
+    "barbell high bar squat core": "Langhantel-Reckkniebeuge",
+    "sharp style dumbbell sumo pull through": "Scharfes Kurzhantel-Sumo wird erreicht",
+    "rough cable standing one arm triceps extension": "Rough Cable Standing One Arm Triceps Extension",
+    "assisted standing chin-up with focused": "Unterstützte Klimmzüge im Stehen mit Konzentration",
+    "single smith shoulder press": "Single-Smith-Schulterdrücken",
+    "complete style ez bar lying close grip triceps extension behind head": "Full-Style-EZ-Bar, enger Griff, Trizeps-Streckung hinter dem Kopf",
+    "smith one arm row linear": "Smith-Reihe eines linearen Arms",
+    "assisted pull-up inclined": "Klimmzug mit Neigungsunterstützung",
+    "cable seated row with reverse": "Kabelsitzreihe mit Rückwärtsgang",
+    "dumbbell hammer curl with traditional": "Hantel-Hammer-Curl mit traditionellem",
+    "smith machine incline tricep extension - straight variation": "Smith Machine Incline Triceps Extension – gerade Variante",
+    "push-up on lower arms - resistance variation": "Liegestütze an den Unterarmen – Widerstandsvariation",
+    "sled 45в° leg wide press - blunt variation": "45°-Schlittenbeinpresse – kraftvolle Variation",
+    "dumbbell lunge with firm": "Fester Hantel-Ausfallschritt",
+    "improved sphinx": "verbesserte Sphinx",
+    "band seated twist pure": "Band sitzt mit reiner Drehung",
+    "walk elliptical cross trainer - expanded variation": "Ellipsentrainer – erweiterte Variante",
+    "smith bent over row with declined": "Smith beugte sich abweisend über die Reihe",
+    "dumbbell incline one arm press on exercise ball with extended": "Hantelneigung, einarmiger Druck auf Gymnastikball mit Verlängerung",
+    "athletic style battling ropes": "Ringerseile im athletischen Stil",
+    "dumbbell reverse grip row (female) hold": "Kurzhantelrudern mit umgekehrtem Griff (Frauen)",
+    "lever narrow grip seated row - strength variation": "Nahgriffhebel sitzendes Rudern – Kraftvariation",
+    "traditional barbell romanian deadlift": "Traditionelles rumänisches Langhantel-Kreuzheben",
+    "exercise ball one leg prone lower body rotation fierce": "Gymnastikball, ein Bein neigt zu heftiger Unterkörperrotation",
+    "kettlebell arnold press - beginner variation": "Arnold Press mit Kettlebell – Anfängervariante",
+    "fluid dumbbell step-up lunge": "Flüssiger Ausfallschritt mit Kurzhanteln",
+    "quads complex": "Quad-Komplex",
+    "lever assisted chin-up with twisted": "Hebelunterstützte Klimmzüge mit Drehung",
+    "push up on bosu ball with improved": "Drücken Sie den Bosu-Ball mit Verbesserung nach oben",
+    "dynamic style barbell lying back of the head tricep extension": "Hinter dem Kopf liegend, dynamische Langhantel-Trizepsverlängerung",
+    "deep smith machine reverse decline close grip bench press": "Bankdrücken mit engem Griff und umgekehrter Neigung auf der Deep Smith-Maschine",
+    "hanging straight leg raise with elevated": "Hängendes gerades Beinheben mit Lift",
+    "upright smith incline bench press": "Smith aufrechtes Schrägbankdrücken",
+    "extended style inverted row": "Erweiterter Stil invertierte Zeile",
+    "dumbbell one arm fly on exercise ball improved": "Verbesserte einarmige Hantel auf Gymnastikball",
+    "hanging straight twisting leg hip raise with compound": "Hängendes gerades und krummes Bein, Hüftheben mit Compound",
+    "fast band straight leg deadlift": "Schnelles Band-Kreuzheben mit geradem Bein",
+    "cable lateral pulldown (with rope attachment) core": "Seilseitenzugkern (mit Seilbefestigung)",
+    "dumbbell around pullover - intensive variation": "Hantel um den Pullover – intensive Variante",
+    "sit-up with arms on chest with mini": "Bauchmuskeln mit Armen auf der Brust mit Mini",
+    "squared reverse grip machine lat pulldown": "Latzug mit quadratischer Reverse-Grip-Maschine",
+    "targeted style single leg calf raise (on a dumbbell)": "Gezieltes einbeiniges Wadenheben (mit Kurzhanteln)",
+    "chest and front of shoulder stretch micro": "Mikrogummizug an der Brust und an der vorderen Schulter",
+    "kettlebell seated press with high": "Kettlebelldrücken im Sitzen in der Höhe",
+    "barbell squat (on knees) with pure": "Langhantelkniebeuge (kniend) mit reinem",
+    "tough cable one arm lateral raise": "Schwerlast-Seilseitenlift mit einem Arm",
+    "kipping muscle up with triple": "Muskelaufbau mit Triple",
+    "intermediate style kneeling plank tap shoulder (male)": "Shoulder Bump Intermediate Style Knee Plank (Herren)",
+    "intensified style kettlebell extended range one arm press on floor": "Einarmige Kettlebell-Bodenpresse im Stepped-Up-Stil mit erweiterter Reichweite",
+    "supine style band alternating v-up": "Rückenband abwechselnd v-oben",
+    "assisted standing triceps extension (with towel) with horizontal": "unterstützte Trizepsstreckung im Stehen (mit Handtuch) mit horizontaler",
+    "wall style dumbbell one arm french press on exercise ball": "Einarmige French-Press-Hantel im Wandstil auf dem Gymnastikball",
+    "side-to-side chin with reverse": "Kinn von einer Seite zur anderen mit umgekehrter Bewegung",
+    "macro style close-grip push-up": "Liegestütze im Makro-Stil mit engem Griff",
+    "gentle prone twist on stability ball": "Sanftes Rollen in Bauchlage auf dem Stabilitätsball",
+    "cable rope incline tricep extension - reverse variation": "Seil- und Kabel-Neigungs-Trizepsverlängerung – umgekehrte Variante",
+    "cable squat row (with rope attachment) heavy": "Schweres Cable Squat Row (mit Seilgriff)",
+    "band vertical pallof press - seated variation": "Vertikale Palettenpresse mit Band – sitzende Variante",
+    "barbell reverse wrist curl - prone variation": "Umgekehrter Langhantel-Handgelenkscurl – Bauchlage-Variante",
+    "firm style hanging oblique knee raise": "Hängendes, schräges Knieheben im festen Stil",
+    "horizontal dumbbell standing alternate overhead press": "Abwechselndes Schulterdrücken im Stehen mit horizontalen Hanteln",
+    "Press de Banca": "Bench Press",
+    "Aperturas con Mancuernas": "Dumbbell Flyes",
+    "Flexiones": "Push-ups",
+    "Cruces en Polea": "Cable Crossovers",
+    "Press Inclinado": "Incline Press",
+    "Dominadas": "Pull-ups",
+    "Remo con Barra": "Barbell Row",
+    "Jalón al Pecho": "Lat Pulldown",
+    "Peso Muerto": "Deadlift",
+    "Remo en Polea Baja": "Seated Cable Row",
+    "Sentadillas": "Squats",
+    "Prensa Inclinada": "Leg Press",
+    "Extensiones de Cuádriceps": "Leg Extensions",
+    "Curl Femoral": "Leg Curls",
+    "Elevación de Gemelos": "Calf Raises",
+    "Press Militar": "Military Press",
+    "Elevaciones Laterales": "Lateral Raises",
+    "Pájaros": "Reverse Flyes",
+    "Elevaciones Frontales": "Front Raises",
+    "Encogimientos": "Shrugs",
+    "Curl de Bíceps con Barra": "Barbell Biceps Curl",
+    "Martillo": "Hammer Curl",
+    "Extensión de Tríceps": "Triceps Extension",
+    "Fondos": "Dips",
+    "Press Francés": "Skull Crushers",
+    "Plancha (Plank)": "Plank",
+    "Crunches": "Crunches",
+    "Elevación de Piernas": "Leg Raises",
+    "Rueda Abdominal": "Ab Wheel Rollout",
+    "Russian Twists": "Russische Wendungen"
   },
   "equipment": {
     "band": "Band",
     "barbell": "Langhantel",
     "body weight": "Körpergewicht",
-    "cable": "Kabel",
-    "kettlebell": "Kettlebell",
-    "dumbbell": "Hantel",
+    "cable": "Kabelzug",
+    "kettlebell": "Kugelhantel",
+    "dumbbell": "Kurzhantel",
     "leverage machine": "Hebelmaschine",
     "bosu ball": "Bosu-Ball",
     "hammer": "Hammer",
     "stationary bike": "stationäres Fahrrad",
     "smith machine": "Schmiedemaschine",
-    "assisted": "unterstützt",
+    "assisted": "Unterstützt",
     "ez barbell": "ez Langhantel",
     "stability ball": "Stabilitätsball",
     "weighted": "gewichtet",
@@ -2497,7 +2689,11 @@
     "upper body ergometer": "Oberkörper-Ergometer",
     "trap bar": "Fallenleiste",
     "skierg machine": "Skibergmaschine",
-    "elliptical machine": "Ellipsentrainer"
+    "elliptical machine": "Ellipsentrainer",
+    "leverage": "Hebelmaschine",
+    "machine": "Maschine",
+    "medicine": "Medizinball",
+    "other": "Andere"
   },
   "nutritionist": "Ernährung",
   "doctor": "Wellness",
@@ -2544,7 +2740,15 @@
       "sentRequests": "Gesendete Anfragen",
       "pending": "Ausstehend",
       "myFriends": "Meine Freunde",
-      "noFriends": "Du hast noch keine Freunde."
+      "noFriends": "Du hast noch keine Freunde.",
+      "friend": "Freund",
+      "friends": "Freunde",
+      "search": "Suchen",
+      "requests": "Anfragen",
+      "noResults": "Keine Ergebnisse gefunden.",
+      "noReceived": "Keine erhaltenen Anfragen.",
+      "noSent": "Keine gesendeten Anfragen.",
+      "addFriend": "Als Freund hinzufügen"
     },
     "ranking": {
       "currentRank": "Dein aktueller Rang",
@@ -2583,7 +2787,30 @@
       "challengeFriendsOnly": "⚔️ {count} Freund(e) herausfordern (ohne mich)",
       "start": "🎯 Starten",
       "activeChallenges": "Aktive Herausforderungen",
-      "noActiveChallenges": "Keine aktiven Herausforderungen."
+      "noActiveChallenges": "Keine aktiven Herausforderungen.",
+      "aiFallback": "Gehen Sie an 3 aufeinanderfolgenden Tagen 10.000 Schritte.",
+      "aiChallengePrefix": "KI-Herausforderung",
+      "stepsPerDay": "Schritte pro Tag",
+      "calsPerDay": "Kalorien pro Tag",
+      "startSolo": "Starten (nur ich)",
+      "challenge": "Herausfordern",
+      "withoutMe": "ohne mich",
+      "challengeOf": "Herausforderung von",
+      "selectSelfOrFriends": "Wählen Sie sich selbst und/oder Ihre Freunde für diese Herausforderung aus.",
+      "participateInChallenge": "An der Herausforderung teilnehmen",
+      "acceptSolo": "Akzeptieren (nur ich)",
+      "aiSuggestion": "Fitz-Vorschlag (KI)",
+      "createNew": "Neue Herausforderung erstellen",
+      "customGoalLabel": "Benutzerdefiniertes Ziel",
+      "goalTitle": "Ziel",
+      "caloriesPerDay": "Kalorien pro Tag",
+      "whoParticipates": "Wer nimmt teil?",
+      "tapToSelect": "Tippe zum Auswählen. Du kannst dich selbst und mehrere Freunde einschließen.",
+      "meAndFriends": "Ich + {{count}} Freunde",
+      "challengeFriends": "{{count}} Freunde herausfordern",
+      "alreadyFriends": "Bereits befreundet",
+      "add": "Freund hinzufügen",
+      "participate": "An der Herausforderung teilnehmen"
     },
     "profileModal": {
       "fullProfile": "Vollständiges Profil anzeigen",
@@ -2595,14 +2822,47 @@
     "headers": {
       "socialSubtitle": "Verbinde dich mit deiner Community",
       "compSubtitle": "Tritt an und steig im Ranking auf",
-      "socialTab": "Social",
+      "socialTab": "Sozial",
       "compTab": "Wettbewerb"
     },
     "posts": "Beiträge",
     "noPostsMe": "Du hast noch nichts gepostet.",
     "noPosts": "Dieser Nutzer hat noch nichts gepostet.",
     "likes": "Gefällt mir",
-    "comments": "Kommentare"
+    "comments": "Kommentare",
+    "friend": "Freund",
+    "viewFullProfile": "Vollständiges Profil ansehen",
+    "friends.alreadyFriends": "Bereits befreundet",
+    "friends.pending": "Ausstehend",
+    "friends.addFriend": "Als Freund hinzufügen",
+    "friends.friend": "Freund",
+    "challenges.createNewChallenge": "Neue Herausforderung erstellen",
+    "challenges.challengeTitle": "Titel der Herausforderung",
+    "challenges.description": "Beschreibung",
+    "challenges.type": "Typ",
+    "challenges.days": "Tage",
+    "challenges.customGoal": "Benutzerdefiniertes Ziel",
+    "challenges.customGoalPlaceholder": "z.B. 100 Liegestütze gesamt, 5 km laufen...",
+    "challenges.goal": "Ziel",
+    "challenges.stepsPerDay": "Schritte pro Tag",
+    "challenges.calsPerDay": "Kalorien pro Tag",
+    "challenges.whoParticipates": "Wer nimmt teil?",
+    "challenges.tapToSelect": "Tippe zum Auswählen. Du kannst dich und mehrere Freunde einschließen.",
+    "challenges.me": "Ich",
+    "challenges.startSolo": "Starten (nur ich)",
+    "challenges.start": "Starten",
+    "challenges.challenge": "Herausfordern",
+    "challenges.withoutMe": "ohne mich",
+    "challenges.challengeOf": "Herausforderung von",
+    "challenges.selectSelfOrFriends": "Wähle dich selbst und/oder deine Freunde für diese Herausforderung.",
+    "challenges.participateInChallenge": "An der Herausforderung teilnehmen",
+    "challenges.acceptSolo": "Akzeptieren (nur ich)",
+    "receivedRequests": "Erhaltene Anfragen",
+    "sentRequests": "Gesendete Anfragen",
+    "myFriends": "Meine Freunde",
+    "fitgoChallenges": "FitGo-Herausforderungen",
+    "activeChallenges": "Aktive Herausforderungen",
+    "pendingRequest": "Ausstehende Anfrage"
   },
   "terms": {
     "titleTerms": "Nutzungsbedingungen",
@@ -2619,7 +2879,172 @@
       "diamond": "Diamant"
     },
     "title": "Deine Erfolge",
-    "badges": "Abzeichen",
+    "badges": {
+      "super_admin": {
+        "label": "Super Admin",
+        "description": "Voller Zugriff auf das System und die Verwaltungstools."
+      },
+      "admin": {
+        "label": "Administrator",
+        "description": "Kontrolle und Unterstützung der Inhaltsmoderation."
+      },
+      "pro": {
+        "label": "Pro-Mitglied",
+        "description": "Aktives Abonnement für FitGO Premium."
+      },
+      "beast_mode": {
+        "label": "Biestmodus",
+        "description": "Ausgezeichnet für das Absolvieren intensiver Trainingseinheiten und Konstanz."
+      },
+      "verified": {
+        "label": "Verifiziert",
+        "description": "Benutzer mit einem verifizierten FitGO-Konto."
+      },
+      "early_adopter": {
+        "label": "Pionier",
+        "description": "Einer der ersten Nutzer der Plattform."
+      },
+      "fitness_enthusiast": {
+        "label": "Fitness-Enthusiast",
+        "description": "Notieren Sie regelmäßiges Training und Engagement."
+      },
+      "water_champion": {
+        "label": "Aquaman",
+        "description": "Entriegelt durch eine perfekte Flüssigkeitszufuhr (>2L)."
+      },
+      "sleep_legend": {
+        "label": "Traumlegende",
+        "description": "Wird freigeschaltet, indem man mehr als 8 Stunden optimal schläft."
+      },
+      "protein_boss": {
+        "label": "Protein-Boss",
+        "description": "Wird freigeschaltet, wenn Sie Ihr tägliches Proteinziel erreichen."
+      },
+      "streak_master": {
+        "label": "Eisenmonat",
+        "description": "Wird freigeschaltet, indem ein Streak von 30 Tagen aufrechterhalten wird."
+      },
+      "step_hero": {
+        "label": "Held des Passes",
+        "description": "Freigeschaltet für mehr als 15.000 Schritte pro Tag."
+      },
+      "weight_master": {
+        "label": "Herr des Ziels",
+        "description": "Wird freigeschaltet, wenn Sie weniger als 1 kg von Ihrem Zielgewicht entfernt sind."
+      },
+      "social_star": {
+        "label": "Sozialer Star",
+        "description": "Wird durch aktives Posten in der Community freigeschaltet."
+      },
+      "macro_expert": {
+        "label": "Makroexperte",
+        "description": "Freigeschaltet durch einen Tag voller perfekter Makros."
+      },
+      "workout_warrior": {
+        "label": "Stahlkrieger",
+        "description": "Wird freigeschaltet, wenn Sie ein Training absolvieren, das länger als 60 Minuten dauert."
+      },
+      "body_sculptor": {
+        "label": "Körperbildhauer",
+        "description": "Freigeschaltet durch die Aufzeichnung Ihrer Körpermaße."
+      },
+      "photo_pioneer": {
+        "label": "Modell ändern",
+        "description": "Wird freigeschaltet, indem Sie Ihr erstes Fortschrittsfoto hochladen."
+      },
+      "century_club": {
+        "label": "Verein 100",
+        "description": "Verliehen für das Erreichen einer Erfolgsserie von 100 Tagen."
+      },
+      "year_of_fitness": {
+        "label": "Eisernes Jahr",
+        "description": "Ausgezeichnet für eine perfekte Serie von 365 Tagen."
+      },
+      "half_marathoner": {
+        "label": "Halbmarathon",
+        "description": "Freigeschaltet für die Protokollierung von mehr als 25.000 Schritten pro Tag."
+      },
+      "weight_transformer": {
+        "label": "Transformator",
+        "description": "Wird durch eine erhebliche Gewichtsveränderung (10 kg) freigeschaltet."
+      },
+      "hydration_god": {
+        "label": "Gott des Ozeans",
+        "description": "Freigeschaltet für die Protokollierung von 3 Litern Wasser an einem Tag."
+      },
+      "friend_magnet": {
+        "label": "Freunde-Magnet",
+        "description": "Wird freigeschaltet, wenn 5 oder mehr Freunde auf FitGO sind."
+      },
+      "community_pillar": {
+        "label": "Gemeinschaftssäule",
+        "description": "Freigeschaltet für das Verfassen von 10 Beiträgen in der Community."
+      },
+      "workout_machine": {
+        "label": "Maschine",
+        "description": "Freigeschaltet für das Training von mehr als 2 Stunden an einem einzigen Tag."
+      },
+      "sleep_god": {
+        "label": "Gott des Traums",
+        "description": "Wird freigeschaltet, wenn man mehr als 9 Stunden schläft."
+      },
+      "early_bird": {
+        "label": "Frühaufsteher",
+        "description": "Sie haben vor 9 Uhr morgens gefrühstückt."
+      },
+      "diet_expert": {
+        "label": "Diätexperte",
+        "description": "30 Tage hintereinander Mahlzeiten aufzeichnen."
+      },
+      "night_owl": {
+        "label": "Nachteule",
+        "description": "Sie haben Aktivitäten zwischen 2 und 4 Uhr morgens aufgezeichnet."
+      },
+      "zen_master": {
+        "label": "Zen-Meister",
+        "description": "10 Stunden Yoga aufgezeichnet."
+      },
+      "iron_lungs": {
+        "label": "Lungen aus Stahl",
+        "description": "Du hast eine intensive Schwimmeinheit protokolliert."
+      },
+      "mountain_king": {
+        "label": "König des Berges",
+        "description": "50.000 Schritte pro Woche."
+      },
+      "spartan": {
+        "label": "spartanisch",
+        "description": "300 Tage perfekter Streak."
+      },
+      "data_scientist": {
+        "label": "Datenwissenschaftler",
+        "description": "Sie haben Ihre Daten nach Excel exportiert."
+      },
+      "ghost": {
+        "label": "Geist",
+        "description": "5 Tage aktiv, ohne etwas Social zu posten."
+      },
+      "carnivore": {
+        "label": "Raubtier",
+        "description": "Mehr als 250 g Protein an einem Tag."
+      },
+      "zen_streaker": {
+        "label": "Wöchentliches Yoga",
+        "description": "3 Yoga-Sitzungen pro Woche."
+      },
+      "speed_demon": {
+        "label": "Blitzgeschwindigkeit",
+        "description": "Express-Registrierung von Lebensmitteln."
+      },
+      "love_reactor": {
+        "label": "Liebesverteiler",
+        "description": "Du hast deinen ersten Like gegeben."
+      },
+      "legend_commenter": {
+        "label": "Eisbrecher",
+        "description": "Du hast deinen ersten Kommentar hinterlassen."
+      }
+    },
     "unlocked": "Freigeschaltet",
     "total": "Gesamt",
     "completed": "Abgeschlossen",
@@ -2642,7 +3067,627 @@
       "Descanso": "Erholung",
       "Comunidad": "Community",
       "Especial": "Besonders"
-    }
+    },
+    "badgesTitle": "Abzeichen",
+    "items": {
+      "welcome": {
+        "title": "Willkommen!",
+        "description": "Du bist der FitGO-Community beigetreten."
+      },
+      "premium_club": {
+        "title": "Pro-Mitglied",
+        "description": "Du bist Teil des exklusiven FitGO-Clubs."
+      },
+      "dark_mode_lover": {
+        "title": "Schattenliebhaber",
+        "description": "Sie haben den Dunkelmodus aktiviert."
+      },
+      "profile_complete": {
+        "title": "Perfektionist",
+        "description": "Sie haben alle Felder in Ihrem Profil ausgefüllt."
+      },
+      "streak_3": {
+        "title": "Unaufhaltsam",
+        "description": "Sie haben einen Streak von 3 Tagen aufrechterhalten."
+      },
+      "streak_7": {
+        "title": "Perfekte Woche",
+        "description": "Sie haben eine Serie von 7 Tagen aufrechterhalten."
+      },
+      "streak_30": {
+        "title": "Eisenmonat",
+        "description": "Sie haben eine Serie von 30 Tagen aufrechterhalten."
+      },
+      "streak_100": {
+        "title": "Zenturio",
+        "description": "Sie haben eine Serie von 100 Tagen aufrechterhalten."
+      },
+      "streak_365": {
+        "title": "Eisernes Jahr",
+        "description": "Sie haben eine Serie von 365 Tagen durchgehalten."
+      },
+      "streak_500": {
+        "title": "Titan der Disziplin",
+        "description": "Sie haben eine Serie von 500 Tagen durchgehalten."
+      },
+      "streak_1000": {
+        "title": "Gott des Olymp",
+        "description": "Sie haben eine Serie von 1000 Tagen durchgehalten."
+      },
+      "first_log": {
+        "title": "Erster Schritt",
+        "description": "Du hast heute deine erste Mahlzeit eingetragen."
+      },
+      "early_bird": {
+        "title": "Frühaufsteher",
+        "description": "Sie haben Ihr Frühstück vor 9 Uhr angemeldet."
+      },
+      "protein_goal": {
+        "title": "Reines Protein",
+        "description": "Du hast heute dein Proteinziel erreicht."
+      },
+      "healthy_eater": {
+        "title": "Gesunder Esser",
+        "description": "Sie haben Ihr Kalorienziel innerhalb von 10 % erreicht."
+      },
+      "perfect_macros": {
+        "title": "Perfekte Makros",
+        "description": "Du hast deine Kalorien- und Makroziele mit einer Marge von 10 % erreicht."
+      },
+      "water_habit": {
+        "title": "Wasserhaltig",
+        "description": "Sie haben heute Wasser protokolliert."
+      },
+      "water_champion": {
+        "title": "Super hydratisiert",
+        "description": "Sie haben an einem Tag mehr als 2000 ml Wasser getrunken."
+      },
+      "water_god": {
+        "title": "Gott des Ozeans",
+        "description": "Sie haben an einem Tag 3000 ml (3 l) Wasser aufgenommen."
+      },
+      "water_ocean": {
+        "title": "Interner Ozean",
+        "description": "Sie haben an einem Tag mehr als 4000 ml (4 l) Wasser getrunken."
+      },
+      "diet_expert": {
+        "title": "Diätexperte",
+        "description": "Sie haben 30 Tage hintereinander Mahlzeiten protokolliert."
+      },
+      "hydration_streak_7": {
+        "title": "Konstanter Fluss",
+        "description": "Sie haben Ihr Wasserziel 7 Tage hintereinander erreicht."
+      },
+      "nutrition_scholar": {
+        "title": "Ernährungswissenschaftler",
+        "description": "Sie haben exotische oder neue Lebensmittel entdeckt und aufgenommen."
+      },
+      "carnival_eater": {
+        "title": "Cheat-Day",
+        "description": "Sie haben an einem Tag mehr als 3.500 Kalorien zu sich genommen."
+      },
+      "vegan_day": {
+        "title": "Alles grün",
+        "description": "Du hast an einem Tag rein pflanzliche Mahlzeiten protokolliert."
+      },
+      "protein_pancake": {
+        "title": "Fitnesskoch",
+        "description": "Sie haben Protein Pancakes zum Frühstück angemeldet."
+      },
+      "late_snack": {
+        "title": "Verlangen nach Mitternacht",
+        "description": "Sie haben einen Snack nach 23:00 Uhr angemeldet."
+      },
+      "perfect_week_macros": {
+        "title": "Chirurgische Präzision",
+        "description": "Du hast 7 Tage hintereinander perfekte Makros erreicht."
+      },
+      "carnivore": {
+        "title": "Alpha-Raubtier",
+        "description": "Sie haben an einem Tag mehr als 250 g Protein zu sich genommen."
+      },
+      "sweet_tooth": {
+        "title": "Süßes Verlangen",
+        "description": "Sie haben ein Dessert angemeldet, aber trotzdem Ihre Makros eingehalten."
+      },
+      "coffee_addict": {
+        "title": "Koffeinblut",
+        "description": "Sie haben an einem Tag mehr als 3 Kaffees registriert."
+      },
+      "fasting_monk": {
+        "title": "Fastender Mönch",
+        "description": "Sie haben 16 Stunden lang keine Mahlzeiten aufgezeichnet."
+      },
+      "chef_kiss": {
+        "title": "Kuss des Chefkochs",
+        "description": "Sie haben Ihr erstes personalisiertes Rezept in der App erstellt."
+      },
+      "goal_reached": {
+        "title": "Am Ziel",
+        "description": "Sie sind weniger als 1 kg von Ihrem Zielgewicht entfernt."
+      },
+      "weight_loss_1": {
+        "title": "Erste Ergebnisse",
+        "description": "Sie haben Ihre ersten 2 kg verloren."
+      },
+      "muscle_gain_1": {
+        "title": "Anbau",
+        "description": "Sie haben Ihre ersten 2 kg Muskeln aufgebaut."
+      },
+      "weight_loss_10": {
+        "title": "Totale Transformation",
+        "description": "Sie haben seit Beginn 10 kg abgenommen."
+      },
+      "muscle_gain_10": {
+        "title": "Titan",
+        "description": "Sie haben seit Beginn 10 kg an Masse zugenommen."
+      },
+      "body_sculptor": {
+        "title": "Körperbildhauer",
+        "description": "Sie haben Ihre Körpermaße erfasst."
+      },
+      "photo_pioneer": {
+        "title": "Modell ändern",
+        "description": "Sie haben Ihr erstes Fortschrittsfoto hochgeladen."
+      },
+      "step_master": {
+        "title": "Wanderer",
+        "description": "Sie haben an einem Tag mehr als 10.000 Schritte gemacht."
+      },
+      "step_marathon": {
+        "title": "Urbaner Marathonläufer",
+        "description": "Sie haben an einem einzigen Tag 15.000 Schritte zurückgelegt."
+      },
+      "step_half_marathon": {
+        "title": "Halbmarathon",
+        "description": "Sie haben an einem Tag 25.000 Schritte zurückgelegt."
+      },
+      "workout_warrior": {
+        "title": "Stahlkrieger",
+        "description": "Du hast mehr als 60 Minuten trainiert."
+      },
+      "workout_machine": {
+        "title": "Unaufhaltsame Maschine",
+        "description": "Du hast mehr als 120 Minuten trainiert."
+      },
+      "sleep_master": {
+        "title": "Tolle Ruhe",
+        "description": "Du hast mehr als 7 Stunden geschlafen."
+      },
+      "sleep_champion": {
+        "title": "Dornröschen",
+        "description": "Du hast mehr als 8 Stunden geschlafen."
+      },
+      "sleep_god": {
+        "title": "Winterschlaf",
+        "description": "Du hast in einer Nacht mehr als 9 Stunden geschlafen."
+      },
+      "social_star": {
+        "title": "Sozialer Star",
+        "description": "Sie haben Inhalte in der Community veröffentlicht."
+      },
+      "social_influence": {
+        "title": "Meinungsführer",
+        "description": "Sie haben mehr als 2 Veröffentlichungen."
+      },
+      "friend_magnet": {
+        "title": "Freunde-Magnet",
+        "description": "Du hast 5 oder mehr Freunde auf FitGO."
+      },
+      "community_pillar": {
+        "title": "Gemeinschaftssäule",
+        "description": "Sie haben 10 Veröffentlichungen gemacht."
+      },
+      "beta_tester": {
+        "title": "Pionier",
+        "description": "Du hast an der Beta-Phase von FitGO teilgenommen."
+      },
+      "developer_god": {
+        "title": "Systemarchitekt",
+        "description": "Sie sind einer der Gründer von FitGO."
+      },
+      "bug_hunter": {
+        "title": "Käferjäger",
+        "description": "Sie haben einen kritischen Fehler gefunden und gemeldet."
+      },
+      "night_owl": {
+        "title": "Nachteule",
+        "description": "Sie haben zwischen 2 und 4 Uhr morgens eine Mahlzeit oder ein Training protokolliert."
+      },
+      "easter_egg_hunter": {
+        "title": "Geheimer Jäger",
+        "description": "Sie haben in der App ein verstecktes Menü gefunden."
+      },
+      "ghost_mode": {
+        "title": "Ghost-Modus",
+        "description": "Sie haben die App 5 Tage hintereinander genutzt, ohne etwas im sozialen Bereich zu posten."
+      },
+      "matrix_glitch": {
+        "title": "Glitch in der Matrix",
+        "description": "Du hast in einem Training genau 999 Kalorien verbrannt."
+      },
+      "time_traveler": {
+        "title": "Zeitreisender",
+        "description": "Sie haben einen Datensatz hinzugefügt, der gestern datiert ist."
+      },
+      "heavy_lifter": {
+        "title": "Brutale Gewalt",
+        "description": "Du hast mehr als 200 kg Kreuzheben gemacht."
+      },
+      "flash_speed": {
+        "title": "Lichtgeschwindigkeit",
+        "description": "Du bist 5 km in weniger als 20 Minuten gelaufen."
+      },
+      "zen_mode": {
+        "title": "Zen-Meister",
+        "description": "Du hast insgesamt 10 Stunden Yoga absolviert."
+      },
+      "iron_lungs": {
+        "title": "Lungen aus Stahl",
+        "description": "Du hast eine intensive Schwimmeinheit protokolliert."
+      },
+      "mountain_climber": {
+        "title": "Bergsteiger",
+        "description": "Sie haben in einer Woche die 50.000-Schritte-Marke überschritten."
+      },
+      "viral_post": {
+        "title": "Virales Phänomen",
+        "description": "Ihr Beitrag hat 50 Likes erreicht."
+      },
+      "first_comment": {
+        "title": "Das Eis brechen",
+        "description": "Sie haben Ihren ersten Kommentar zum Beitrag einer anderen Person hinterlassen."
+      },
+      "helper": {
+        "title": "Barmherziger Samariter",
+        "description": "Sie haben von einem anderen Benutzer eine „Dankeschön“-Medaille erhalten."
+      },
+      "profile_stalker": {
+        "title": "Neugierig",
+        "description": "Sie haben an einem Tag 10 verschiedene Profile besucht."
+      },
+      "fitgo_veteran": {
+        "title": "Lebende Legende",
+        "description": "Sie haben die App mehr als zwei Jahre hintereinander genutzt."
+      },
+      "data_nerd": {
+        "title": "Datenwissenschaftler",
+        "description": "Sie haben Ihren Fortschrittsverlauf nach Excel exportiert."
+      },
+      "fast_logger": {
+        "title": "Blitzgeschwindigkeit",
+        "description": "Du hast in Rekordzeit eine Mahlzeit protokolliert."
+      },
+      "first_like": {
+        "title": "Liebe verbreiten",
+        "description": "Sie haben einem anderen Benutzer Ihr erstes „Gefällt mir“ gegeben."
+      },
+      "like_bomber": {
+        "title": "Mag Maschinengewehr",
+        "description": "Du hast mehr als 100 Likes gegeben."
+      },
+      "squad_creator": {
+        "title": "Gründer",
+        "description": "Erstelle oder verwalte deine eigene Liga."
+      },
+      "squad_champion": {
+        "title": "Ligameister",
+        "description": "Im wöchentlichen Ranking belegten Sie den ersten Platz."
+      },
+      "trend_setter": {
+        "title": "Fitness-Influencer",
+        "description": "10 Personen haben Ihren Beitrag gespeichert."
+      },
+      "chatty": {
+        "title": "Gesprächig",
+        "description": "Du hast in deinem Liga-Chat 50 Nachrichten gesendet."
+      },
+      "early_lifter": {
+        "title": "Der 5 AM Club",
+        "description": "Du hast trainiert, bevor die Sonne aufging."
+      },
+      "leg_day_survivor": {
+        "title": "Überlebende",
+        "description": "Du hast eine brutale Leg-Day-Routine absolviert."
+      },
+      "cardio_bunny": {
+        "title": "Unerschöpflicher Motor",
+        "description": "Du hast mehr als 60 Minuten reines Cardiotraining absolviert."
+      },
+      "rest_day_respect": {
+        "title": "Geist und Körper",
+        "description": "Sie haben offiziell einen Ruhetag angemeldet."
+      },
+      "yoga_streak": {
+        "title": "Innerer Frieden",
+        "description": "Du hast an drei Tagen in derselben Woche Yoga gemacht."
+      },
+      "100k_steps_week": {
+        "title": "Weißer Wanderer",
+        "description": "Sie haben in einer Woche 100.000 Schritte geschafft."
+      },
+      "waist_shredder": {
+        "title": "Wespentaille",
+        "description": "Sie haben Ihren Taillenumfang um mindestens 5 cm reduziert."
+      },
+      "biceps_pump": {
+        "title": "Die Waffen",
+        "description": "Deine Arme wuchsen in deinen Aufzeichnungen."
+      },
+      "scale_fearless": {
+        "title": "Furchtlos",
+        "description": "Sie haben Ihr Körpergewicht 10 Tage hintereinander aufgezeichnet."
+      },
+      "first_compliment": {
+        "title": "Bewunderung",
+        "description": "Jemand hat Ihr Fortschrittsfoto positiv kommentiert."
+      },
+      "bmi_normal": {
+        "title": "In Reichweite",
+        "description": "Ihr BMI liegt im gesunden Bereich."
+      },
+      "body_fat_15": {
+        "title": "Definierter Athlet",
+        "description": "Sie haben einen Fettanteil von weniger als 15 % registriert."
+      },
+      "spartan_300": {
+        "title": "Spartan 300",
+        "description": "Du hast 300 Tage Perfect Streak geschafft, ohne einen einzigen Rekord zu verpassen."
+      },
+      "kryptonian": {
+        "title": "Kryptonisch",
+        "description": "Sie haben in einer Sitzung übermenschliche Gewichtsmengen gehoben."
+      },
+      "goggins_mode": {
+        "title": "Goggins-Modus",
+        "description": "Sie sind einen Ultramarathon gelaufen oder haben an einem einzigen Tag 50.000 Schritte geschafft."
+      },
+      "body_alchemist": {
+        "title": "Körperalchemist",
+        "description": "Sie haben Ihren Körperfettanteil unter 10 % gesenkt und Ihre Muskelmasse beibehalten."
+      },
+      "mr_olympia": {
+        "title": "Herr Olympia",
+        "description": "Du hast insgesamt 1.000 Krafttrainingseinheiten in FitGO protokolliert."
+      },
+      "the_one_percent": {
+        "title": "1 %",
+        "description": "Du hast die Top 1 im globalen Ranking erreicht."
+      },
+      "iron_monk": {
+        "title": "Eiserner Mönch",
+        "description": "Sie haben 365 Tage im Jahr trainiert, ohne einen einzigen Tag frei zu nehmen."
+      },
+      "immortal": {
+        "title": "Unsterblich",
+        "description": "Sie haben Ihre Makros an 100 aufeinanderfolgenden Tagen nicht verfehlt."
+      },
+      "perfect_machine": {
+        "title": "Perfekte Maschine",
+        "description": "Sie haben am selben Tag 100/100 in den Bereichen Schlaf, Ernährung und Aktivität erreicht."
+      },
+      "triceratops": {
+        "title": "Triceratops",
+        "description": "Du hast die Big 3 (Kniebeuge, Bank, Kreuzheben) mit Elite gemeistert."
+      },
+      "supernova": {
+        "title": "Supernova",
+        "description": "Sie haben einen astronomischen Einfluss auf die Community erzielt (100.000 Likes)."
+      },
+      "god_of_war": {
+        "title": "Gott des Krieges",
+        "description": "Du hast 5 Diamond Leagues in Folge gewonnen."
+      },
+      "holy_grail": {
+        "title": "Der Heilige Gral",
+        "description": "Sie haben Ihr Zielgewicht, Ihre Maße und Ihren Fettgehalt mit mathematischer Genauigkeit erreicht."
+      },
+      "five_meals": {
+        "title": "Fünf Mahlzeiten",
+        "description": "Sie haben an einem einzigen Tag 5 Mahlzeiten protokolliert."
+      },
+      "balanced_day": {
+        "title": "Ausgeglichener Tag",
+        "description": "Sie haben Frühstück, Mittagessen, Abendessen und Snack am selben Tag angemeldet."
+      },
+      "smoothie_lover": {
+        "title": "Smoothie-König",
+        "description": "Du hast einen Proteinshake zum Frühstück angemeldet."
+      },
+      "three_workouts_week": {
+        "title": "Aktive Woche",
+        "description": "Du hast 3 Tage in derselben Woche trainiert."
+      },
+      "bike_rider": {
+        "title": "Stadtradfahrer",
+        "description": "Du hast eine Radfahr-Session protokolliert."
+      },
+      "ten_workouts": {
+        "title": "Fitnessstudio-Veteran",
+        "description": "Du hast insgesamt 10 Trainingseinheiten absolviert."
+      },
+      "fifty_workouts": {
+        "title": "Etablierter Athlet",
+        "description": "Insgesamt 50 Trainingseinheiten absolviert."
+      },
+      "weight_loss_5": {
+        "title": "Halb",
+        "description": "Sie haben seit Beginn 5 kg abgenommen."
+      },
+      "muscle_gain_5": {
+        "title": "Nettosieger",
+        "description": "Sie haben seit Beginn 5 kg an Masse zugenommen."
+      },
+      "five_measurements": {
+        "title": "Reichhaltige Geschichte",
+        "description": "Sie haben 5 oder mehr historische Körpermaße aufgezeichnet."
+      },
+      "language_switcher": {
+        "title": "polyglott",
+        "description": "Sie haben die Sprache der App geändert."
+      },
+      "night_mode": {
+        "title": "Dunkler Modus",
+        "description": "Sie haben den Dunkelmodus aktiviert."
+      },
+      "first_week_user": {
+        "title": "Erste Woche",
+        "description": "Sie haben die App 7 Tage hintereinander genutzt."
+      },
+      "sleep_week": {
+        "title": "Traumwoche",
+        "description": "Sie haben 7 Tage hintereinander mehr als 7 Stunden geschlafen."
+      },
+      "power_nap": {
+        "title": "Strategisches Nickerchen",
+        "description": "Du hast weniger als 6 Stunden geschlafen, aber trotzdem trainiert."
+      },
+      "first_friend": {
+        "title": "Erster Freund",
+        "description": "Du hast deinen ersten Freund auf FitGO hinzugefügt."
+      },
+      "three_friends": {
+        "title": "Elite-Team",
+        "description": "Du hast 3 oder mehr Freunde auf FitGO."
+      },
+      "ai_enthusiast": {
+        "title": "KI-Enthusiast",
+        "description": "Sie haben Coach IA 10 Mal verwendet."
+      },
+      "anniversary": {
+        "title": "Jubiläum",
+        "description": "1 Jahr mit FitGO. Glückwunsch!"
+      },
+      "app_first_launch": {
+        "title": "Erster Start",
+        "description": "Sie haben FitGO zum ersten Mal geöffnet."
+      },
+      "biometric_update": {
+        "title": "Körperscanner",
+        "description": "Sie haben Ihr Gewicht fünfmal aktualisiert."
+      },
+      "bug_slayer": {
+        "title": "Käferjäger",
+        "description": "100 Fehler in FitGO behoben."
+      },
+      "calorie_deficit_7": {
+        "title": "Defizitmeister",
+        "description": "Sie haben 7 Tage lang ein Kaloriendefizit aufrechterhalten."
+      },
+      "calorie_surplus_7": {
+        "title": "Überschüssiger Meister",
+        "description": "Sie haben 7 Tage lang einen Kalorienüberschuss aufrechterhalten."
+      },
+      "challenge_5": {
+        "title": "Herausfordernd",
+        "description": "Du hast an 5 Herausforderungen teilgenommen."
+      },
+      "challenge_starter": {
+        "title": "Herausforderungsstarter",
+        "description": "Du hast deine erste Herausforderung erstellt."
+      },
+      "challenge_winner": {
+        "title": "Champion",
+        "description": "Du hast eine Herausforderung gewonnen."
+      },
+      "comeback_kid": {
+        "title": "Die Rückkehr",
+        "description": "Sie sind nach einer Serie von mehr als 7 Tagen zurück."
+      },
+      "community_leader": {
+        "title": "Gemeindeleiter",
+        "description": "Du hast die weltweiten Top 10 erreicht."
+      },
+      "competitive_spirit": {
+        "title": "Wettbewerbsgeist",
+        "description": "Sie haben die Top 10 der globalen Rangliste erreicht."
+      },
+      "consistent_challenger": {
+        "title": "Eiserner Herausforderer",
+        "description": "Du hast eine 7-Tage-Herausforderung abgeschlossen."
+      },
+      "data_guardian": {
+        "title": "Datenwächter",
+        "description": "Sie haben die Daten aller FitGO-Benutzer geschützt."
+      },
+      "data_scientist": {
+        "title": "Datenwissenschaftler",
+        "description": "Sie haben dreimal wöchentlich eine Analyse durchgeführt."
+      },
+      "first_ai_chat": {
+        "title": "Erster KI-Chat",
+        "description": "Sie hatten Ihr erstes Gespräch mit Fitz AI."
+      },
+      "first_plan": {
+        "title": "Erster Plan",
+        "description": "Sie haben Ihren ersten Speiseplan erstellt."
+      },
+      "first_workout": {
+        "title": "Erstes Training",
+        "description": "Sie haben Ihren ersten Trainingsplan erstellt."
+      },
+      "friend_maker": {
+        "title": "Stecker",
+        "description": "Du hast deinen ersten Freund auf FitGO hinzugefügt."
+      },
+      "innovation_lab": {
+        "title": "Innovationspionier",
+        "description": "Sie haben die erste exklusive FitGO-Funktion eingeführt."
+      },
+      "language_changed": {
+        "title": "polyglott",
+        "description": "Sie haben die Sprache der Anwendung geändert."
+      },
+      "motivator": {
+        "title": "Motivator",
+        "description": "Sie haben den Beiträgen Ihrer Freunde 10 Likes gegeben."
+      },
+      "mystery_item": {
+        "title": null,
+        "description": "Schließe Mystery-Herausforderungen ab, um dies freizuschalten."
+      },
+      "notifications_enabled": {
+        "title": "Immer verbunden",
+        "description": "Du hast FitGO-Benachrichtigungen aktiviert."
+      },
+      "perfect_month": {
+        "title": "Perfekter Monat",
+        "description": "Sie haben jeden Tag im Monat Mahlzeiten protokolliert."
+      },
+      "planner_pro": {
+        "title": "PlannerPro",
+        "description": "Sie haben einen Ernährungsplan erstellt."
+      },
+      "share_progress": {
+        "title": "Demonstration des Fortschritts",
+        "description": "Sie haben Ihre Fortschritte mit der Community geteilt."
+      },
+      "squad_top": {
+        "title": "Kader-MVP",
+        "description": "Du warst der beste Torschütze deines Teams."
+      },
+      "super_admin": {
+        "title": "Super Admin",
+        "description": "Du bist ein super FitGO-Administrator."
+      },
+      "system_builder": {
+        "title": "Systemarchitekt",
+        "description": "Sie haben das gesamte FitGO-System aufgebaut."
+      },
+      "team_player": {
+        "title": "Teamplayer",
+        "description": "Du bist einem Trupp beigetreten."
+      },
+      "theme_changer": {
+        "title": "Stilikone",
+        "description": "Sie haben das Thema der Anwendung geändert."
+      },
+      "weight_stability": {
+        "title": "Gewichtsstabilität",
+        "description": "Sie haben Ihr Gewicht 30 Tage lang gehalten."
+      }
+    },
+    "newAchievement": "NEUER ERFOLG FREIGESCHALTET!"
   },
   "competitive": {
     "mySquad": "Mein Kader",
@@ -2650,23 +3695,23 @@
     "leagues": {
       "carbono": {
         "name": "Kohlenstoff-Liga",
-        "desc": "Dunkles geometrisches Schild."
+        "desc": "Dein Startpunkt in FitGO. Sammle Punkte zum Aufsteigen!"
       },
       "neon": {
         "name": "Neon-Liga",
-        "desc": "Fluoreszente Kraft auf Glas."
+        "desc": "Mittlere Liga. Weiter so!"
       },
       "titanio": {
         "name": "Titan-Liga",
-        "desc": "Metallischer Monolith."
+        "desc": "Fortgeschrittene Liga. Du wirst Elite!"
       },
       "cuarzo": {
         "name": "Quarz-Liga",
-        "desc": "Holographischer Kristall."
+        "desc": "Liga der Spitzenklasse."
       },
       "zenit": {
-        "name": "Elite Zenit-Liga",
-        "desc": "Weißgoldkrone. Der Gipfel von FitGO."
+        "name": "Elite-Zenit-Liga",
+        "desc": "Der Gipfel des FitGO-Wettbewerbs."
       }
     },
     "squads": {
@@ -2684,7 +3729,292 @@
       "streakDays": "Streak-Tage",
       "rankingTitle": "Squad-Rangliste",
       "infoText": "Die Gesamtpunkte des Squads sind die Summe der Punkte aller Mitglieder.",
-      "squadPoints": "Squad-Punkte"
+      "squadPoints": "Squad-Punkte",
+      "pathToElite": "Weg zur Elite",
+      "inviteFriends": "Freunde einladen",
+      "inviteFriendsTitle": "Freunde ins Squad einladen",
+      "leaveSquad": "Squad verlassen",
+      "leaveSquadTitle": "Squad verlassen",
+      "leaveSquadMsg": "Bist du sicher, dass du das Squad verlassen möchtest?",
+      "current": "← Aktuell",
+      "points": "Punkte",
+      "invitedToSquad": "hat dich in ein Squad eingeladen.",
+      "leave": "Verlassen",
+      "noSquads": "Noch keine Squads im Ranking.",
+      "beFirst": "Sei der Erste!",
+      "generalRanking": "Allgemeines Ranking",
+      "removeMemberTitle": "Mitglied entfernen",
+      "removeMemberMsg": "Bist du sicher, dass du {{name}} aus dem Squad entfernen möchtest?",
+      "remove": "Entfernen",
+      "squadNamePlaceholder": "Dein Squad-Name...",
+      "joinWithCode": "Mit Code beitreten",
+      "codePlaceholder": "Squad-Code (z.B.: ab12cd34)",
+      "join": "Beitreten",
+      "noMembers": "Keine Mitglieder sichtbar.",
+      "youAreHere": "Du bist in diesem Squad",
+      "requestJoin": "Beitritt anfragen",
+      "noFriendsToInvite": "Du hast noch keine Freunde zum Einladen.",
+      "sent": "Gesendet ✓",
+      "inviteBtn": "Einladen"
+    },
+    "howItWorks": "Wie funktioniert es?",
+    "streakMultipliers": "Serien-Multiplikatoren",
+    "streakDesc": "Der Multiplikator gilt für jeden Punkt, der während einer aktiven Serie verdient wird. Bleib konsequent und steige schneller auf!",
+    "current": "← Aktuell",
+    "you": "DU",
+    "ranking": "Rangfolge",
+    "class": "Klasse",
+    "individual.subtitle": "Individuelles Benutzer-Ranking",
+    "points": {
+      "logMeal": "Eine Mahlzeit eintragen",
+      "perfectMacros": "Perfekte Makros (±5%)",
+      "squadSynergy": "Squad-Synergie"
+    },
+    "points.logMeal": "Mahlzeit erfassen",
+    "points.perfectMacros": "Perfekte Makros (±5%)",
+    "points.squadSynergy": "Squad-Synergie",
+    "streak": {
+      "days3to7": "3–7 Tage",
+      "days8to14": "8–14 Tage",
+      "days15plus": "15+ Tage"
+    },
+    "streak.days3to7": "3–7 Tage",
+    "streak.days8to14": "8–14 Tage",
+    "streak.days15plus": "15+ Tage",
+    "squads.leaveSquadTitle": "Squad verlassen",
+    "squads.leaveSquadMsg": "Bist du sicher, dass du den Squad verlassen möchtest?",
+    "squads.leave": "Verlassen",
+    "squads.leaveSquad": "Squad verlassen",
+    "squads.noSquads": "Noch keine Squads im Ranking.",
+    "squads.beFirst": "Sei der Erste!",
+    "squads.generalRanking": "Allgemeine Rangliste",
+    "squads.invitedToSquad": "Hat dich zu einem Squad eingeladen.",
+    "squads.removeMemberTitle": "Mitglied entfernen",
+    "squads.removeMemberMsg": "Bist du sicher, dass du {{name}} aus dem Squad entfernen möchtest?",
+    "squads.remove": "Entfernen",
+    "squads.inviteFriends": "Freunde einladen",
+    "squads.pathToElite": "Weg zur Elite",
+    "squads.createSquad": "Squad erstellen",
+    "squads.squadNamePlaceholder": "Name deines Squads...",
+    "squads.joinWithCode": "Mit Code beitreten",
+    "squads.codePlaceholder": "Squad-Code (z.B. ab12cd34)",
+    "squads.join": "Beitreten",
+    "squads.members": "Squad-Mitglieder",
+    "squads.noMembers": "Keine sichtbaren Mitglieder.",
+    "squads.youAreHere": "Du bist in diesem Squad",
+    "squads.requestJoin": "Beitrittsanfrage stellen",
+    "squads.inviteFriendsTitle": "Freunde zum Squad einladen",
+    "squads.noFriendsToInvite": "Du hast noch keine Freunde zum Einladen.",
+    "squads.sent": "Gesendet ✓",
+    "squads.inviteBtn": "Einladen",
+    "squads.copiedText": "Kopiert!",
+    "squads.podiumTitle": "Liga-Podium",
+    "squads.podiumSub": "Die besten Squads in FitGO Competitive"
+  },
+  "calendar": {
+    "myStreaks": "Meine Serien",
+    "currentStreak": "Aktuelle Serie",
+    "record": "Rekord:",
+    "activeDays": "Aktive Tage",
+    "totalLogged": "Insgesamt protokolliert",
+    "streak": "Serie",
+    "active": "Aktiv",
+    "recordShort": "Rekord",
+    "activeDay": "Aktiver Tag",
+    "today": "Heute",
+    "selected": "Ausgewählt"
+  },
+  "evaluation": {
+    "feedbackTitle": "Urteil des Coaches",
+    "estFat": "Geschätztes Fett",
+    "strengths": "Stärken",
+    "improvements": "Verbesserungsbereiche",
+    "newAnalysis": "Neue Analyse",
+    "history": "Bewertungsverlauf",
+    "noHistory": "Noch keine Bewertungen.",
+    "instruction": "Laden Sie ein Foto Ihres aktuellen Körpers hoch oder nehmen Sie eines auf, um eine detaillierte KI-Analyse Ihrer Stärken und Verbesserungsbereiche zu erhalten.",
+    "viewHistory": "Verlauf anzeigen",
+    "analyzeBtn": "Physik analysieren",
+    "analyzing": "Analysiere Ihre Muskelentwicklung...",
+    "backToMain": "Zurück zum Start",
+    "error": "Beim Analysieren des Bildes ist ein Fehler aufgetreten.",
+    "fatLabel": "Fett"
+  },
+  "legal": {
+    "termsAndConditions": "Allgemeine Geschäftsbedingungen",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "terms": "Bedingungen",
+    "privacy": "Datenschutz"
+  },
+  "sleep": {
+    "totalRegistered": "Gesamt registriert",
+    "bedtime": "Schlafenszeit",
+    "waketime": "Weckzeit",
+    "tip": "Erwachsene benötigen zwischen 7 und 9 Stunden Schlaf für eine optimale Erholung."
+  },
+  "workout": {
+    "instructions": "Anweisungen"
+  },
+  "badges": {
+    "verified": {
+      "label": "Verifiziert",
+      "description": "Benutzer mit einem verifizierten FitGO-Konto."
+    },
+    "early_adopter": {
+      "label": "Pionier",
+      "description": "Einer der ersten Nutzer der Plattform."
+    },
+    "social_star": {
+      "label": "Social Star",
+      "description": "Freigeschaltet durch aktives Posten."
+    },
+    "super_admin": {
+      "label": "Super Admin",
+      "description": "Voller System- und Admin-Zugriff."
+    },
+    "admin": {
+      "label": "Admin",
+      "description": "Moderation und Support."
+    },
+    "pro": {
+      "label": "Pro-Mitglied",
+      "description": "Aktives FitGO Premium-Abo."
+    },
+    "beast_mode": {
+      "label": "Biestmodus",
+      "description": "Für intensive Workouts und Konsistenz."
+    },
+    "fitness_enthusiast": {
+      "label": "Fitness-Enthusiast",
+      "description": "Zeichnet regelmäßige Workouts auf."
+    },
+    "water_champion": {
+      "label": "Aquaman",
+      "description": "Für perfekte Hydratation (>2L)."
+    },
+    "sleep_legend": {
+      "label": "Schlaf-Legende",
+      "description": "Für optimalen Schlaf (>8h)."
+    },
+    "protein_boss": {
+      "label": "Protein-Boss",
+      "description": "Für das Erreichen deines Protein-Ziels."
+    },
+    "weight_master": {
+      "label": "Ziel-Meister",
+      "description": "Weniger als 1kg vom Zielgewicht entfernt."
+    },
+    "hydration_god": {
+      "label": "Ozean-Gott",
+      "description": "Für 3 Liter Wasser an einem Tag."
+    },
+    "workout_machine": {
+      "label": "Maschine",
+      "description": "Für über 2 Stunden Training an einem Tag."
+    },
+    "sleep_god": {
+      "label": "Schlaf-Gott",
+      "description": "Für über 9 Stunden Schlaf."
+    },
+    "carnivore": {
+      "label": "Raubtier",
+      "description": "Mehr als 250g Protein am Tag."
+    },
+    "workout_warrior": {
+      "label": "Stahlkrieger",
+      "description": "Für ein Workout über 60 Minuten."
+    },
+    "step_hero": {
+      "label": "Schritt-Held",
+      "description": "Für über 15.000 Schritte am Tag."
+    },
+    "macro_expert": {
+      "label": "Macro Expert",
+      "description": "Perfect macros day."
+    },
+    "body_sculptor": {
+      "label": "Body Sculptor",
+      "description": "Log body measurements."
+    },
+    "photo_pioneer": {
+      "label": "Change Model",
+      "description": "Upload first progress photo."
+    },
+    "century_club": {
+      "label": "100 Club",
+      "description": "100-day streak."
+    },
+    "year_of_fitness": {
+      "label": "Year of Iron",
+      "description": "365-day streak."
+    },
+    "half_marathoner": {
+      "label": "Half Marathon",
+      "description": "Over 25,000 steps in a day."
+    },
+    "weight_transformer": {
+      "label": "Transformer",
+      "description": "10kg weight change."
+    },
+    "friend_magnet": {
+      "label": "Friend Magnet",
+      "description": "Have 5 or more friends."
+    },
+    "community_pillar": {
+      "label": "Community Pillar",
+      "description": "10 community posts."
+    },
+    "early_bird": {
+      "label": "Early Bird",
+      "description": "Breakfast before 9 AM."
+    },
+    "diet_expert": {
+      "label": "Diet Expert",
+      "description": "30 days logging meals."
+    },
+    "night_owl": {
+      "label": "Night Owl",
+      "description": "Activity between 2 and 4 AM."
+    },
+    "zen_master": {
+      "label": "Zen Master",
+      "description": "10 hours of Yoga."
+    },
+    "iron_lungs": {
+      "label": "Iron Lungs",
+      "description": "Intense swimming session."
+    },
+    "mountain_king": {
+      "label": "Mountain King",
+      "description": "50,000 steps in a week."
+    },
+    "spartan": {
+      "label": "Spartan",
+      "description": "300-day perfect streak."
+    },
+    "data_scientist": {
+      "label": "Data Scientist",
+      "description": "Exported your data."
+    },
+    "ghost": {
+      "label": "Ghost",
+      "description": "Active 5 days without posting."
+    },
+    "zen_streaker": {
+      "label": "Weekly Yoga",
+      "description": "3 yoga sessions in a week."
+    },
+    "speed_demon": {
+      "label": "Speed Demon",
+      "description": "Express meal log."
+    },
+    "love_reactor": {
+      "label": "Love Dispenser",
+      "description": "Gave your first like."
+    },
+    "legend_commenter": {
+      "label": "Ice Breaker",
+      "description": "Left your first comment."
     }
   }
 }

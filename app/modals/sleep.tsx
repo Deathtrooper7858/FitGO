@@ -81,7 +81,7 @@ export default function SleepModal() {
             {hours > 0 ? `${hours}h` : '--'}
           </Text>
           <Text style={[s.hoursLabel, { color: colors.textSecondary }]}>
-            {t('profile.settings', 'Total registrado')}
+            {t('sleep.totalRegistered', 'Total registrado')}
           </Text>
         </View>
 

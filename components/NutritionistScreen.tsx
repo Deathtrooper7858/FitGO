@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TextInput,
   TouchableOpacity, KeyboardAvoidingView, Platform,
-  ActivityIndicator, Image, Alert,
+  ActivityIndicator, Alert,
 } from 'react-native';
+import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -386,7 +387,7 @@ export default function NutritionistScreen() {
     try {
       const { granted } = await ImagePicker.requestCameraPermissionsAsync();
       if (!granted) {
-        Alert.alert('Permission needed', 'Please allow camera access in Settings.');
+        Alert.alert(t('common.warning', 'Advertencia'), t('profile.cameraPermission', 'Se necesitan permisos de cámara para tomar fotos.'));
         return;
       }
       const result = await ImagePicker.launchCameraAsync({
@@ -396,7 +397,7 @@ export default function NutritionistScreen() {
         setSelectedImage(result.assets[0].base64!);
       }
     } catch {
-      Alert.alert('Error', 'Could not open camera.');
+      Alert.alert(t('common.error', 'Error'), t('profile.cameraFailed', 'Error al abrir la cámara'));
     }
   };
 
@@ -404,7 +405,7 @@ export default function NutritionistScreen() {
     try {
       const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!granted) {
-        Alert.alert('Permission needed', 'Please allow photo library access in Settings.');
+        Alert.alert(t('common.warning', 'Advertencia'), t('profile.galleryPermission', 'Se necesitan permisos de galería para seleccionar fotos.'));
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -414,7 +415,7 @@ export default function NutritionistScreen() {
         setSelectedImage(result.assets[0].base64!);
       }
     } catch {
-      Alert.alert('Error', 'Could not open gallery.');
+      Alert.alert(t('common.error', 'Error'), t('profile.galleryFailed', 'Error al abrir la galería'));
     }
   };
 
@@ -426,7 +427,7 @@ export default function NutritionistScreen() {
     try {
       const permission = await requestRecordingPermissionsAsync();
       if (permission.status !== 'granted') {
-        Alert.alert('Permission needed', 'Please allow microphone access to use voice features.');
+        Alert.alert(t('common.warning', 'Advertencia'), t('tracker.micPermissionSub', 'Por favor permite acceso al micrófono para usar el registro por voz.'));
         return;
       }
       await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
@@ -450,7 +451,7 @@ export default function NutritionistScreen() {
             setInput(text);
           }
         } catch (err) {
-          Alert.alert('Transcription failed', 'Could not convert voice to text.');
+          Alert.alert(t('common.error', 'Error'), t('tracker.voiceFailedSub', 'No pudimos procesar tu voz. Inténtalo de nuevo.'));
         } finally {
           setIsTranscribing(false);
           await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: false }).catch(() => {});
@@ -674,6 +675,10 @@ export default function NutritionistScreen() {
           ref={flatRef}
           data={messages}
           style={{ flex: 1 }}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
           keyExtractor={(m) => m.id}
           renderItem={({ item, index }) => {
             const isLastUser = item.role === 'user' && (index === messages.length - 1 || (index === messages.length - 2 && messages[index+1].role === 'model'));
