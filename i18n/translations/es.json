@@ -602,7 +602,10 @@
     "takePhotoDesc": "Usa la cámara de tu dispositivo",
     "chooseGallery": "Elegir de la galería",
     "chooseGalleryDesc": "Selecciona una imagen existente",
-    "goalReached": "¡Logrado!"
+    "goalReached": "¡Logrado!",
+    "badges": {
+      "owner": "Propietario"
+    }
   },
   "recipes": {
     "title": "Recetas",
@@ -3039,6 +3042,10 @@
       "legend_commenter": {
         "label": "Rompe Hielos",
         "description": "Dejaste tu primer comentario."
+      },
+      "owner": {
+        "label": "Propietario",
+        "description": "Dueño y creador principal de FitGO."
       }
     },
     "unlocked": "Desbloqueado",
@@ -3687,9 +3694,17 @@
       "weight_stability": {
         "title": "Estabilidad de Peso",
         "description": "Mantuviste tu peso durante 30 días."
+      },
+      "the_owner": {
+        "title": "Propietario Absoluto",
+        "description": "Dueño de la plataforma FitGO."
       }
     },
-    "newAchievement": "¡NUEVO LOGRO DESBLOQUEADO!"
+    "newAchievement": "¡NUEVO LOGRO DESBLOQUEADO!",
+    "the_owner": {
+      "title": "Propietario Absoluto",
+      "desc": "Dueño de la plataforma FitGO."
+    }
   },
   "competitive": {
     "mySquad": "Mi Squad",
@@ -3757,7 +3772,12 @@
       "requestJoin": "Solicitar Unirse",
       "noFriendsToInvite": "No tienes amigos agregados aún para invitar.",
       "sent": "Enviado ✓",
-      "inviteBtn": "Invitar"
+      "inviteBtn": "Invitar",
+      "transferLeaderTitle": "Pasar Liderazgo",
+      "transferLeaderMsg": "¿Pasar el liderazgo del squad a {{name}}? Perderás los permisos de creador.",
+      "deleteSquadTitle": "Eliminar Squad",
+      "deleteSquadMsg": "¿Estás seguro de que quieres eliminar tu squad permanentemente?",
+      "delete": "Eliminar"
     },
     "howItWorks": "¿Cómo funciona?",
     "streakMultipliers": "Multiplicadores de Racha",

@@ -8,7 +8,7 @@ import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
-import { Trophy, Users, Zap, Crown, Shield, Copy, LogOut, Plus, Hash, Star, ChevronRight, X, Sword } from 'lucide-react-native';
+import { Trophy, Users, Zap, Crown, Shield, Copy, LogOut, Plus, Hash, Star, ChevronRight, X, Sword, Trash2 } from 'lucide-react-native';
 import FitGOChallenges from './FitGOChallenges';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuthStore, useSocialStore } from '../../store';
@@ -94,12 +94,16 @@ function LeagueBadge({ tier, size = 'md' }: { tier: LeagueTier; size?: 'sm' | 'm
   );
 }
 
-function MemberRow({ member, rank, onRemove, isMe }: { member: SquadMember; rank: number; onRemove?: () => void; isMe?: boolean }) {
+function MemberRow({ member, rank, onRemove, isMe, onInspect, onMakeLeader }: { member: SquadMember; rank: number; onRemove?: () => void; isMe?: boolean; onInspect?: () => void; onMakeLeader?: () => void }) {
   const colors = useTheme();
   const { t } = useTranslation();
   const rankColor = rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : rank === 3 ? '#CD7F32' : colors.textSecondary;
   return (
-    <View style={[styles.memberRow, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+    <TouchableOpacity 
+      activeOpacity={onInspect ? 0.7 : 1} 
+      onPress={onInspect} 
+      style={[styles.memberRow, { borderColor: colors.border, backgroundColor: colors.surface }]}
+    >
       <Text style={[styles.rankText, { color: rankColor }]}>#{rank}</Text>
       <View style={[styles.avatarCircle, { backgroundColor: colors.primary + '30', overflow: 'hidden' }]}>
         {member.avatar_url ? (
@@ -119,12 +123,17 @@ function MemberRow({ member, rank, onRemove, isMe }: { member: SquadMember; rank
           {member.league_points.toLocaleString()} pts
         </Text>
       </View>
+      {onMakeLeader && !isMe && (
+        <TouchableOpacity style={{ marginLeft: 8, padding: 6, backgroundColor: '#F59E0B15', borderRadius: 8 }} onPress={onMakeLeader}>
+          <Crown size={16} color="#F59E0B" />
+        </TouchableOpacity>
+      )}
       {onRemove && !isMe && (
         <TouchableOpacity style={{ marginLeft: 8, padding: 6, backgroundColor: '#EF444415', borderRadius: 8 }} onPress={onRemove}>
           <X size={16} color="#EF4444" />
         </TouchableOpacity>
       )}
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -802,6 +811,25 @@ export default function FitGOCompetitive() {
                       member={m} 
                       rank={i + 1} 
                       isMe={m.user_id === profile?.id}
+                      onInspect={() => { Haptics.selectionAsync(); setInspectingUser({ id: m.user_id, name: m.name, avatar_url: m.avatar_url, points: m.league_points }); }}
+                      onMakeLeader={squad.created_by === profile?.id ? () => {
+                        setAlert({
+                          visible: true,
+                          type: 'warning',
+                          title: t('competitive.squads.transferLeaderTitle', 'Pasar Liderazgo'),
+                          message: t('competitive.squads.transferLeaderMsg', '¿Pasar el liderazgo del squad a {{name}}? Perderás los permisos de creador.').replace('{{name}}', m.name),
+                          confirmText: t('common.confirm', 'Confirmar'),
+                          cancelText: t('common.cancel', 'Cancelar'),
+                          onConfirm: async () => {
+                            const success = await useLeagueStore.getState().transferLeadership(squad.id, m.user_id);
+                            if (success) {
+                              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                            }
+                            setAlert(prev => ({ ...prev, visible: false }));
+                          },
+                          onCancel: () => setAlert(prev => ({ ...prev, visible: false }))
+                        });
+                      } : undefined}
                       onRemove={squad.created_by === profile?.id ? () => {
                         setAlert({
                           visible: true,
@@ -867,11 +895,36 @@ export default function FitGOCompetitive() {
                   );
                 })}
 
-                {/* Leave */}
-                <TouchableOpacity style={[styles.leaveBtn, { borderColor: colors.error + '50' }]} onPress={handleLeave}>
-                  <LogOut size={16} color={colors.error} />
-                  <Text style={[styles.leaveBtnText, { color: colors.error }]}>{t('competitive.squads.leaveSquad', 'Salir del Squad')}</Text>
-                </TouchableOpacity>
+                {/* Leave / Delete */}
+                <View style={{ flexDirection: 'row', gap: 12, marginTop: 28 }}>
+                  <TouchableOpacity style={[styles.leaveBtn, { flex: 1, marginTop: 0, borderColor: colors.error + '50' }]} onPress={handleLeave}>
+                    <LogOut size={16} color={colors.error} />
+                    <Text style={[styles.leaveBtnText, { color: colors.error }]}>{t('competitive.squads.leaveSquad', 'Salir')}</Text>
+                  </TouchableOpacity>
+                  {squad.created_by === profile?.id && (
+                    <TouchableOpacity style={[styles.leaveBtn, { flex: 1, marginTop: 0, backgroundColor: colors.error + '15', borderColor: colors.error + '50' }]} onPress={() => {
+                      setAlert({
+                        visible: true,
+                        type: 'warning',
+                        title: t('competitive.squads.deleteSquadTitle', 'Eliminar Squad'),
+                        message: t('competitive.squads.deleteSquadMsg', '¿Estás seguro de que quieres eliminar tu squad permanentemente?'),
+                        confirmText: t('competitive.squads.delete', 'Eliminar'),
+                        cancelText: t('common.cancel', 'Cancelar'),
+                        onConfirm: async () => {
+                          if (squad?.id) {
+                            await useLeagueStore.getState().deleteSquad(squad.id);
+                            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                          }
+                          setAlert(prev => ({ ...prev, visible: false }));
+                        },
+                        onCancel: () => setAlert(prev => ({ ...prev, visible: false }))
+                      });
+                    }}>
+                      <Trash2 size={16} color={colors.error} />
+                      <Text style={[styles.leaveBtnText, { color: colors.error }]}>{t('competitive.squads.deleteSquad', 'Eliminar Squad')}</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               </>
             )}
 
@@ -995,7 +1048,12 @@ export default function FitGOCompetitive() {
                   ) : (
                     <View style={{ gap: 8, marginBottom: 24 }}>
                       {inspectingSquadMembers.length > 0 ? inspectingSquadMembers.map((m, i) => (
-                        <MemberRow key={m.user_id} member={m} rank={i + 1} />
+                        <MemberRow 
+                          key={m.user_id} 
+                          member={m} 
+                          rank={i + 1} 
+                          onInspect={() => { Haptics.selectionAsync(); setInspectingUser({ id: m.user_id, name: m.name, avatar_url: m.avatar_url, points: m.league_points }); }} 
+                        />
                       )) : (
                         <Text style={{ color: colors.textSecondary, textAlign: 'center' }}>{t('competitive.squads.noMembers', 'No hay integrantes visibles.')}</Text>
                       )}

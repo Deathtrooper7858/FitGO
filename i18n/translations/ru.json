@@ -246,7 +246,10 @@
     "takePhotoDesc": "Используйте камеру устройства",
     "chooseGallery": "Выбрать из галереи",
     "chooseGalleryDesc": "Выбрать существующее изображение",
-    "goalReached": "Достигнуто!"
+    "goalReached": "Достигнуто!",
+    "badges": {
+      "owner": "Владелец"
+    }
   },
   "coach": {
     "title": "Fitz Coach",
@@ -3043,6 +3046,10 @@
       "legend_commenter": {
         "label": "Rompe Hielos",
         "description": "Dejaste tu primer comentario."
+      },
+      "owner": {
+        "label": "Владелец",
+        "description": "Владелец и главный создатель FitGO."
       }
     },
     "unlocked": "Разблокировано",
@@ -3685,9 +3692,17 @@
       "anniversary": {
         "title": "Anniversary",
         "description": "1 year using FitGO. Congratulations!"
+      },
+      "the_owner": {
+        "title": "Абсолютный Владелец",
+        "description": "Владелец платформы FitGO."
       }
     },
-    "newAchievement": "НОВОЕ ДОСТИЖЕНИЕ РАЗБЛОКИРОВАНО!"
+    "newAchievement": "НОВОЕ ДОСТИЖЕНИЕ РАЗБЛОКИРОВАНО!",
+    "the_owner": {
+      "title": "Абсолютный Владелец",
+      "desc": "Владелец платформы FitGO."
+    }
   },
   "competitive": {
     "mySquad": "Мой отряд",
@@ -3755,7 +3770,12 @@
       "requestJoin": "Запросить вступление",
       "noFriendsToInvite": "У вас ещё нет друзей для приглашения.",
       "sent": "Отправлено ✓",
-      "inviteBtn": "Пригласить"
+      "inviteBtn": "Пригласить",
+      "transferLeaderTitle": "Передать Лидерство",
+      "transferLeaderMsg": "Передать лидерство командой {{name}}? Вы потеряете права создателя.",
+      "deleteSquadTitle": "Удалить Команду",
+      "deleteSquadMsg": "Вы уверены, что хотите навсегда удалить свою команду?",
+      "delete": "Удалить"
     },
     "howItWorks": "Как это работает?",
     "streakMultipliers": "Множители серий",
