@@ -602,7 +602,10 @@
     "takePhotoDesc": "Use your device camera",
     "chooseGallery": "Choose from gallery",
     "chooseGalleryDesc": "Select an existing image",
-    "goalReached": "Achieved!"
+    "goalReached": "Achieved!",
+    "badges": {
+      "owner": "Owner"
+    }
   },
   "recipes": {
     "title": "Recipes",
@@ -3039,6 +3042,10 @@
       "legend_commenter": {
         "label": "Ice Breaker",
         "description": "You left your first comment."
+      },
+      "owner": {
+        "label": "Absolute Owner",
+        "description": "Owner and main creator of FitGO."
       }
     },
     "unlocked": "Unlocked",
@@ -3687,9 +3694,17 @@
       "weight_stability": {
         "title": "Weight Stability",
         "description": "You maintained your weight for 30 days."
+      },
+      "the_owner": {
+        "title": "Absolute Owner",
+        "description": "Owner of the FitGO platform."
       }
     },
-    "newAchievement": "NEW ACHIEVEMENT UNLOCKED!"
+    "newAchievement": "NEW ACHIEVEMENT UNLOCKED!",
+    "the_owner": {
+      "title": "Absolute Owner",
+      "desc": "Owner of the FitGO platform."
+    }
   },
   "competitive": {
     "mySquad": "My Squad",
@@ -3757,7 +3772,12 @@
       "requestJoin": "Request to Join",
       "noFriendsToInvite": "You don't have any friends to invite yet.",
       "sent": "Sent ✓",
-      "inviteBtn": "Invite"
+      "inviteBtn": "Invite",
+      "transferLeaderTitle": "Transfer Leadership",
+      "transferLeaderMsg": "Transfer the squad leadership to {{name}}? You will lose creator permissions.",
+      "deleteSquadTitle": "Delete Squad",
+      "deleteSquadMsg": "Are you sure you want to permanently delete your squad?",
+      "delete": "Delete"
     },
     "howItWorks": "How does it work?",
     "streakMultipliers": "Streak Multipliers",

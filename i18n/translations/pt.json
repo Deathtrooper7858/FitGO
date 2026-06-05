@@ -246,7 +246,10 @@
     "takePhotoDesc": "Use a câmera do seu dispositivo",
     "chooseGallery": "Escolher da galeria",
     "chooseGalleryDesc": "Selecionar uma imagem existente",
-    "goalReached": "Alcançado!"
+    "goalReached": "Alcançado!",
+    "badges": {
+      "owner": "Proprietário"
+    }
   },
   "coach": {
     "title": "Fitz Coach",
@@ -3043,6 +3046,10 @@
       "legend_commenter": {
         "label": "Rompe Hielos",
         "description": "Dejaste tu primer comentario."
+      },
+      "owner": {
+        "label": "Proprietário",
+        "description": "Dono e criador principal do FitGO."
       }
     },
     "unlocked": "Desbloqueado",
@@ -3685,9 +3692,17 @@
       "anniversary": {
         "title": "Anniversary",
         "description": "1 year using FitGO. Congratulations!"
+      },
+      "the_owner": {
+        "title": "Proprietário Absoluto",
+        "description": "Dono da plataforma FitGO."
       }
     },
-    "newAchievement": "NOVA CONQUISTA DESBLOQUEADA!"
+    "newAchievement": "NOVA CONQUISTA DESBLOQUEADA!",
+    "the_owner": {
+      "title": "Proprietário Absoluto",
+      "desc": "Proprietário da plataforma FitGO."
+    }
   },
   "competitive": {
     "mySquad": "Meu Squad",
@@ -3755,7 +3770,12 @@
       "requestJoin": "Solicitar entrada",
       "noFriendsToInvite": "Ainda não tem amigos para convidar.",
       "sent": "Enviado ✓",
-      "inviteBtn": "Convidar"
+      "inviteBtn": "Convidar",
+      "transferLeaderTitle": "Transferir Liderança",
+      "transferLeaderMsg": "Transferir a liderança do esquadrão para {{name}}? Você perderá as permissões de criador.",
+      "deleteSquadTitle": "Excluir Esquadrão",
+      "deleteSquadMsg": "Tem certeza de que deseja excluir permanentemente o seu esquadrão?",
+      "delete": "Excluir"
     },
     "howItWorks": "Como funciona?",
     "streakMultipliers": "Multiplicadores de sequência",

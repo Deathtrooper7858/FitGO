@@ -72,6 +72,8 @@ interface LeagueStore {
   fetchTopSquads: () => Promise<void>;
   fetchSquadMembers: (squadId: string) => Promise<SquadMember[]>;
   removeMember: (squadId: string, userId: string) => Promise<boolean>;
+  deleteSquad: (squadId: string) => Promise<boolean>;
+  transferLeadership: (squadId: string, newOwnerId: string) => Promise<boolean>;
   showReward: (points: number) => void;
   hideReward: () => void;
   reset: () => void;
@@ -323,6 +325,44 @@ export const useLeagueStore = create<LeagueStore>()(
       return true;
     } catch (err: any) {
       console.error('[LeagueStore] Error removing member:', err);
+      set({ error: err.message, loading: false });
+      return false;
+    }
+  },
+
+  // ── Delete squad ──────────────────────────────────────────────────────────
+  deleteSquad: async (squadId: string) => {
+    const { profile } = useAuthStore.getState();
+    set({ loading: true, error: null });
+    try {
+      const { error } = await supabase
+        .from('squads')
+        .delete()
+        .match({ id: squadId, created_by: profile?.id });
+      if (error) throw error;
+      set({ squad: null, members: [], loading: false });
+      return true;
+    } catch (err: any) {
+      console.error('[LeagueStore] Error deleting squad:', err);
+      set({ error: err.message, loading: false });
+      return false;
+    }
+  },
+
+  // ── Transfer leadership ───────────────────────────────────────────────────
+  transferLeadership: async (squadId: string, newOwnerId: string) => {
+    set({ loading: true, error: null });
+    try {
+      const { error } = await supabase.rpc('transfer_squad_leadership', {
+        p_squad_id: squadId,
+        p_new_owner_id: newOwnerId,
+      });
+      if (error) throw error;
+      const { profile } = useAuthStore.getState();
+      if (profile?.id) await get().fetchMySquad(profile.id);
+      return true;
+    } catch (err: any) {
+      console.error('[LeagueStore] Error transferring leadership:', err);
       set({ error: err.message, loading: false });
       return false;
     }

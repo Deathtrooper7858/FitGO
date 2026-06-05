@@ -43,6 +43,7 @@ export const ALL_BADGES: Record<string, BadgeInfo> = {
   pro: { id: 'pro', label: 'Miembro Pro', colors: ['#F59E0B', '#D97706'], icon: '⭐', description: 'Suscripción activa en FitGO Premium.' },
   beast_mode: { id: 'beast_mode', label: 'Beast Mode', colors: ['#EF4444', '#991B1B'], icon: '🔥', description: 'Otorgado por completar entrenamientos intensos y consistencia.' },
   verified: { id: 'verified', label: 'Verificado', colors: ['#3B82F6', '#1E40AF'], icon: '✅', description: 'Usuario con cuenta verificada en FitGO.' },
+  owner: { id: 'owner', label: 'Propietario', colors: ['#000000', '#434343'], icon: '👑', description: 'Dueño y creador principal de FitGO.' },
   early_adopter: { id: 'early_adopter', label: 'Pionero', colors: ['#8B5CF6', '#5B21B6'], icon: '🚀', description: 'Parte de los primeros usuarios de la plataforma.' },
   fitness_enthusiast: { id: 'fitness_enthusiast', label: 'Entusiasta Fitness', colors: ['#EC4899', '#BE185D'], icon: '🏋️', description: 'Registra entrenamientos regulares y dedicación.' },
   
@@ -185,8 +186,9 @@ export function useAchievements() {
       { id: 'community_pillar', title: 'Pilar Comunitario', description: 'Has realizado 10 publicaciones.', icon: '🏛️', iconType: 'lottie' as const, lottieFile: 'community_pillar', tier: 'diamante', category: 'Comunidad', unlocked: unlockedAchievements.includes('community_pillar') || (posts?.filter(p => p.user_id === profile.id).length || 0) >= 10, rewardBadgeId: 'community_pillar' },
 
       // ── Categoría: Especiales & Secretos ──
-      { id: 'beta_tester', title: 'Pionero', description: 'Participaste en la fase beta de FitGO.', icon: '🧪', iconType: 'lucide' as const, lucideIcon: 'FlaskConical', tier: 'oro', category: 'Especial', unlocked: unlockedAchievements.includes('beta_tester') || (profile.role === 'admin' || profile.role === 'super_admin'), rewardBadgeId: 'early_adopter' },
-      { id: 'developer_god', title: 'Arquitecto del Sistema', description: 'Eres uno de los creadores de FitGO.', icon: '💻', iconType: 'lottie' as const, lottieFile: 'hacker_code', tier: 'diamante', category: 'Especial', unlocked: unlockedAchievements.includes('developer_god') || profile.role === 'super_admin', rewardBadgeId: 'super_admin' },
+      { id: 'beta_tester', title: 'Pionero', description: 'Participaste en la fase beta de FitGO.', icon: '🧪', iconType: 'lucide' as const, lucideIcon: 'FlaskConical', tier: 'oro', category: 'Especial', unlocked: unlockedAchievements.includes('beta_tester') || (profile.role === 'admin' || profile.role === 'super_admin' || profile.role === 'owner'), rewardBadgeId: 'early_adopter' },
+      { id: 'developer_god', title: 'Arquitecto del Sistema', description: 'Eres uno de los creadores de FitGO.', icon: '💻', iconType: 'lottie' as const, lottieFile: 'hacker_code', tier: 'diamante', category: 'Especial', unlocked: unlockedAchievements.includes('developer_god') || profile.role === 'super_admin' || profile.role === 'owner', rewardBadgeId: 'super_admin' },
+      { id: 'the_owner', title: 'Propietario Absoluto', description: 'Dueño de la plataforma FitGO.', icon: '👑', iconType: 'lucide' as const, lucideIcon: 'Crown', tier: 'diamante', category: 'Especial', unlocked: profile.role === 'owner', rewardBadgeId: 'owner' },
       { id: 'bug_hunter', title: 'Cazador de Bugs', description: 'Encontraste y reportaste un error crítico.', icon: '🐛', iconType: 'lucide' as const, lucideIcon: 'Bug', tier: 'plata', category: 'Especial', unlocked: unlockedAchievements.includes('bug_hunter') },
       
 
