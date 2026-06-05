@@ -64,7 +64,7 @@ export default function RegisterScreen() {
       return;
     }
     if (!termsAccepted) {
-      showAlert(t('common.error'), 'Debes aceptar los Términos y Condiciones para continuar.', 'warning');
+      showAlert(t('common.error'), t('auth.mustAcceptTerms'), 'warning');
       return;
     }
 

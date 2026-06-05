@@ -44,25 +44,20 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   grantPro: async () => {
     const profile = useAuthStore.getState().profile;
     if (!profile?.id) return;
-
+    
     try {
       set({ isLoading: true });
+      const { error } = await supabase.rpc('upgrade_to_pro_user', { target_user_id: profile.id });
+      if (error) {
+        console.error('Error upgrading to pro via RPC:', error);
+      }
       
-      // Actualizar directamente la columna is_pro en la base de datos Supabase
-      const { error } = await supabase
-        .from('users')
-        .update({ is_pro: true })
-        .eq('id', profile.id);
-
-      if (error) throw error;
-
       set({ isPro: true, isLoading: false });
-      useAuthStore.getState().setProfile({ ...profile, isPro: true });
-    } catch (err: any) {
-      console.error('❌ Error final en grantPro:', err.message || err);
-      // Fallback local por si acaso falla la conexión
-      set({ isPro: true, isLoading: false });
-      useAuthStore.getState().setProfile({ ...profile, isPro: true });
+      // update local profile with new role
+      useAuthStore.getState().setProfile({ ...profile, isPro: true, role: 'pro_user' });
+    } catch (err) {
+      console.error(err);
+      set({ isLoading: false });
     }
   },
 
@@ -72,21 +67,17 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
 
     try {
       set({ isLoading: true });
+      const { error } = await supabase.rpc('downgrade_from_pro', { target_user_id: profile.id });
+      if (error) {
+        console.error('Error downgrading from pro via RPC:', error);
+      }
       
-      // Actualizar directamente la columna is_pro en la base de datos Supabase
-      const { error } = await supabase
-        .from('users')
-        .update({ is_pro: false })
-        .eq('id', profile.id);
-
-      if (error) throw error;
-
       set({ isPro: false, isLoading: false });
-      useAuthStore.getState().setProfile({ ...profile, isPro: false });
-    } catch (err: any) {
-      console.error('Error cancelling Pro:', err.message || err);
-      set({ isPro: false, isLoading: false });
-      useAuthStore.getState().setProfile({ ...profile, isPro: false });
+      // restore user role locally
+      useAuthStore.getState().setProfile({ ...profile, isPro: false, role: 'user' });
+    } catch (err) {
+      console.error(err);
+      set({ isLoading: false });
     }
   },
 
@@ -98,7 +89,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       set({ isLoading: true });
       const { data, error } = await supabase
         .from('users')
-        .select('is_pro')
+        .select('is_pro, role')
         .eq('id', profile.id)
         .single();
 
@@ -106,7 +97,11 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
 
       const isProNow = !!data.is_pro;
       set({ isPro: isProNow, isLoading: false });
-      useAuthStore.getState().setProfile({ ...profile, isPro: isProNow });
+      useAuthStore.getState().setProfile({ 
+        ...profile, 
+        isPro: isProNow, 
+        role: data.role as any || profile.role 
+      });
       
       return isProNow;
     } catch (err) {

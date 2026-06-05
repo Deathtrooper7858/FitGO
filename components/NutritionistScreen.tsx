@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TextInput,
   TouchableOpacity, KeyboardAvoidingView, Platform,
-  ActivityIndicator, Image, Alert,
+  ActivityIndicator, Alert,
 } from 'react-native';
+import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -23,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { safe } from '../utils/sanitize';
 import CoachHistoryModal from './CoachHistoryModal';
 import { ImagePickerModal } from './ImagePickerModal';
+import { ImageViewerModal } from './ImageViewerModal';
 import { useKeyboardNavBar } from '../hooks/useKeyboardNavBar';
 
 const FREE_MSG_LIMIT = 5;
@@ -112,7 +114,7 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
 };
 
 // ─── Message bubble ───────────────────────────────────────────────────────────
-function MessageBubble({ msg, isLastUser, onEdit }: { msg: CoachMessage; isLastUser?: boolean; onEdit?: (m: CoachMessage) => void }) {
+function MessageBubble({ msg, isLastUser, onEdit, onImagePress }: { msg: CoachMessage; isLastUser?: boolean; onEdit?: (m: CoachMessage) => void; onImagePress?: (url: string) => void }) {
   const colors = useTheme();
   const isUser = msg.role === 'user';
 
@@ -134,11 +136,13 @@ function MessageBubble({ msg, isLastUser, onEdit }: { msg: CoachMessage; isLastU
           ]}
         >
           {msg.imageUrl && (
-            <Image
-              source={{ uri: msg.imageUrl }}
-              style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }}
-              resizeMode="cover"
-            />
+            <TouchableOpacity onPress={() => onImagePress?.(msg.imageUrl!)} activeOpacity={0.8}>
+              <Image
+                source={{ uri: msg.imageUrl }}
+                style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }}
+                contentFit="cover"
+              />
+            </TouchableOpacity>
           )}
           {renderFormattedContent(msg.content, true, colors)}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 8, marginTop: 6 }}>
@@ -173,11 +177,13 @@ function MessageBubble({ msg, isLastUser, onEdit }: { msg: CoachMessage; isLastU
         ]}
       >
         {msg.imageUrl && (
-          <Image
-            source={{ uri: msg.imageUrl }}
-            style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }}
-            resizeMode="cover"
-          />
+          <TouchableOpacity onPress={() => onImagePress?.(msg.imageUrl!)} activeOpacity={0.8}>
+            <Image
+              source={{ uri: msg.imageUrl }}
+              style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }}
+              contentFit="cover"
+            />
+          </TouchableOpacity>
         )}
         {renderFormattedContent(msg.content, false, colors)}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 8, marginTop: 6 }}>
@@ -193,7 +199,7 @@ function MessageBubble({ msg, isLastUser, onEdit }: { msg: CoachMessage; isLastU
     <View style={[bubble.row, isUser && bubble.rowUser]}>
       {!isUser && (
         <View style={[bubble.avatarContainer, { borderColor: colors.primary + '30' }]}>
-          <Image source={require('../assets/nutritionist_badge.jpg')} style={bubble.avatar} resizeMode="cover" />
+          <Image source={require('../assets/nutritionist_badge.jpg')} style={bubble.avatar} contentFit="cover" />
         </View>
       )}
       {renderBubbleBody()}
@@ -226,7 +232,7 @@ function TypingIndicator() {
   return (
     <View style={[bubble.row, { paddingHorizontal: Spacing.base, marginTop: 6 }]}>
       <View style={[bubble.avatarContainer, { borderColor: colors.primary + '30' }]}>
-        <Image source={require('../assets/nutritionist_badge.jpg')} style={bubble.avatar} resizeMode="cover" />
+        <Image source={require('../assets/nutritionist_badge.jpg')} style={bubble.avatar} contentFit="cover" />
       </View>
       <View 
         style={[
@@ -262,6 +268,7 @@ export default function NutritionistScreen() {
   const recorderState = useAudioRecorderState(audioRecorder, 500);
   const isRecording   = recorderState.isRecording;
   const [imagePickerVisible, setImagePickerVisible] = useState(false);
+  const [viewingImage, setViewingImage] = useState<string | null>(null);
   const flatRef                         = useRef<FlatList<CoachMessage>>(null);
 
   const { t } = useTranslation();
@@ -276,7 +283,7 @@ export default function NutritionistScreen() {
   const { profile } = useAuthStore();
 
   const { isPro } = usePurchaseStore();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin';
+  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const atLimit = !isProActually && msgCount >= FREE_MSG_LIMIT;
 
   useEffect(() => {
@@ -380,7 +387,7 @@ export default function NutritionistScreen() {
     try {
       const { granted } = await ImagePicker.requestCameraPermissionsAsync();
       if (!granted) {
-        Alert.alert('Permission needed', 'Please allow camera access in Settings.');
+        Alert.alert(t('common.warning', 'Advertencia'), t('profile.cameraPermission', 'Se necesitan permisos de cámara para tomar fotos.'));
         return;
       }
       const result = await ImagePicker.launchCameraAsync({
@@ -390,7 +397,7 @@ export default function NutritionistScreen() {
         setSelectedImage(result.assets[0].base64!);
       }
     } catch {
-      Alert.alert('Error', 'Could not open camera.');
+      Alert.alert(t('common.error', 'Error'), t('profile.cameraFailed', 'Error al abrir la cámara'));
     }
   };
 
@@ -398,7 +405,7 @@ export default function NutritionistScreen() {
     try {
       const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!granted) {
-        Alert.alert('Permission needed', 'Please allow photo library access in Settings.');
+        Alert.alert(t('common.warning', 'Advertencia'), t('profile.galleryPermission', 'Se necesitan permisos de galería para seleccionar fotos.'));
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -408,7 +415,7 @@ export default function NutritionistScreen() {
         setSelectedImage(result.assets[0].base64!);
       }
     } catch {
-      Alert.alert('Error', 'Could not open gallery.');
+      Alert.alert(t('common.error', 'Error'), t('profile.galleryFailed', 'Error al abrir la galería'));
     }
   };
 
@@ -420,7 +427,7 @@ export default function NutritionistScreen() {
     try {
       const permission = await requestRecordingPermissionsAsync();
       if (permission.status !== 'granted') {
-        Alert.alert('Permission needed', 'Please allow microphone access to use voice features.');
+        Alert.alert(t('common.warning', 'Advertencia'), t('tracker.micPermissionSub', 'Por favor permite acceso al micrófono para usar el registro por voz.'));
         return;
       }
       await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
@@ -444,7 +451,7 @@ export default function NutritionistScreen() {
             setInput(text);
           }
         } catch (err) {
-          Alert.alert('Transcription failed', 'Could not convert voice to text.');
+          Alert.alert(t('common.error', 'Error'), t('tracker.voiceFailedSub', 'No pudimos procesar tu voz. Inténtalo de nuevo.'));
         } finally {
           setIsTranscribing(false);
           await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: false }).catch(() => {});
@@ -619,7 +626,7 @@ export default function NutritionistScreen() {
           style={s.header}
         >
           <View style={[s.headerAvatarContainer, { borderColor: colors.primary + '40' }]}>
-            <Image source={require('../assets/nutritionist_badge.jpg')} style={s.headerAvatar} resizeMode="cover" />
+            <Image source={require('../assets/nutritionist_badge.jpg')} style={s.headerAvatar} contentFit="cover" />
             <View style={[s.headerOnlineDot, { backgroundColor: colors.success }]} />
           </View>
           
@@ -668,6 +675,10 @@ export default function NutritionistScreen() {
           ref={flatRef}
           data={messages}
           style={{ flex: 1 }}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
           keyExtractor={(m) => m.id}
           renderItem={({ item, index }) => {
             const isLastUser = item.role === 'user' && (index === messages.length - 1 || (index === messages.length - 2 && messages[index+1].role === 'model'));
@@ -675,6 +686,7 @@ export default function NutritionistScreen() {
               <MessageBubble 
                 msg={item} 
                 isLastUser={isLastUser}
+                onImagePress={setViewingImage}
                 onEdit={(m) => {
                   setInput(m.content);
                   removeLastPair('nutritionist');
@@ -756,7 +768,7 @@ export default function NutritionistScreen() {
                   <Image
                     source={{ uri: `data:image/jpeg;base64,${selectedImage}` }}
                     style={s.imagePreview}
-                    resizeMode="cover"
+                    contentFit="cover"
                   />
                   <TouchableOpacity
                     onPress={() => setSelectedImage(null)}
@@ -853,6 +865,11 @@ export default function NutritionistScreen() {
         onCamera={onLaunchCamera}
         onGallery={onLaunchGallery}
       />
+      <ImageViewerModal
+        visible={!!viewingImage}
+        imageUri={viewingImage}
+        onClose={() => setViewingImage(null)}
+      />
     </View>
   );
 }
@@ -889,7 +906,7 @@ const s = StyleSheet.create({
   inputIconBtn:         { width: 42, height: 42, borderRadius: Radius.lg, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 4, elevation: 1 },
   lockBadge:            { position: 'absolute', top: 2, right: 2, backgroundColor: 'rgba(0,0,0,0.06)', borderRadius: 6, padding: 1 },
   
-  input:                { flex: 1, borderRadius: Radius.lg, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15, lineHeight: 20, borderWidth: 1.5, maxHeight: 120 },
+  input:                { flex: 1, borderRadius: Radius.lg, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, fontSize: 15, lineHeight: 22, borderWidth: 1.5, maxHeight: 200, minHeight: 44 },
   sendBtn:              { borderRadius: Radius.lg, overflow: 'hidden' },
   sendBtnDisabled:      { opacity: 0.4 },
   sendGrad:             { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },

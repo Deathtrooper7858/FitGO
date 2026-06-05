@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation, UIManager, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../hooks/useTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronDown, Dumbbell, Activity, Flame, ChevronUp } from 'lucide-react-native';
 import { Radius, Shadow, Spacing } from '../constants';
 
-if (Platform.OS === 'android') {
-  if (UIManager.setLayoutAnimationEnabledExperimental) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-  }
-}
 
 const MUSCLE_GROUPS = [
   {
@@ -103,7 +98,7 @@ export function MuscleDirectoryWidget() {
                   <View style={[styles.iconWrap, { backgroundColor: group.color + '20' }]}>
                     {group.icon}
                   </View>
-                  <Text style={[styles.groupName, { color: colors.textPrimary }]}>{group.name}</Text>
+                  <Text style={[styles.groupName, { color: colors.textPrimary }]}>{t(`muscleDirectory.${group.id}`, group.name)}</Text>
                 </View>
                 <View style={[styles.chevronWrap, { backgroundColor: isExpanded ? group.color : colors.border + '50' }]}>
                   {isExpanded ? (
@@ -120,7 +115,7 @@ export function MuscleDirectoryWidget() {
                     {group.exercises.map((exercise, idx) => (
                       <View key={idx} style={[styles.exercisePill, { backgroundColor: colors.background }]}>
                         <Text style={[styles.exerciseDot, { color: group.color }]}>•</Text>
-                        <Text style={[styles.exerciseText, { color: colors.textSecondary }]}>{exercise}</Text>
+                        <Text style={[styles.exerciseText, { color: colors.textSecondary }]}>{t(`exerciseNames.${exercise}`, exercise)}</Text>
                       </View>
                     ))}
                   </View>

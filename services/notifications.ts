@@ -19,7 +19,6 @@ function getNotifications() {
       if (NotificationsModule && !notificationHandlerSet && typeof NotificationsModule.setNotificationHandler === 'function') {
         NotificationsModule.setNotificationHandler({
           handleNotification: async () => ({
-            shouldShowAlert: true,
             shouldPlaySound: true,
             shouldSetBadge: false,
             shouldShowBanner: true,

@@ -1,0 +1,122 @@
+﻿FitGO
+PolÝtica de Privacidad
+Versi¾n 1.0
+Fecha de entrada en vigor: 1 de junio de 2025
+┌ltima actualizaci¾n: 28 de mayo de 2025
+FitGO Technologies S.A.S.
+privacidad@fitgo.app
+1. INTRODUCCIËN E IDENTIFICACIËN DEL RESPONSABLE
+La presente PolÝtica de Privacidad describe de manera detallada y transparente c¾mo FitGO Technologies S.A.S. ("FitGO", "nosotros", "nos" o "nuestro"), con domicilio electr¾nico en privacidad@fitgo.app, recopila, usa, almacena, comparte y protege la informaci¾n personal de los usuarios ("usted", "el usuario") que acceden y utilizan la aplicaci¾n m¾vil FitGO (la "Aplicaci¾n") y los servicios asociados (colectivamente, los "Servicios").
+Este documento ha sido redactado en cumplimiento del Reglamento General de Protecci¾n de Datos de la Uni¾n Europea (GDPR - Reglamento (UE) 2016/679), de la Ley de Privacidad del Consumidor de California (CCPA - Cal. Civ. Code º1798.100 et seq.) y de la Ley 1581 de 2012 de Colombia (Ley de Habeas Data).
+Al descargar, instalar, registrarse o utilizar la Aplicaci¾n, usted declara haber leÝdo, comprendido y aceptado los tÚrminos de esta PolÝtica de Privacidad en su totalidad.
+2. DEFINICIONES
+A los efectos de la presente PolÝtica, se entenderß por:
+"Datos Personales": toda informaci¾n sobre una persona fÝsica identificada o identificable, incluyendo datos de salud, biomÚtricos y de comportamiento.
+"Datos de Salud": categorÝa especial de datos que incluye informaci¾n relativa al estado fÝsico, corporal, nutricional, de actividad fÝsica, sue±o, peso, medidas corporales y cualquier otra mÚtrica fisiol¾gica recopilada a travÚs de la Aplicaci¾n.
+"Tratamiento": cualquier operaci¾n o conjunto de operaciones realizadas sobre Datos Personales, ya sea automatizada o no (recopilaci¾n, registro, conservaci¾n, consulta, uso, comunicaci¾n, supresi¾n o destrucci¾n).
+"Responsable del Tratamiento": FitGO Technologies S.A.S., que determina los fines y medios del tratamiento.
+"Encargado del Tratamiento": persona fÝsica o jurÝdica que trata datos por cuenta del Responsable (ej. Supabase, RevenueCat, GROQ API).
+"Consentimiento": toda manifestaci¾n de voluntad libre, especÝfica, informada e inequÝvoca del interesado.
+3. CATEGOR═AS DE DATOS RECOPILADOS
+3.1 Datos Proporcionados Directamente por el Usuario
+Datos de registro y cuenta: nombre, direcci¾n de correo electr¾nico, contrase±a cifrada, fecha de nacimiento, sexo biol¾gico y foto de perfil (opcional).
+Datos de salud y composici¾n corporal: peso actual, peso objetivo, talla, porcentaje estimado de grasa corporal, medidas corporales (cintura, cadera, brazo, muslo, etc.) y progreso fotogrßfico (si el usuario lo activa de manera expresa).
+Datos nutricionales: registro detallado de alimentos consumidos, incluyendo gramaje, valor cal¾rico y desglose de macronutrientes (proteÝnas, carbohidratos, grasas, fibra).
+Datos de hidrataci¾n y sue±o: cantidad de agua ingerida diariamente y horas de sue±o registradas.
+Datos de actividad fÝsica: rutinas de entrenamiento, ejercicios realizados, series, repeticiones, pesos levantados y duraci¾n de las sesiones.
+Informaci¾n social: nombre de usuario p·blico, pertenencia a Squads, puntos de liga, interacciones sociales y mensajes enviados mediante el sistema de chat.
+3.2 Datos Recopilados Automßticamente
+Datos de dispositivo: sistema operativo, versi¾n de la app, identificador ·nico de dispositivo (UUID), modelo de dispositivo y configuraci¾n regional.
+Datos de uso: pantallas visitadas, duraci¾n de las sesiones, flujo de navegaci¾n, errores producidos y frecuencia de uso de funcionalidades.
+Datos de registro (logs): fecha, hora y tipo de acci¾n realizada dentro de la aplicaci¾n.
+3.3 Datos Generados por Inteligencia Artificial
+Consultas enviadas al m¾dulo Coach de IA: preguntas, instrucciones y mensajes que el usuario dirige a los asistentes virtuales (Nutricionista IA, Entrenador IA, MÚdico Deportivo IA).
+Contexto de usuario transmitido a la IA: mÚtricas actuales del usuario (peso, metas, macros del dÝa) enviadas como contexto al proveedor GROQ API para la generaci¾n de respuestas.
+4. BASE LEGAL PARA EL TRATAMIENTO (GDPR)
+Conforme al artÝculo 6 y artÝculo 9 del GDPR, el tratamiento de sus datos se fundamenta en las siguientes bases legales:
+Consentimiento explÝcito (Art. 6.1.a y Art. 9.2.a GDPR): Para el tratamiento de datos de salud y datos sensibles. El usuario otorga su consentimiento de forma activa, informada y granular durante el proceso de registro y configuraci¾n inicial. Este consentimiento puede ser retirado en cualquier momento.
+Ejecuci¾n de un contrato (Art. 6.1.b GDPR): Para los datos necesarios con el fin de proveer las funcionalidades esenciales de la Aplicaci¾n (registro cal¾rico, seguimiento de progreso, gesti¾n de cuenta).
+InterÚs legÝtimo (Art. 6.1.f GDPR): Para la mejora del servicio, detecci¾n de fraude, seguridad de la plataforma y anßlisis estadÝsticos anonimizados. Se ha realizado una prueba de equilibrio de intereses que concluye que este interÚs no prevalece sobre los derechos y libertades del interesado.
+Cumplimiento de obligaciones legales (Art. 6.1.c GDPR): Para conservar registros contables y fiscales asociados a transacciones de pago conforme a la legislaci¾n aplicable.
+5. FINALIDADES DEL TRATAMIENTO
+Proveer y personalizar las funcionalidades de la Aplicaci¾n: registro de nutrici¾n, seguimiento de macros, planificaci¾n de entrenamientos, sistema de ligas y coach de IA.
+Calcular mÚtricas de salud derivadas: TDEE (Gasto EnergÚtico Total Diario), distribuci¾n de macronutrientes objetivo y proyecciones de progreso.
+Gamificaci¾n y funciones sociales: asignar puntos de liga, gestionar el Squad del usuario y mantener tablas de clasificaci¾n.
+Comunicaciones transaccionales: envÝo de confirmaciones de pago, notificaciones push de recordatorio (·nicamente si el usuario las activa) y alertas de seguridad de la cuenta.
+Mejora continua del servicio: anßlisis de uso agregado y anonimizado para identificar errores y priorizar mejoras de producto.
+Gesti¾n de suscripciones premium: verificaci¾n del estado de suscripci¾n Pro mediante el SDK de RevenueCat y procesamiento de compras in-app.
+Seguridad y prevenci¾n del fraude: detecci¾n de accesos no autorizados, abusos de la plataforma e infracciones a los TÚrminos y Condiciones.
+6. PROVEEDORES DE SERVICIOS TERCEROS (ENCARGADOS DEL TRATAMIENTO)
+FitGO trabaja con los siguientes proveedores de servicios que act·an como Encargados del Tratamiento y que han suscrito contratos de procesamiento de datos (DPA) conformes con el GDPR:
+6.1 Supabase, Inc. (Backend y Base de Datos)
+Rol: Proveedor de base de datos (PostgreSQL), autenticaci¾n de usuarios, almacenamiento de archivos y funciones serverless.
+Datos accedidos: Todos los datos del usuario almacenados en la base de datos de FitGO, incluyendo datos de salud, registro nutricional, actividad y mÚtricas.
+Sede: Estados Unidos. Transferencia amparada por Clßusulas Contractuales Tipo (CCT) conforme al Art. 46 GDPR.
+PolÝtica de privacidad: https://supabase.com/privacy
+6.2 GROQ, Inc. (Inteligencia Artificial)
+Rol: Proveedor de infraestructura de inferencia de LLM (Llama 3, Mixtral) para el m¾dulo Coach de IA.
+Datos accedidos: Consultas del usuario y contexto de salud anonimizado o pseudonimizado transmitido con cada solicitud.
+PolÝtica de privacidad: https://groq.com/privacy-policy
+IMPORTANTE: Las consultas al Coach de IA son transmitidas a GROQ. FitGO no almacena el historial completo de conversaciones de IA de forma permanente en sus servidores mßs allß de lo estrictamente necesario para la sesi¾n.
+6.3 RevenueCat, Inc. (Monetizaci¾n y Suscripciones)
+Rol: Gesti¾n del ciclo de vida de suscripciones in-app (compra, renovaci¾n, cancelaci¾n, reembolso).
+Datos accedidos: Identificador de usuario anonimizado, estado de suscripci¾n, historial de transacciones. RevenueCat no accede a datos de salud.
+PolÝtica de privacidad: https://www.revenuecat.com/privacy
+6.4 Edamam, LLC (Base de Datos Nutricional)
+Rol: API de base de datos de alimentos para la b·squeda y recuperaci¾n de informaci¾n nutricional.
+Datos accedidos: Consultas de b·squeda de alimentos (sin informaci¾n personal identificable del usuario).
+PolÝtica de privacidad: https://www.edamam.com/privacy-policy/
+7. TRANSFERENCIAS INTERNACIONALES DE DATOS
+Dado que FitGO utiliza proveedores de servicios ubicados en los Estados Unidos (Supabase, GROQ, RevenueCat), sus datos personales son transferidos a dicho paÝs. Estas transferencias se realizan con las siguientes garantÝas adecuadas conforme al Art. 46 GDPR:
+Clßusulas Contractuales Tipo (CCT) adoptadas por la Comisi¾n Europea.
+Adhesi¾n de los proveedores al Marco de Privacidad de Datos UE-EE.UU. (EU-U.S. Data Privacy Framework) cuando aplique.
+Evaluaci¾n de impacto de transferencia (TIA) realizada para garantizar un nivel de protecci¾n esencialmente equivalente al del Espacio Econ¾mico Europeo.
+8. CONSERVACIËN DE LOS DATOS
+Datos de cuenta y salud activos: Conservados durante toda la vigencia de la relaci¾n contractual (cuenta activa).
+Tras la eliminaci¾n de la cuenta: Los datos personales son eliminados de forma permanente dentro de los 30 dÝas calendario siguientes a la solicitud de eliminaci¾n, excepto aquellos que deban conservarse por obligaci¾n legal.
+Registros de transacciones y facturaci¾n: Conservados por un perÝodo de 5 a±os conforme a obligaciones fiscales y contables.
+Logs de seguridad y auditorÝa: Conservados por 12 meses para la detecci¾n de fraude.
+Datos anonimizados: Pueden conservarse indefinidamente para fines estadÝsticos e investigaci¾n interna, al no ser reconducibles a ninguna persona fÝsica identificable.
+9. DERECHOS DE LOS USUARIOS
+9.1 Derechos bajo el GDPR (Usuarios en el EEE y Reino Unido)
+Usted tiene derecho a:
+Derecho de acceso (Art. 15): Obtener confirmaci¾n de si tratamos sus datos y acceder a una copia de los mismos.
+Derecho de rectificaci¾n (Art. 16): Solicitar la correcci¾n de datos inexactos o incompletos.
+Derecho de supresi¾n / 'al olvido' (Art. 17): Solicitar la eliminaci¾n de sus datos cuando ya no sean necesarios para el fin para el que fueron recogidos.
+Derecho de limitaci¾n del tratamiento (Art. 18): Solicitar la restricci¾n del tratamiento en determinadas circunstancias.
+Derecho a la portabilidad (Art. 20): Recibir sus datos en formato estructurado, de uso com·n y legible por mßquina (JSON/CSV).
+Derecho de oposici¾n (Art. 21): Oponerse al tratamiento basado en interÚs legÝtimo.
+Derecho a retirar el consentimiento: En cualquier momento, sin que afecte a la licitud del tratamiento previo.
+Derecho a no ser objeto de decisiones automatizadas (Art. 22): No ser sometido a decisiones basadas ·nicamente en tratamiento automatizado que le produzcan efectos jurÝdicos.
+9.2 Derechos bajo la CCPA (Residentes de California)
+Adicionalmente a los derechos anteriores, los residentes de California tienen derecho a:
+Conocer las categorÝas y fuentes de informaci¾n personal recopilada sobre usted en los ·ltimos 12 meses.
+Conocer los fines comerciales para los cuales se usa o divulga su informaci¾n personal.
+Solicitar la eliminaci¾n de su informaci¾n personal, sujeto a ciertas excepciones.
+No discriminaci¾n: No recibirß un trato discriminatorio por ejercer sus derechos bajo la CCPA.
+FitGO NO vende informaci¾n personal a terceros, conforme a la Cal. Civ. Code º1798.100.
+9.3 C¾mo Ejercer sus Derechos
+Para ejercer cualquiera de los derechos indicados, puede enviarnos una solicitud a: privacidad@fitgo.app. Responderemos dentro de los plazos legalmente establecidos (30 dÝas para solicitudes GDPR; 45 dÝas para solicitudes CCPA). Podremos solicitarle informaci¾n adicional para verificar su identidad antes de procesar su solicitud.
+Si considera que el tratamiento de sus datos infringe la normativa aplicable, tiene derecho a presentar una reclamaci¾n ante la autoridad de control competente en su paÝs de residencia.
+10. SEGURIDAD DE LOS DATOS
+FitGO implementa medidas tÚcnicas y organizativas adecuadas para garantizar un nivel de seguridad apropiado al riesgo, conforme al Art. 32 del GDPR:
+Cifrado en trßnsito: Toda comunicaci¾n entre la Aplicaci¾n y los servidores se realiza mediante protocolo TLS 1.3.
+Cifrado en reposo: Las bases de datos de Supabase cuentan con cifrado AES-256 en reposo.
+Autenticaci¾n segura: Las contrase±as se almacenan ·nicamente como hashes bcrypt. Se ofrecen mecanismos de autenticaci¾n adicionales gestionados por Supabase Auth.
+Control de acceso: Acceso a datos de producci¾n restringido mediante polÝticas de Row Level Security (RLS) de Supabase, garantizando que cada usuario ·nicamente accede a sus propios datos.
+Minimizaci¾n de datos: Solo se recopilan los datos estrictamente necesarios para las finalidades declaradas.
+Evaluaciones peri¾dicas: FitGO realiza revisiones de seguridad peri¾dicas y actualiza sus medidas de protecci¾n en consonancia con el estado del arte.
+En caso de violaci¾n de seguridad que pueda suponer un riesgo para sus derechos y libertades, FitGO le notificarß sin dilaci¾n indebida, y no mßs tarde de 72 horas desde que tengamos conocimiento del hecho.
+11. TRATAMIENTO DE DATOS DE MENORES
+La Aplicaci¾n FitGO no estß dirigida a menores de 16 a±os. No recopilamos conscientemente datos personales de menores de dicha edad. Si tiene conocimiento de que un menor ha proporcionado datos a travÚs de la Aplicaci¾n sin el consentimiento de sus padres o tutores legales, le rogamos que nos lo comunique a la mayor brevedad a travÚs de privacidad@fitgo.app para proceder a su eliminaci¾n inmediata.
+12. COOKIES Y TECNOLOG═AS DE SEGUIMIENTO
+En tanto que aplicaci¾n m¾vil nativa, FitGO no utiliza cookies de navegador web. Sin embargo, puede emplear tecnologÝas funcionalmente equivalentes, como identificadores de dispositivo y almacenamiento local (AsyncStorage) para mantener la sesi¾n del usuario, las preferencias de configuraci¾n y el cachÚ de datos para uso offline. Estos datos son estrictamente funcionales y no se utilizan para publicidad conductual ni se comparten con redes publicitarias. FitGO no incluye anuncios de terceros en su interfaz.
+13. MODIFICACIONES A ESTA POL═TICA
+FitGO se reserva el derecho de modificar la presente PolÝtica de Privacidad en cualquier momento para reflejar cambios en nuestra operativa, en los servicios ofrecidos o en la legislaci¾n aplicable. Cuando realicemos cambios materiales, se lo notificaremos mediante un aviso destacado dentro de la Aplicaci¾n y/o por correo electr¾nico a la direcci¾n asociada a su cuenta, con un mÝnimo de 30 dÝas de antelaci¾n a la entrada en vigor de los cambios. El uso continuado de la Aplicaci¾n tras la fecha de entrada en vigor de la nueva versi¾n constituirß su aceptaci¾n de los cambios.
+14. CONTACTO Y DELEGADO DE PROTECCIËN DE DATOS
+Para cualquier consulta, solicitud o reclamaci¾n relativa al tratamiento de sus datos personales, puede ponerse en contacto con nosotros:
+Correo electr¾nico (privacidad): privacidad@fitgo.app
+Correo electr¾nico (asuntos legales): legal@fitgo.app
+Sitio web: https://www.fitgo.app
+Nos comprometemos a responder todas las comunicaciones en un plazo mßximo de 30 dÝas hßbiles.
+┌ltima actualizaci¾n: 28 de mayo de 2025

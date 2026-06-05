@@ -1,4 +1,5 @@
 import { useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   useAuthStore, 
   useNutritionStore, 
@@ -8,8 +9,10 @@ import {
   selectDailyTotals 
 } from '../store';
 import { supabase } from '../services/supabase';
+import { useToastStore } from '../store/toastStore';
 
 export type AchievementTier = 'bronce' | 'plata' | 'oro' | 'diamante';
+export const TIER_POINTS: Record<AchievementTier, number> = { bronce: 10, plata: 25, oro: 50, diamante: 100 };
 export type AchievementIconType = 'lucide' | 'lottie';
 
 export interface Achievement {
@@ -40,6 +43,7 @@ export const ALL_BADGES: Record<string, BadgeInfo> = {
   pro: { id: 'pro', label: 'Miembro Pro', colors: ['#F59E0B', '#D97706'], icon: '⭐', description: 'Suscripción activa en FitGO Premium.' },
   beast_mode: { id: 'beast_mode', label: 'Beast Mode', colors: ['#EF4444', '#991B1B'], icon: '🔥', description: 'Otorgado por completar entrenamientos intensos y consistencia.' },
   verified: { id: 'verified', label: 'Verificado', colors: ['#3B82F6', '#1E40AF'], icon: '✅', description: 'Usuario con cuenta verificada en FitGO.' },
+  owner: { id: 'owner', label: 'Propietario', colors: ['#000000', '#434343'], icon: '👑', description: 'Dueño y creador principal de FitGO.' },
   early_adopter: { id: 'early_adopter', label: 'Pionero', colors: ['#8B5CF6', '#5B21B6'], icon: '🚀', description: 'Parte de los primeros usuarios de la plataforma.' },
   fitness_enthusiast: { id: 'fitness_enthusiast', label: 'Entusiasta Fitness', colors: ['#EC4899', '#BE185D'], icon: '🏋️', description: 'Registra entrenamientos regulares y dedicación.' },
   
@@ -64,9 +68,26 @@ export const ALL_BADGES: Record<string, BadgeInfo> = {
   community_pillar: { id: 'community_pillar', label: 'Pilar Comunitario', colors: ['#818CF8', '#4338CA'], icon: '🏛️', description: 'Desbloqueado por hacer 10 publicaciones en la comunidad.' },
   workout_machine: { id: 'workout_machine', label: 'Máquina', colors: ['#F87171', '#B91C1C'], icon: '🤖', description: 'Desbloqueado por entrenar más de 2 horas en un solo día.' },
   sleep_god: { id: 'sleep_god', label: 'Dios del Sueño', colors: ['#A78BFA', '#4C1D95'], icon: '🌌', description: 'Desbloqueado por dormir más de 9 horas.' },
+
+  // ── Additional reward badges ──
+  early_bird: { id: 'early_bird', label: 'Madrugador', colors: ['#F59E0B', '#B45309'], icon: '🌅', description: 'Desayunaste antes de las 9 AM.' },
+  diet_expert: { id: 'diet_expert', label: 'Experto en Dietas', colors: ['#10B981', '#059669'], icon: '🥑', description: '30 días seguidos registrando comidas.' },
+  night_owl: { id: 'night_owl', label: 'Ave Nocturna', colors: ['#6366F1', '#4F46E5'], icon: '🦉', description: 'Registraste actividad entre las 2 y 4 AM.' },
+  zen_master: { id: 'zen_master', label: 'Maestro Zen', colors: ['#14B8A6', '#0F766E'], icon: '🧘', description: '10 horas de Yoga registradas.' },
+  iron_lungs: { id: 'iron_lungs', label: 'Pulmones de Acero', colors: ['#0EA5E9', '#0284C7'], icon: '🏊', description: 'Registraste una sesión de natación intensa.' },
+  mountain_king: { id: 'mountain_king', label: 'Rey de la Montaña', colors: ['#64748B', '#334155'], icon: '⛰️', description: '50,000 pasos en una semana.' },
+  spartan: { id: 'spartan', label: 'Espartano', colors: ['#DC2626', '#7F1D1D'], icon: '🛡️', description: '300 días de racha perfecta.' },
+  data_scientist: { id: 'data_scientist', label: 'Científico de Datos', colors: ['#2563EB', '#1D4ED8'], icon: '📊', description: 'Exportaste tus datos a Excel.' },
+  ghost: { id: 'ghost', label: 'Fantasma', colors: ['#94A3B8', '#475569'], icon: '👻', description: '5 días activo sin publicar nada social.' },
+  carnivore: { id: 'carnivore', label: 'Depredador', colors: ['#B91C1C', '#7F1D1D'], icon: '🥩', description: 'Más de 250g de proteína en un día.' },
+  zen_streaker: { id: 'zen_streaker', label: 'Yoga Semanal', colors: ['#0D9488', '#0F766E'], icon: '🕉️', description: '3 sesiones de yoga en una semana.' },
+  speed_demon: { id: 'speed_demon', label: 'Velocidad Flash', colors: ['#FBBF24', '#92400E'], icon: '⚡', description: 'Registro express de comida.' },
+  love_reactor: { id: 'love_reactor', label: 'Repartidor de Amor', colors: ['#EC4899', '#9D174D'], icon: '❤️', description: 'Diste tu primer like.' },
+  legend_commenter: { id: 'legend_commenter', label: 'Rompe Hielos', colors: ['#7C3AED', '#5B21B6'], icon: '💬', description: 'Dejaste tu primer comentario.' },
 };
 
 export function useAchievements() {
+  const { t } = useTranslation();
   const { profile } = useAuthStore();
   const { todayLogs, dailySleep, streakDays, dailySteps, activityLogs, dailyWater } = useNutritionStore();
   const { measurements, latest } = useBodyStore();
@@ -115,7 +136,7 @@ export function useAchievements() {
 
       // ── Categoría: Nutrición ──
       { id: 'first_log', title: 'Primer Paso', description: 'Registraste tu primera comida hoy.', icon: '🍎', iconType: 'lucide' as const, lucideIcon: 'Apple', tier: 'bronce', category: 'Nutrición', unlocked: unlockedAchievements.includes('first_log') || todayLogs.length > 0 },
-      { id: 'early_bird', title: 'Madrugador', description: 'Registraste tu desayuno antes de las 9 AM.', icon: '🌅', iconType: 'lucide' as const, lucideIcon: 'Sunrise', tier: 'plata', category: 'Nutrición', unlocked: unlockedAchievements.includes('early_bird') || todayLogs.some(l => l.meal.toLowerCase() === 'breakfast' && new Date(l.loggedAt).getHours() < 9) },
+      { id: 'early_bird', title: 'Madrugador', description: 'Registraste tu desayuno antes de las 9 AM.', icon: '🌅', iconType: 'lucide' as const, lucideIcon: 'Sunrise', tier: 'plata', category: 'Nutrición', unlocked: unlockedAchievements.includes('early_bird') || todayLogs.some(l => l.meal.toLowerCase() === 'breakfast' && new Date(l.loggedAt).getHours() < 9), rewardBadgeId: 'early_bird' },
       { id: 'protein_goal', title: 'Proteína Pura', description: 'Alcanzaste tu meta de proteína hoy.', icon: '🍗', iconType: 'lucide' as const, lucideIcon: 'Dumbbell', tier: 'plata', category: 'Nutrición', unlocked: unlockedAchievements.includes('protein_goal') || proteinLogged >= proteinGoal, rewardBadgeId: 'protein_boss' },
       { id: 'healthy_eater', title: 'Comedor Saludable', description: 'Cumpliste tu meta calórica con un margen del 10%.', icon: '🥗', iconType: 'lucide' as const, lucideIcon: 'Salad', tier: 'plata', category: 'Nutrición', unlocked: unlockedAchievements.includes('healthy_eater') || (healthyEater && todayLogs.length > 0) },
       { id: 'perfect_macros', title: 'Macros Perfectas', description: 'Cumpliste tus metas calóricas y macros con margen del 10%.', icon: '📊', iconType: 'lucide' as const, lucideIcon: 'ChartBar', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('perfect_macros') || perfectMacros, rewardBadgeId: 'macro_expert' },
@@ -123,7 +144,7 @@ export function useAchievements() {
       { id: 'water_champion', title: 'Super Hidratado', description: 'Registraste más de 2000 ml de agua en un día.', icon: '🔱', iconType: 'lucide' as const, lucideIcon: 'Waves', tier: 'plata', category: 'Nutrición', unlocked: unlockedAchievements.includes('water_champion') || Object.values(dailyWater).some(w => w >= 2000), rewardBadgeId: 'water_champion' },
       { id: 'water_god', title: 'Dios del Océano', description: 'Registraste 3000 ml (3L) de agua en un día.', icon: '🌊', iconType: 'lucide' as const, lucideIcon: 'Waves', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('water_god') || Object.values(dailyWater).some(w => w >= 3000), rewardBadgeId: 'hydration_god' },
       { id: 'water_ocean', title: 'Océano Interno', description: 'Registraste más de 4000ml (4L) de agua en un día.', icon: '🐋', iconType: 'lottie' as const, lottieFile: 'water_wave', tier: 'diamante', category: 'Nutrición', unlocked: unlockedAchievements.includes('water_ocean') || Object.values(dailyWater).some(w => w >= 4000) },
-      { id: 'diet_expert', title: 'Experto en Dietas', description: 'Has registrado comidas durante 30 días seguidos.', icon: '🥑', iconType: 'lucide' as const, lucideIcon: 'ClipboardList', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('diet_expert') || (streakDays || 0) >= 30 && todayLogs.length > 0 },
+      { id: 'diet_expert', title: 'Experto en Dietas', description: 'Has registrado comidas durante 30 días seguidos.', icon: '🥑', iconType: 'lucide' as const, lucideIcon: 'ClipboardList', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('diet_expert') || (streakDays || 0) >= 30 && todayLogs.length > 0, rewardBadgeId: 'diet_expert' },
       { id: 'hydration_streak_7', title: 'Río Constante', description: 'Alcanzaste tu meta de agua 7 días seguidos.', icon: '⛲', iconType: 'lucide' as const, lucideIcon: 'Droplets', tier: 'plata', category: 'Nutrición', unlocked: unlockedAchievements.includes('hydration_streak_7') },
       { id: 'nutrition_scholar', title: 'Erudito Nutricional', description: 'Descubriste y registraste alimentos exóticos o nuevos.', icon: '🧠', iconType: 'lucide' as const, lucideIcon: 'BookOpen', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('nutrition_scholar') },
       { id: 'carnival_eater', title: 'Día de Trampa', description: 'Consumiste más de 3500 calorías en un día.', icon: '🍔', iconType: 'lucide' as const, lucideIcon: 'Sandwich', tier: 'plata', category: 'Nutrición', unlocked: unlockedAchievements.includes('carnival_eater') || (todayLogs.reduce((acc, log) => acc + log.calories, 0) >= 3500) },
@@ -131,12 +152,12 @@ export function useAchievements() {
       { id: 'protein_pancake', title: 'Chef Fitness', description: 'Registraste Pancakes de Proteína para desayunar.', icon: '🥞', iconType: 'lucide' as const, lucideIcon: 'ChefHat', tier: 'bronce', category: 'Nutrición', unlocked: unlockedAchievements.includes('protein_pancake') || todayLogs.some(l => l.foodItem.name.toLowerCase().includes('pancake') && l.meal === 'breakfast') },
       { id: 'late_snack', title: 'Antojo de Medianoche', description: 'Registraste un snack después de las 11 PM.', icon: '🍪', iconType: 'lucide' as const, lucideIcon: 'Moon', tier: 'plata', category: 'Misterio', unlocked: unlockedAchievements.includes('late_snack') || todayLogs.some(l => new Date(l.loggedAt).getHours() >= 23) },
       { id: 'perfect_week_macros', title: 'Precisión Quirúrgica', description: 'Lograste Macros perfectos durante 7 días seguidos.', icon: '🎯', iconType: 'lottie' as const, lottieFile: 'target_hit', tier: 'diamante', category: 'Nutrición', unlocked: unlockedAchievements.includes('perfect_week_macros') },
-      { id: 'carnivore', title: 'Depredador Alfa', description: 'Consumiste más de 250g de proteína en un día.', icon: '🥩', iconType: 'lucide' as const, lucideIcon: 'Beef', tier: 'diamante', category: 'Nutrición', unlocked: unlockedAchievements.includes('carnivore') || proteinLogged >= 250 },
+      { id: 'carnivore', title: 'Depredador Alfa', description: 'Consumiste más de 250g de proteína en un día.', icon: '🥩', iconType: 'lucide' as const, lucideIcon: 'Beef', tier: 'diamante', category: 'Nutrición', unlocked: unlockedAchievements.includes('carnivore') || proteinLogged >= 250, rewardBadgeId: 'carnivore' },
       { id: 'sweet_tooth', title: 'Antojo Dulce', description: 'Registraste un postre pero aún cumpliste tus macros.', icon: '🍩', iconType: 'lucide' as const, lucideIcon: 'Cookie', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('sweet_tooth') },
       { id: 'coffee_addict', title: 'Sangre de Cafeína', description: 'Registraste más de 3 cafés en un solo día.', icon: '☕', iconType: 'lucide' as const, lucideIcon: 'Coffee', tier: 'plata', category: 'Nutrición', unlocked: unlockedAchievements.includes('coffee_addict') || todayLogs.filter(l => l.foodItem.name.toLowerCase().includes('café') || l.foodItem.name.toLowerCase().includes('coffee')).length >= 3 },
       { id: 'fasting_monk', title: 'Monje del Ayuno', description: 'Pasaste 16 horas sin registrar comidas.', icon: '🕰️', iconType: 'lucide' as const, lucideIcon: 'Timer', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('fasting_monk') },
       { id: 'chef_kiss', title: 'Beso del Chef', description: 'Creaste tu primera receta personalizada en la app.', icon: '👨‍🍳', iconType: 'lucide' as const, lucideIcon: 'ChefHat', tier: 'bronce', category: 'Nutrición', unlocked: unlockedAchievements.includes('chef_kiss') },
-      { id: 'immortal', title: 'Inmortal', description: 'No fallaste tus macros durante 100 días consecutivos.', icon: '🩸', iconType: 'lottie' as const, lottieFile: 'fire_burst', tier: 'diamante', category: 'Nutrición', unlocked: unlockedAchievements.includes('immortal') },
+
       // ── Categoría: Físico & Progreso ──
       { id: 'goal_reached', title: 'En la Meta', description: 'Estás a menos de 1kg de tu peso objetivo.', icon: '🎯', iconType: 'lucide' as const, lucideIcon: 'Target', tier: 'oro', category: 'Físico', unlocked: unlockedAchievements.includes('goal_reached') || (weightDiff <= 1 && weightDiff > 0), rewardBadgeId: 'weight_master' },
       { id: 'weight_loss_1', title: 'Primeros Resultados', description: 'Has perdido tus primeros 2kg.', icon: '📉', iconType: 'lucide' as const, lucideIcon: 'TrendingDown', tier: 'bronce', category: 'Físico', unlocked: unlockedAchievements.includes('weight_loss_1') || (profile.goal === 'lose' && (profile.startingWeight || 0) - currentWeight >= 2) },
@@ -165,46 +186,40 @@ export function useAchievements() {
       { id: 'community_pillar', title: 'Pilar Comunitario', description: 'Has realizado 10 publicaciones.', icon: '🏛️', iconType: 'lottie' as const, lottieFile: 'community_pillar', tier: 'diamante', category: 'Comunidad', unlocked: unlockedAchievements.includes('community_pillar') || (posts?.filter(p => p.user_id === profile.id).length || 0) >= 10, rewardBadgeId: 'community_pillar' },
 
       // ── Categoría: Especiales & Secretos ──
-      { id: 'beta_tester', title: 'Pionero', description: 'Participaste en la fase beta de FitGO.', icon: '🧪', iconType: 'lucide' as const, lucideIcon: 'FlaskConical', tier: 'oro', category: 'Especial', unlocked: unlockedAchievements.includes('beta_tester') || (profile.role === 'admin' || profile.role === 'super_admin'), rewardBadgeId: 'early_adopter' },
-      { id: 'developer_god', title: 'Arquitecto del Sistema', description: 'Eres uno de los creadores de FitGO.', icon: '💻', iconType: 'lottie' as const, lottieFile: 'hacker_code', tier: 'diamante', category: 'Especial', unlocked: unlockedAchievements.includes('developer_god') || profile.role === 'super_admin', rewardBadgeId: 'super_admin' },
+      { id: 'beta_tester', title: 'Pionero', description: 'Participaste en la fase beta de FitGO.', icon: '🧪', iconType: 'lucide' as const, lucideIcon: 'FlaskConical', tier: 'oro', category: 'Especial', unlocked: unlockedAchievements.includes('beta_tester') || (profile.role === 'admin' || profile.role === 'super_admin' || profile.role === 'owner'), rewardBadgeId: 'early_adopter' },
+      { id: 'developer_god', title: 'Arquitecto del Sistema', description: 'Eres uno de los creadores de FitGO.', icon: '💻', iconType: 'lottie' as const, lottieFile: 'hacker_code', tier: 'diamante', category: 'Especial', unlocked: unlockedAchievements.includes('developer_god') || profile.role === 'super_admin' || profile.role === 'owner', rewardBadgeId: 'super_admin' },
+      { id: 'the_owner', title: 'Propietario Absoluto', description: 'Dueño de la plataforma FitGO.', icon: '👑', iconType: 'lucide' as const, lucideIcon: 'Crown', tier: 'diamante', category: 'Especial', unlocked: profile.role === 'owner', rewardBadgeId: 'owner' },
       { id: 'bug_hunter', title: 'Cazador de Bugs', description: 'Encontraste y reportaste un error crítico.', icon: '🐛', iconType: 'lucide' as const, lucideIcon: 'Bug', tier: 'plata', category: 'Especial', unlocked: unlockedAchievements.includes('bug_hunter') },
       
 
 
       // ── Categoría: El Iceberg (Misterios & Curiosidades) ──
-      { id: 'night_owl', title: 'Ave Nocturna', description: 'Registraste una comida o entrenamiento entre las 2 AM y las 4 AM.', icon: '🦉', iconType: 'lucide' as const, lucideIcon: 'MoonStar', tier: 'plata', category: 'Misterio', unlocked: unlockedAchievements.includes('night_owl') || todayLogs.some(l => new Date(l.loggedAt).getHours() >= 2 && new Date(l.loggedAt).getHours() <= 4) },
+      { id: 'night_owl', title: 'Ave Nocturna', description: 'Registraste una comida o entrenamiento entre las 2 AM y las 4 AM.', icon: '🦉', iconType: 'lucide' as const, lucideIcon: 'MoonStar', tier: 'plata', category: 'Misterio', unlocked: unlockedAchievements.includes('night_owl') || todayLogs.some(l => new Date(l.loggedAt).getHours() >= 2 && new Date(l.loggedAt).getHours() <= 4), rewardBadgeId: 'night_owl' },
       { id: 'easter_egg_hunter', title: 'Cazador de Secretos', description: 'Encontraste un menú oculto en la aplicación.', icon: '🥚', iconType: 'lucide' as const, lucideIcon: 'Egg', tier: 'oro', category: 'Misterio', unlocked: unlockedAchievements.includes('easter_egg_hunter') },
-      { id: 'ghost_mode', title: 'Modo Fantasma', description: 'Usaste la app 5 días seguidos sin publicar nada en la sección social.', icon: '👻', iconType: 'lucide' as const, lucideIcon: 'Ghost', tier: 'bronce', category: 'Misterio', unlocked: unlockedAchievements.includes('ghost_mode') },
+      { id: 'ghost_mode', title: 'Modo Fantasma', description: 'Usaste la app 5 días seguidos sin publicar nada en la sección social.', icon: '👻', iconType: 'lucide' as const, lucideIcon: 'Ghost', tier: 'bronce', category: 'Misterio', unlocked: unlockedAchievements.includes('ghost_mode'), rewardBadgeId: 'ghost' },
       { id: 'matrix_glitch', title: 'Fallo en la Matrix', description: 'Quemaste exactamente 999 calorías en un entrenamiento.', icon: '📟', iconType: 'lottie' as const, lottieFile: 'matrix_rain', tier: 'diamante', category: 'Misterio', unlocked: unlockedAchievements.includes('matrix_glitch') || (activityLogs || []).some(a => a.calories === 999) },
       { id: 'time_traveler', title: 'Viajero en el Tiempo', description: 'Añadiste un registro con fecha de ayer.', icon: '⏳', iconType: 'lucide' as const, lucideIcon: 'Hourglass', tier: 'plata', category: 'Misterio', unlocked: unlockedAchievements.includes('time_traveler') },
 
       // ── Curiosidades Físicas ──
       { id: 'heavy_lifter', title: 'Fuerza Bruta', description: 'Levantaste más de 200kg en peso muerto.', icon: '🏋️', iconType: 'lottie' as const, lottieFile: 'heavy_weight', tier: 'diamante', category: 'Físico', unlocked: unlockedAchievements.includes('heavy_lifter') },
       { id: 'flash_speed', title: 'Velocidad de la Luz', description: 'Corriste 5km en menos de 20 minutos.', icon: '⚡', iconType: 'lottie' as const, lottieFile: 'flash_run', tier: 'diamante', category: 'Físico', unlocked: unlockedAchievements.includes('flash_speed') },
-      { id: 'zen_mode', title: 'Maestro Zen', description: 'Registraste 10 horas de Yoga en total.', icon: '🧘‍♂️', iconType: 'lucide' as const, lucideIcon: 'TreePine', tier: 'oro', category: 'Actividad', unlocked: unlockedAchievements.includes('zen_mode') },
-      { id: 'iron_lungs', title: 'Pulmones de Acero', description: 'Registraste una sesión de natación intensa.', icon: '🏊‍♂️', iconType: 'lucide' as const, lucideIcon: 'Waves', tier: 'plata', category: 'Actividad', unlocked: unlockedAchievements.includes('iron_lungs') },
-      { id: 'mountain_climber', title: 'Alpinista', description: 'Superaste los 50,000 pasos en una semana.', icon: '🧗‍♂️', iconType: 'lucide' as const, lucideIcon: 'Mountain', tier: 'oro', category: 'Actividad', unlocked: unlockedAchievements.includes('mountain_climber') },
-
-      // ── Curiosidades Nutricionales ──
-      { id: 'carnivore', title: 'Depredador Alfa', description: 'Consumiste más de 250g de proteína en un día.', icon: '🥩', iconType: 'lucide' as const, lucideIcon: 'Beef', tier: 'diamante', category: 'Nutrición', unlocked: unlockedAchievements.includes('carnivore') || proteinLogged >= 250 },
-      { id: 'sweet_tooth', title: 'Antojo Dulce', description: 'Registraste un postre pero aún cumpliste tus macros.', icon: '🍩', iconType: 'lucide' as const, lucideIcon: 'Cookie', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('sweet_tooth') },
-      { id: 'coffee_addict', title: 'Sangre de Cafeína', description: 'Registraste más de 3 cafés en un solo día.', icon: '☕', iconType: 'lucide' as const, lucideIcon: 'Coffee', tier: 'plata', category: 'Nutrición', unlocked: unlockedAchievements.includes('coffee_addict') || todayLogs.filter(l => l.foodItem.name.toLowerCase().includes('café') || l.foodItem.name.toLowerCase().includes('coffee')).length >= 3 },
-      { id: 'fasting_monk', title: 'Monje del Ayuno', description: 'Pasaste 16 horas sin registrar comidas.', icon: '🕰️', iconType: 'lucide' as const, lucideIcon: 'Hourglass', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('fasting_monk') },
-      { id: 'chef_kiss', title: 'Beso del Chef', description: 'Creaste tu primera receta personalizada en la app.', icon: '👨‍🍳', iconType: 'lucide' as const, lucideIcon: 'ChefHat', tier: 'bronce', category: 'Nutrición', unlocked: unlockedAchievements.includes('chef_kiss') },
+      { id: 'zen_mode', title: 'Maestro Zen', description: 'Registraste 10 horas de Yoga en total.', icon: '🧘‍♂️', iconType: 'lucide' as const, lucideIcon: 'TreePine', tier: 'oro', category: 'Actividad', unlocked: unlockedAchievements.includes('zen_mode'), rewardBadgeId: 'zen_master' },
+      { id: 'iron_lungs', title: 'Pulmones de Acero', description: 'Registraste una sesión de natación intensa.', icon: '🏊‍♂️', iconType: 'lucide' as const, lucideIcon: 'Waves', tier: 'plata', category: 'Actividad', unlocked: unlockedAchievements.includes('iron_lungs'), rewardBadgeId: 'iron_lungs' },
+      { id: 'mountain_climber', title: 'Alpinista', description: 'Superaste los 50,000 pasos en una semana.', icon: '🧗‍♂️', iconType: 'lucide' as const, lucideIcon: 'Mountain', tier: 'oro', category: 'Actividad', unlocked: unlockedAchievements.includes('mountain_climber'), rewardBadgeId: 'mountain_king' },
 
       // ── Curiosidades de Comunidad ──
       { id: 'viral_post', title: 'Fenómeno Viral', description: 'Tu publicación alcanzó 50 likes.', icon: '🔥', iconType: 'lottie' as const, lottieFile: 'fire_viral', tier: 'diamante', category: 'Comunidad', unlocked: unlockedAchievements.includes('viral_post') },
-      { id: 'first_comment', title: 'Rompiendo el Hielo', description: 'Dejaste tu primer comentario en el post de otra persona.', icon: '💬', iconType: 'lucide' as const, lucideIcon: 'MessageSquare', tier: 'bronce', category: 'Comunidad', unlocked: unlockedAchievements.includes('first_comment') },
+      { id: 'first_comment', title: 'Rompiendo el Hielo', description: 'Dejaste tu primer comentario en el post de otra persona.', icon: '💬', iconType: 'lucide' as const, lucideIcon: 'MessageSquare', tier: 'bronce', category: 'Comunidad', unlocked: unlockedAchievements.includes('first_comment'), rewardBadgeId: 'legend_commenter' },
       { id: 'helper', title: 'Buen Samaritano', description: 'Recibiste una medalla de "Gracias" de otro usuario.', icon: '🤝', iconType: 'lucide' as const, lucideIcon: 'HeartHandshake', tier: 'plata', category: 'Comunidad', unlocked: unlockedAchievements.includes('helper') },
       { id: 'profile_stalker', title: 'Curioso', description: 'Visitaste 10 perfiles distintos en un día.', icon: '👀', iconType: 'lucide' as const, lucideIcon: 'Eye', tier: 'bronce', category: 'Misterio', unlocked: unlockedAchievements.includes('profile_stalker') },
       { id: 'fitgo_veteran', title: 'Leyenda Viva', description: 'Has usado la aplicación durante más de 2 años continuos.', icon: '🐉', iconType: 'lottie' as const, lottieFile: 'dragon_legend', tier: 'diamante', category: 'Especial', unlocked: unlockedAchievements.includes('fitgo_veteran') || (streakDays || 0) >= 730 },
 
       // ── Tecnología e Interfaz ──
-      { id: 'data_nerd', title: 'Científico de Datos', description: 'Exportaste tu historial de progresos a Excel.', icon: '📊', iconType: 'lucide' as const, lucideIcon: 'Database', tier: 'plata', category: 'Especial', unlocked: unlockedAchievements.includes('data_nerd') },
-      { id: 'fast_logger', title: 'Velocidad Flash', description: 'Registraste una comida en tiempo récord.', icon: '⚡', iconType: 'lucide' as const, lucideIcon: 'Zap', tier: 'bronce', category: 'Misterio', unlocked: unlockedAchievements.includes('fast_logger') },
+      { id: 'data_nerd', title: 'Científico de Datos', description: 'Exportaste tu historial de progresos a Excel.', icon: '📊', iconType: 'lucide' as const, lucideIcon: 'Database', tier: 'plata', category: 'Especial', unlocked: unlockedAchievements.includes('data_nerd'), rewardBadgeId: 'data_scientist' },
+      { id: 'fast_logger', title: 'Velocidad Flash', description: 'Registraste una comida en tiempo récord.', icon: '⚡', iconType: 'lucide' as const, lucideIcon: 'Zap', tier: 'bronce', category: 'Misterio', unlocked: unlockedAchievements.includes('fast_logger'), rewardBadgeId: 'speed_demon' },
 
       // ── Sociales y Ligas ──
-      { id: 'first_like', title: 'Repartiendo Amor', description: 'Diste tu primer "Me Gusta" a otro usuario.', icon: '❤️', iconType: 'lucide' as const, lucideIcon: 'Heart', tier: 'bronce', category: 'Comunidad', unlocked: unlockedAchievements.includes('first_like') },
+      { id: 'first_like', title: 'Repartiendo Amor', description: 'Diste tu primer "Me Gusta" a otro usuario.', icon: '❤️', iconType: 'lucide' as const, lucideIcon: 'Heart', tier: 'bronce', category: 'Comunidad', unlocked: unlockedAchievements.includes('first_like'), rewardBadgeId: 'love_reactor' },
       { id: 'like_bomber', title: 'Ametralladora de Likes', description: 'Has dado más de 100 "Me Gusta".', icon: '💘', iconType: 'lucide' as const, lucideIcon: 'HeartPulse', tier: 'plata', category: 'Comunidad', unlocked: unlockedAchievements.includes('like_bomber') },
       { id: 'squad_creator', title: 'Fundador', description: 'Creaste o administras tu propia Liga.', icon: '🛡️', iconType: 'lucide' as const, lucideIcon: 'Shield', tier: 'oro', category: 'Comunidad', unlocked: unlockedAchievements.includes('squad_creator') },
       { id: 'squad_champion', title: 'Campeón de la Liga', description: 'Quedaste en primer lugar del ranking semanal.', icon: '🥇', iconType: 'lottie' as const, lottieFile: 'gold_medal', tier: 'diamante', category: 'Comunidad', unlocked: unlockedAchievements.includes('squad_champion') },
@@ -228,7 +243,7 @@ export function useAchievements() {
       { id: 'body_fat_15', title: 'Atleta Definido', description: 'Registraste un porcentaje de grasa menor a 15%.', icon: '🔪', iconType: 'lottie' as const, lottieFile: 'sword_slash', tier: 'diamante', category: 'Físico', unlocked: unlockedAchievements.includes('body_fat_15') },
 
       // ── Míticos (Ultra Hardcore & Ambición) ──
-      { id: 'spartan_300', title: 'Espartano 300', description: 'Lograste 300 días de racha perfecta sin fallar un solo registro.', icon: '🛡️', iconType: 'lottie' as const, lottieFile: 'spartan_shield', tier: 'diamante', category: 'Constancia', unlocked: unlockedAchievements.includes('spartan_300') || (streakDays || 0) >= 300 },
+      { id: 'spartan_300', title: 'Espartano 300', description: 'Lograste 300 días de racha perfecta sin fallar un solo registro.', icon: '🛡️', iconType: 'lottie' as const, lottieFile: 'spartan_shield', tier: 'diamante', category: 'Constancia', unlocked: unlockedAchievements.includes('spartan_300') || (streakDays || 0) >= 300, rewardBadgeId: 'spartan' },
       { id: 'kryptonian', title: 'Kryptoniano', description: 'Levantaste volúmenes de peso de nivel sobrehumano en una sesión.', icon: '🦸‍♂️', iconType: 'lottie' as const, lottieFile: 'kryptonian_logo', tier: 'diamante', category: 'Físico', unlocked: unlockedAchievements.includes('kryptonian') },
       { id: 'goggins_mode', title: 'Modo Goggins', description: 'Corriste un ultramaratón o lograste 50,000 pasos en un solo día.', icon: '🚤', iconType: 'lottie' as const, lottieFile: 'speed_boat', tier: 'diamante', category: 'Actividad', unlocked: unlockedAchievements.includes('goggins_mode') || Object.values(dailySteps).some(s => s >= 50000) },
       { id: 'body_alchemist', title: 'Alquimista Corporal', description: 'Bajaste del 10% de grasa corporal y mantuviste tu masa muscular.', icon: '⚗️', iconType: 'lottie' as const, lottieFile: 'alchemy_potion', tier: 'diamante', category: 'Físico', unlocked: unlockedAchievements.includes('body_alchemist') },
@@ -240,7 +255,36 @@ export function useAchievements() {
       { id: 'triceratops', title: 'Triceratops', description: 'Dominaste los 3 grandes (Sentadilla, Banca, Peso Muerto) con élite.', icon: '🦖', iconType: 'lottie' as const, lottieFile: 'dino_roar', tier: 'diamante', category: 'Físico', unlocked: unlockedAchievements.includes('triceratops') },
       { id: 'supernova', title: 'Supernova', description: 'Alcanzaste un impacto astronómico en la comunidad (100K Likes).', icon: '🌌', iconType: 'lottie' as const, lottieFile: 'galaxy_supernova', tier: 'diamante', category: 'Comunidad', unlocked: unlockedAchievements.includes('supernova') },
       { id: 'god_of_war', title: 'Dios de la Guerra', description: 'Ganaste 5 Ligas Diamante de manera consecutiva.', icon: '⚔️', iconType: 'lottie' as const, lottieFile: 'crossed_swords_fire', tier: 'diamante', category: 'Comunidad', unlocked: unlockedAchievements.includes('god_of_war') },
-      { id: 'holy_grail', title: 'El Santo Grial', description: 'Alcanzaste tu peso, medidas y grasa objetivo con exactitud matemática.', icon: '🏆', iconType: 'lottie' as const, lottieFile: 'holy_grail_cup', tier: 'diamante', category: 'Físico', unlocked: unlockedAchievements.includes('holy_grail') }
+      { id: 'holy_grail', title: 'El Santo Grial', description: 'Alcanzaste tu peso, medidas y grasa objetivo con exactitud matemática.', icon: '🏆', iconType: 'lottie' as const, lottieFile: 'holy_grail_cup', tier: 'diamante', category: 'Físico', unlocked: unlockedAchievements.includes('holy_grail') },
+
+      // ── Nuevos Logros: Nutrición Extra ──
+      { id: 'five_meals', title: 'Cinco Comidas', description: 'Registraste 5 comidas en un solo día.', icon: '🍽️', iconType: 'lucide' as const, lucideIcon: 'UtensilsCrossed', tier: 'plata', category: 'Nutrición', unlocked: unlockedAchievements.includes('five_meals') || todayLogs.length >= 5 },
+      { id: 'balanced_day', title: 'Día Equilibrado', description: 'Registraste desayuno, almuerzo, cena y snack en el mismo día.', icon: '⚖️', iconType: 'lucide' as const, lucideIcon: 'Scale', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('balanced_day') || (['breakfast','lunch','dinner','snack'].every(meal => todayLogs.some(l => l.meal.toLowerCase() === meal))) },
+      { id: 'smoothie_lover', title: 'Rey del Smoothie', description: 'Registraste un batido proteico para desayunar.', icon: '🥤', iconType: 'lucide' as const, lucideIcon: 'GlassWater', tier: 'bronce', category: 'Nutrición', unlocked: unlockedAchievements.includes('smoothie_lover') || todayLogs.some(l => (l.foodItem.name.toLowerCase().includes('batido') || l.foodItem.name.toLowerCase().includes('smoothie')) && l.meal === 'breakfast') },
+
+      // ── Nuevos Logros: Actividad Extra ──
+      { id: 'three_workouts_week', title: 'Semana Activa', description: 'Entrenaste 3 días en una misma semana.', icon: '📅', iconType: 'lucide' as const, lucideIcon: 'Calendar', tier: 'plata', category: 'Actividad', unlocked: unlockedAchievements.includes('three_workouts_week') || (activityLogs || []).length >= 3, rewardBadgeId: 'fitness_enthusiast' },
+      { id: 'bike_rider', title: 'Ciclista Urbano', description: 'Registraste una sesión de ciclismo.', icon: '🚴', iconType: 'lucide' as const, lucideIcon: 'Bike', tier: 'plata', category: 'Actividad', unlocked: unlockedAchievements.includes('bike_rider') || (activityLogs || []).some((a: any) => (a.name || '').toLowerCase().includes('cicl') || (a.name || '').toLowerCase().includes('bici')) },
+      { id: 'ten_workouts', title: 'Veterano del Gym', description: 'Completaste 10 entrenamientos en total.', icon: '🏋️', iconType: 'lucide' as const, lucideIcon: 'Dumbbell', tier: 'oro', category: 'Actividad', unlocked: unlockedAchievements.includes('ten_workouts') || (activityLogs?.length || 0) >= 10, rewardBadgeId: 'beast_mode' },
+      { id: 'fifty_workouts', title: 'Atleta Consagrado', description: 'Completaste 50 entrenamientos en total.', icon: '🏆', iconType: 'lucide' as const, lucideIcon: 'Trophy', tier: 'diamante', category: 'Actividad', unlocked: unlockedAchievements.includes('fifty_workouts') || (activityLogs?.length || 0) >= 50 },
+
+      // ── Nuevos Logros: Físico Extra ──
+      { id: 'weight_loss_5', title: 'Medio Camino', description: 'Has perdido 5kg desde que iniciaste.', icon: '📉', iconType: 'lucide' as const, lucideIcon: 'TrendingDown', tier: 'plata', category: 'Físico', unlocked: unlockedAchievements.includes('weight_loss_5') || (profile.goal === 'lose' && (profile.startingWeight || 0) - currentWeight >= 5) },
+      { id: 'muscle_gain_5', title: 'Ganador Neto', description: 'Ganaste 5kg de masa desde que iniciaste.', icon: '📈', iconType: 'lucide' as const, lucideIcon: 'TrendingUp', tier: 'plata', category: 'Físico', unlocked: unlockedAchievements.includes('muscle_gain_5') || (profile.goal === 'gain' && currentWeight - (profile.startingWeight || 0) >= 5) },
+      { id: 'five_measurements', title: 'Historial Rico', description: 'Registraste 5 o más medidas corporales históricas.', icon: '📏', iconType: 'lucide' as const, lucideIcon: 'Ruler', tier: 'plata', category: 'Físico', unlocked: unlockedAchievements.includes('five_measurements') || (measurements || []).length >= 5 },
+
+      // ── Nuevos Logros: General Extra ──
+      { id: 'language_switcher', title: 'Políglota', description: 'Cambiaste el idioma de la app.', icon: '🌍', iconType: 'lucide' as const, lucideIcon: 'Globe', tier: 'bronce', category: 'General', unlocked: unlockedAchievements.includes('language_switcher') },
+      { id: 'night_mode', title: 'Modo Oscuro', description: 'Activaste el modo oscuro.', icon: '🌑', iconType: 'lucide' as const, lucideIcon: 'Moon', tier: 'bronce', category: 'General', unlocked: unlockedAchievements.includes('night_mode') || unlockedAchievements.includes('dark_mode_lover') },
+      { id: 'first_week_user', title: 'Primera Semana', description: 'Usaste la app durante 7 días seguidos.', icon: '🗓️', iconType: 'lucide' as const, lucideIcon: 'CalendarCheck', tier: 'bronce', category: 'General', unlocked: unlockedAchievements.includes('first_week_user') || (streakDays || 0) >= 7 },
+
+      // ── Nuevos Logros: Descanso Extra ──
+      { id: 'sleep_week', title: 'Semana de Ensueño', description: 'Dormiste más de 7 horas durante 7 días seguidos.', icon: '💤', iconType: 'lucide' as const, lucideIcon: 'BedDouble', tier: 'oro', category: 'Descanso', unlocked: unlockedAchievements.includes('sleep_week') },
+      { id: 'power_nap', title: 'Siesta Estratégica', description: 'Registraste menos de 6h de sueño pero aún entrenaste.', icon: '⏰', iconType: 'lucide' as const, lucideIcon: 'AlarmClock', tier: 'plata', category: 'Descanso', unlocked: unlockedAchievements.includes('power_nap') || (Object.values(dailySleep).some(h => h < 6) && (activityLogs || []).length > 0) },
+
+      // ── Nuevos Logros: Comunidad Extra ──
+      { id: 'first_friend', title: 'Primer Amigo', description: 'Agregaste a tu primer amigo en FitGO.', icon: '🤝', iconType: 'lucide' as const, lucideIcon: 'UserPlus', tier: 'bronce', category: 'Comunidad', unlocked: unlockedAchievements.includes('first_friend') || (friends?.filter((f: any) => f.status === 'accepted').length || 0) >= 1 },
+      { id: 'three_friends', title: 'Equipo de Élite', description: 'Tienes 3 o más amigos en FitGO.', icon: '👥', iconType: 'lucide' as const, lucideIcon: 'Users', tier: 'plata', category: 'Comunidad', unlocked: unlockedAchievements.includes('three_friends') || (friends?.filter((f: any) => f.status === 'accepted').length || 0) >= 3 },
     ];
   }, [
     profile, todayLogs, dailySleep, streakDays, dailySteps, activityLogs, dailyWater,
@@ -276,6 +320,16 @@ export function useAchievements() {
       const mergedAchievements = Array.from(new Set([...currentUnlockedAchievements, ...newlyUnlockedIds]));
       const mergedBadges = Array.from(new Set([...currentBadges, ...earnedBadgeIds]));
 
+      // Dispatch newly unlocked achievements to the global toast queue
+      if (needsAchievementUpdate) {
+        missingAchievements.forEach(id => {
+          const ach = achievements.find(a => a.id === id);
+          if (ach) {
+            useToastStore.getState().addToast(ach);
+          }
+        });
+      }
+
       // Update local Zustand store
       useAuthStore.getState().setProfile({
         ...profile,
@@ -307,5 +361,13 @@ export function useAchievements() {
     }
   }, [achievements, profile]);
 
-  return { achievements, unlockedCount };
+  const translatedAchievements = useMemo(() => {
+    return achievements.map(a => ({
+      ...a,
+      title: t(`achievements.items.${a.id}.title`, a.title),
+      description: t(`achievements.items.${a.id}.desc`, a.description),
+    }));
+  }, [achievements, t]);
+
+  return { achievements: translatedAchievements, unlockedCount };
 }

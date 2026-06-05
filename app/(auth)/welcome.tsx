@@ -7,7 +7,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useSettingsStore } from '../../store';
 import LanguageModal from '../../components/LanguageModal';
-import { Settings, Apple, Bot, BarChart3, Calendar, Zap, ShieldCheck } from 'lucide-react-native';
+import { Globe, Apple, Bot, BarChart3, Calendar, Zap, ShieldCheck } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 
 export default function WelcomeScreen() {
@@ -21,8 +21,8 @@ export default function WelcomeScreen() {
     { icon: <Bot size={16} color="#4ECDC4" />, label: t('welcome.feature2') },
     { icon: <BarChart3 size={16} color="#FFE66D" />, label: t('welcome.feature3') },
     { icon: <Calendar size={16} color="#C7F464" />, label: t('welcome.feature4') },
-    { icon: <Zap size={16} color="#FF9F1C" />, label: 'Guerras de Macros' },
-    { icon: <ShieldCheck size={16} color="#7C5CFC" />, label: 'Ligas Élite' },
+    { icon: <Zap size={16} color="#FF9F1C" />, label: t('welcome.feature5') },
+    { icon: <ShieldCheck size={16} color="#7C5CFC" />, label: t('welcome.feature6') },
   ];
 
   return (
@@ -40,7 +40,10 @@ export default function WelcomeScreen() {
         style={[styles.settingsBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
         onPress={() => setLangModalVisible(true)}
       >
-        <Settings size={20} color={colors.textPrimary} />
+        <Globe size={18} color={colors.textPrimary} />
+        <Text style={{ color: colors.textPrimary, marginLeft: 6, fontWeight: '700', fontSize: 14 }}>
+          {language.toUpperCase()}
+        </Text>
       </TouchableOpacity>
 
       <LanguageModal 
@@ -105,9 +108,10 @@ const styles = StyleSheet.create({
     top: 60,
     left: 20,
     zIndex: 10,
-    width: 44,
     height: 44,
     borderRadius: 22,
+    flexDirection: 'row',
+    paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,

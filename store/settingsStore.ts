@@ -1,7 +1,22 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { ThemeMode, AppLanguage, MassUnit, VolumeUnit, LengthUnit, EnergyUnit, TempUnit, Reminder } from './types';
+import { useRecipesStore } from './recipesStore';
+
+
+// Secure storage adapter for Zustand
+const secureStorage = {
+  getItem: async (name: string) => {
+    return (await SecureStore.getItemAsync(name)) || null;
+  },
+  setItem: async (name: string, value: string) => {
+    await SecureStore.setItemAsync(name, value);
+  },
+  removeItem: async (name: string) => {
+    await SecureStore.deleteItemAsync(name);
+  },
+};
 
 interface SettingsState {
   theme: ThemeMode;
@@ -42,7 +57,11 @@ export const useSettingsStore = create<SettingsState>()(
       tempUnit: 'c',
       reminders: DEFAULT_REMINDERS,
       setTheme: (theme) => set({ theme }),
-      setLanguage: (language) => set({ language }),
+      setLanguage: (language) => {
+        // Clear cached search recipes so they regenerate in the new language
+        useRecipesStore.getState().setRecipes([]);
+        set({ language });
+      },
       setMassUnit: (massUnit) => set({ massUnit }),
       setVolumeUnit: (volumeUnit) => set({ volumeUnit }),
       setLengthUnit: (lengthUnit) => set({ lengthUnit }),
@@ -52,7 +71,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'ff-settings',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => secureStorage),
     }
   )
 );
