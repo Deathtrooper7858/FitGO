@@ -555,6 +555,54 @@ export default function FitGOSocial() {
   };
 
 
+  const postHeader = (
+    <GlassCard style={{ marginBottom: 20, padding: 12 }}>
+      <View style={s.postInputRow}>
+        {profile?.avatarUrl ? (
+          <Image source={{ uri: profile.avatarUrl }} style={s.avatarSmall} />
+        ) : (
+          <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
+            <Text style={[s.avatarInitials, { fontSize: 14 }]}>{profile?.name?.[0]}</Text>
+          </View>
+        )}
+        <TextInput
+          style={[s.postInput, { color: colors.textPrimary }]}
+          placeholder={t('social.feed.postPlaceholder')}
+          placeholderTextColor={colors.textMuted}
+          multiline
+          value={newPostContent}
+          onChangeText={setNewPostContent}
+        />
+      </View>
+      
+      {selectedImage && (
+        <View style={{ position: 'relative', marginBottom: 12 }}>
+          <Image source={{ uri: selectedImage }} style={s.imagePreview} />
+          <TouchableOpacity 
+            style={s.removeImageBtn} 
+            onPress={() => setSelectedImage(null)}
+          >
+            <X size={16} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <View style={s.postActions}>
+        <TouchableOpacity style={s.postTool} onPress={() => setIsImageModalVisible(true)}>
+          <Camera size={18} color={colors.textSecondary} />
+          <Text style={{ color: colors.textSecondary, fontSize: 12, marginLeft: 4 }}>{t('social.feed.photo')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[s.sendBtn, { backgroundColor: (newPostContent.trim() || selectedImage) ? colors.primary : colors.surfaceAlt }]}
+          onPress={handleCreatePost}
+          disabled={(!newPostContent.trim() && !selectedImage) || isPosting}
+        >
+          {isPosting ? <ActivityIndicator size="small" color="#fff" /> : <Send size={16} color="#fff" />}
+        </TouchableOpacity>
+      </View>
+    </GlassCard>
+  );
+
   const renderFeed = () => (
     <View style={s.tabContent}>
       <FlatList
@@ -566,53 +614,8 @@ export default function FitGOSocial() {
         removeClippedSubviews={true}
         contentContainerStyle={{ paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={() => (
-          <GlassCard style={{ marginBottom: 20, padding: 12 }}>
-            <View style={s.postInputRow}>
-              {profile?.avatarUrl ? (
-                <Image source={{ uri: profile.avatarUrl }} style={s.avatarSmall} />
-              ) : (
-                <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
-                  <Text style={[s.avatarInitials, { fontSize: 14 }]}>{profile?.name?.[0]}</Text>
-                </View>
-              )}
-              <TextInput
-                style={[s.postInput, { color: colors.textPrimary }]}
-                placeholder={t('social.feed.postPlaceholder')}
-                placeholderTextColor={colors.textMuted}
-                multiline
-                value={newPostContent}
-                onChangeText={setNewPostContent}
-              />
-            </View>
-            
-            {selectedImage && (
-              <View style={{ position: 'relative', marginBottom: 12 }}>
-                <Image source={{ uri: selectedImage }} style={s.imagePreview} />
-                <TouchableOpacity 
-                  style={s.removeImageBtn} 
-                  onPress={() => setSelectedImage(null)}
-                >
-                  <X size={16} color="#fff" />
-                </TouchableOpacity>
-              </View>
-            )}
-
-            <View style={s.postActions}>
-              <TouchableOpacity style={s.postTool} onPress={() => setIsImageModalVisible(true)}>
-                <Camera size={18} color={colors.textSecondary} />
-                <Text style={{ color: colors.textSecondary, fontSize: 12, marginLeft: 4 }}>{t('social.feed.photo')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[s.sendBtn, { backgroundColor: (newPostContent.trim() || selectedImage) ? colors.primary : colors.surfaceAlt }]}
-                onPress={handleCreatePost}
-                disabled={(!newPostContent.trim() && !selectedImage) || isPosting}
-              >
-                {isPosting ? <ActivityIndicator size="small" color="#fff" /> : <Send size={16} color="#fff" />}
-              </TouchableOpacity>
-            </View>
-          </GlassCard>
-        )}
+        keyboardShouldPersistTaps="handled"
+        ListHeaderComponent={postHeader}
         ListEmptyComponent={() => (
           socialStore.isPostsLoading && socialStore.posts.length === 0 ? (
             <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
