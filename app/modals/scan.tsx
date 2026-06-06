@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { SuccessModal } from '../../components/SuccessModal';
 import { getLocalDateString } from '../../utils/date';
 import { CustomAlert, AlertType } from '../../components/CustomAlert';
+import { AIEnergyGate, useAIEnergy } from '../../components/AIEnergyGate';
 
 import { useAudioRecorder, useAudioRecorderState, AudioModule, RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync } from 'expo-audio';
 import { transcribeAudio, parseVoiceLog } from '../../services/groq';
@@ -65,6 +66,10 @@ export default function ScanModal() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [flash, setFlash] = useState<'off' | 'on' | 'auto'>('off');
   const [facing, setFacing] = useState<'back' | 'front'>('back');
+
+  // AI Energy Gate (Rewarded Ads)
+  const { gateVisible, setGateVisible, requestAIAction, handleEnergyGranted } = useAIEnergy();
+  const [pendingScanCallback, setPendingScanCallback] = useState<(() => void) | null>(null);
 
   // Custom Alert State
   const [alert, setAlert] = useState<{
@@ -135,37 +140,18 @@ export default function ScanModal() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery, language]);
 
-  const checkAiLimit = (scanMode: 'photo' | 'text'): boolean => {
-    if (isProActually) return true;
-    
-    if (scanMode === 'photo') {
-      if (aiPhotoUsageCount >= 5) {
-        showAlert(
-          'confirm',
-          t('scan.limitReached') || 'AI Limit Reached',
-          t('scan.limitReachedSubPhoto') || 'You have reached the daily limit of 5 AI photo registrations. Upgrade to Pro for unlimited use!',
-          () => router.push('/modals/paywall'),
-          () => {},
-          t('onboarding.proBtn'),
-          t('common.cancel')
-        );
-        return false;
-      }
-    } else {
-      if (aiTextUsageCount >= 10) {
-        showAlert(
-          'confirm',
-          t('scan.limitReached') || 'AI Limit Reached',
-          t('scan.limitReachedSubText') || 'You have reached the daily limit of 10 AI text registrations. Upgrade to Pro for unlimited use!',
-          () => router.push('/modals/paywall'),
-          () => {},
-          t('onboarding.proBtn'),
-          t('common.cancel')
-        );
-        return false;
-      }
+  const checkAiLimit = (scanMode: 'photo' | 'text', onAllowed: () => void): void => {
+    if (isProActually) { onAllowed(); return; }
+
+    if (scanMode === 'photo' && aiPhotoUsageCount >= 5) {
+      // Try energy gate before paywall
+      requestAIAction(onAllowed);
+      return;
+    } else if (scanMode === 'text' && aiTextUsageCount >= 10) {
+      requestAIAction(onAllowed);
+      return;
     }
-    return true;
+    onAllowed();
   };
 
   const [isRecording, setIsRecording] = useState(false);
@@ -267,46 +253,47 @@ export default function ScanModal() {
   };
 
   const handleTextAnalyze = async () => {
-    if (!textInput.trim() || !checkAiLimit('text')) return;
-    setLoading(true);
+    if (!textInput.trim()) return;
+    checkAiLimit('text', async () => {
+      setLoading(true);
+      try {
+        const items = await parseVoiceLog(textInput, language);
+        if (!items || items.length === 0) {
+          showAlert('warning', t('common.error'), t('scan.noFoodsFound'));
+          return;
+        }
 
-    try {
-      const items = await parseVoiceLog(textInput, language);
-      if (!items || items.length === 0) {
-        showAlert('warning', t('common.error'), t('scan.noFoodsFound'));
-        return;
+        setPhotoResult({
+          foods: items,
+          totalCalories: items.reduce((acc: number, f: any) => acc + f.calories, 0),
+          confidence: 'high',
+          notes: textInput
+        });
+
+        setEditedFoods(items.map((f: any) => ({
+          ...f,
+          originalGrams: f.grams,
+          originalCal: f.calories,
+          originalProt: f.protein,
+          originalCarbs: f.carbs,
+          originalFat: f.fat,
+          originalSugar: f.sugar,
+          originalFiber: f.fiber,
+          originalSodium: f.sodium,
+          originalIron: f.iron,
+          originalCalcium: f.calcium,
+          originalSatFat: f.saturatedFat,
+          originalTransFat: f.transFat,
+        })));
+        setCapturedUri('text');
+        incrementAiUsage('text');
+      } catch (err: any) {
+        console.error('[ScanModal] Text analyze error:', err);
+        showAlert('error', t('common.error'), t('scan.analysisFailed') || 'AI analysis failed. Please check your connection.');
+      } finally {
+        setLoading(false);
       }
-
-      setPhotoResult({
-        foods: items,
-        totalCalories: items.reduce((acc: number, f: any) => acc + f.calories, 0),
-        confidence: 'high',
-        notes: textInput
-      });
-
-      setEditedFoods(items.map((f: any) => ({
-        ...f,
-        originalGrams: f.grams,
-        originalCal: f.calories,
-        originalProt: f.protein,
-        originalCarbs: f.carbs,
-        originalFat: f.fat,
-        originalSugar: f.sugar,
-        originalFiber: f.fiber,
-        originalSodium: f.sodium,
-        originalIron: f.iron,
-        originalCalcium: f.calcium,
-        originalSatFat: f.saturatedFat,
-        originalTransFat: f.transFat,
-      })));
-      setCapturedUri('text'); // Flag to indicate text mode
-      incrementAiUsage('text');
-    } catch (err: any) {
-      console.error('[ScanModal] Text analyze error:', err);
-      showAlert('error', t('common.error'), t('scan.analysisFailed') || 'AI analysis failed. Please check your connection.');
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const getAutoMeal = (): Meal => {
@@ -359,24 +346,66 @@ export default function ScanModal() {
   };
 
   const handlePickImage = async () => {
-    if (loading || !checkAiLimit('photo')) return;
+    if (loading) return;
+    checkAiLimit('photo', async () => {
+      try {
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ['images'],
+          allowsEditing: true,
+          quality: 0.1,
+          base64: true,
+        });
 
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        quality: 0.1,
-        base64: true,
-      });
+        if (!result.canceled && result.assets[0].base64) {
+          setLoading(true);
+          setCapturedUri(result.assets[0].uri);
 
-      if (!result.canceled && result.assets[0].base64) {
-        setLoading(true);
-        setCapturedUri(result.assets[0].uri);
+          const analysis = await analyzeFoodPhoto(result.assets[0].base64, language);
+          setPhotoResult(analysis);
+          
+          setEditedFoods(analysis.foods.map(f => ({
+            ...f,
+            originalGrams: f.grams,
+            originalCal: f.calories,
+            originalProt: f.protein,
+            originalCarbs: f.carbs,
+            originalFat: f.fat,
+            originalSugar: f.sugar,
+            originalFiber: f.fiber,
+            originalSodium: f.sodium,
+            originalIron: f.iron,
+            originalCalcium: f.calcium,
+            originalSatFat: f.saturatedFat,
+            originalTransFat: f.transFat,
+          })));
+          incrementAiUsage('photo');
+        }
+      } catch (err: any) {
+        console.error('Picker Error:', err);
+        showAlert('error', t('scan.analysisFailed'), t('scan.analysisFailedSub', { error: err?.message || err }));
+      } finally {
+        setLoading(false);
+      }
+    });
+  };
 
-        const analysis = await analyzeFoodPhoto(result.assets[0].base64, language);
-        setPhotoResult(analysis);
+  const handleTakePhoto = async () => {
+    if (loading || !cameraRef.current) return;
+    checkAiLimit('photo', async () => {
+      setLoading(true);
+      try {
+        const photo = await cameraRef.current.takePictureAsync({
+          base64: true,
+          quality: 0.1,
+          exif: false,
+        });
+
+        setCapturedUri(photo.uri);
+
+        const result = await analyzeFoodPhoto(photo.base64, language);
+        setPhotoResult(result);
         
-        setEditedFoods(analysis.foods.map(f => ({
+        setEditedFoods(result.foods.map(f => ({
           ...f,
           originalGrams: f.grams,
           originalCal: f.calories,
@@ -392,53 +421,13 @@ export default function ScanModal() {
           originalTransFat: f.transFat,
         })));
         incrementAiUsage('photo');
+      } catch (err: any) {
+        console.error('Analysis Error:', err);
+        showAlert('error', t('scan.analysisFailed'), t('scan.analysisFailedSub', { error: err?.message || err }));
+      } finally {
+        setLoading(false);
       }
-    } catch (err: any) {
-      console.error('Picker Error:', err);
-      showAlert('error', t('scan.analysisFailed'), t('scan.analysisFailedSub', { error: err?.message || err }));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleTakePhoto = async () => {
-    if (loading || !cameraRef.current || !checkAiLimit('photo')) return;
-    setLoading(true);
-
-    try {
-      const photo = await cameraRef.current.takePictureAsync({
-        base64: true,
-        quality: 0.1,
-        exif: false,
-      });
-
-      setCapturedUri(photo.uri);
-
-      const result = await analyzeFoodPhoto(photo.base64, language);
-      setPhotoResult(result);
-      
-      setEditedFoods(result.foods.map(f => ({
-        ...f,
-        originalGrams: f.grams,
-        originalCal: f.calories,
-        originalProt: f.protein,
-        originalCarbs: f.carbs,
-        originalFat: f.fat,
-        originalSugar: f.sugar,
-        originalFiber: f.fiber,
-        originalSodium: f.sodium,
-        originalIron: f.iron,
-        originalCalcium: f.calcium,
-        originalSatFat: f.saturatedFat,
-        originalTransFat: f.transFat,
-      })));
-      incrementAiUsage('photo');
-    } catch (err: any) {
-      console.error('Analysis Error:', err);
-      showAlert('error', t('scan.analysisFailed'), t('scan.analysisFailedSub', { error: err?.message || err }));
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const updateGrams = (index: number, newGrams: string) => {
@@ -865,6 +854,11 @@ export default function ScanModal() {
           setShowSuccess(false);
           router.back();
         }}
+      />
+      <AIEnergyGate
+        visible={gateVisible}
+        onClose={() => setGateVisible(false)}
+        onEnergyGranted={handleEnergyGranted}
       />
     </View>
   );

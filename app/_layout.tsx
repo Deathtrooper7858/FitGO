@@ -30,12 +30,12 @@ import { registerForPushNotificationsAsync } from '../services/notifications';
 import { Colors } from '../constants';
 import i18n from '../i18n';
 import { useTheme } from '../hooks/useTheme';
+import { useAdMob } from '../hooks/useAdMob';
 import * as NavigationBar from 'expo-navigation-bar';
 import { AchievementToast } from '../components/AchievementToast';
 
 // Safely detect if edge-to-edge is enabled
 let isEdgeToEdgeActive = false;
-
 
 SplashScreen.preventAutoHideAsync();
 
@@ -82,13 +82,13 @@ function NavigationGuard() {
   return null;
 }
 
-
 export default function RootLayout() {
   const { setSession, setLoading, setProfile, fetchProfile, isLoading } = useAuthStore();
   const { initialize: initPurchases } = usePurchaseStore();
   const { language, theme } = useSettingsStore();
   const colors = useTheme();
   const { t } = useTranslation();
+  useAdMob(); // Initialize AdMob
 
   useEffect(() => {
     if (i18n.isInitialized) {

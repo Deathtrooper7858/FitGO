@@ -26,6 +26,7 @@ import CoachHistoryModal from './CoachHistoryModal';
 import { ImagePickerModal } from './ImagePickerModal';
 import { ImageViewerModal } from './ImageViewerModal';
 import { useKeyboardNavBar } from '../hooks/useKeyboardNavBar';
+import { AIEnergyGate, useAIEnergy } from './AIEnergyGate';
 
 const FREE_MSG_LIMIT = 5;
 
@@ -286,6 +287,9 @@ export default function NutritionistScreen() {
   const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const atLimit = !isProActually && msgCount >= FREE_MSG_LIMIT;
 
+  // AI Energy Gate (Rewarded Ads)
+  const { gateVisible, setGateVisible, requestAIAction, handleEnergyGranted } = useAIEnergy();
+
   useEffect(() => {
     setTyping(false);
     setIsSending(false);
@@ -470,7 +474,7 @@ export default function NutritionistScreen() {
     }
   };
 
-  const handleSend = useCallback(async (overrideText?: string) => {
+  const _doSend = useCallback(async (overrideText?: string) => {
     const text = (overrideText ?? input).trim();
 
     if (!text && !selectedImage) return;
@@ -613,6 +617,11 @@ export default function NutritionistScreen() {
       setIsSending(false);
     }
   }, [input, selectedImage, isTyping, isSending, atLimit, profile, messages, language]);
+
+  // Public wrapper — checks AI Energy before firing the real send
+  const handleSend = useCallback((overrideText?: string) => {
+    requestAIAction(() => _doSend(overrideText));
+  }, [_doSend, requestAIAction]);
 
   const canSend        = (input.trim().length > 0 || !!selectedImage) && !isTyping && !isSending;
   const showSuggestions = messages.length <= 1 && !isTyping;
@@ -872,6 +881,11 @@ export default function NutritionistScreen() {
         visible={!!viewingImage}
         imageUri={viewingImage}
         onClose={() => setViewingImage(null)}
+      />
+      <AIEnergyGate
+        visible={gateVisible}
+        onClose={() => setGateVisible(false)}
+        onEnergyGranted={handleEnergyGranted}
       />
     </View>
   );
