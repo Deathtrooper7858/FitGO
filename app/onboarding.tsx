@@ -627,7 +627,7 @@ function HealthProfileStep({
   const selected = data[fieldKey] || [];
   const predefinedKeys = Object.keys(itemsObj);
   const customValues = selected.filter(k => !predefinedKeys.includes(k));
-  const customText = customValues.length > 0 ? customValues[0].replace('custom:', '') : '';
+  const [localCustomText, setLocalCustomText] = useState(customValues.length > 0 ? customValues[0].replace('custom:', '') : '');
   const [customFocused, setCustomFocused] = useState(false);
 
   const toggle = (id: string) => {
@@ -642,15 +642,15 @@ function HealthProfileStep({
     onChange({ [fieldKey]: newSelection });
   };
 
-  const setCustomText = (text: string) => {
+  const commitCustomText = () => {
     const base = selected.filter(k => predefinedKeys.includes(k) && k !== 'none');
-    
-    if (text.trim() === '') {
+    if (localCustomText.trim() === '') {
       onChange({ [fieldKey]: [...base] });
     } else {
-      onChange({ [fieldKey]: [...base, `custom:${text}`] });
+      onChange({ [fieldKey]: [...base, `custom:${localCustomText.trim()}`] });
     }
   };
+
   return (
     <View style={step.container}>
       <View style={step.headerSection}>
@@ -718,7 +718,7 @@ function HealthProfileStep({
         <View style={[
           step.optionCard, 
           { backgroundColor: colors.surface, borderColor: colors.border, paddingVertical: 14, flexDirection: 'column', alignItems: 'stretch' },
-          (customText.length > 0 || customFocused) && { 
+          (localCustomText.length > 0 || customFocused) && { 
             borderColor: colors.primary, 
             shadowColor: colors.primary,
             shadowOpacity: 0.1,
@@ -726,7 +726,7 @@ function HealthProfileStep({
             elevation: 2
           }
         ]}>
-          {customText.length > 0 && (
+          {localCustomText.length > 0 && (
             <LinearGradient
               colors={[colors.primary + '0C', colors.primary + '02']}
               style={StyleSheet.absoluteFill}
@@ -737,7 +737,7 @@ function HealthProfileStep({
           <Text style={[
             step.optionTitle, 
             { color: colors.textPrimary, marginLeft: 16, marginBottom: 12, fontSize: 16 },
-            (customText.length > 0 || customFocused) && { color: colors.primary, fontWeight: '800' }
+            (localCustomText.length > 0 || customFocused) && { color: colors.primary, fontWeight: '800' }
           ]}>
             {t('onboarding.otherSpecify')}
           </Text>
@@ -757,17 +757,23 @@ function HealthProfileStep({
             }}
             placeholder={t('onboarding.otherPlaceholder')}
             placeholderTextColor={colors.textMuted}
-            value={customText}
-            onChangeText={setCustomText}
+            value={localCustomText}
+            onChangeText={setLocalCustomText}
             onFocus={() => { 
               setCustomFocused(true);
               if(selected.includes('none')) toggle('none'); 
             }}
-            onBlur={() => setCustomFocused(false)}
+            onBlur={() => {
+              setCustomFocused(false);
+              commitCustomText();
+            }}
             autoCorrect={false}
             returnKeyType="done"
             blurOnSubmit={true}
-            onSubmitEditing={() => Keyboard.dismiss()}
+            onSubmitEditing={() => {
+              commitCustomText();
+              Keyboard.dismiss();
+            }}
           />
         </View>
         {/* Extra space at bottom so keyboard doesn't cover custom input */}
