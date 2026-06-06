@@ -73,6 +73,9 @@ export const useAuthStore = create<AuthState>()(
                 lifestyle:      data.lifestyle,
                 extraSnacks:    data.extra_snacks,
                 widgetsOrder:   data.widgets_order,
+                // ── Settings & Auth ──────────────────────────────────────
+                expoPushToken:          data.expo_push_token,
+                notificationPreferences: data.notification_preferences,
                 // ── Health Profile ────────────────────────────────────────
                 dietaryRestrictions:    data.dietary_restrictions    ?? [],
                 medicalConditions:      data.medical_conditions      ?? [],

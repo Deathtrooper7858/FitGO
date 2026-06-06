@@ -26,6 +26,7 @@ console.warn = (...args) => {
 };
 import { supabase } from '../services/supabase';
 import { useAuthStore, useSettingsStore, usePurchaseStore } from '../store';
+import { registerForPushNotificationsAsync } from '../services/notifications';
 import { Colors } from '../constants';
 import i18n from '../i18n';
 import { useTheme } from '../hooks/useTheme';
@@ -125,6 +126,19 @@ export default function RootLayout() {
           await fetchProfile(newSession.user.id);
           // Initialize RevenueCat with user ID
           await initPurchases(newSession.user.id);
+          
+          // Initialize push notifications
+          registerForPushNotificationsAsync().then(async (token) => {
+            if (token) {
+              const currentProfile = useAuthStore.getState().profile;
+              if (currentProfile && currentProfile.expoPushToken !== token) {
+                const { error } = await supabase.from('users').update({ expo_push_token: token }).eq('id', newSession.user.id);
+                if (!error) {
+                  setProfile({ ...currentProfile, expoPushToken: token });
+                }
+              }
+            }
+          });
         } else {
           setProfile(null);
           // Logout from RevenueCat

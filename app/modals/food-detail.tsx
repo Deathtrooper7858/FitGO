@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Platform } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { PieChart } from 'react-native-gifted-charts';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -46,6 +47,8 @@ export default function FoodDetailModal() {
 
   const [meal, setMeal]       = useState<Meal>(initialMeal || getAutoMeal());
   const [isSaving, setIsSaving] = useState(false);
+  const [logTime, setLogTime] = useState<Date>(new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const { energyUnit } = useSettingsStore();
   const energyLabel = energyUnit.toUpperCase();
   
@@ -151,7 +154,7 @@ export default function FoodDetailModal() {
           foodItem: food,
           grams:    g,
           meal,
-          loggedAt: date ? `${date}T${new Date().toISOString().split('T')[1]}` : new Date().toISOString(),
+          loggedAt: date ? `${date}T${logTime.toISOString().split('T')[1]}` : logTime.toISOString(),
           calories: cal,
           protein:  pro,
           carbs:    carb,
@@ -274,6 +277,32 @@ export default function FoodDetailModal() {
             ))}
           </View>
         </View>
+
+        <View style={s.section}>
+          <Text style={[s.sectionLabel, { color: colors.textSecondary }]}>{language === 'es' ? 'Hora' : 'Time'}</Text>
+          <TouchableOpacity 
+            onPress={() => setShowTimePicker(true)}
+            style={[s.gramsInput, { backgroundColor: colors.surface, borderColor: colors.border, paddingVertical: 12, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8 }]}
+          >
+            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.textPrimary }}>
+              {logTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </Text>
+            <Text style={{ fontSize: 16 }}>✏️</Text>
+          </TouchableOpacity>
+        </View>
+
+        {showTimePicker && (
+          <DateTimePicker
+            value={logTime}
+            mode="time"
+            is24Hour={true}
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={(event, selectedDate) => {
+              setShowTimePicker(Platform.OS === 'ios');
+              if (selectedDate) setLogTime(selectedDate);
+            }}
+          />
+        )}
 
         {/* Delete option (only when editing) */}
         {logId && (
