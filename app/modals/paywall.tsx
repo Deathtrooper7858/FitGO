@@ -81,10 +81,10 @@ export default function PaywallModal() {
           </View>
           
           <View style={s.priceContainer}>
-            <Text style={[s.oldPrice, { color: colors.textMuted }]}>$6.99</Text>
+            <Text style={[s.oldPrice, { color: colors.textMuted }]}>$25.000 COP</Text>
             <View style={s.currentPriceRow}>
-              <Text style={[s.planPrice, { color: colors.primary }]}>$2.99</Text>
-              <Text style={[s.planPeriod, { color: colors.textSecondary }]}>{t('paywall.perMonth', ' / mes')}</Text>
+              <Text style={[s.planPrice, { color: colors.primary }]}>$11.800</Text>
+              <Text style={[s.planPeriod, { color: colors.textSecondary }]}> COP{t('paywall.perMonth', ' / mes')}</Text>
             </View>
           </View>
           
