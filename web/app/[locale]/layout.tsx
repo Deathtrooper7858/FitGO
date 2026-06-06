@@ -8,6 +8,10 @@ import {routing} from '@/i18n/routing';
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans" });
 
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
 export const metadata: Metadata = {
   title: "FitGO — Tu mejor versión",
   description:

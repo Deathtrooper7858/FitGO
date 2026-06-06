@@ -11,6 +11,8 @@
     "android:dev": "cross-env APP_VARIANT=development expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
+    "predeploy": "expo export -p web && node -e \"require('fs').writeFileSync('dist/.nojekyll', ''); require('fs').copyFileSync('dist/index.html', 'dist/404.html');\"",
+    "deploy": "gh-pages -d dist",
     "prebuild": "expo prebuild --platform android --clean",
     "audit:prod": "npm audit --omit=dev"
   },
@@ -90,6 +92,7 @@
     "cross-env": "^10.1.0",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~55.0.1",
+    "gh-pages": "^6.3.0",
     "supabase": "^2.98.2",
     "typescript": "~5.9.2"
   },
