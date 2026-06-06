@@ -20,7 +20,8 @@ import { AnimatedCard } from '../../../components/AnimatedCard';
 import { Trophy, Flame, Dumbbell, Heart, ChevronRight, Scale, Target } from 'lucide-react-native';
 import { useAchievements, Achievement } from '../../../hooks/useAchievements';
 import { GoalWizardModal, ACTIVITY_TO_EXERCISE } from '../../../components/GoalWizardModal';
-
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { adUnitIds } from '../../../hooks/useAdMob';
 
 const { width } = Dimensions.get('window');
 import { CustomAlert, AlertType } from '../../../components/CustomAlert';
@@ -506,6 +507,17 @@ export default function DashboardScreen() {
         </View>
         <View style={[s.cardFull, { backgroundColor: colors.surface }]}>
           <ScoreRing consumed={calories} target={target} dateLabel={dateLabel} />
+        </View>
+
+        {/* AdMob Banner */}
+        <View style={{ alignItems: 'center', marginTop: Spacing.md, marginBottom: Spacing.md }}>
+          <BannerAd
+            unitId={adUnitIds.banner}
+            size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+            requestOptions={{
+              requestNonPersonalizedAdsOnly: true,
+            }}
+          />
         </View>
 
         {/* Phase Card */}
