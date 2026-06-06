@@ -5,10 +5,14 @@
   "scripts": {
     "start": "react-native start",
     "start:expo": "expo start --dev-client",
+    "start:dev": "cross-env APP_VARIANT=development npx expo start",
     "android": "expo run:android",
     "android:build": "expo run:android",
+    "android:dev": "cross-env APP_VARIANT=development expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
+    "predeploy": "expo export -p web && node -e \"require('fs').writeFileSync('dist/.nojekyll', ''); require('fs').copyFileSync('dist/index.html', 'dist/404.html');\"",
+    "deploy": "gh-pages -d dist",
     "prebuild": "expo prebuild --platform android --clean",
     "audit:prod": "npm audit --omit=dev"
   },
@@ -76,7 +80,7 @@
     "react-native-url-polyfill": "^3.0.0",
     "react-native-vision-camera": "^5.0.11",
     "react-native-web": "~0.21.0",
-    "react-native-worklets-core": "^1.6.3",
+    "react-native-worklets": "0.7.4",
     "xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz",
     "zustand": "^5.0.12"
   },
@@ -86,8 +90,10 @@
     "@react-native/metro-config": "^0.85.3",
     "@types/react": "~19.2.10",
     "babel-preset-expo": "~55.0.19",
+    "cross-env": "^10.1.0",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~55.0.1",
+    "gh-pages": "^6.3.0",
     "supabase": "^2.98.2",
     "typescript": "~5.9.2"
   },

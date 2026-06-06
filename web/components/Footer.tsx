@@ -1,24 +1,27 @@
 import Link from "next/link";
 import { Zap, Globe, Heart } from "lucide-react";
-
-const footerLinks = {
-  App: [
-    { href: "/about", label: "Características" },
-    { href: "/pricing", label: "Premium" },
-    { href: "/about-us", label: "Nosotros" },
-  ],
-  Cuenta: [
-    { href: "/login", label: "Iniciar sesión" },
-    { href: "/register", label: "Crear cuenta" },
-    { href: "/forgot-password", label: "Recuperar contraseña" },
-  ],
-  Legal: [
-    { href: "/privacy", label: "Privacidad" },
-    { href: "/terms", label: "Términos" },
-  ],
-};
+import { useTranslations } from "next-intl";
 
 export default function Footer() {
+  const t = useTranslations("footer");
+
+  const footerLinks = {
+    [t("groups.app")]: [
+      { href: "/about", label: t("links.features") },
+      { href: "/pricing", label: t("links.premium") },
+      { href: "/about-us", label: t("links.about") },
+    ],
+    [t("groups.account")]: [
+      { href: "/login", label: t("links.login") },
+      { href: "/register", label: t("links.register") },
+      { href: "/forgot-password", label: t("links.forgotPassword") },
+    ],
+    [t("groups.legal")]: [
+      { href: "/privacy", label: t("links.privacy") },
+      { href: "/terms", label: t("links.terms") },
+    ],
+  };
+
   return (
     <footer className="border-t border-white/5 bg-fitgo-dark/60">
       <div className="max-w-6xl mx-auto px-6 py-16">
@@ -34,8 +37,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-text-secondary text-sm leading-relaxed max-w-xs">
-              Tu plataforma de fitness más fluida y gamificada. Progreso,
-              nutrición y entrenamiento en un solo lugar.
+              {t("desc")}
             </p>
             <div className="flex items-center gap-3 mt-6">
               <a
@@ -86,11 +88,10 @@ export default function Footer() {
 
         <div className="border-t border-white/5 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-text-muted text-xs">
-            © {new Date().getFullYear()} FitGO. Todos los derechos reservados.
+            © {new Date().getFullYear()} FitGO. {t("rights")}
           </p>
           <p className="text-text-muted text-xs flex items-center gap-1">
-            Hecho con <Heart size={12} className="text-accent fill-accent" /> para
-            tu mejor versión
+            {t("madeWith1")} <Heart size={12} className="text-accent fill-accent" /> {t("madeWith2")}
           </p>
         </div>
       </div>

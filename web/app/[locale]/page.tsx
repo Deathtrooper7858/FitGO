@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import {
   Apple,
   Bot,
@@ -19,73 +20,69 @@ import {
 } from "lucide-react";
 
 const featurePills = [
-  { icon: Apple, label: "Nutrición Inteligente", color: "#FF6B6B" },
-  { icon: Bot, label: "Coach con IA", color: "#4ECDC4" },
-  { icon: BarChart3, label: "Progreso Visual", color: "#FFE66D" },
-  { icon: Calendar, label: "Planificador", color: "#C7F464" },
-  { icon: Zap, label: "Guerras de Macros", color: "#FF9F1C" },
-  { icon: ShieldCheck, label: "Ligas Élite", color: "#8B5CF6" },
+  { icon: Apple, key: "nutrition", color: "#FF6B6B" },
+  { icon: Bot, key: "coach", color: "#4ECDC4" },
+  { icon: BarChart3, key: "progress", color: "#FFE66D" },
+  { icon: Calendar, key: "planner", color: "#C7F464" },
+  { icon: Zap, key: "wars", color: "#FF9F1C" },
+  { icon: ShieldCheck, key: "leagues", color: "#8B5CF6" },
 ];
 
 const features = [
   {
     icon: Scale,
-    title: "Registro de Progreso",
-    desc: "Seguimiento de peso corporal, medidas e historial detallado con gráficas interactivas.",
+    key: "progress",
     gradient: "from-primary/20 to-primary-dark/10",
     glow: "rgba(139,92,246,0.3)",
-    badge: "Más popular",
+    hasBadge: true,
   },
   {
     icon: Apple,
-    title: "Nutrición Completa",
-    desc: "Base de datos de alimentos, escáner de código de barras y tracking de macros en tiempo real.",
+    key: "nutrition",
     gradient: "from-accent/20 to-accent/5",
     glow: "rgba(244,63,94,0.3)",
-    badge: null,
+    hasBadge: false,
   },
   {
     icon: Dumbbell,
-    title: "Entrenamiento",
-    desc: "Mapa muscular interactivo, rutinas personalizadas y seguimiento de cada sesión.",
+    key: "workout",
     gradient: "from-secondary/20 to-secondary/5",
     glow: "rgba(6,182,212,0.3)",
-    badge: null,
+    hasBadge: false,
   },
   {
     icon: Bot,
-    title: "Coach con IA",
-    desc: "Orientación personalizada, análisis de tu progreso y recomendaciones inteligentes.",
+    key: "coach",
     gradient: "from-success/20 to-success/5",
     glow: "rgba(16,185,129,0.3)",
-    badge: "Nuevo",
+    hasBadge: true,
   },
   {
     icon: Trophy,
-    title: "Gamificación",
-    desc: "Guerras de Macros, Ligas Élite y logros que te mantienen motivado cada día.",
+    key: "gamification",
     gradient: "from-pro/20 to-pro/5",
     glow: "rgba(245,158,11,0.3)",
-    badge: null,
+    hasBadge: false,
   },
   {
     icon: Flame,
-    title: "Quema Calórica",
-    desc: "Cálculo preciso de TDEE, NEAT y metabolismo basal adaptado a tu estilo de vida.",
+    key: "burn",
     gradient: "from-accent/20 to-primary/10",
     glow: "rgba(244,63,94,0.25)",
-    badge: null,
+    hasBadge: false,
   },
 ];
 
 const stats = [
-  { value: "10K+", label: "Usuarios activos" },
-  { value: "500K+", label: "Alimentos en base de datos" },
-  { value: "4.9★", label: "Valoración media" },
-  { value: "99%", label: "Satisfacción" },
+  { value: "10K+", key: "users" },
+  { value: "500K+", key: "foods" },
+  { value: "4.9★", key: "rating" },
+  { value: "99%", key: "satisfaction" },
 ];
 
 export default function HomePage() {
+  const t = useTranslations("web");
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -138,7 +135,7 @@ export default function HomePage() {
               className="text-xs font-black uppercase tracking-widest"
               style={{ color: "#00FF95", textShadow: "0 0 10px rgba(0,255,149,0.5)" }}
             >
-              Tu mejor versión
+              {t("home.badge")}
             </span>
           </div>
 
@@ -154,10 +151,8 @@ export default function HomePage() {
           <p
             className="text-text-secondary text-lg md:text-2xl leading-relaxed mb-10 max-w-2xl mx-auto animate-fade-up font-medium"
             style={{ animationDelay: "0.1s" }}
-          >
-            La app de fitness más <span className="text-white">fluida y gamificada</span>. Progreso, nutrición y
-            entrenamiento — <span className="text-white">todo sincronizado</span> en tiempo real.
-          </p>
+            dangerouslySetInnerHTML={{ __html: t.raw("home.motto").replace(/<highlight>/g, '<span className="text-white">').replace(/<\/highlight>/g, '</span>') }}
+          />
 
           {/* Feature pills */}
           <div
@@ -166,14 +161,14 @@ export default function HomePage() {
           >
             {featurePills.map((f, index) => (
               <div 
-                key={f.label} 
+                key={f.key} 
                 className="feature-pill animate-float hover:scale-105"
                 style={{ animationDelay: `${index * 0.15}s` }}
               >
                 <div className="p-1.5 rounded-full bg-white/5 backdrop-blur-md">
                   <f.icon size={16} style={{ color: f.color }} />
                 </div>
-                <span className="font-semibold text-[15px]">{f.label}</span>
+                <span className="font-semibold text-[15px]">{t(`home.featurePills.${f.key}`)}</span>
               </div>
             ))}
           </div>
@@ -185,11 +180,11 @@ export default function HomePage() {
           >
             <Link href="/register" className="btn-primary text-base">
               <Zap size={18} fill="white" />
-              Comenzar gratis
+              {t("home.cta.start")}
             </Link>
             <a href="#features" className="btn-secondary text-base">
               <Smartphone size={18} />
-              Ver la app
+              {t("home.cta.demo")}
             </a>
           </div>
 
@@ -227,11 +222,11 @@ export default function HomePage() {
       <section className="py-16 border-y border-white/5">
         <div className="max-w-4xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((s) => (
-            <div key={s.label} className="text-center">
+            <div key={s.key} className="text-center">
               <div className="font-display font-black text-4xl gradient-text mb-1">
                 {s.value}
               </div>
-              <div className="text-text-muted text-sm">{s.label}</div>
+              <div className="text-text-muted text-sm">{t(`home.stats.${s.key}`)}</div>
             </div>
           ))}
         </div>
@@ -241,25 +236,24 @@ export default function HomePage() {
       <section id="features" className="py-28 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <span className="section-label">Todo lo que necesitas</span>
+            <span className="section-label">{t("home.features.subtitle")}</span>
             <h2 className="font-display font-black text-4xl md:text-5xl text-text-primary mt-3 mb-4 text-balance">
-              Tu gym en el bolsillo
+              {t("home.features.title")}
             </h2>
             <p className="text-text-secondary max-w-xl mx-auto text-lg">
-              Diseñado para ser más rápido, más intuitivo y más motivador que
-              cualquier otra app.
+              {t("home.features.desc")}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((f) => (
               <div
-                key={f.title}
+                key={f.key}
                 className={`relative glass rounded-2xl p-6 card-hover bg-linear-to-br ${f.gradient}`}
               >
-                {f.badge && (
+                {f.hasBadge && (
                   <span className="absolute top-4 right-4 text-xs font-bold px-2.5 py-1 rounded-full bg-primary/20 text-primary border border-primary/30">
-                    {f.badge}
+                    {t(`home.features.items.${f.key}.badge`)}
                   </span>
                 )}
                 <div
@@ -273,10 +267,10 @@ export default function HomePage() {
                   <f.icon size={22} className="text-white" />
                 </div>
                 <h3 className="font-display font-bold text-lg text-text-primary mb-2">
-                  {f.title}
+                  {t(`home.features.items.${f.key}.title`)}
                 </h3>
                 <p className="text-text-secondary text-sm leading-relaxed">
-                  {f.desc}
+                  {t(`home.features.items.${f.key}.desc`)}
                 </p>
               </div>
             ))}
@@ -291,14 +285,12 @@ export default function HomePage() {
           style={{ top: "0%", left: "50%", transform: "translateX(-50%)" }}
         />
         <div className="relative z-10 max-w-5xl mx-auto text-center">
-          <span className="section-label">Diseño premium</span>
+          <span className="section-label">{t("home.premium.title")}</span>
           <h2 className="font-display font-black text-4xl md:text-5xl text-text-primary mt-3 mb-6 text-balance">
-            Rápido. Fluido. Gamificado.
+            {t("home.premium.heading")}
           </h2>
           <p className="text-text-secondary text-lg max-w-2xl mx-auto mb-16">
-            Construido con la misma pasión que ponemos en cada entrenamiento.
-            Supera a Fitia, MyFitnessPal y cualquier alternativa en fluidez y
-            experiencia.
+            {t("home.premium.desc")}
           </p>
 
           {/* Phone mockup placeholder with feature highlights */}
@@ -326,17 +318,17 @@ export default function HomePage() {
                     className="text-xs font-bold uppercase tracking-widest"
                     style={{ color: "#00FF95" }}
                   >
-                    Tu mejor versión
+                    {t("home.mockup.badge")}
                   </div>
                   <div className="w-full mt-4 space-y-3">
                     {[
-                      { label: "Proteínas", val: 78, color: "#8B5CF6" },
-                      { label: "Carbos", val: 55, color: "#06B6D4" },
-                      { label: "Grasas", val: 40, color: "#F59E0B" },
+                      { key: "protein", val: 78, color: "#8B5CF6" },
+                      { key: "carbs", val: 55, color: "#06B6D4" },
+                      { key: "fats", val: 40, color: "#F59E0B" },
                     ].map((m) => (
-                      <div key={m.label}>
+                      <div key={m.key}>
                         <div className="flex justify-between text-xs font-semibold mb-1">
-                          <span style={{ color: m.color }}>{m.label}</span>
+                          <span style={{ color: m.color }}>{t(`home.mockup.${m.key}`)}</span>
                           <span className="text-text-secondary">{m.val}%</span>
                         </div>
                         <div className="h-2 rounded-full bg-surface-alt">
@@ -353,12 +345,12 @@ export default function HomePage() {
                     ))}
                   </div>
                   <div className="mt-4 w-full glass rounded-2xl p-4 text-left">
-                    <div className="text-xs text-text-muted mb-1">Hoy</div>
+                    <div className="text-xs text-text-muted mb-1">{t("home.mockup.today")}</div>
                     <div className="text-2xl font-display font-black gradient-text">
                       2,140
                     </div>
                     <div className="text-xs text-text-secondary">
-                      kcal consumidas
+                      {t("home.mockup.kcal")}
                     </div>
                   </div>
                 </div>
@@ -387,16 +379,12 @@ export default function HomePage() {
                   FitGO Pro
                 </span>
               </div>
-              <h2 className="font-display font-black text-4xl md:text-5xl text-text-primary mb-4 text-balance">
-                Desbloquea tu{" "}
-                <span className="gradient-text">potencial completo</span>
-              </h2>
+              <h2 className="font-display font-black text-4xl md:text-5xl text-text-primary mb-4 text-balance" dangerouslySetInnerHTML={{ __html: t.raw("home.pricing.title").replace(/<highlight>/g, '<span className="gradient-text">').replace(/<\/highlight>/g, '</span>') }} />
               <p className="text-text-secondary text-lg mb-8">
-                Acceso ilimitado al Coach IA, Guerras de Macros, Ligas Élite y
-                todas las funcionalidades premium.
+                {t("home.pricing.desc")}
               </p>
               <Link href="/pricing" className="btn-primary text-base">
-                Ver planes <ArrowRight size={18} />
+                {t("home.pricing.cta")} <ArrowRight size={18} />
               </Link>
             </div>
           </div>

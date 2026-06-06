@@ -4,8 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { Zap, Mail, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import { useTranslations } from "next-intl";
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations("auth.forgot");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
@@ -48,10 +50,10 @@ export default function ForgotPasswordPage() {
             </div>
           </Link>
           <h1 className="font-display font-black text-2xl text-text-primary mt-4 mb-2">
-            Recuperar contraseña
+            {t("title")}
           </h1>
           <p className="text-text-secondary text-sm">
-            Ingresa tu correo y te enviaremos las instrucciones.
+            {t("desc")}
           </p>
         </div>
 
@@ -63,7 +65,7 @@ export default function ForgotPasswordPage() {
               </div>
               <p className="text-text-primary">{message}</p>
               <Link href="/login" className="btn-secondary w-full justify-center mt-4">
-                Volver al inicio de sesión
+                {t("back")}
               </Link>
             </div>
           ) : (
@@ -82,7 +84,7 @@ export default function ForgotPasswordPage() {
                 <input
                   type="email"
                   required
-                  placeholder="Correo electrónico"
+                  placeholder={t("email")}
                   className="input-dark pl-11"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -95,7 +97,7 @@ export default function ForgotPasswordPage() {
                 className="btn-primary w-full justify-center mt-2 text-base"
                 style={{ opacity: status === "loading" ? 0.7 : 1 }}
               >
-                {status === "loading" ? "Enviando..." : "Enviar enlace"}
+                {status === "loading" ? t("loading") : t("btn")}
               </button>
 
               <div className="mt-6 text-center">
@@ -103,7 +105,7 @@ export default function ForgotPasswordPage() {
                   href="/login"
                   className="text-sm text-text-secondary hover:text-text-primary transition-colors inline-flex items-center gap-2"
                 >
-                  <ArrowLeft size={16} /> Volver a iniciar sesión
+                  <ArrowLeft size={16} /> {t("back")}
                 </Link>
               </div>
             </form>

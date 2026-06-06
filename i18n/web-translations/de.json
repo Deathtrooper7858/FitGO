@@ -1,0 +1,376 @@
+{
+  "home": {
+    "badge": "Deine beste Version",
+    "motto": "<highlight>Die flüssigste</highlight> und gamifizierte Fitness-App. Fortschritt, Ernährung und Training — alles in Echtzeit synchronisiert.",
+    "cta": {
+      "start": "Kostenlos starten",
+      "demo": "App ansehen"
+    },
+    "features": {
+      "title": "Dein Fitnessstudio in der Tasche",
+      "subtitle": "ALLES WAS DU BRAUCHST",
+      "desc": "Entwickelt, um schneller, intuitiver und motivierender zu sein als jede andere App.",
+      "items": {
+        "progress": {
+          "title": "Fortschrittsverfolgung",
+          "desc": "Verfolge Körpergewicht, Maße und detaillierten Verlauf mit interaktiven Diagrammen.",
+          "badge": "Am beliebtesten"
+        },
+        "nutrition": {
+          "title": "Komplette Ernährung",
+          "desc": "Lebensmitteldatenbank, Barcode-Scanner und Echtzeit-Makro-Tracking."
+        },
+        "workout": {
+          "title": "Workouts",
+          "desc": "Interaktive Muskelkarte, individuelle Routinen und Tracking für jede Sitzung."
+        },
+        "coach": {
+          "title": "KI-Coach",
+          "desc": "Erhalte personalisierte Tipps, Plananpassungen und Motivation von unserer cleveren KI.",
+          "badge": "Neu"
+        },
+        "gamification": {
+          "title": "Gamification",
+          "desc": "Makro-Kriege, Elite-Ligen und wöchentliche Quests, um motiviert zu bleiben."
+        },
+        "burn": {
+          "title": "Kalorienverbrennung",
+          "desc": "Genaue Berechnung von TDEE, NEAT und Grundumsatz für echte Ziele."
+        }
+      }
+    },
+    "stats": {
+      "users": "Aktive Nutzer",
+      "foods": "Lebensmittel in der Datenbank",
+      "rating": "Durchschnittsbewertung",
+      "satisfaction": "Zufriedenheit"
+    },
+    "premium": {
+      "title": "Premium-Design",
+      "heading": "Schnell. Flüssig. Gamifiziert.",
+      "desc": "Gebaut mit der gleichen Leidenschaft, die wir in jedes Training stecken. Übertrifft Fitia, MyFitnessPal und jede Alternative an Flüssigkeit und Erfahrung."
+    },
+    "pricing": {
+      "title": "Schöpfe dein volles <highlight>Potenzial</highlight> aus",
+      "desc": "Unbegrenzter Zugang zu KI-Coach, Makro-Kriegen, Elite-Ligen und allen Premium-Funktionen.",
+      "cta": "Pläne ansehen"
+    },
+    "pills": {
+      "nutrition": "Intelligente Ernährung",
+      "coach": "KI-Coach",
+      "progress": "Visueller Fortschritt",
+      "planner": "Planer",
+      "macro": "Makro-Kriege",
+      "elite": "Elite-Ligen"
+    },
+    "mockup": {
+      "badge": "Deine beste Version",
+      "protein": "Proteine",
+      "carbs": "Kohlenhydrate",
+      "fats": "Fette",
+      "today": "Heute",
+      "kcal": "kcal verbraucht"
+    },
+    "featurePills": {
+      "nutrition": "Intelligente Ernährung",
+      "coach": "KI-Coach",
+      "progress": "Visueller Fortschritt",
+      "planner": "Planer",
+      "wars": "Makro-Kriege",
+      "leagues": "Elite-Ligen"
+    }
+  },
+  "nav": {
+    "home": "Startseite",
+    "app": "Die App",
+    "about": "Über uns",
+    "premium": "Premium",
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "register": "Kostenlos starten"
+  },
+  "footer": {
+    "desc": "Deine flüssigste und spielerischste Fitness-Plattform. Fortschritt, Ernährung und Training an einem Ort.",
+    "groups": {
+      "app": "APP",
+      "account": "KONTO",
+      "legal": "RECHTLICHES"
+    },
+    "links": {
+      "features": "Funktionen",
+      "premium": "Premium",
+      "about": "Über uns",
+      "login": "Anmelden",
+      "register": "Konto erstellen",
+      "forgotPassword": "Passwort vergessen",
+      "privacy": "Datenschutz",
+      "terms": "Bedingungen"
+    },
+    "rights": "Alle Rechte vorbehalten.",
+    "madeWith1": "Gemacht mit",
+    "madeWith2": "für deine beste Version"
+  },
+  "aboutApp": {
+    "hero": {
+      "label": "Die App",
+      "title1": "Alles was dein",
+      "title2": "Körper braucht",
+      "desc": "FitGO vereint in einer einzigen App alles, was du brauchst, um deinen Körper zu transformieren und die Motivation Tag für Tag hoch zu halten."
+    },
+    "cta": {
+      "title": "Bereit anzufangen?",
+      "desc": "Erstelle dein kostenloses Konto und starte noch heute.",
+      "start": "Kostenlos starten",
+      "pro": "Pro-Pläne ansehen"
+    },
+    "pillars": {
+      "progreso": {
+        "title": "Fortschrittsverfolgung",
+        "subtitle": "Deine Entwicklung, immer sichtbar",
+        "desc": "FitGO macht das Body-Tracking zu einem visuellen und motivierenden Erlebnis. Jeder Datenpunkt speist flüssige Charts, die deine echte Transformation zeigen.",
+        "features": [
+          "Interaktives Körpergewichtsdiagramm",
+          "Detaillierte Körpermaße (Taille, Brust, etc.)",
+          "Vollständige Historie mit Wochen-/Monats-/Jahresfiltern",
+          "Freischaltbare Erfolge und Meilensteine"
+        ]
+      },
+      "nutricion": {
+        "title": "Intelligente Ernährung",
+        "subtitle": "Gut essen, ohne Komplikationen",
+        "desc": "Eine riesige Lebensmitteldatenbank — einschließlich Fleisch, Obst und lokaler Küche — mit Barcode-Scanner und Echtzeit-Makro-Tracking.",
+        "features": [
+          "Barcode-Scanner",
+          "Lebensmittel- und Fleischdatenbank",
+          "Personalisierte Makroziele (Protein, Kohlenhydrate, Fette)",
+          "Automatische Berechnung verbrannter Kalorien"
+        ]
+      },
+      "entrenamiento": {
+        "title": "Training",
+        "subtitle": "Jeder Muskel, unter Kontrolle",
+        "desc": "Eine interaktive 3D-Muskelkarte, mit der du auswählen kannst, welchen Muskel du trainieren möchtest, und sofort optimierte Routinen erhältst.",
+        "features": [
+          "Interaktive Muskelkarte",
+          "Vorgefertigte und individuelle Routinen",
+          "Kraftverfolgung pro Übung",
+          "Wöchentlicher Trainingsplaner"
+        ]
+      },
+      "coach": {
+        "title": "KI-Coach",
+        "subtitle": "Dein persönlicher Trainer, immer verfügbar",
+        "desc": "FitGOs Coach analysiert deine Historie, Ziele und Fortschritte, um dir personalisierte Empfehlungen zu geben.",
+        "features": [
+          "Personalisierte Antworten basierend auf deinem Profil",
+          "Intelligente Fortschrittsanalyse",
+          "Adaptive Ernährungspläne",
+          "Echtzeit-Motivation und Anpassungen"
+        ]
+      },
+      "social": {
+        "title": "Soziale Gamification",
+        "subtitle": "Konkurriere, gewinne, übertreffe dich",
+        "desc": "FitGO geht über das Aufzeichnen von Daten hinaus. Mit Makro-Kriegen und Elite-Ligen verwandelst du deine Disziplin in gesunden Wettkampf.",
+        "features": [
+          "Wöchentliche Makro-Kriege",
+          "Elite-Ligen mit globalem Ranking",
+          "Sammelbare Erfolge und Badges",
+          "Echtzeit-Ranglisten"
+        ]
+      }
+    }
+  },
+  "aboutUs": {
+    "hero": {
+      "label": "Das Team",
+      "title1": "Hinter",
+      "desc": "Wir sind ein kleines Team mit einer riesigen Mission: das beste Fitness-Erlebnis aller Zeiten zu schaffen."
+    },
+    "mission": {
+      "title": "Unsere Mission",
+      "desc": "Fitness für jeden zugänglich, motivierend und unterhaltsam zu machen. Ein Tool zu entwickeln, das so gut ist, dass du kein anderes mehr nutzen möchtest. Bestehende Apps in Geschwindigkeit, Design und Benutzererfahrung zu übertreffen."
+    },
+    "teamLabel": "Wer wir sind",
+    "teamTitle": "Das Team",
+    "valuesLabel": "Was uns ausmacht",
+    "valuesTitle": "Unsere Werte",
+    "historyLabel": "Unsere Geschichte",
+    "historyTitle": "Der bisherige Weg",
+    "values": {
+      "speed": {
+        "title": "Geschwindigkeit vor allem",
+        "desc": "Jeder Bildschirm in FitGO ist so gestaltet, dass du deinen Fortschritt in Sekunden, nicht in Minuten, erfasst."
+      },
+      "effort": {
+        "title": "Für die, die sich anstrengen",
+        "desc": "FitGO wurde für Menschen gemacht, die ihren körperlichen Fortschritt ernst nehmen, unabhängig vom Niveau."
+      },
+      "passion": {
+        "title": "Mit Leidenschaft gemacht",
+        "desc": "Jedes Feature, jede Animation, jedes Detail spiegelt unsere Liebe für Fitness und Design wider."
+      },
+      "improving": {
+        "title": "Immer besser werden",
+        "desc": "Wir veröffentlichen ständig Updates basierend auf dem Feedback unserer Community."
+      }
+    },
+    "timeline": {
+      "2024": {
+        "title": "Die Idee entsteht",
+        "desc": "Frustriert von bestehenden Fitness-Apps begannen wir, FitGO auf Papier zu skizzieren."
+      },
+      "2025Q1": {
+        "title": "Erster Prototyp",
+        "desc": "Das erste Build von FitGO läuft auf unseren Telefonen. Der Gewichts-Tracker funktioniert zum ersten Mal."
+      },
+      "2025Q2": {
+        "title": "Private Beta",
+        "desc": "Wir laden die ersten 100 Nutzer ein. Das Feedback verschiebt unsere Produktperspektive."
+      },
+      "2025Q3": {
+        "title": "Öffentlicher Start",
+        "desc": "FitGO kommt in den App Store und Google Play. Die Community wächst organisch."
+      },
+      "2026": {
+        "title": "FitGO Web",
+        "desc": "Wir starten die Web-Plattform, damit du dein Konto vom Browser aus verwalten kannst."
+      }
+    },
+    "team": {
+      "title": "FitGO Team",
+      "subtitle": "Gründer & Entwickler",
+      "desc": "Wir begeistern uns für Fitness und Technologie. Wir haben FitGO entwickelt, weil uns keine bestehende App überzeugt hat — zu langsam, zu generisch, seelenlos. Das wollten wir ändern.",
+      "tags": [
+        "React Native",
+        "Supabase",
+        "TypeScript",
+        "KI"
+      ]
+    }
+  },
+  "pricingPage": {
+    "hero": {
+      "badge": "FitGO Pro",
+      "title1": "Wähle deinen",
+      "title2": "Plan",
+      "desc": "Kostenlos starten. Alles mit Pro freischalten."
+    },
+    "billing": {
+      "monthly": "Monatlich",
+      "annual": "Jährlich"
+    },
+    "free": {
+      "title": "Kostenlos",
+      "desc": "Um deine Reise zu beginnen",
+      "forever": "für immer",
+      "btn": "Konto erstellen"
+    },
+    "pro": {
+      "title": "Pro",
+      "popular": "Am beliebtesten",
+      "desc": "Schalte dein ganzes Potenzial frei",
+      "month": "Monat",
+      "billedAnnually": "Jährlich abgerechnet",
+      "btn": "Pro holen",
+      "secure": "Sichere Zahlung · Jederzeit kündbar"
+    },
+    "faq": {
+      "label": "Häufig gestellte Fragen",
+      "title": "FAQ",
+      "items": [
+        {
+          "q": "Kann ich jederzeit kündigen?",
+          "a": "Ja. Du kannst dein Abonnement jederzeit aus deinem Profil heraus kündigen. Du behältst den Pro-Zugang bis zum Ende des bezahlten Zeitraums."
+        },
+        {
+          "q": "Funktioniert das Web-Abo in der mobilen App?",
+          "a": "Absolut. Wenn du Pro im Web kaufst, wird dein Konto automatisch in Supabase aktualisiert und du erhältst die Premium-Vorteile sofort beim Öffnen der App."
+        },
+        {
+          "q": "Welche Zahlungsmethoden akzeptieren Sie?",
+          "a": "Wir akzeptieren alle gängigen Kredit- und Debitkarten (Visa, Mastercard, AmEx) über Stripe, den sichersten Zahlungsanbieter der Welt."
+        },
+        {
+          "q": "Gibt es eine kostenlose Testversion für den Pro-Plan?",
+          "a": "Der kostenlose Plan enthält bereits die wesentlichen Funktionen für immer. Wir verbessern ständig die im Free-Plan verfügbaren Funktionen."
+        }
+      ]
+    },
+    "freeFeatures": [
+      "Körpergewichts-Tracking",
+      "Basis-Makro-Tracking",
+      "Lebensmitteldatenbank",
+      "Trainingsroutinen",
+      "Verlauf (letzte 30 Tage)",
+      "KI-Coach",
+      "Makro-Kriege",
+      "Elite-Ligen",
+      "Unbegrenzter Verlauf",
+      "Erweiterte Fortschrittsanalyse"
+    ],
+    "freeIncluded": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "proFeatures": [
+      "Alles aus dem kostenlosen Plan",
+      "Unbegrenzter KI-Coach",
+      "Makro-Kriege",
+      "Elite-Ligen",
+      "Unbegrenzter Verlauf",
+      "Erweiterte Fortschrittsanalyse",
+      "Barcode-Scanner",
+      "KI-Ernährungsplaner",
+      "Prioritätssupport",
+      "Keine Werbung"
+    ],
+    "highlights": {
+      "coach": "KI-Coach",
+      "macroWars": "Makro-Kriege",
+      "leagues": "Elite-Ligen",
+      "analysis": "Pro-Analyse",
+      "nutrition": "KI-Ernährung",
+      "unlimited": "Keine Limits"
+    },
+    "secure": "Sichere Zahlung · Jederzeit kündbar"
+  },
+  "auth": {
+    "login": {
+      "title": "Willkommen zurück zu deiner besten Version.",
+      "email": "E-Mail Adresse",
+      "password": "Passwort",
+      "forgot": "Passwort vergessen?",
+      "btn": "Anmelden",
+      "loading": "Anmeldung...",
+      "noAccount": "Du hast noch kein Konto?",
+      "register": "Registrieren"
+    },
+    "register": {
+      "title": "Starte deine Transformation heute.",
+      "name": "Vollständiger Name",
+      "email": "E-Mail Adresse",
+      "password": "Passwort",
+      "btn": "Konto erstellen",
+      "loading": "Konto wird erstellt...",
+      "hasAccount": "Hast du bereits ein Konto?",
+      "login": "Anmelden"
+    },
+    "forgot": {
+      "title": "Stelle deinen Zugang zu FitGO wieder her.",
+      "desc": "Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen deines Passworts.",
+      "email": "E-Mail Adresse",
+      "btn": "Link senden",
+      "loading": "Wird gesendet...",
+      "back": "Zurück zur Anmeldung"
+    }
+  }
+}
