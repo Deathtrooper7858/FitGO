@@ -623,6 +623,7 @@ function HealthProfileStep({
 }) {
   const { t } = useTranslation();
   const colors = useTheme();
+  const inputRef = React.useRef<any>(null);
   
   const selected = data[fieldKey] || [];
   const predefinedKeys = Object.keys(itemsObj);
@@ -630,26 +631,34 @@ function HealthProfileStep({
   const [localCustomText, setLocalCustomText] = useState(customValues.length > 0 ? customValues[0].replace('custom:', '') : '');
   const [customFocused, setCustomFocused] = useState(false);
 
-  const toggle = (id: string) => {
+  // Stable refs to avoid stale closures
+  const selectedRef = React.useRef(selected);
+  selectedRef.current = selected;
+  const localTextRef = React.useRef(localCustomText);
+  localTextRef.current = localCustomText;
+
+  const toggle = React.useCallback((id: string) => {
+    const cur = selectedRef.current;
     if (id === 'none') {
       onChange({ [fieldKey]: ['none'] });
       return;
     }
-
-    const newSelection = selected.includes(id) 
-      ? selected.filter(x => x !== id) 
-      : [...selected.filter(x => x !== 'none'), id];
+    const newSelection = cur.includes(id)
+      ? cur.filter(x => x !== id)
+      : [...cur.filter(x => x !== 'none'), id];
     onChange({ [fieldKey]: newSelection });
-  };
+  }, [onChange, fieldKey]);
 
-  const commitCustomText = () => {
-    const base = selected.filter(k => predefinedKeys.includes(k) && k !== 'none');
-    if (localCustomText.trim() === '') {
+  const commitCustomText = React.useCallback(() => {
+    const cur = selectedRef.current;
+    const text = localTextRef.current;
+    const base = cur.filter(k => predefinedKeys.includes(k) && k !== 'none');
+    if (text.trim() === '') {
       onChange({ [fieldKey]: [...base] });
     } else {
-      onChange({ [fieldKey]: [...base, `custom:${localCustomText.trim()}`] });
+      onChange({ [fieldKey]: [...base, `custom:${text.trim()}`] });
     }
-  };
+  }, [onChange, fieldKey, predefinedKeys]);
 
   return (
     <View style={step.container}>
@@ -714,18 +723,22 @@ function HealthProfileStep({
           );
         })}
 
-        {/* Custom Input */}
-        <View style={[
-          step.optionCard, 
-          { backgroundColor: colors.surface, borderColor: colors.border, paddingVertical: 14, flexDirection: 'column', alignItems: 'stretch' },
-          (localCustomText.length > 0 || customFocused) && { 
-            borderColor: colors.primary, 
-            shadowColor: colors.primary,
-            shadowOpacity: 0.1,
-            shadowRadius: 10,
-            elevation: 2
-          }
-        ]}>
+        {/* Custom Input — touches here should never trigger parent re-mount */}
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => { inputRef.current?.focus(); }}
+          style={[
+            step.optionCard, 
+            { backgroundColor: colors.surface, borderColor: colors.border, paddingVertical: 14, flexDirection: 'column', alignItems: 'stretch' },
+            (localCustomText.length > 0 || customFocused) && { 
+              borderColor: colors.primary, 
+              shadowColor: colors.primary,
+              shadowOpacity: 0.1,
+              shadowRadius: 10,
+              elevation: 2
+            }
+          ]}
+        >
           {localCustomText.length > 0 && (
             <LinearGradient
               colors={[colors.primary + '0C', colors.primary + '02']}
@@ -742,6 +755,7 @@ function HealthProfileStep({
             {t('onboarding.otherSpecify')}
           </Text>
           <TextInput
+            ref={inputRef}
             style={{
               backgroundColor: colors.background,
               color: colors.textPrimary,
@@ -759,15 +773,13 @@ function HealthProfileStep({
             placeholderTextColor={colors.textMuted}
             value={localCustomText}
             onChangeText={setLocalCustomText}
-            onFocus={() => { 
-              setCustomFocused(true);
-              if(selected.includes('none')) toggle('none'); 
-            }}
+            onFocus={() => setCustomFocused(true)}
             onBlur={() => {
               setCustomFocused(false);
               commitCustomText();
             }}
             autoCorrect={false}
+            autoCapitalize="none"
             returnKeyType="done"
             blurOnSubmit={true}
             onSubmitEditing={() => {
@@ -775,7 +787,7 @@ function HealthProfileStep({
               Keyboard.dismiss();
             }}
           />
-        </View>
+        </TouchableOpacity>
         {/* Extra space at bottom so keyboard doesn't cover custom input */}
         <View style={{ height: 80 }} />
       </View>
