@@ -215,15 +215,7 @@ export default function RemindersModal() {
           </LinearGradient>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[s.saveBtn, { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border, elevation: 0 }]} 
-          onPress={() => sendTestNotification()}
-        >
-          <View style={s.saveGrad}>
-            <Bell size={18} color={colors.textSecondary} style={{ marginRight: 8 }} />
-            <Text style={[s.saveText, { color: colors.textSecondary }]}>{t('reminders.testNotif', 'Probar Notificación')}</Text>
-          </View>
-        </TouchableOpacity>
+
       </View>
 
       {showTimePicker && (

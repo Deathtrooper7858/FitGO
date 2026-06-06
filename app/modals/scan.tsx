@@ -718,6 +718,9 @@ export default function ScanModal() {
                 <View style={s.photoInstructions}>
                   <Text style={[s.photoHint, { color: colors.primary }]}>{t('scan.photoHint') || 'Point at your meal'}</Text>
                   <Text style={[s.photoHintSub, { color: colors.primary + 'CC' }]}>{t('scan.photoHintSub') || 'AI will analyze and estimate nutrition'}</Text>
+                  <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, textAlign: 'center', fontStyle: 'italic', marginTop: 12 }}>
+                    💡 {t('scan.photoPrecisionHint', 'Para mayor precisión, intenta que las proporciones se vean claras.')}
+                  </Text>
                 </View>
 
                 <View style={s.statusWrap}>
