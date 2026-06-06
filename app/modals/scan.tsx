@@ -170,6 +170,8 @@ export default function ScanModal() {
 
   const [isRecording, setIsRecording] = useState(false);
   const recordingStatus = useRef<'idle' | 'starting' | 'recording' | 'stopping'>('idle');
+  const [logTime, setLogTime] = useState<Date>(new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const startRecording = async () => {
     if (recordingStatus.current !== 'idle') return;
@@ -468,8 +470,8 @@ export default function ScanModal() {
 
     const targetMeal = initialMeal || getAutoMeal();
     const logDate = date || getLocalDateString();
-    const ts = new Date().toISOString().split('T')[1] || '12:00:00.000Z';
-    const finalLoggedAt = date ? `${date}T${ts}` : new Date().toISOString();
+    const ts = logTime.toISOString().split('T')[1] || '12:00:00.000Z';
+    const finalLoggedAt = date ? `${date}T${ts}` : logTime.toISOString();
 
     const localLogs = editedFoods.map((food, index) => ({
       id:       Crypto.randomUUID(),
@@ -596,6 +598,29 @@ export default function ScanModal() {
                 : 'Photo analysis is an estimate. Nutritional values may not be 100% accurate.'}
             </Text>
           </View>
+          
+          <View style={[s.timeSelector, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>{language === 'es' ? 'Hora de registro' : 'Log Time'}</Text>
+            <TouchableOpacity onPress={() => setShowTimePicker(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 16 }}>
+                {logTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </Text>
+              <Text style={{ fontSize: 16 }}>✏️</Text>
+            </TouchableOpacity>
+          </View>
+          {showTimePicker && (
+            <DateTimePicker
+              value={logTime}
+              mode="time"
+              is24Hour={true}
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={(event, selectedDate) => {
+                setShowTimePicker(Platform.OS === 'ios');
+                if (selectedDate) setLogTime(selectedDate);
+              }}
+            />
+          )}
+
           {photoResult.notes && <Text style={[s.notesText, { color: colors.textSecondary }]}>💡 {photoResult.notes}</Text>}
         </ScrollView>
         <View style={[s.resultFooter, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
@@ -733,6 +758,9 @@ export default function ScanModal() {
                     {!isProActually && <View style={s.lockBadge}><Text style={{ fontSize: 10 }}>🔒</Text></View>}
                   </TouchableOpacity>
                 </View>
+                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, textAlign: 'center', fontStyle: 'italic', marginTop: -4 }}>
+                  💡 {t('scan.textPrecisionHint', 'Para mayor precisión, menciona explícitamente las cantidades (ej. 200g) y qué comida es.')}
+                </Text>
                 {isRecording && <Text style={[s.recordingStatus, { color: colors.error }]}>{t('scan.recording') || 'Recording...'}</Text>}
                 <TouchableOpacity style={s.analyzeBtn} onPress={handleTextAnalyze} disabled={loading || !textInput.trim()}>
                   <LinearGradient colors={[colors.tabActive, colors.tabActive + 'CC']} style={s.analyzeGrad}>
@@ -933,4 +961,5 @@ const s = StyleSheet.create({
   limitNote:     { textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 12, fontWeight: '600' },
   disclaimerBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, borderRadius: Radius.md, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10, marginTop: -8, marginBottom: 16 },
   disclaimerText: { flex: 1, fontSize: 13, fontWeight: '500', lineHeight: 18 },
+  timeSelector: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderRadius: Radius.lg, borderWidth: 1, marginBottom: 16 },
 });

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
   ScrollView, Alert, ActivityIndicator, TextInput,
-  KeyboardAvoidingView, Platform, LayoutAnimation
+  KeyboardAvoidingView, Platform, LayoutAnimation, Keyboard
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -750,8 +750,10 @@ function HealthProfileStep({
               borderWidth: 1.5,
               borderColor: customFocused ? colors.primary : colors.border,
               marginHorizontal: 16,
+              marginBottom: 8,
               fontSize: 15,
-              fontWeight: '600'
+              fontWeight: '600',
+              minHeight: 48,
             }}
             placeholder={t('onboarding.otherPlaceholder')}
             placeholderTextColor={colors.textMuted}
@@ -762,8 +764,14 @@ function HealthProfileStep({
               if(selected.includes('none')) toggle('none'); 
             }}
             onBlur={() => setCustomFocused(false)}
+            autoCorrect={false}
+            returnKeyType="done"
+            blurOnSubmit={true}
+            onSubmitEditing={() => Keyboard.dismiss()}
           />
         </View>
+        {/* Extra space at bottom so keyboard doesn't cover custom input */}
+        <View style={{ height: 80 }} />
       </View>
     </View>
   );
@@ -2138,23 +2146,20 @@ export default function OnboardingScreen() {
       </View>
       
       {/* Step content */}
-      {Platform.OS === 'ios' ? (
-        <KeyboardAvoidingView 
-          style={{ flex: 1 }} 
-          behavior="padding"
-          keyboardVerticalOffset={0}
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView 
+          style={s.scroll} 
+          contentContainerStyle={s.content} 
+          keyboardShouldPersistTaps="always"
+          showsVerticalScrollIndicator={false}
         >
-          <ScrollView style={s.scroll} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-            {stepComponents[stepId]}
-          </ScrollView>
-        </KeyboardAvoidingView>
-      ) : (
-        <View style={{ flex: 1 }}>
-          <ScrollView style={s.scroll} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-            {stepComponents[stepId]}
-          </ScrollView>
-        </View>
-      )}
+          {stepComponents[stepId]}
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Navigation Footer */}
       <View style={s.footer}>

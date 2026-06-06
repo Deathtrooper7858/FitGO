@@ -1846,14 +1846,16 @@ export default function ProfileScreen() {
           <Text style={[s.sectionTitle, { color: colors.textMuted }]}>{t('about.title', 'SOBRE FITGO')}</Text>
           <MenuRow icon={FileText} label={t('profile.terms', 'Términos y Condiciones')} onPress={() => router.push({ pathname: '/modals/terms', params: { tab: 'terms' } } as any)} iconColor="#6366F1" />
           <MenuRow icon={ShieldCheck} label={t('profile.privacy', 'Política de Privacidad')} onPress={() => router.push({ pathname: '/modals/terms', params: { tab: 'privacy' } } as any)} iconColor="#10B981" />
-          <MenuRow icon={Info} label={t('about.moreInfo', 'Más información')} rightIcon={showAbout ? '▼' : '›'} onPress={() => toggleSection(setShowAbout, showAbout)} iconColor="#3B82F6" />
+          <MenuRow icon={Info} label={t('about.moreInfo', 'Más sobre FitGO')} rightIcon={showAbout ? '▼' : '›'} onPress={() => toggleSection(setShowAbout, showAbout)} iconColor="#3B82F6" />
           
           {showAbout && (
             <View style={{ backgroundColor: colors.surfaceAlt + '10', borderTopWidth: 1, borderTopColor: colors.border + '10' }}>
+              <MenuRow icon={Globe} label={t('about.website', 'Sitio Web')} value="FitGO" indent onPress={() => Linking.openURL('https://fit-go-smoky.vercel.app/es')} iconColor="#3B82F6" />
               <MenuRow icon={Smartphone} label={t('about.tiktok', 'TikTok')} indent onPress={() => Linking.openURL('https://www.tiktok.com/@fit_go?is_from_webapp=1&sender_device=pc')} iconColor="#FF0050" />
               <MenuRow icon={Camera} label={t('about.instagram', 'Instagram')} indent onPress={() => Linking.openURL('https://www.instagram.com/fit___go/')} iconColor="#E1306C" />
               <MenuRow icon={Mail} label={t('about.email', 'Email')} value="fitgoenterprise@gmail.com" indent onPress={() => Linking.openURL('mailto:fitgoenterprise@gmail.com')} iconColor="#EA4335" />
               <MenuRow icon={MessageSquare} label={t('profile.sendFeedback', 'Enviar Sugerencia')} indent onPress={() => Linking.openURL('mailto:fitgoenterprise@gmail.com')} iconColor="#10B981" />
+              <MenuRow icon={Heart} label={t('about.credits', 'Créditos')} indent onPress={() => showAlert('info', 'Créditos', 'Las animaciones (GIFs) del directorio de ejercicios son propiedad y cortesía de ExerciseDB API (Bootstrapping Lab). Agradecemos enormemente su trabajo open-source para la comunidad.', () => {}, undefined, 'Entendido')} iconColor="#EF4444" />
               <MenuRow icon={Info} label={t('about.version', 'Versión')} value="v1.0.1" indent iconColor={colors.textMuted} />
             </View>
           )}

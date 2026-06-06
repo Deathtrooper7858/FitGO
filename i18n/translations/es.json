@@ -3710,25 +3710,45 @@
     "mySquad": "Mi Squad",
     "individual": "Individual",
     "leagues": {
-      "carbono": {
-        "name": "Liga Carbono",
+      "bronce": {
+        "name": "Liga Bronce",
         "desc": "Tu punto de partida en FitGO. ¡Gana puntos para subir!"
       },
-      "neon": {
-        "name": "Liga Neón",
-        "desc": "Liga intermedia. ¡Sigue empujando!"
+      "plata": {
+        "name": "Liga Plata",
+        "desc": "¡Has dado el primer paso real! Sigue siendo constante."
       },
-      "titanio": {
-        "name": "Liga Titanio",
-        "desc": "¡Liga avanzada. Te estás volviendo élite!"
+      "oro": {
+        "name": "Liga Oro",
+        "desc": "Te estás tomando esto en serio. Gran consistencia."
       },
-      "cuarzo": {
-        "name": "Liga Cuarzo",
-        "desc": "Liga competitiva de alto nivel."
+      "platino": {
+        "name": "Liga Platino",
+        "desc": "Nivel avanzado. Ya eres parte del top competitivo."
       },
-      "zenit": {
-        "name": "Liga Élite Zenit",
-        "desc": "La cúspide de la competición en FitGO."
+      "esmeralda": {
+        "name": "Liga Esmeralda",
+        "desc": "Élite táctica. Tus macros y entrenamientos son precisos."
+      },
+      "diamante": {
+        "name": "Liga Diamante",
+        "desc": "Disciplina inquebrantable. Nivel experto."
+      },
+      "maestro": {
+        "name": "Liga Maestro",
+        "desc": "Sólo para los verdaderos maestros de su físico."
+      },
+      "leyenda": {
+        "name": "Liga Leyenda",
+        "desc": "Tu consistencia es legendaria. Eres un ejemplo a seguir."
+      },
+      "titan": {
+        "name": "Liga Titán",
+        "desc": "Poder absoluto. Perteneces al olimpo de FitGO."
+      },
+      "celestial": {
+        "name": "Liga Celestial",
+        "desc": "El pináculo. La cima más alta de la competición mundial."
       }
     },
     "squads": {

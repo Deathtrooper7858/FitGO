@@ -25,57 +25,98 @@ const LEAGUE_CONFIG: Record<LeagueTier, {
   labelKey: string;
   colors: [string, string, string];
   glow: string;
-  icon: React.ReactNode;
+  emoji: string;
   pointsNeeded: number;
   descriptionKey: string;
 }> = {
-  carbono: {
-    labelKey: 'competitive.leagues.carbono.name',
-    colors: ['#1A1A1A', '#2D2D2D', '#1A1A1A'],
-    glow: '#555555',
-    icon: <Shield size={22} color="#888" />,
+  bronce: {
+    labelKey: 'competitive.leagues.bronce.name',
+    colors: ['#1A1008', '#8B6914', '#1A1008'],
+    glow: '#CD7F32',
+    emoji: '🥉',
     pointsNeeded: 0,
-    descriptionKey: 'competitive.leagues.carbono.desc',
+    descriptionKey: 'competitive.leagues.bronce.desc',
   },
-  neon: {
-    labelKey: 'competitive.leagues.neon.name',
-    colors: ['#001A1A', '#00FF9550', '#001A1A'],
-    glow: '#00FF95',
-    icon: <Zap size={22} color="#00FF95" />,
-    pointsNeeded: 400,
-    descriptionKey: 'competitive.leagues.neon.desc',
+  plata: {
+    labelKey: 'competitive.leagues.plata.name',
+    colors: ['#141418', '#9CA3AF', '#141418'],
+    glow: '#C0C0C0',
+    emoji: '🥈',
+    pointsNeeded: 200,
+    descriptionKey: 'competitive.leagues.plata.desc',
   },
-  titanio: {
-    labelKey: 'competitive.leagues.titanio.name',
-    colors: ['#1C2333', '#A8B8D8', '#1C2333'],
-    glow: '#A8B8D8',
-    icon: <Shield size={22} color="#C0D0E8" />,
-    pointsNeeded: 1000,
-    descriptionKey: 'competitive.leagues.titanio.desc',
-  },
-  cuarzo: {
-    labelKey: 'competitive.leagues.cuarzo.name',
-    colors: ['#0D1B2A', '#88C0FF', '#1A0D2E'],
-    glow: '#88CCFF',
-    icon: <Trophy size={22} color="#88CCFF" />,
-    pointsNeeded: 2500,
-    descriptionKey: 'competitive.leagues.cuarzo.desc',
-  },
-  zenit: {
-    labelKey: 'competitive.leagues.zenit.name',
-    colors: ['#1A0A00', '#FFD700', '#1A0A00'],
+  oro: {
+    labelKey: 'competitive.leagues.oro.name',
+    colors: ['#1A1400', '#FFD700', '#1A1400'],
     glow: '#FFD700',
-    icon: <Crown size={22} color="#FFD700" />,
+    emoji: '🥇',
+    pointsNeeded: 500,
+    descriptionKey: 'competitive.leagues.oro.desc',
+  },
+  platino: {
+    labelKey: 'competitive.leagues.platino.name',
+    colors: ['#0A1A2A', '#A8D8EA', '#0A1A2A'],
+    glow: '#A8D8EA',
+    emoji: '💎',
+    pointsNeeded: 1000,
+    descriptionKey: 'competitive.leagues.platino.desc',
+  },
+  esmeralda: {
+    labelKey: 'competitive.leagues.esmeralda.name',
+    colors: ['#001A0A', '#50C878', '#001A0A'],
+    glow: '#50C878',
+    emoji: '🟢',
+    pointsNeeded: 2000,
+    descriptionKey: 'competitive.leagues.esmeralda.desc',
+  },
+  diamante: {
+    labelKey: 'competitive.leagues.diamante.name',
+    colors: ['#0D0D2E', '#88CCFF', '#0D0D2E'],
+    glow: '#88CCFF',
+    emoji: '💠',
+    pointsNeeded: 3500,
+    descriptionKey: 'competitive.leagues.diamante.desc',
+  },
+  maestro: {
+    labelKey: 'competitive.leagues.maestro.name',
+    colors: ['#1A001A', '#A855F7', '#1A001A'],
+    glow: '#A855F7',
+    emoji: '🔮',
     pointsNeeded: 5000,
-    descriptionKey: 'competitive.leagues.zenit.desc',
+    descriptionKey: 'competitive.leagues.maestro.desc',
+  },
+  leyenda: {
+    labelKey: 'competitive.leagues.leyenda.name',
+    colors: ['#1A0500', '#FF6B35', '#1A0500'],
+    glow: '#FF6B35',
+    emoji: '🔥',
+    pointsNeeded: 7500,
+    descriptionKey: 'competitive.leagues.leyenda.desc',
+  },
+  titan: {
+    labelKey: 'competitive.leagues.titan.name',
+    colors: ['#0A0010', '#FF0055', '#0A0010'],
+    glow: '#FF0055',
+    emoji: '⚡',
+    pointsNeeded: 10000,
+    descriptionKey: 'competitive.leagues.titan.desc',
+  },
+  celestial: {
+    labelKey: 'competitive.leagues.celestial.name',
+    colors: ['#000814', '#FFD700', '#000814'],
+    glow: '#FFD700',
+    emoji: '👑',
+    pointsNeeded: 15000,
+    descriptionKey: 'competitive.leagues.celestial.desc',
   },
 };
 
 // ─── Components ───────────────────────────────────────────────────────────────
 
 function LeagueBadge({ tier, size = 'md' }: { tier: LeagueTier; size?: 'sm' | 'md' | 'lg' }) {
-  const cfg = LEAGUE_CONFIG[tier];
+  const cfg = LEAGUE_CONFIG[tier] || LEAGUE_CONFIG.bronce;
   const dim = size === 'sm' ? 44 : size === 'lg' ? 88 : 64;
+  const fontSize = size === 'sm' ? 18 : size === 'lg' ? 40 : 28;
   return (
     <LinearGradient
       colors={cfg.colors as any}
@@ -85,14 +126,21 @@ function LeagueBadge({ tier, size = 'md' }: { tier: LeagueTier; size?: 'sm' | 'm
         {
           width: dim, height: dim, borderRadius: dim / 2,
           shadowColor: cfg.glow, shadowOpacity: 0.8, shadowRadius: 16, elevation: 12,
-          borderColor: cfg.glow + '60', borderWidth: 1.5,
+          borderColor: cfg.glow + '60', borderWidth: 2,
         }
       ]}
     >
-      {cfg.icon}
+      <View style={{
+        width: dim - 8, height: dim - 8, borderRadius: (dim - 8) / 2,
+        borderWidth: 1, borderColor: cfg.glow + '30',
+        alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Text style={{ fontSize }}>{cfg.emoji}</Text>
+      </View>
     </LinearGradient>
   );
 }
+
 
 function MemberRow({ member, rank, onRemove, isMe, onInspect, onMakeLeader }: { member: SquadMember; rank: number; onRemove?: () => void; isMe?: boolean; onInspect?: () => void; onMakeLeader?: () => void }) {
   const colors = useTheme();
@@ -405,7 +453,7 @@ export default function FitGOCompetitive() {
     });
   };
 
-  const leagueCfg = squad ? LEAGUE_CONFIG[squad.league_tier] : LEAGUE_CONFIG.carbono;
+  const leagueCfg = squad ? LEAGUE_CONFIG[squad.league_tier] : LEAGUE_CONFIG.bronce;
   const top3 = topSquads.slice(0, 3);
   const rest = topSquads.slice(3);
 

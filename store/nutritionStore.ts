@@ -16,6 +16,7 @@ import { getLocalDateString } from '../utils/date';
 import { useAuthStore } from './authStore';
 import { useLeagueStore, POINTS } from './leagueStore';
 import { supabase } from '../services/supabase';
+import { NotificationTriggers } from '../utils/notificationTriggers';
 import * as Crypto from 'expo-crypto';
 
 // NOTE: We intentionally use AsyncStorage (not SecureStore) here.
@@ -248,14 +249,31 @@ export const useNutritionStore = create<NutritionState>()(
               throw error;
             }
 
+            // --- Calorie Triggers ---
+            if (profile?.targetCalories) {
+              const dateStr = safeLog.loggedAt.split('T')[0];
+              const logsForDay = get().todayLogs.filter(l => l.loggedAt.startsWith(dateStr));
+              const totalCals = logsForDay.reduce((acc, l) => acc + l.calories, 0);
+              const prevCals = totalCals - safeLog.calories;
+
+              if (totalCals >= profile.targetCalories && prevCals < profile.targetCalories) {
+                NotificationTriggers.nutrition.calorieGoalReached();
+              } else if (totalCals >= profile.targetCalories * 0.9 && totalCals < profile.targetCalories && prevCals < profile.targetCalories * 0.9) {
+                NotificationTriggers.nutrition.calorieWarning();
+              }
+            }
+
             // Gamification: Award points for logging meal
             try {
               const ls = useLeagueStore.getState();
+              console.log(`[NutritionStore] 🎮 Awarding MEAL_LOG points for user ${profile.id}...`);
               await ls.awardPoints(profile.id, POINTS.MEAL_LOG, 'meal_log');
+              console.log('[NutritionStore] 🎮 MEAL_LOG points awarded successfully');
               
               // Check if this log perfected the macros for the day
               const totals = selectDailyTotals(get());
               if (profile.targetCalories && profile.macros) {
+                console.log(`[NutritionStore] 🎯 Checking macro perfection - consumed: ${JSON.stringify({ cal: totals.calories, p: totals.protein, c: totals.carbs, f: totals.fat })}, target: ${JSON.stringify({ cal: profile.targetCalories, p: profile.macros.protein, c: profile.macros.carbs, f: profile.macros.fat })}`);
                 await ls.checkAndAwardMacroPoints(
                   profile.id,
                   { calories: totals.calories, protein: totals.protein, carbs: totals.carbs, fat: totals.fat },
@@ -263,7 +281,7 @@ export const useNutritionStore = create<NutritionState>()(
                 );
               }
             } catch (e) {
-              console.warn('[NutritionStore] Failed to award gamification points:', e);
+              console.warn('[NutritionStore] ⚠️ Failed to award gamification points:', e);
             }
           } catch (err) {
             console.warn('[NutritionStore] addLog sync error:', err);

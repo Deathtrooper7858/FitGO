@@ -54,6 +54,12 @@ export interface UserProfile extends HealthProfile {
   unlockedAchievements?: string[];
   pinnedAchievements?:   string[];
   achievementPoints?:    number;
+  expoPushToken?:        string;
+  notificationPreferences?: {
+    pushEnabled:   boolean;
+    mealReminders: boolean;
+    social:        boolean;
+  };
 }
 
 export interface FoodLog {

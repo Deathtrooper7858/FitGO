@@ -3710,25 +3710,45 @@
     "mySquad": "My Squad",
     "individual": "Single",
     "leagues": {
-      "carbono": {
-        "name": "Carbon League",
+      "bronce": {
+        "name": "Bronze League",
         "desc": "Your starting point in FitGO. Earn points to climb!"
       },
-      "neon": {
-        "name": "Neon League",
-        "desc": "Intermediate league. Keep pushing!"
+      "plata": {
+        "name": "Silver League",
+        "desc": "You've taken the first real step! Stay consistent."
       },
-      "titanio": {
-        "name": "Titanium League",
-        "desc": "Advanced league. You are becoming elite!"
+      "oro": {
+        "name": "Gold League",
+        "desc": "You are taking this seriously. Great consistency."
       },
-      "cuarzo": {
-        "name": "Quartz League",
-        "desc": "Top-tier competitive league."
+      "platino": {
+        "name": "Platinum League",
+        "desc": "Advanced level. You are now part of the competitive top."
       },
-      "zenit": {
-        "name": "Elite Zenit League",
-        "desc": "The pinnacle of FitGO competition."
+      "esmeralda": {
+        "name": "Emerald League",
+        "desc": "Tactical elite. Your macros and workouts are precise."
+      },
+      "diamante": {
+        "name": "Diamond League",
+        "desc": "Unbreakable discipline. Expert level."
+      },
+      "maestro": {
+        "name": "Master League",
+        "desc": "Only for true masters of their physique."
+      },
+      "leyenda": {
+        "name": "Legend League",
+        "desc": "Your consistency is legendary. You are a role model."
+      },
+      "titan": {
+        "name": "Titan League",
+        "desc": "Absolute power. You belong to the FitGO Olympus."
+      },
+      "celestial": {
+        "name": "Celestial League",
+        "desc": "The pinnacle. The highest peak of global competition."
       }
     },
     "squads": {
