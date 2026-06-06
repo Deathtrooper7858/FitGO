@@ -9,8 +9,9 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
 import { Spacing, Radius, Shadow } from '../../constants';
 import { analyzePhysiquePhoto } from '../../services/groq';
-import { useSettingsStore, useProgressStore } from '../../store';
+import { useSettingsStore, useProgressStore, useAuthStore, usePurchaseStore } from '../../store';
 import { getLocalDateString } from '../../utils/date';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProgressEvaluationModal() {
   const { t } = useTranslation();
@@ -31,6 +32,27 @@ export default function ProgressEvaluationModal() {
   } | null>(null);
 
   const [showHistory, setShowHistory] = useState(false);
+
+  const { profile } = useAuthStore();
+  const { isPro } = usePurchaseStore();
+  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+
+  if (!isProActually) {
+    return (
+      <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
+        <View style={s.paywallContainer}>
+          <Text style={s.paywallEmoji}>📸</Text>
+          <Text style={[s.paywallTitle, { color: colors.textPrimary }]}>{t('evaluation.proTitle', 'Evaluación Física IA')}</Text>
+          <Text style={[s.paywallSub, { color: colors.textSecondary }]}>{t('evaluation.proSub', 'Desbloquea el análisis detallado de tu progreso físico y porcentaje de grasa con FitGO Pro.')}</Text>
+          <TouchableOpacity style={s.proBtn} onPress={() => router.push('/modals/paywall')}>
+            <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.proGrad}>
+              <Text style={s.proText}>{t('recipes.unlockNow', 'Desbloquear Ahora')}</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const pickImage = async (useCamera: boolean = false) => {
     try {
@@ -294,4 +316,11 @@ const s = StyleSheet.create({
   historyInfo: { flex: 1 },
   historyDate: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
   historyFat: { fontSize: 14 },
+  paywallContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
+  paywallEmoji:     { fontSize: 64, marginBottom: 20 },
+  paywallTitle:     { fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 12 },
+  paywallSub:       { fontSize: 15, textAlign: 'center', marginBottom: 30, lineHeight: 22 },
+  proBtn:           { width: '100%', borderRadius: Radius.md, overflow: 'hidden' },
+  proGrad:          { padding: 16, alignItems: 'center' },
+  proText:          { color: '#fff', fontWeight: '700', fontSize: 16 },
 });

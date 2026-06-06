@@ -10,6 +10,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../hooks/useTheme';
 import { ChevronDown, Dumbbell, Activity, Flame, ChevronUp, X } from 'lucide-react-native';
 import { Radius, Shadow, Spacing } from '../../constants';
+import { useAuthStore, usePurchaseStore } from '../../store';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 import exercisesData from '../../excercise/exercises.json';
@@ -109,6 +111,27 @@ export default function MuscleDirectoryModal() {
   const [translatedData, setTranslatedData] = useState<{name: string, instructions: string[]} | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
+
+  const { profile } = useAuthStore();
+  const { isPro } = usePurchaseStore();
+  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+
+  if (!isProActually) {
+    return (
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+        <View style={styles.paywallContainer}>
+          <Text style={styles.paywallEmoji}>💪</Text>
+          <Text style={[styles.paywallTitle, { color: colors.textPrimary }]}>{t('muscleDirectory.proTitle', 'Directorio Muscular PRO')}</Text>
+          <Text style={[styles.paywallSub, { color: colors.textSecondary }]}>{t('muscleDirectory.proSub', 'Desbloquea el acceso ilimitado a cientos de ejercicios clasificados por músculo y equipo con FitGO Pro.')}</Text>
+          <TouchableOpacity style={styles.proBtn} onPress={() => router.push('/modals/paywall')}>
+            <LinearGradient colors={['#7C5CFC', '#4338CA']} style={styles.proGrad}>
+              <Text style={styles.proText}>{t('recipes.unlockNow', 'Desbloquear Ahora')}</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const handleSelectExercise = async (exercise: any) => {
     setSelectedExercise(exercise);
@@ -496,4 +519,11 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 8,
   },
+  paywallContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
+  paywallEmoji:     { fontSize: 64, marginBottom: 20 },
+  paywallTitle:     { fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 12 },
+  paywallSub:       { fontSize: 15, textAlign: 'center', marginBottom: 30, lineHeight: 22 },
+  proBtn:           { width: '100%', borderRadius: Radius.md, overflow: 'hidden' },
+  proGrad:          { padding: 16, alignItems: 'center' },
+  proText:          { color: '#fff', fontWeight: '700', fontSize: 16 },
 });
