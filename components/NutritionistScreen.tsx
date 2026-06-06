@@ -668,8 +668,8 @@ export default function NutritionistScreen() {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 90}
       >
         <FlatList<CoachMessage>
           ref={flatRef}
@@ -762,6 +762,9 @@ export default function NutritionistScreen() {
           </View>
         ) : (
           <View style={[s.inputAreaContainer, { borderTopColor: colors.border, backgroundColor: colors.background }]}>
+            <Text style={{ fontSize: 11, color: colors.textMuted, textAlign: 'center', marginTop: 8, fontStyle: 'italic', paddingHorizontal: 16 }}>
+              💡 {t('scan.textPrecisionHint', 'Para mayor precisión, menciona explícitamente las cantidades (ej. 200g) y qué comida es.')}
+            </Text>
             {selectedImage && (
               <View style={s.imagePreviewContainer}>
                 <View style={[s.imagePreviewWrapper, { borderColor: colors.border }]}>
