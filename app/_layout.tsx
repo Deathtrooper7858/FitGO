@@ -231,6 +231,10 @@ export default function RootLayout() {
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />
           <Stack.Screen
+            name="modals/no-credits"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
             name="modals/calendar"
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />

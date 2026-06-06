@@ -25,8 +25,10 @@ import CoachHistoryModal from './CoachHistoryModal';
 import { ImagePickerModal } from './ImagePickerModal';
 import { ImageViewerModal } from './ImageViewerModal';
 import { useKeyboardNavBar } from '../hooks/useKeyboardNavBar';
+import { useAICredits } from '../hooks/useAICredits';
+import { AICreditsBar } from './AICreditsBar';
 
-const FREE_MSG_LIMIT = 5;
+
 
 // Helper to resolve card icons & colors dynamically
 const getSuggestionDetails = (coachType: string, index: number, colors: any) => {
@@ -282,7 +284,7 @@ export default function DoctorScreen() {
 
   const { isPro } = usePurchaseStore();
   const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
-  const atLimit = !isProActually && msgCount >= FREE_MSG_LIMIT;
+  const { tryUseAI } = useAICredits();
 
   useEffect(() => {
     setTyping(false);
@@ -471,10 +473,7 @@ export default function DoctorScreen() {
     if (!text && !selectedImage) return;
     if (isTyping || isSending) return;
 
-    if (atLimit) {
-      router.push('/modals/paywall');
-      return;
-    }
+    if (!tryUseAI()) return;
 
     if (!profile) {
       addMessage({
@@ -618,7 +617,7 @@ export default function DoctorScreen() {
       setTyping(false);
       setIsSending(false);
     }
-  }, [input, selectedImage, isTyping, isSending, atLimit, profile, messages, language]);
+  }, [input, selectedImage, isTyping, isSending, profile, messages, language, tryUseAI]);
 
   const canSend        = (input.trim().length > 0 || !!selectedImage) && !isTyping && !isSending;
   const showSuggestions = messages.length <= 1 && !isTyping;
@@ -636,12 +635,10 @@ export default function DoctorScreen() {
             <View style={[s.headerOnlineDot, { backgroundColor: colors.success }]} />
           </View>
           
-          <View style={{ flex: 1 }}>
-            <Text style={[s.headerName, { color: colors.textPrimary }]}>{t('coach.doctor.label', 'Personal Doctor')}</Text>
-            <View style={s.taglineBadge}>
-              <Sparkles size={10} color={colors.primary} style={{ marginRight: 4 }} />
-              <Text style={[s.taglineText, { color: colors.textSecondary }]}>{t('coach.taglineBadge', 'IA Personalizada • Groq')}</Text>
-            </View>
+          <View style={{ flex: 1, paddingRight: 4 }}>
+            <Text style={[s.headerName, { color: colors.textPrimary }]} numberOfLines={2} adjustsFontSizeToFit>
+              {t('coach.doctor.label', 'Personal Doctor')}
+            </Text>
           </View>
 
           <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
@@ -662,11 +659,7 @@ export default function DoctorScreen() {
             </TouchableOpacity>
 
             {!isProActually && (
-              <View style={[s.countBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Text style={[s.countText, { color: colors.primary }]}>
-                  {Math.max(FREE_MSG_LIMIT - msgCount, 0)}/{FREE_MSG_LIMIT}
-                </Text>
-              </View>
+              <AICreditsBar compact />
             )}
           </View>
         </LinearGradient>
@@ -674,7 +667,7 @@ export default function DoctorScreen() {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 90}
       >
         <FlatList<CoachMessage>
@@ -748,26 +741,7 @@ export default function DoctorScreen() {
         />
 
         {/* ── Input area ── */}
-        {atLimit ? (
-          <View style={[s.limitBanner, { borderTopColor: colors.border, backgroundColor: colors.surface, paddingBottom: Math.max(insets.bottom, Spacing.base) }]}>
-            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center' }}>
-              <ShieldAlert size={18} color={colors.primary} />
-              <Text style={[s.limitText, { color: colors.textSecondary }]}>
-                {t('coach.upgradePro', 'Has alcanzado el límite diario de mensajes gratis.')}
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={s.upgradeBtn}
-              onPress={() => router.push('/modals/paywall')}
-              activeOpacity={0.8}
-            >
-              <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.upgradeGrad}>
-                <Text style={s.upgradeText}>{t('profile.upgrade', 'Actualizar a Pro')}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={[s.inputAreaContainer, { borderTopColor: colors.border, backgroundColor: colors.background }]}>
+        <View style={[s.inputAreaContainer, { borderTopColor: colors.border, backgroundColor: colors.background }]}>
             {selectedImage && (
               <View style={s.imagePreviewContainer}>
                 <View style={[s.imagePreviewWrapper, { borderColor: colors.border }]}>
@@ -856,7 +830,6 @@ export default function DoctorScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        )}
       </KeyboardAvoidingView>
 
       <CoachHistoryModal 
@@ -888,7 +861,7 @@ const s = StyleSheet.create({
   headerAvatarContainer:{ width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, padding: 1, backgroundColor: '#fff', position: 'relative' },
   headerAvatar:         { width: '100%', height: '100%', borderRadius: 21 },
   headerOnlineDot:      { width: 10, height: 10, borderRadius: 5, position: 'absolute', bottom: -1, right: -1, borderWidth: 2, borderColor: '#fff' },
-  headerName:           { fontSize: 16, fontWeight: '800', lineHeight: 20 },
+  headerName:           { fontSize: 14, fontWeight: '800', lineHeight: 18 },
   taglineBadge:         { flexDirection: 'row', alignItems: 'center', marginTop: 3 },
   taglineText:          { fontSize: 11, fontWeight: '600' },
   countBadge:           { borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1.5 },

@@ -3,11 +3,12 @@ import {
   View, Text, StyleSheet, TouchableOpacity, Modal, ActivityIndicator
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { RewardedAd, RewardedAdEventType, TestIds } from 'react-native-google-mobile-ads';
-import { useAdStore, REWARD_AMOUNT, MAX_AI_ENERGY } from '../store/adStore';
-import { Zap, X, Play } from 'lucide-react-native';
+import { RewardedAd, RewardedAdEventType } from 'react-native-google-mobile-ads';
+import { useAdStore } from '../store/adStore';
+import { Zap, X, Play, Crown } from 'lucide-react-native';
 import { useTheme } from '../hooks/useTheme';
-import { adUnitIds } from '../hooks/useAdMob';
+import { AD_UNIT_IDS, AD_CONFIG } from '../constants/adConfig';
+import { router } from 'expo-router';
 
 interface AIEnergyGateProps {
   visible: boolean;
@@ -22,7 +23,7 @@ export function AIEnergyGate({ visible, onClose, onEnergyGranted }: AIEnergyGate
 
   const handleWatchAd = () => {
     setLoadingAd(true);
-    const rewarded = RewardedAd.createForAdRequest(adUnitIds.rewarded, {
+    const rewarded = RewardedAd.createForAdRequest(AD_UNIT_IDS.rewarded, {
       requestNonPersonalizedAdsOnly: true,
     });
 
@@ -34,7 +35,7 @@ export function AIEnergyGate({ visible, onClose, onEnergyGranted }: AIEnergyGate
     const unsubscribeEarned = rewarded.addAdEventListener(
       RewardedAdEventType.EARNED_REWARD,
       () => {
-        addEnergy(REWARD_AMOUNT);
+        addEnergy(AD_CONFIG.rewardedAdCredits);
         unsubscribeLoaded();
         unsubscribeEarned();
         onEnergyGranted();
@@ -43,6 +44,11 @@ export function AIEnergyGate({ visible, onClose, onEnergyGranted }: AIEnergyGate
     );
 
     rewarded.load();
+  };
+
+  const handleGoPro = () => {
+    onClose();
+    setTimeout(() => router.push('/modals/paywall' as any), 200);
   };
 
   return (
@@ -77,10 +83,10 @@ export function AIEnergyGate({ visible, onClose, onEnergyGranted }: AIEnergyGate
 
           {/* Energy bar */}
           <View style={[styles.energyBar, { backgroundColor: colors.border }]}>
-            <View style={[styles.energyFill, { width: `${(aiEnergy / MAX_AI_ENERGY) * 100}%` }]} />
+            <View style={[styles.energyFill, { width: `${(aiEnergy / AD_CONFIG.freeAICreditsPerDay) * 100}%` }]} />
           </View>
           <Text style={[styles.energyLabel, { color: colors.textMuted }]}>
-            {aiEnergy}/{MAX_AI_ENERGY} rayos restantes
+            {aiEnergy}/{AD_CONFIG.freeAICreditsPerDay} rayos restantes
           </Text>
 
           {/* Watch Ad button */}
@@ -91,7 +97,7 @@ export function AIEnergyGate({ visible, onClose, onEnergyGranted }: AIEnergyGate
             activeOpacity={0.85}
           >
             <LinearGradient
-              colors={['#7C5CFC', '#5B36D6']}
+              colors={['#10B981', '#059669']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.watchBtnInner}
@@ -101,16 +107,26 @@ export function AIEnergyGate({ visible, onClose, onEnergyGranted }: AIEnergyGate
                 : (
                   <>
                     <Play size={18} color="#FFF" />
-                    <Text style={styles.watchBtnText}>Ver Video (+{REWARD_AMOUNT} ⚡)</Text>
+                    <Text style={styles.watchBtnText}>Ver Video (+{AD_CONFIG.rewardedAdCredits} ⚡)</Text>
                   </>
                 )
               }
             </LinearGradient>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={onClose} style={{ marginTop: 12 }}>
+          {/* Go Pro button */}
+          <TouchableOpacity
+            style={[styles.proBtn, { borderColor: colors.primary + '50', backgroundColor: colors.primary + '10' }]}
+            onPress={handleGoPro}
+            activeOpacity={0.85}
+          >
+            <Crown size={16} color={colors.primary} />
+            <Text style={[styles.proBtnText, { color: colors.primary }]}>Hacerse Pro · IA Ilimitada</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={onClose} style={{ marginTop: 8 }}>
             <Text style={[styles.cancelTxt, { color: colors.textMuted }]}>
-              No gracias, volver mañana
+              Volver mañana
             </Text>
           </TouchableOpacity>
         </View>
@@ -231,5 +247,20 @@ const styles = StyleSheet.create({
   cancelTxt: {
     fontSize: 13,
     textDecorationLine: 'underline',
+  },
+  proBtn: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    marginTop: 10,
+  },
+  proBtnText: {
+    fontSize: 15,
+    fontWeight: '800',
   },
 });

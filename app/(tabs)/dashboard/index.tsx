@@ -20,8 +20,7 @@ import { AnimatedCard } from '../../../components/AnimatedCard';
 import { Trophy, Flame, Dumbbell, Heart, ChevronRight, Scale, Target } from 'lucide-react-native';
 import { useAchievements, Achievement } from '../../../hooks/useAchievements';
 import { GoalWizardModal, ACTIVITY_TO_EXERCISE } from '../../../components/GoalWizardModal';
-import { InterstitialAd, RewardedAd, RewardedAdEventType, AdEventType, TestIds } from 'react-native-google-mobile-ads';
-import { adUnitIds } from '../../../hooks/useAdMob';
+import { useInterstitial } from '../../../hooks/useInterstitial';
 
 const { width } = Dimensions.get('window');
 import { CustomAlert, AlertType } from '../../../components/CustomAlert';
