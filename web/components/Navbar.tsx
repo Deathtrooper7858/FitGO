@@ -1,19 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/routing";
 import { Menu, X, Zap } from "lucide-react";
+import LanguageSwitcher from "./LanguageSwitcher";
 import { createClient } from "@/lib/supabase";
 
 import { User } from "@supabase/supabase-js";
 
-const navLinks = [
-  { href: "/", label: "Inicio" },
-  { href: "/about", label: "La App" },
-  { href: "/about-us", label: "Nosotros" },
-  { href: "/pricing", label: "Premium" },
-];
+import { useTranslations } from "next-intl";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -35,6 +30,14 @@ export default function Navbar() {
     );
     return () => listener.subscription.unsubscribe();
   }, [supabase.auth]);
+
+  const t = useTranslations("web");
+  const navLinks = [
+    { href: "/", label: t("nav.home") },
+    { href: "/about", label: t("nav.app") },
+    { href: "/about-us", label: t("nav.about") },
+    { href: "/pricing", label: t("nav.premium") },
+  ];
 
   return (
     <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full px-4 md:w-[90%] max-w-5xl transition-all duration-300">
@@ -74,8 +77,9 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Auth buttons */}
+        {/* Auth buttons & Lang */}
         <div className="hidden md:flex items-center gap-3">
+          <LanguageSwitcher />
           {user ? (
             <button
               onClick={async () => {
@@ -83,7 +87,7 @@ export default function Navbar() {
               }}
               className="text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors"
             >
-              Cerrar sesión
+              {t("nav.logout")}
             </button>
           ) : (
             <>
@@ -91,10 +95,10 @@ export default function Navbar() {
                 href="/login"
                 className="text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors"
               >
-                Iniciar sesión
+                {t("nav.login")}
               </Link>
               <Link href="/register" className="btn-primary py-2.5! px-5! text-sm!">
-                Comenzar gratis
+                {t("nav.register")}
               </Link>
             </>
           )}
@@ -133,14 +137,14 @@ export default function Navbar() {
               onClick={() => setOpen(false)}
               className="btn-secondary py-3! text-sm! justify-center"
             >
-              Iniciar sesión
+              {t("nav.login")}
             </Link>
             <Link
               href="/register"
               onClick={() => setOpen(false)}
               className="btn-primary py-3! text-sm! justify-center"
             >
-              Comenzar gratis
+              {t("nav.register")}
             </Link>
           </div>
         </div>

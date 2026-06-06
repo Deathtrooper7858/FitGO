@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Zap, Mail, Lock, AlertCircle, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage() {
+  const t = useTranslations("auth.login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +65,7 @@ export default function LoginPage() {
             </h1>
           </Link>
           <p className="text-text-secondary mt-2">
-            Bienvenido de nuevo a tu mejor versión.
+            {t("title")}
           </p>
         </div>
 
@@ -84,7 +86,7 @@ export default function LoginPage() {
                 <input
                   type="email"
                   required
-                  placeholder="Correo electrónico"
+                  placeholder={t("email")}
                   className="input-dark pl-11"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -98,7 +100,7 @@ export default function LoginPage() {
                 <input
                   type="password"
                   required
-                  placeholder="Contraseña"
+                  placeholder={t("password")}
                   className="input-dark pl-11"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -111,7 +113,7 @@ export default function LoginPage() {
                 href="/forgot-password"
                 className="text-xs font-semibold text-text-muted hover:text-primary transition-colors"
               >
-                ¿Olvidaste tu contraseña?
+                {t("forgot")}
               </Link>
             </div>
 
@@ -121,18 +123,18 @@ export default function LoginPage() {
               className="btn-primary w-full justify-center mt-2 text-base"
               style={{ opacity: loading ? 0.7 : 1 }}
             >
-              {loading ? "Iniciando sesión..." : "Iniciar sesión"}
+              {loading ? t("loading") : t("btn")}
               {!loading && <ArrowRight size={18} />}
             </button>
           </form>
 
           <div className="mt-8 text-center text-sm text-text-secondary">
-            ¿No tienes cuenta?{" "}
+            {t("noAccount")}{" "}
             <Link
               href="/register"
               className="text-primary font-bold hover:text-primary-light transition-colors"
             >
-              Regístrate
+              {t("register")}
             </Link>
           </div>
         </div>

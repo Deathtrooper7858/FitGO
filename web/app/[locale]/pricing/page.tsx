@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import Link from "next/link";
+
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -18,42 +21,31 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-const freeFeatures = [
-  { text: "Registro de peso corporal", included: true },
-  { text: "Tracking de macros básico", included: true },
-  { text: "Base de datos de alimentos", included: true },
-  { text: "Rutinas de entrenamiento", included: true },
-  { text: "Historial (últimos 30 días)", included: true },
-  { text: "Coach con IA", included: false },
-  { text: "Guerras de Macros", included: false },
-  { text: "Ligas Élite", included: false },
-  { text: "Historial ilimitado", included: false },
-  { text: "Análisis avanzado de progreso", included: false },
-];
-
-const proFeatures = [
-  { text: "Todo lo del plan gratuito", included: true },
-  { text: "Coach con IA ilimitado", included: true },
-  { text: "Guerras de Macros", included: true },
-  { text: "Ligas Élite", included: true },
-  { text: "Historial ilimitado", included: true },
-  { text: "Análisis avanzado de progreso", included: true },
-  { text: "Escáner de código de barras", included: true },
-  { text: "Planificador nutricional IA", included: true },
-  { text: "Soporte prioritario", included: true },
-  { text: "Sin publicidad", included: true },
-];
-
-const proHighlights = [
-  { icon: Bot, label: "Coach IA", color: "#10B981" },
-  { icon: Swords, label: "Macro Wars", color: "#F43F5E" },
-  { icon: Trophy, label: "Ligas Élite", color: "#F59E0B" },
-  { icon: Scale, label: "Análisis Pro", color: "#8B5CF6" },
-  { icon: Apple, label: "Nutrición IA", color: "#06B6D4" },
-  { icon: Flame, label: "Sin límites", color: "#FF9F1C" },
-];
-
 export default function PricingPage() {
+  const t = useTranslations("pricingPage");
+
+  const freeFeaturesData = t.raw("freeFeatures") as string[];
+  const freeIncludedData = t.raw("freeIncluded") as boolean[];
+  const freeFeatures = freeFeaturesData.map((text, i) => ({
+    text,
+    included: freeIncludedData[i],
+  }));
+
+  const proFeaturesData = t.raw("proFeatures") as string[];
+  const proFeatures = proFeaturesData.map((text) => ({
+    text,
+    included: true,
+  }));
+
+  const proHighlights = [
+    { icon: Bot, label: t("highlights.coach"), color: "#10B981" },
+    { icon: Swords, label: t("highlights.macroWars"), color: "#F43F5E" },
+    { icon: Trophy, label: t("highlights.leagues"), color: "#F59E0B" },
+    { icon: Scale, label: t("highlights.analysis"), color: "#8B5CF6" },
+    { icon: Apple, label: t("highlights.nutrition"), color: "#06B6D4" },
+    { icon: Flame, label: t("highlights.unlimited"), color: "#FF9F1C" },
+  ];
+
   const [billing, setBilling] = useState<"monthly" | "annual">("annual");
   const [loading, setLoading] = useState(false);
 
@@ -95,15 +87,15 @@ export default function PricingPage() {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-pro/20 border border-pro/30 mb-6">
             <Star size={12} className="text-pro fill-pro" />
             <span className="text-xs font-bold text-pro uppercase tracking-wider">
-              FitGO Pro
+              {t("hero.badge")}
             </span>
           </div>
           <h1 className="font-display font-black text-5xl md:text-6xl text-text-primary mb-6">
-            Elige tu{" "}
-            <span className="gradient-text">plan</span>
+            {t("hero.title1")}{" "}
+            <span className="gradient-text">{t("hero.title2")}</span>
           </h1>
           <p className="text-text-secondary text-xl leading-relaxed">
-            Empieza gratis. Desbloquea todo con Pro.
+            {t("hero.desc")}
           </p>
         </div>
       </section>
@@ -120,7 +112,7 @@ export default function PricingPage() {
                   : "text-text-muted hover:text-text-secondary"
               }`}
             >
-              Mensual
+              {t("billing.monthly")}
             </button>
             <button
               onClick={() => setBilling("annual")}
@@ -130,7 +122,7 @@ export default function PricingPage() {
                   : "text-text-muted hover:text-text-secondary"
               }`}
             >
-              Anual
+              {t("billing.annual")}
               <span className="text-xs font-black text-success bg-success/15 px-2 py-0.5 rounded-full">
                 −33%
               </span>
@@ -146,21 +138,21 @@ export default function PricingPage() {
           <div className="glass rounded-3xl p-8">
             <div className="mb-6">
               <h2 className="font-display font-black text-2xl text-text-primary mb-1">
-                Gratis
+                {t("free.title")}
               </h2>
               <p className="text-text-muted text-sm">
-                Para empezar tu camino
+                {t("free.desc")}
               </p>
             </div>
             <div className="mb-8">
               <span className="font-display font-black text-5xl text-text-primary">
                 $0
               </span>
-              <span className="text-text-muted text-sm ml-2">/ siempre</span>
+              <span className="text-text-muted text-sm ml-2">/ {t("free.forever")}</span>
             </div>
-            <a href="/register" className="btn-secondary w-full justify-center mb-8 block text-center">
-              Crear cuenta
-            </a>
+            <Link href="/register" className="btn-secondary w-full justify-center mb-8 block text-center">
+              {t("free.btn")}
+            </Link>
             <ul className="space-y-3">
               {freeFeatures.map((f) => (
                 <li key={f.text} className="flex items-center gap-3">
@@ -217,14 +209,14 @@ export default function PricingPage() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <h2 className="font-display font-black text-2xl text-text-primary">
-                      Pro
+                      {t("pro.title")}
                     </h2>
                     <span className="text-xs font-black px-2.5 py-1 rounded-full bg-pro/20 text-pro border border-pro/30 flex items-center gap-1">
-                      <Star size={10} className="fill-pro" /> Más popular
+                      <Star size={10} className="fill-pro" /> {t("pro.popular")}
                     </span>
                   </div>
                   <p className="text-text-muted text-sm">
-                    Desbloquea todo tu potencial
+                    {t("pro.desc")}
                   </p>
                 </div>
                 <Zap size={28} className="text-primary" fill="#8B5CF6" />
@@ -234,11 +226,11 @@ export default function PricingPage() {
                 <span className="font-display font-black text-5xl text-text-primary">
                   ${billing === "monthly" ? monthlyPrice : annualPrice}
                 </span>
-                <span className="text-text-muted text-sm ml-2">/ mes</span>
+                <span className="text-text-muted text-sm ml-2">/ {t("pro.month")}</span>
               </div>
               {billing === "annual" && (
                 <p className="text-text-muted text-xs mb-6">
-                  Facturado anualmente · ${annualTotal}/año
+                  {t("pro.billedAnnually")} · ${annualTotal}/{t("billing.annual").toLowerCase()}
                 </p>
               )}
               {billing === "monthly" && <div className="mb-6" />}
@@ -268,12 +260,12 @@ export default function PricingPage() {
                 style={{ opacity: loading ? 0.7 : 1 }}
               >
                 {loading ? (
-                  "Procesando..."
+                  "..."
                 ) : (
                   <>
                     <Zap size={18} fill="white" />
-                    Obtener Pro{" "}
-                    {billing === "annual" ? "· Anual" : "· Mensual"}
+                    {t("pro.btn")}{" "}
+                    {billing === "annual" ? `· ${t("billing.annual")}` : `· ${t("billing.monthly")}`}
                     <ChevronRight size={18} />
                   </>
                 )}
@@ -294,7 +286,7 @@ export default function PricingPage() {
 
               <div className="mt-8 pt-6 border-t border-white/5 flex items-center gap-2 text-text-muted text-xs">
                 <Lock size={12} />
-                Pago seguro · Cancela cuando quieras
+                {t("secure")}
               </div>
             </div>
           </div>
@@ -305,30 +297,13 @@ export default function PricingPage() {
       <section className="py-24 px-6">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
-            <span className="section-label">Preguntas frecuentes</span>
+            <span className="section-label">{t("faq.label")}</span>
             <h2 className="font-display font-black text-4xl text-text-primary mt-3">
-              FAQ
+              {t("faq.title")}
             </h2>
           </div>
           <div className="space-y-4">
-            {[
-              {
-                q: "¿Puedo cancelar cuando quiera?",
-                a: "Sí. Puedes cancelar tu suscripción en cualquier momento desde tu perfil. Seguirás teniendo acceso Pro hasta el final del período pagado.",
-              },
-              {
-                q: "¿La suscripción web funciona en la app móvil?",
-                a: "Absolutamente. Al comprar Pro en la web, tu cuenta se actualiza automáticamente en Supabase y obtendrás los beneficios Premium inmediatamente al abrir la app.",
-              },
-              {
-                q: "¿Qué métodos de pago aceptan?",
-                a: "Aceptamos todas las tarjetas de crédito y débito principales (Visa, Mastercard, AmEx) a través de Stripe, el procesador de pagos más seguro del mundo.",
-              },
-              {
-                q: "¿Hay prueba gratuita del plan Pro?",
-                a: "El plan gratuito ya incluye las funciones esenciales para siempre. Upgradeamos constantemente las características disponibles en la versión free.",
-              },
-            ].map((item) => (
+            {(t.raw("faq.items") as { q: string, a: string }[]).map((item) => (
               <div key={item.q} className="glass rounded-2xl p-6">
                 <h3 className="font-bold text-text-primary mb-2">{item.q}</h3>
                 <p className="text-text-secondary text-sm leading-relaxed">

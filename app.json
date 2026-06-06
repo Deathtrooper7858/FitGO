@@ -82,7 +82,8 @@
       "expo-image"
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "baseUrl": "/fitgo"
     },
     "extra": {
       "router": {},
