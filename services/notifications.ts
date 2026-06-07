@@ -194,16 +194,23 @@ export async function registerForPushNotificationsAsync(): Promise<string | unde
       const projectId =
         Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
       if (!projectId) {
-        console.warn('Project ID not found for push notifications');
+        console.warn('[Notifications] Project ID not found for push notifications');
       }
       token = (await notif.getExpoPushTokenAsync({
         projectId,
       })).data;
-    } catch (e) {
-      console.error('Error fetching push token:', e);
+    } catch (e: any) {
+      // Firebase / FCM not configured in development builds — non-fatal
+      const msg = e?.message || String(e);
+      if (msg.includes('FirebaseApp') || msg.includes('Firebase')) {
+        console.warn('[Notifications] Firebase not configured in this build — push tokens unavailable. This is expected in dev builds without google-services.json.');
+      } else {
+        console.warn('[Notifications] Error fetching push token:', msg);
+      }
+      // Return undefined gracefully — app continues to work without push tokens
     }
   } else {
-    console.warn('Must use physical device for Push Notifications');
+    console.warn('[Notifications] Must use physical device for Push Notifications');
   }
 
   return token;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Image, ScrollView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Image, ScrollView, TextInput, Platform } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -132,7 +133,7 @@ export default function ScanModal() {
         const results = await searchFood(searchQuery, language);
         setSearchResults(results);
       } catch (err) {
-        console.error('Search error', err);
+        console.warn('Search error', err);
       } finally {
         setIsSearching(false);
       }
@@ -189,7 +190,7 @@ export default function ScanModal() {
     } catch (err) {
       recordingStatus.current = 'idle';
       setIsRecording(false);
-      console.error('Start error:', err);
+      console.warn('Start error:', err);
     }
   };
 
@@ -235,7 +236,7 @@ export default function ScanModal() {
         showAlert('error', t('common.error'), t('scan.audioFileError'));
       }
     } catch (err: any) {
-      console.error('Stop error:', err);
+      console.warn('Stop error:', err);
       showAlert('error', t('common.error'), t('scan.audioProcessError', { error: err.message || '' }));
     } finally {
       recordingStatus.current = 'idle';
@@ -288,8 +289,15 @@ export default function ScanModal() {
         setCapturedUri('text');
         incrementAiUsage('text');
       } catch (err: any) {
-        console.error('[ScanModal] Text analyze error:', err);
-        showAlert('error', t('common.error'), t('scan.analysisFailed') || 'AI analysis failed. Please check your connection.');
+        console.warn('[ScanModal] Text analyze error:', err);
+        const isOffline = err?.message?.includes('Sin conexión') || err?.message?.includes('Network Error');
+        showAlert(
+          'error',
+          t('common.error'),
+          isOffline
+            ? t('scan.noInternet', 'Sin conexión a internet. La Inteligencia Artificial requiere conexión. Por favor añade el alimento manualmente.')
+            : (t('scan.analysisFailed') || 'AI analysis failed. Please check your connection.')
+        );
       } finally {
         setLoading(false);
       }
@@ -381,8 +389,15 @@ export default function ScanModal() {
           incrementAiUsage('photo');
         }
       } catch (err: any) {
-        console.error('Picker Error:', err);
-        showAlert('error', t('scan.analysisFailed'), t('scan.analysisFailedSub', { error: err?.message || err }));
+        console.warn('Picker Error:', err);
+        const isOffline = err?.message?.includes('Sin conexión') || err?.message?.includes('Network Error');
+        showAlert(
+          'error',
+          t('common.error'),
+          isOffline
+            ? t('scan.noInternet', 'Sin conexión a internet. La Inteligencia Artificial requiere conexión. Por favor añade el alimento manualmente.')
+            : t('scan.analysisFailedSub', { error: err?.message || err })
+        );
       } finally {
         setLoading(false);
       }
@@ -422,8 +437,15 @@ export default function ScanModal() {
         })));
         incrementAiUsage('photo');
       } catch (err: any) {
-        console.error('Analysis Error:', err);
-        showAlert('error', t('scan.analysisFailed'), t('scan.analysisFailedSub', { error: err?.message || err }));
+        console.warn('Analysis Error:', err);
+        const isOffline = err?.message?.includes('Sin conexión') || err?.message?.includes('Network Error');
+        showAlert(
+          'error',
+          t('common.error'),
+          isOffline
+            ? t('scan.noInternet', 'Sin conexión a internet. La Inteligencia Artificial requiere conexión. Por favor añade el alimento manualmente.')
+            : t('scan.analysisFailedSub', { error: err?.message || err })
+        );
       } finally {
         setLoading(false);
       }
@@ -500,7 +522,7 @@ export default function ScanModal() {
       await Promise.all(localLogs.map(log => addLog(log)));
     } catch (err) {
       // Logs were saved locally; Supabase sync error is non-blocking
-      console.error('[ScanModal] Sync error (local save succeeded):', err);
+      console.warn('[ScanModal] Sync error (local save succeeded):', err);
     } finally {
       setLoading(false);
     }
@@ -659,7 +681,13 @@ export default function ScanModal() {
             <View style={[s.modeRow, { backgroundColor: 'rgba(255,255,255,0.1)' }]}>
               <TouchableOpacity 
                 style={[s.modePill, mode === 'barcode' && [s.modePillActive, { backgroundColor: colors.tabActive }]]} 
-                onPress={() => setMode('barcode')}
+                onPress={() => {
+                  if (!isProActually) {
+                    showAlert('info', t('paywall.premiumFeature', 'Función Premium'), t('paywall.premiumRequired', 'Esta función es exclusiva para usuarios Premium.'));
+                    return;
+                  }
+                  setMode('barcode');
+                }}
               >
                 <Text style={[s.modeText, mode === 'barcode' && s.modeTextActive]} numberOfLines={1} adjustsFontSizeToFit>🔍 {t('scan.barcode')}</Text>
               </TouchableOpacity>
@@ -677,7 +705,13 @@ export default function ScanModal() {
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[s.modePill, mode === 'search' && [s.modePillActive, { backgroundColor: colors.tabActive }]]} 
-                onPress={() => setMode('search')}
+                onPress={() => {
+                  if (!isProActually) {
+                    showAlert('info', t('paywall.premiumFeature', 'Función Premium'), t('paywall.premiumRequired', 'Esta función es exclusiva para usuarios Premium.'));
+                    return;
+                  }
+                  setMode('search');
+                }}
               >
                 <Text style={[s.modeText, mode === 'search' && s.modeTextActive]} numberOfLines={1} adjustsFontSizeToFit>🔎 {t('common.search') || 'Buscar'}</Text>
               </TouchableOpacity>
@@ -939,6 +973,7 @@ const s = StyleSheet.create({
   macroBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
   macroBadgeText: { fontSize: 10, fontWeight: '700' },
   searchResultAddBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+  customAddBtn:  { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: Radius.lg, borderWidth: 1, marginBottom: 12 },
   retryBtn:      { flex: 1, paddingVertical: 14, borderRadius: Radius.md, borderWidth: 1.5, alignItems: 'center' },
   retryText:     { fontWeight: '600', fontSize: 15 },
   addAllBtn:     { flex: 2, borderRadius: Radius.md, overflow: 'hidden' },

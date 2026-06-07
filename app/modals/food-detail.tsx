@@ -35,6 +35,7 @@ export default function FoodDetailModal() {
   } catch (err) {
     console.error('Error parsing food JSON:', err);
   }
+
   const [grams, setGrams]     = useState(initialGrams || '100');
   
   const getAutoMeal = (): Meal => {
@@ -279,7 +280,7 @@ export default function FoodDetailModal() {
         </View>
 
         <View style={s.section}>
-          <Text style={[s.sectionLabel, { color: colors.textSecondary }]}>{language === 'es' ? 'Hora' : 'Time'}</Text>
+          <Text style={[s.sectionLabel, { color: colors.textSecondary }]}>{t('foodDetail.time', 'Hora')}</Text>
           <TouchableOpacity 
             onPress={() => setShowTimePicker(true)}
             style={[s.gramsInput, { backgroundColor: colors.surface, borderColor: colors.border, paddingVertical: 12, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8 }]}

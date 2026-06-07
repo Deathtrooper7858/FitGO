@@ -10,6 +10,8 @@ import { useTheme } from '../../hooks/useTheme';
 import { Spacing, Radius, Shadow } from '../../constants';
 import { analyzePhysiquePhoto } from '../../services/groq';
 import { useSettingsStore, useProgressStore, useAuthStore, usePurchaseStore } from '../../store';
+import { useAdStore } from '../../store/adStore';
+import { AdTimerOverlay } from '../../components/AdTimerOverlay';
 import { getLocalDateString } from '../../utils/date';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -35,9 +37,13 @@ export default function ProgressEvaluationModal() {
 
   const { profile } = useAuthStore();
   const { isPro } = usePurchaseStore();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const { hasPremiumAdAccess } = useAdStore();
 
-  if (!isProActually) {
+  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const featureId = 'evaluation';
+  const hasAccess = isProActually || hasPremiumAdAccess(featureId);
+
+  if (!hasAccess) {
     return (
       <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
         <View style={s.paywallContainer}>
@@ -270,6 +276,8 @@ export default function ProgressEvaluationModal() {
           </TouchableOpacity>
         )}
       </ScrollView>
+
+      <AdTimerOverlay featureId="evaluation" />
     </SafeAreaView>
   );
 }

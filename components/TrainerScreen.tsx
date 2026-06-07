@@ -25,6 +25,7 @@ import CoachHistoryModal from './CoachHistoryModal';
 import { ImagePickerModal } from './ImagePickerModal';
 import { ImageViewerModal } from './ImageViewerModal';
 import { useKeyboardNavBar } from '../hooks/useKeyboardNavBar';
+import { useKeyboardHeight } from '../hooks/useKeyboardHeight';
 import { useAICredits } from '../hooks/useAICredits';
 import { AICreditsBar } from './AICreditsBar';
 
@@ -257,6 +258,7 @@ function TypingIndicator() {
 // ─── Trainer Screen ─────────────────────────────────────────────────────────────
 export default function TrainerScreen() {
   useKeyboardNavBar();
+  const keyboardHeight = useKeyboardHeight();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const [input, setInput]               = useState((params.prompt as string) || '');
@@ -659,9 +661,9 @@ export default function TrainerScreen() {
       </View>
 
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 90}
+        style={{ flex: 1, paddingBottom: Platform.OS === 'android' ? keyboardHeight : 0 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <FlatList<CoachMessage>
           ref={flatRef}

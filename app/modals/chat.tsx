@@ -10,6 +10,7 @@ import { ArrowLeft, Send, Image as ImageIcon, Mic, Play, Pause, X } from 'lucide
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
 import { useKeyboardNavBar } from '../../hooks/useKeyboardNavBar';
+import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
 import { Radius } from '../../constants';
 import { useAuthStore, useSocialStore } from '../../store';
 import { DirectMessage } from '../../store/socialStore';
@@ -85,6 +86,7 @@ export default function ChatModal() {
   const socialStore = useSocialStore();
   const insets = useSafeAreaInsets();
   useKeyboardNavBar();
+  const keyboardHeight = useKeyboardHeight();
 
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -279,9 +281,9 @@ export default function ChatModal() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
       <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 90}
+        style={[styles.keyboardView, { paddingBottom: Platform.OS === 'android' ? keyboardHeight : 0 }]}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         {/* ── Header ── */}
         <View style={[styles.header, { borderBottomColor: colors.border + '50' }]}>

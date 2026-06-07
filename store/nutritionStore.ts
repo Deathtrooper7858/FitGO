@@ -367,45 +367,48 @@ export const useNutritionStore = create<NutritionState>()(
       },
       setActivity: (activityCals) => set({ activityCals }),
       addActivityLog: async (activity) => {
+        // Save locally first — this always succeeds even offline
         set((s) => ({ activityLogs: [...s.activityLogs, activity] }));
         get().updateActivity(activity.loggedAt.split('T')[0]);
 
         const { profile } = useAuthStore.getState();
         if (profile?.id) {
-          try {
-            const { error } = await supabase.from('activity_logs').insert({
-              id:         activity.id,
-              user_id:    profile.id,
-              name:       activity.name,
-              icon:       activity.icon,
-              calories:   activity.calories,
-              duration:   activity.duration,
-              logged_at:  activity.loggedAt.split('T')[0]
-            });
-            if (error) {
-              console.error('[NutritionStore] addActivityLog Supabase error:', error);
-              throw error;
+          // Sync to Supabase silently in the background — network errors are
+          // non-fatal since the activity is already persisted in AsyncStorage.
+          void (async () => {
+            try {
+              const { error } = await supabase.from('activity_logs').insert({
+                id:         activity.id,
+                user_id:    profile.id,
+                name:       activity.name,
+                icon:       activity.icon,
+                calories:   activity.calories,
+                duration:   activity.duration,
+                logged_at:  activity.loggedAt.split('T')[0]
+              });
+              if (error) {
+                console.warn('[NutritionStore] addActivityLog Supabase sync error (offline?):', error.message);
+              } else {
+                console.log('[NutritionStore] Activity synced successfully');
+              }
+            } catch (err: any) {
+              console.warn('[NutritionStore] addActivityLog network error (offline?):', err?.message);
             }
-            console.log('[NutritionStore] Activity synced successfully');
-          } catch (err) {
-            console.error('[NutritionStore] addActivityLog sync error:', err);
-            // We don't remove from local state yet to allow retry or persistence
-            throw err;
-          }
+          })();
         }
       },
       removeActivityLog: async (id) => {
+        // Remove locally first — always succeeds even offline
         set((s) => ({ activityLogs: s.activityLogs.filter(a => a.id !== id) }));
-        try {
-          const { error } = await supabase.from('activity_logs').delete().eq('id', id);
-          if (error) {
-            console.error('[NutritionStore] removeActivityLog Supabase error:', error);
-            throw error;
+        // Sync deletion to Supabase silently — non-fatal if offline
+        void (async () => {
+          try {
+            const { error } = await supabase.from('activity_logs').delete().eq('id', id);
+            if (error) console.warn('[NutritionStore] removeActivityLog Supabase sync error (offline?):', error.message);
+          } catch (err: any) {
+            console.warn('[NutritionStore] removeActivityLog network error (offline?):', err?.message);
           }
-        } catch (err) {
-          console.error('[NutritionStore] removeActivityLog sync error:', err);
-          throw err;
-        }
+        })();
       },
       updateActivityLog: async (id, updates) => {
         set((s) => ({
