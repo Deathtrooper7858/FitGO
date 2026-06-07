@@ -62,7 +62,11 @@ async function fetchGroq(payload: any) {
       },
     });
   }).then((res) => res.data).catch((error) => {
-    console.error('[Groq Proxy Error]:', error);
+    console.warn('[Groq Proxy Error]:', error.message || error);
+    // Detect pure network failure (no response received = device is offline)
+    if (!error.response && (error.code === 'ERR_NETWORK' || error.message === 'Network Error' || error.message?.includes('network'))) {
+      throw new Error('AI Service Error: Sin conexión a internet. Por favor verifica tu conexión.');
+    }
     let errorMsg = error.response?.data?.error || error.message || 'Unknown error';
     if (error.response?.status === 400 && errorMsg === 'Unknown error') {
       errorMsg = 'Bad Request (400) - Check model availability or parameters.';
@@ -250,8 +254,8 @@ export async function analyzeFoodPhoto(base64Image: string, language: string = '
     
     return JSON.parse(text);
   } catch (error: any) {
-    console.error('[Groq] Analyze food photo error:', error);
-    throw new Error(error.message || 'Failed to parse AI response. Please try again.');
+    console.warn('[Groq] Analyze food photo error:', error);
+    throw error;
   }
 }
 
@@ -314,8 +318,8 @@ Be realistic, constructive, and highly encouraging. If the image is not a physiq
     
     return JSON.parse(text);
   } catch (error: any) {
-    console.error('[Groq] Analyze physique photo error:', error);
-    throw new Error(error.message || 'Failed to parse AI response. Please try again.');
+    console.warn('[Groq] Analyze physique photo error:', error);
+    throw error;
   }
 }
 
@@ -563,7 +567,7 @@ export async function transcribeAudio(uri: string): Promise<string> {
     if (__DEV__) console.log('[Groq] Transcription Success:', response.data?.text?.substring(0, 30));
     return response.data?.text ?? '';
   } catch (err: any) {
-    console.error('[Groq] Transcription Fetch Error:', err);
+    console.warn('[Groq] Transcription Fetch Error:', err);
     throw new Error(`AI Transcription failed: ${err.response?.data?.error || err.message}`);
   }
 }
@@ -666,8 +670,8 @@ Important: Group multiple units (e.g. "2 eggs") into one entry. Be accurate with
     const parsed = JSON.parse(content);
     return parsed.items || [];
   } catch (error) {
-    console.error('[Groq] parseVoiceLog error:', error);
-    return [];
+    console.warn('[Groq] parseVoiceLog error:', error);
+    throw error;
   }
 }
 // ─── Estimate Activity Calories ───────────────────────────────────────────────
@@ -830,7 +834,7 @@ Return ONLY valid JSON. Do not include any explanations or markdown formatting o
 }
     return null;
   } catch (error) {
-    console.error('[Groq] getFoodByBarcodeAI error:', error);
+    console.warn('[Groq] getFoodByBarcodeAI error:', error);
     return null;
   }
 }
@@ -871,7 +875,7 @@ Original Instructions: ${JSON.stringify(instructions)}`;
       instructions: parsed.instructions || instructions
     };
   } catch (err) {
-    console.error('[Groq] translateExerciseDetails error:', err);
+    console.warn('[Groq] translateExerciseDetails error:', err);
     return { name, instructions };
   }
 }

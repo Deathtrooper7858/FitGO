@@ -21,9 +21,11 @@ import { Trophy, Flame, Dumbbell, Heart, ChevronRight, Scale, Target } from 'luc
 import { useAchievements, Achievement } from '../../../hooks/useAchievements';
 import { GoalWizardModal, ACTIVITY_TO_EXERCISE } from '../../../components/GoalWizardModal';
 import { useInterstitial } from '../../../hooks/useInterstitial';
+import { PremiumGate } from '../../../components/PremiumGate';
+import { useAdStore } from '../../../store/adStore';
+import { CustomAlert, AlertType } from '../../../components/CustomAlert';
 
 const { width } = Dimensions.get('window');
-import { CustomAlert, AlertType } from '../../../components/CustomAlert';
 
 const WIDGET_WIDTH = (width - Spacing.base * 2 - Spacing.md) / 2;
 
@@ -72,6 +74,43 @@ function ScoreRing({ consumed, target, dateLabel }: { consumed: number; target: 
   );
 }
 
+// ─── Widget Ad Timer Overlay ───────────────────────────────────────────────────
+function WidgetAdTimer({ featureId }: { featureId: string }) {
+  const { profile } = useAuthStore();
+  const { premiumAdRemainingSeconds, hasPremiumAdAccess } = useAdStore();
+  const [timeLeft, setTimeLeft] = useState(premiumAdRemainingSeconds(featureId));
+
+  const isPro = !!profile?.isPro;
+
+  useEffect(() => {
+    if (isPro) return;
+    const timer = setInterval(() => {
+      setTimeLeft(premiumAdRemainingSeconds(featureId));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isPro, featureId]);
+
+  if (isPro || !hasPremiumAdAccess(featureId) || timeLeft <= 0) return null;
+
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  const timeStr = `${m}:${s.toString().padStart(2, '0')}`;
+
+  return (
+    <View style={[StyleSheet.absoluteFill, {
+      backgroundColor: 'rgba(124, 92, 252, 0.75)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 50,
+      padding: 12,
+      borderRadius: Radius.xl,
+    }]}>
+      <Text style={{ color: '#FFF', fontWeight: '900', fontSize: 28, fontVariant: ['tabular-nums'] }}>{timeStr}</Text>
+      <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 11, fontWeight: '800', marginTop: 4, letterSpacing: 0.5, textAlign: 'center' }}>ACCESO PREMIUM</Text>
+    </View>
+  );
+}
+
 const ring = StyleSheet.create({
   container: { alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginVertical: 12 },
   topLabel:  { fontSize: 16, fontWeight: '500', position: 'absolute', top: -10 },
@@ -81,7 +120,24 @@ const ring = StyleSheet.create({
 });
 
 // ─── Widget Card ────────────────────────────────────────────────────────────────
-function WidgetCard({ title, value, subValue, icon, onPress, customContent, onLongPress, isEditing, onMoveLeft, onMoveRight, canMoveLeft, canMoveRight, index }: any) {
+interface WidgetProps {
+  id?: string;
+  title: string;
+  icon: any;
+  value?: string;
+  subValue?: string;
+  onPress?: () => void;
+  index: number;
+  customContent?: React.ReactNode;
+  canMoveLeft?: boolean;
+  canMoveRight?: boolean;
+  onMoveLeft?: () => void;
+  onMoveRight?: () => void;
+  isEditing?: boolean;
+  adTimerFeatureId?: string;
+}
+
+function WidgetCard({ title, icon, value, subValue, onPress, customContent, onLongPress, isEditing, onMoveLeft, onMoveRight, canMoveLeft, canMoveRight, index, adTimerFeatureId }: any) {
   const colors = useTheme();
   
   return (
@@ -134,6 +190,9 @@ function WidgetCard({ title, value, subValue, icon, onPress, customContent, onLo
             </TouchableOpacity>
           </View>
         )}
+        
+        {adTimerFeatureId && <WidgetAdTimer featureId={adTimerFeatureId} />}
+
       </TouchableOpacity>
     </AnimatedCard>
   );
@@ -183,6 +242,36 @@ const w = StyleSheet.create({
   editOverlay: { backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: Radius.xl, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10 },
   moveBtn: { backgroundColor: '#7C5CFC', width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
   moveIcon: { color: '#FFF', fontSize: 20, fontWeight: 'bold' },
+  // Premium lock styles
+  lockOverlay: {
+    position: 'absolute',
+    bottom: -6,
+    right: -10,
+    backgroundColor: '#1a1a2e',
+    borderRadius: 12,
+    width: 22,
+    height: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#7C5CFC',
+  },
+  lockIcon: { fontSize: 11 },
+  premiumTag: {
+    marginTop: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    backgroundColor: 'rgba(124, 92, 252, 0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(124, 92, 252, 0.4)',
+  },
+  premiumTagText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#A78BFA',
+    letterSpacing: 0.5,
+  },
 });
 
 // ─── Dashboard (Progreso) Screen ────────────────────────────────────────────────
@@ -269,6 +358,29 @@ export default function DashboardScreen() {
       dateLabel = new Date(selectedDate + 'T12:00:00').toLocaleDateString(language, { month: 'short', day: 'numeric' });
     }
   }
+
+  const isPro = !!profile?.isPro;
+  const { hasPremiumAdAccess } = useAdStore();
+  const [premiumGate, setPremiumGate] = useState<{
+    visible: boolean;
+    featureId: string;
+    featureName: string;
+    featureIcon: string;
+    route: string;
+  }>({ visible: false, featureId: '', featureName: '', featureIcon: '', route: '' });
+
+  const openPremiumGate = (featureId: string, featureName: string, featureIcon: string, route: string) => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    setPremiumGate({ visible: true, featureId, featureName, featureIcon, route });
+  };
+
+  const handlePremiumFeaturePress = (featureId: string, featureName: string, featureIcon: string, route: string) => {
+    if (isPro || hasPremiumAdAccess(featureId)) {
+      router.push(route as any);
+    } else {
+      openPremiumGate(featureId, featureName, featureIcon, route);
+    }
+  };
 
   const [isEditing, setIsEditing] = useState(false);
   const handleEditMode = () => {
@@ -424,14 +536,32 @@ export default function DashboardScreen() {
       case 'photos':
         return (
           <WidgetCard key={id} {...commonProps} title={t('dashboard.evaluationWidget', 'Evaluación IA')} icon="🤖"
+            adTimerFeatureId="evaluation"
             customContent={
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ fontSize: 32, color: colors.textSecondary }}>📷</Text>
+                <View style={{ position: 'relative' }}>
+                  <Text style={{ fontSize: 32, color: colors.textSecondary }}>📷</Text>
+                  {!isPro && !hasPremiumAdAccess('evaluation') && (
+                    <View style={w.lockOverlay}>
+                      <Text style={w.lockIcon}>🔒</Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginTop: 8 }}>{t('dashboard.evaluatePhysique', 'Evaluar Físico')}</Text>
                 <Text style={[w.subValue, { color: colors.textSecondary }]}>{t('dashboard.getAIFeedback', 'Recibe feedback IA')}</Text>
+                {!isPro && !hasPremiumAdAccess('evaluation') && (
+                  <View style={w.premiumTag}>
+                    <Text style={w.premiumTagText}>👑 Premium</Text>
+                  </View>
+                )}
               </View>
             }
-            onPress={() => router.push('/modals/progress-evaluation' as any)}
+            onPress={() => handlePremiumFeaturePress(
+              'evaluation',
+              t('dashboard.evaluationWidget', 'Evaluación IA'),
+              '📷',
+              '/modals/progress-evaluation'
+            )}
           />
         );
       case 'achievements':
@@ -439,27 +569,58 @@ export default function DashboardScreen() {
       case 'recipe_search':
         return (
           <WidgetCard key={id} {...commonProps} title={t('dashboard.recipeSearchWidget', 'Buscar Recetas')} icon="🍳"
+            adTimerFeatureId="recipes"
             customContent={
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ fontSize: 32, color: colors.textSecondary }}>🥗</Text>
+                <View style={{ position: 'relative' }}>
+                  <Text style={{ fontSize: 32, color: colors.textSecondary }}>🥗</Text>
+                  {!isPro && !hasPremiumAdAccess('recipes') && (
+                    <View style={w.lockOverlay}>
+                      <Text style={w.lockIcon}>🔒</Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginTop: 8 }}>{t('dashboard.recipeSearchWidget', 'Buscar Recetas')}</Text>
                 <Text style={[w.subValue, { color: colors.textSecondary }]}>{t('dashboard.withAI', 'Con IA')}</Text>
+                {!isPro && !hasPremiumAdAccess('recipes') && (
+                  <View style={w.premiumTag}>
+                    <Text style={w.premiumTagText}>👑 Premium</Text>
+                  </View>
+                )}
               </View>
             }
-            onPress={() => router.push('/modals/recipes' as any)}
+            onPress={() => handlePremiumFeaturePress(
+              'recipes',
+              t('dashboard.recipeSearchWidget', 'Buscar Recetas con IA'),
+              '🥗',
+              '/modals/recipes'
+            )}
           />
         );
       case 'muscle_directory':
         return (
           <WidgetCard key={id} {...commonProps} title={t('dashboard.muscleDirWidget', 'Ejercicios')} icon="💪"
+            adTimerFeatureId="directory"
             customContent={
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ fontSize: 32, color: colors.textSecondary }}>📖</Text>
+                <View style={{ position: 'relative' }}>
+                  <Text style={{ fontSize: 32, color: colors.textSecondary }}>📖</Text>
+                  {!isPro && !hasPremiumAdAccess('directory') && (
+                    <View style={w.lockOverlay}>
+                      <Text style={w.lockIcon}>🔒</Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginTop: 8 }}>{t('dashboard.muscleDirTitle', 'Directorio')}</Text>
                 <Text style={[w.subValue, { color: colors.textSecondary }]}>{t('dashboard.muscleDirSub', 'Por músculos')}</Text>
               </View>
             }
-            onPress={() => router.push('/modals/muscle-directory' as any)}
+            onPress={() => handlePremiumFeaturePress(
+              'directory',
+              t('dashboard.muscleDirWidget', 'Directorio de Ejercicios'),
+              '📖',
+              '/modals/muscle-directory'
+            )}
           />
         );
       default: return null;
@@ -588,6 +749,19 @@ export default function DashboardScreen() {
         <View style={{ height: 40 }} />
       </ScrollView>
       </View>
+
+      {/* Premium Gate Modal */}
+      <PremiumGate
+        visible={premiumGate.visible}
+        featureId={premiumGate.featureId}
+        featureName={premiumGate.featureName}
+        featureIcon={premiumGate.featureIcon}
+        onClose={() => setPremiumGate(prev => ({ ...prev, visible: false }))}
+        onAdAccessGranted={() => {
+          router.push(premiumGate.route as any);
+        }}
+      />
+
       <GoalWizardModal
         visible={goalModalVisible}
         onClose={() => setGoalModalVisible(false)}

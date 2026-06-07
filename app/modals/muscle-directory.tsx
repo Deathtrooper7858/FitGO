@@ -11,6 +11,8 @@ import { useTheme } from '../../hooks/useTheme';
 import { ChevronDown, Dumbbell, Activity, Flame, ChevronUp, X } from 'lucide-react-native';
 import { Radius, Shadow, Spacing } from '../../constants';
 import { useAuthStore, usePurchaseStore } from '../../store';
+import { useAdStore } from '../../store/adStore';
+import { AdTimerOverlay } from '../../components/AdTimerOverlay';
 import { LinearGradient } from 'expo-linear-gradient';
 
 
@@ -114,9 +116,13 @@ export default function MuscleDirectoryModal() {
 
   const { profile } = useAuthStore();
   const { isPro } = usePurchaseStore();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const { hasPremiumAdAccess } = useAdStore();
 
-  if (!isProActually) {
+  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const featureId = 'directory';
+  const hasAccess = isProActually || hasPremiumAdAccess(featureId);
+
+  if (!hasAccess) {
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
         <View style={styles.paywallContainer}>
@@ -339,6 +345,8 @@ export default function MuscleDirectoryModal() {
           </View>
         </View>
       </Modal>
+
+      <AdTimerOverlay featureId="directory" />
     </SafeAreaView>
   );
 }

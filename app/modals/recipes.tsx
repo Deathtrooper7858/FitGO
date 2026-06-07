@@ -5,6 +5,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Spacing, Radius, Shadow } from '../../constants';
 import { useAuthStore, useRecipesStore, Recipe, useSettingsStore } from '../../store';
+import { useAdStore } from '../../store/adStore';
+import { AdTimerOverlay } from '../../components/AdTimerOverlay';
 import { generateRecipes } from '../../services/groq';
 import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
@@ -16,13 +18,16 @@ export default function RecipesModal() {
   const { language } = useSettingsStore();
   const { profile } = useAuthStore();
   const { recipes, pinnedRecipes, setRecipes, togglePin } = useRecipesStore();
+  const { hasPremiumAdAccess } = useAdStore();
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'search' | 'pinned'>('search');
   const isPro = profile?.isPro ?? false;
+  const featureId = 'recipes';
+  const hasAccess = isPro || hasPremiumAdAccess(featureId);
 
   const loadRecipes = async (foodName?: string) => {
-    if (!isPro) return;
+    if (!hasAccess) return;
     setLoading(true);
     // Remove Keyboard.dismiss() to prevent closing the keyboard while user is typing
     try {
@@ -42,7 +47,7 @@ export default function RecipesModal() {
   useEffect(() => {
     if (prevLang.current !== language) {
       prevLang.current = language;
-      if (isPro && activeTab === 'search') {
+      if (hasAccess && activeTab === 'search') {
         setRecipes([]);
         // Small delay so setRecipes settles before we call the API
         setTimeout(() => loadRecipes(), 100);
@@ -52,7 +57,7 @@ export default function RecipesModal() {
 
   // Debounce logic for automatic search
   useEffect(() => {
-    if (!isPro || activeTab !== 'search') return;
+    if (!hasAccess || activeTab !== 'search') return;
     
     // Only auto-search if the query has changed and is long enough, or empty
     const handler = setTimeout(() => {
@@ -64,15 +69,15 @@ export default function RecipesModal() {
     }, 1200); // 1.2s debounce to avoid spamming the AI
 
     return () => clearTimeout(handler);
-  }, [searchQuery, isPro, activeTab]);
+  }, [searchQuery, hasAccess, activeTab]);
 
   useEffect(() => {
-    if (recipes.length === 0 && isPro && activeTab === 'search') {
+    if (recipes.length === 0 && hasAccess && activeTab === 'search') {
       loadRecipes();
     }
-  }, [isPro]);
+  }, [hasAccess]);
 
-  if (!isPro) {
+  if (!hasAccess) {
     return (
       <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
         <View style={s.paywallContainer}>
@@ -188,6 +193,8 @@ export default function RecipesModal() {
       <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
         {renderContent()}
       </ScrollView>
+
+      <AdTimerOverlay featureId="recipes" />
     </SafeAreaView>
   );
 }

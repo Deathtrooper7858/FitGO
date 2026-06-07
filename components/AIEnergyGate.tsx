@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RewardedAd, RewardedAdEventType } from 'react-native-google-mobile-ads';
-import { useAdStore } from '../store/adStore';
+import { useAdStore, MAX_AI_ENERGY, REWARD_AMOUNT } from '../store/adStore';
 import { Zap, X, Play, Crown } from 'lucide-react-native';
 import { useTheme } from '../hooks/useTheme';
 import { AD_UNIT_IDS, AD_CONFIG } from '../constants/adConfig';

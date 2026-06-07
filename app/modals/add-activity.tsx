@@ -7,7 +7,7 @@ import * as Crypto from 'expo-crypto';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../hooks/useTheme';
-import { useNutritionStore, useSettingsStore } from '../../store';
+import { useNutritionStore, useSettingsStore, useAuthStore, usePurchaseStore } from '../../store';
 import { Radius, Spacing } from '../../constants';
 import { useTranslation } from 'react-i18next';
 import {
@@ -18,8 +18,9 @@ import { transcribeAudio, estimateActivityCalories } from '../../services/groq';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import {
-  X, Search, Mic, Square, Flame, Clock, Sparkles, Plus, Minus, Check, ArrowLeft
+  X, Search, Mic, Square, Flame, Clock, Sparkles, Plus, Minus, Check, ArrowLeft, Lock
 } from 'lucide-react-native';
+import { CustomAlert, AlertType } from '../../components/CustomAlert';
 
 /** Preset exercise list with fixed kcal-per-30-min values and category mapping. */
 const EXERCISES = [
@@ -59,6 +60,10 @@ export default function AddActivityModal() {
   const { language } = useSettingsStore();
   const { id }       = useLocalSearchParams<{ id: string }>();
   const { addActivityLog, updateActivityLog, activityLogs, selectedDate } = useNutritionStore();
+  const { profile } = useAuthStore();
+  const { isPro } = usePurchaseStore();
+  
+  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
 
   // If an `id` param was passed, we are editing an existing log entry
   const editingAct = id ? activityLogs.find(a => a.id === id) : null;
@@ -84,6 +89,10 @@ export default function AddActivityModal() {
 
   const [activeCategory, setActiveCategory] = useState<'all' | 'cardio' | 'strength' | 'sports'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Premium alert state
+  const [premiumAlert, setPremiumAlert] = useState(false);
+  const showPremiumAlert = () => setPremiumAlert(true);
 
   // Animated value for the pulsing mic ring while recording
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -190,6 +199,10 @@ export default function AddActivityModal() {
   };
 
   const toggleRecording = () => {
+    if (!isProActually) {
+      showPremiumAlert();
+      return;
+    }
     if (isRecording) {
       stopRecording();
     } else {
@@ -214,9 +227,15 @@ export default function AddActivityModal() {
           t('activities.estimateFailed', 'No pudimos calcular las calorías. Intenta ser más específico.')
         );
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('[AddActivity] Estimate error:', err);
-      Alert.alert(t('common.error'), t('activities.estimateError', 'Error al conectar con la IA.'));
+      const isOffline = err?.message?.includes('Sin conexión') || err?.message?.includes('Network Error');
+      Alert.alert(
+        t('common.error'),
+        isOffline
+          ? t('activities.noInternet', 'Sin conexión a internet. La estimación de IA requiere conexión.')
+          : t('activities.estimateError', 'Error al conectar con la IA.')
+      );
     } finally {
       setIsEstimating(false);
     }
@@ -484,27 +503,58 @@ export default function AddActivityModal() {
                   </View>
                 )}
 
-                <TouchableOpacity
-                  onPress={toggleRecording}
-                  disabled={isTranscribing}
-                  activeOpacity={0.85}
-                  style={[
-                    s.micBtn,
-                    {
-                      backgroundColor: isRecording ? colors.error : colors.primary + '15',
-                      borderColor: isRecording ? colors.error : colors.primary + '40',
-                      borderWidth: isRecording ? 0 : 2,
-                    }
-                  ]}
-                >
-                  {isTranscribing ? (
-                    <ActivityIndicator color={colors.primary} size="large" />
-                  ) : isRecording ? (
-                    <Square size={24} color="#FFF" fill="#FFF" />
-                  ) : (
-                    <Mic size={30} color={colors.primary} />
+                <View style={{ position: 'relative' }}>
+                  <TouchableOpacity
+                    onPress={toggleRecording}
+                    disabled={isTranscribing}
+                    activeOpacity={0.85}
+                    style={[
+                      s.micBtn,
+                      {
+                        backgroundColor: !isProActually ? 'rgba(124,92,252,0.08)' : isRecording ? colors.error : colors.primary + '15',
+                        borderColor: !isProActually ? colors.primary + '30' : isRecording ? colors.error : colors.primary + '40',
+                        borderWidth: isRecording ? 0 : 2,
+                        opacity: !isProActually ? 0.7 : 1,
+                      }
+                    ]}
+                  >
+                    {isTranscribing ? (
+                      <ActivityIndicator color={colors.primary} size="large" />
+                    ) : isRecording ? (
+                      <Square size={24} color="#FFF" fill="#FFF" />
+                    ) : (
+                      <Mic size={30} color={!isProActually ? colors.textMuted : colors.primary} />
+                    )}
+                  </TouchableOpacity>
+
+                  {/* Lock badge for non-premium */}
+                  {!isProActually && (
+                    <TouchableOpacity
+                      onPress={showPremiumAlert}
+                      activeOpacity={0.9}
+                      style={{
+                        position: 'absolute',
+                        bottom: -4,
+                        right: -4,
+                        width: 26,
+                        height: 26,
+                        borderRadius: 13,
+                        backgroundColor: '#F59E0B',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        borderWidth: 2,
+                        borderColor: colors.surface,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 4,
+                        elevation: 5,
+                      }}
+                    >
+                      <Lock size={13} color="#fff" strokeWidth={3} />
+                    </TouchableOpacity>
                   )}
-                </TouchableOpacity>
+                </View>
 
                 <Text style={[
                   s.statusText,
@@ -599,9 +649,11 @@ export default function AddActivityModal() {
                       loggedAt: `${selectedDate}T${new Date().toLocaleTimeString('en-GB')}`,
                     });
                   }
-                  router.back();
                 } catch (err) {
                   console.error('[AddActivity] Save error:', err);
+                } finally {
+                  // Always navigate back — the activity is saved locally even if Supabase sync fails
+                  router.back();
                 }
               }}
               activeOpacity={0.85}
@@ -638,6 +690,16 @@ export default function AddActivityModal() {
   // ─── GENERAL LIST VIEW (Active activity select) ─────────────────────────────
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
+      <CustomAlert
+        visible={premiumAlert}
+        type="confirm"
+        title={`👑 ${t('paywall.premiumFeature', 'Función Premium')}`}
+        message={t('paywall.premiumRequired', 'Esta función es exclusiva para usuarios Premium. ¡Actualiza tu plan para usar el dictado por voz y la estimación con IA!')}
+        confirmText={t('paywall.upgrade', 'Ver Planes')}
+        cancelText={t('common.close', 'Cerrar')}
+        onConfirm={() => { setPremiumAlert(false); router.push('/paywall' as any); }}
+        onCancel={() => setPremiumAlert(false)}
+      />
       {/* Header */}
       <View style={s.header}>
         <Text style={[s.title, { color: colors.textPrimary }]}>

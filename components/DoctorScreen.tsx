@@ -25,6 +25,7 @@ import CoachHistoryModal from './CoachHistoryModal';
 import { ImagePickerModal } from './ImagePickerModal';
 import { ImageViewerModal } from './ImageViewerModal';
 import { useKeyboardNavBar } from '../hooks/useKeyboardNavBar';
+import { useKeyboardHeight } from '../hooks/useKeyboardHeight';
 import { useAICredits } from '../hooks/useAICredits';
 import { AICreditsBar } from './AICreditsBar';
 
@@ -141,7 +142,7 @@ function MessageBubble({ msg, isLastUser, onEdit, onImagePress }: { msg: CoachMe
               <Image
                 source={{ uri: msg.imageUrl }}
                 style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }}
-                contentFit="cover"
+                resizeMode="cover"
               />
             </TouchableOpacity>
           )}
@@ -182,7 +183,7 @@ function MessageBubble({ msg, isLastUser, onEdit, onImagePress }: { msg: CoachMe
             <Image
               source={{ uri: msg.imageUrl }}
               style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }}
-              contentFit="cover"
+              resizeMode="cover"
             />
           </TouchableOpacity>
         )}
@@ -200,7 +201,7 @@ function MessageBubble({ msg, isLastUser, onEdit, onImagePress }: { msg: CoachMe
     <View style={[bubble.row, isUser && bubble.rowUser]}>
       {!isUser && (
         <View style={[bubble.avatarContainer, { borderColor: colors.primary + '30' }]}>
-          <Image source={require('../assets/doctor_badge.jpg')} style={bubble.avatar} contentFit="cover" />
+          <Image source={require('../assets/doctor_badge.jpg')} style={bubble.avatar} resizeMode="cover" />
         </View>
       )}
       {renderBubbleBody()}
@@ -233,7 +234,7 @@ function TypingIndicator() {
   return (
     <View style={[bubble.row, { paddingHorizontal: Spacing.base, marginTop: 6 }]}>
       <View style={[bubble.avatarContainer, { borderColor: colors.primary + '30' }]}>
-        <Image source={require('../assets/doctor_badge.jpg')} style={bubble.avatar} contentFit="cover" />
+        <Image source={require('../assets/doctor_badge.jpg')} style={bubble.avatar} resizeMode="cover" />
       </View>
       <View 
         style={[
@@ -257,6 +258,7 @@ function TypingIndicator() {
 // ─── doctor Screen ─────────────────────────────────────────────────────────────
 export default function DoctorScreen() {
   useKeyboardNavBar();
+  const keyboardHeight = useKeyboardHeight();
   const insets = useSafeAreaInsets();
   const [input, setInput]               = useState('');
   const coachType = 'doctor';
@@ -631,7 +633,7 @@ export default function DoctorScreen() {
           style={s.header}
         >
           <View style={[s.headerAvatarContainer, { borderColor: colors.primary + '40' }]}>
-            <Image source={require('../assets/doctor_badge.jpg')} style={s.headerAvatar} contentFit="cover" />
+            <Image source={require('../assets/doctor_badge.jpg')} style={s.headerAvatar} resizeMode="cover" />
             <View style={[s.headerOnlineDot, { backgroundColor: colors.success }]} />
           </View>
           
@@ -666,9 +668,9 @@ export default function DoctorScreen() {
       </View>
 
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 90}
+        style={{ flex: 1, paddingBottom: Platform.OS === 'android' ? keyboardHeight : 0 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <FlatList<CoachMessage>
           ref={flatRef}
@@ -748,7 +750,7 @@ export default function DoctorScreen() {
                   <Image
                     source={{ uri: `data:image/jpeg;base64,${selectedImage}` }}
                     style={s.imagePreview}
-                    contentFit="cover"
+                    resizeMode="cover"
                   />
                   <TouchableOpacity
                     onPress={() => setSelectedImage(null)}
