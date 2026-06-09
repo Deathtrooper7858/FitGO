@@ -1,23 +1,13 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from './authStore';
 import { NotificationTriggers } from '../utils/notificationTriggers';
 import { getLocalDateString } from '../utils/date';
 
-// Secure storage adapter for Zustand
-const secureStorage = {
-  getItem: async (name: string) => {
-    return (await SecureStore.getItemAsync(name)) || null;
-  },
-  setItem: async (name: string, value: string) => {
-    await SecureStore.setItemAsync(name, value);
-  },
-  removeItem: async (name: string) => {
-    await SecureStore.deleteItemAsync(name);
-  },
-};
+// AsyncStorage adapter — SecureStore has a hard 2KB/key limit on Android which
+// causes silent persist failures when leagueStore data grows (members list etc.)
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -135,6 +125,7 @@ export const useLeagueStore = create<LeagueStore>()(
         .from('squad_members')
         .select('squad_id')
         .eq('user_id', userId)
+        .limit(1)
         .maybeSingle();
 
       // Network error: keep cached state, don't wipe
@@ -155,7 +146,8 @@ export const useLeagueStore = create<LeagueStore>()(
         .from('squads')
         .select('*')
         .eq('id', membership.squad_id)
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       if (squadErr) {
         console.warn('[League] Squad fetch error, keeping cache:', squadErr.message);
@@ -174,7 +166,8 @@ export const useLeagueStore = create<LeagueStore>()(
         .from('users')
         .select('league_points, current_streak')
         .eq('id', userId)
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       set({
         squad: squadData as Squad,
@@ -283,7 +276,8 @@ export const useLeagueStore = create<LeagueStore>()(
         .from('squads')
         .select('*')
         .eq('invite_code', code.trim().toLowerCase())
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       if (findErr || !squadData) {
         set({ error: 'Código de squad inválido.', loading: false });
@@ -365,7 +359,7 @@ export const useLeagueStore = create<LeagueStore>()(
       await get().fetchMySquad(profile!.id);
 
       // Notify kicked member
-      const { data: memberData } = await supabase.from('users').select('expo_push_token').eq('id', memberId).single();
+      const { data: memberData } = await supabase.from('users').select('expo_push_token').eq('id', memberId).limit(1).maybeSingle();
       if (memberData?.expo_push_token) {
         NotificationTriggers.social.memberKicked(memberData.expo_push_token, squad?.name || 'el squad');
       }
@@ -381,7 +375,7 @@ export const useLeagueStore = create<LeagueStore>()(
   // ── Delete squad ──────────────────────────────────────────────────────────
   deleteSquad: async (squadId: string) => {
     const { profile } = useAuthStore.getState();
-    const { members } = get();
+    const { members, squad } = get();
     set({ loading: true, error: null });
     try {
       const { error } = await supabase
@@ -445,49 +439,50 @@ export const useLeagueStore = create<LeagueStore>()(
     
     // GUARD: Only award points if the user is in a squad
     if (!squad) {
-      console.log(`[LeagueStore] 🚫 Skipping award of ${points} pts (reason: ${reason}) - user is not in a squad.`);
+      __DEV__ && console.log(`[LeagueStore] 🚫 Skipping award of ${points} pts (reason: ${reason}) - user is not in a squad.`);
       return;
     }
 
     const multiplier = getStreakMultiplier(myStreak);
     const finalPoints = Math.round(points * multiplier);
 
-    console.log(`[LeagueStore] ⭐ Awarding ${finalPoints} pts (base: ${points}, streak: ${myStreak}, multiplier: ${multiplier}x, reason: ${reason})`);
+    __DEV__ && console.log(`[LeagueStore] ⭐ Awarding ${finalPoints} pts (base: ${points}, streak: ${myStreak}, multiplier: ${multiplier}x, reason: ${reason})`);
 
-    try {
-      const { error: rpcError } = await supabase.rpc('award_league_points', {
-        p_user_id: userId,
-        p_points: finalPoints,
-        p_reason: reason,
-      });
-
-      if (rpcError) {
-        console.error('[LeagueStore] ❌ award_league_points RPC failed:', rpcError.message);
-        // Still update local state so UI reflects the intent
-      } else {
-        console.log(`[LeagueStore] ✅ Points saved to DB successfully (${finalPoints} pts)`);
-      }
-    } catch (err: any) {
-      console.error('[LeagueStore] ❌ award_league_points exception:', err.message);
-    }
-    
-    if (squad?.id) {
-      try {
-        await supabase.rpc('recalculate_league_tier', { p_squad_id: squad.id });
-      } catch (err: any) {
-        console.warn('[LeagueStore] recalculate_league_tier failed:', err.message);
-      }
-    }
-
+    // Update local state immediately — UI reflects intent without waiting for network
     set(state => ({
       myPoints: state.myPoints + finalPoints,
       todayPointsEarned: state.todayPointsEarned + finalPoints,
     }));
-    
-    console.log(`[LeagueStore] 📊 New totals - myPoints: ${get().myPoints}, todayEarned: ${get().todayPointsEarned}`);
-    
-    // Refresh to get new tier and leaderboard
-    await get().fetchMySquad(userId);
+
+    // Fire-and-forget: DB sync + tier recalculation + leaderboard refresh run in
+    // background so they NEVER block the caller (e.g. addLog returning to the UI).
+    void (async () => {
+      try {
+        const { error: rpcError } = await supabase.rpc('award_league_points', {
+          p_user_id: userId,
+          p_points: finalPoints,
+          p_reason: reason,
+        });
+
+        if (rpcError) {
+          console.warn('[LeagueStore] award_league_points RPC failed:', rpcError.message);
+        }
+      } catch (err: any) {
+        console.warn('[LeagueStore] award_league_points exception:', err.message);
+      }
+
+      // Tier recalculation — also background, non-blocking
+      if (squad?.id) {
+        try {
+          await supabase.rpc('recalculate_league_tier', { p_squad_id: squad.id });
+        } catch (err: any) {
+          // Non-fatal: tier will be corrected on next fetchMySquad
+        }
+      }
+
+      // Refresh leaderboard in background — does NOT block the original call
+      await get().fetchMySquad(userId);
+    })();
   },
 
   // ── Award points after checking if macros are within 5% margin ───────────
@@ -517,8 +512,8 @@ export const useLeagueStore = create<LeagueStore>()(
   }),
     }),
     {
-      name: 'ff-league-store',
-      storage: createJSONStorage(() => secureStorage),
+      name: 'ff-league-store-v2', // bumped to clear old SecureStore key
+      storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         squad: state.squad,
         members: state.members,

@@ -23,6 +23,17 @@ import * as Crypto from 'expo-crypto';
 // SecureStore has a hard 2 KB per-key limit on Android which causes
 // silent persist failures once todayLogs / activityLogs grow beyond that.
 
+// ── Module-level debounce for syncDailyMetrics ─────────────────────────────────────────
+// Rapid taps (e.g. +100ml water pressed 5 times) collapse into a single upsert.
+let _syncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+function scheduleSyncDailyMetrics(fn: () => void, ms = 800) {
+  if (_syncDebounceTimer !== null) clearTimeout(_syncDebounceTimer);
+  _syncDebounceTimer = setTimeout(() => {
+    _syncDebounceTimer = null;
+    fn();
+  }, ms);
+}
+
 /** Returns true if the string is a valid UUID v4 format. */
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const isValidUUID = (v: string | null | undefined): boolean =>
@@ -263,26 +274,25 @@ export const useNutritionStore = create<NutritionState>()(
               }
             }
 
-            // Gamification: Award points for logging meal
-            try {
-              const ls = useLeagueStore.getState();
-              console.log(`[NutritionStore] 🎮 Awarding MEAL_LOG points for user ${profile.id}...`);
-              await ls.awardPoints(profile.id, POINTS.MEAL_LOG, 'meal_log');
-              console.log('[NutritionStore] 🎮 MEAL_LOG points awarded successfully');
-              
-              // Check if this log perfected the macros for the day
-              const totals = selectDailyTotals(get());
-              if (profile.targetCalories && profile.macros) {
-                console.log(`[NutritionStore] 🎯 Checking macro perfection - consumed: ${JSON.stringify({ cal: totals.calories, p: totals.protein, c: totals.carbs, f: totals.fat })}, target: ${JSON.stringify({ cal: profile.targetCalories, p: profile.macros.protein, c: profile.macros.carbs, f: profile.macros.fat })}`);
-                await ls.checkAndAwardMacroPoints(
-                  profile.id,
-                  { calories: totals.calories, protein: totals.protein, carbs: totals.carbs, fat: totals.fat },
-                  { calories: profile.targetCalories, protein: profile.macros.protein, carbs: profile.macros.carbs, fat: profile.macros.fat }
-                );
+            // Gamification: fire-and-forget so it never blocks the addLog response
+            void (async () => {
+              try {
+                const ls = useLeagueStore.getState();
+                await ls.awardPoints(profile.id, POINTS.MEAL_LOG, 'meal_log');
+                
+                // Check if this log perfected the macros for the day
+                const totals = selectDailyTotals(get());
+                if (profile.targetCalories && profile.macros) {
+                  await ls.checkAndAwardMacroPoints(
+                    profile.id,
+                    { calories: totals.calories, protein: totals.protein, carbs: totals.carbs, fat: totals.fat },
+                    { calories: profile.targetCalories, protein: profile.macros.protein, carbs: profile.macros.carbs, fat: profile.macros.fat }
+                  );
+                }
+              } catch (e) {
+                __DEV__ && console.warn('[NutritionStore] Failed to award gamification points:', e);
               }
-            } catch (e) {
-              console.warn('[NutritionStore] ⚠️ Failed to award gamification points:', e);
-            }
+            })();
           } catch (err) {
             console.warn('[NutritionStore] addLog sync error:', err);
             throw err;
@@ -329,7 +339,8 @@ export const useNutritionStore = create<NutritionState>()(
         const safeml = Math.max(0, ml);
         set((s) => ({ dailyWater: { ...s.dailyWater, [s.selectedDate]: safeml } }));
         if (safeml > 0) get().updateActivity(get().selectedDate);
-        get().syncDailyMetrics();
+        // Debounced: rapid taps collapse into one Supabase upsert
+        scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
       },
       addWater:  async (ml) => {
         const date = get().selectedDate;
@@ -338,7 +349,7 @@ export const useNutritionStore = create<NutritionState>()(
         }));
         const newVal = get().dailyWater[date] || 0;
         if (newVal > 0) get().updateActivity(date);
-        get().syncDailyMetrics();
+        scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
       },
       setDate:   (date) => set({ selectedDate: date }),
       setStreak: (streakDays) => set({ streakDays }),
@@ -346,7 +357,7 @@ export const useNutritionStore = create<NutritionState>()(
         const safeSteps = Math.max(0, steps);
         set((s) => ({ dailySteps: { ...s.dailySteps, [s.selectedDate]: safeSteps } }));
         if (safeSteps > 0) get().updateActivity(get().selectedDate);
-        get().syncDailyMetrics();
+        scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
       },
       addSteps:  async (steps) => {
         const date = get().selectedDate;
@@ -355,15 +366,14 @@ export const useNutritionStore = create<NutritionState>()(
         }));
         const newVal = get().dailySteps[date] || 0;
         if (newVal > 0) get().updateActivity(date);
-        get().syncDailyMetrics();
+        scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
       },
       setSleep:  async (hours) => {
         const date = get().selectedDate;
         set((s) => ({ dailySleep: { ...s.dailySleep, [date]: hours } }));
         if (hours > 0) get().updateActivity(date);
-        
         // Trigger sync in background without awaiting to keep UI snappy
-        get().syncDailyMetrics();
+        scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
       },
       setActivity: (activityCals) => set({ activityCals }),
       addActivityLog: async (activity) => {
@@ -428,11 +438,11 @@ export const useNutritionStore = create<NutritionState>()(
       setActivityLogs: (activityLogs) => set({ activityLogs }),
       setNeat:     (level) => {
         set((s) => ({ dailyNeat: { ...s.dailyNeat, [s.selectedDate]: level } }));
-        get().syncDailyMetrics();
+        scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
       },
       setExerciseLevel: (level) => {
         set((s) => ({ dailyExercise: { ...s.dailyExercise, [s.selectedDate]: level } }));
-        get().syncDailyMetrics();
+        scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
       },
       addFavorite: (food) => set((s) => ({
         favoriteFoods: s.favoriteFoods.find(f => f.id === food.id)

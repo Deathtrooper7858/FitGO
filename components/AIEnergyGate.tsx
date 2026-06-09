@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, ActivityIndicator
 } from 'react-native';
@@ -141,7 +141,11 @@ export function useAIEnergy() {
   const [gateVisible, setGateVisible] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
-  checkAndResetEnergy();
+  // Run once on mount (and whenever the day changes) — never during render.
+  useEffect(() => {
+    checkAndResetEnergy();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const requestAIAction = (action: () => void) => {
     if (consumeEnergy(1)) {
