@@ -30,6 +30,18 @@ export const supabase = createClient(
       detectSessionInUrl: false,
       flowType: 'pkce',
     },
+    realtime: {
+      // Prevent aggressive reconnects on slow/weak networks (default is 10s).
+      // 30s gives the OS time to restore connectivity before attempting a new WS.
+      timeout: 30000,
+    },
+    global: {
+      headers: {
+        // Encourage HTTP/1.1 connection reuse — each Supabase query opens to the
+        // same host so keep-alive eliminates repeated TCP handshakes.
+        'Connection': 'keep-alive',
+      },
+    },
   }
 );
 

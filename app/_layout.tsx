@@ -211,7 +211,7 @@ export default function RootLayout() {
         <AchievementToast />
         <Stack screenOptions={{ 
           headerShown: false, 
-          animation: 'fade',
+          animation: 'none',
           contentStyle: { backgroundColor: colors.background }
         }}>
           <Stack.Screen name="index" />

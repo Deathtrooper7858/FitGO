@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../services/supabase';
+import { useAuthStore } from './authStore';
 import * as FileSystem from 'expo-file-system/legacy';
 import { decode } from 'base64-arraybuffer';
 import { triggerInstantNotification } from '../services/notifications';
@@ -463,8 +464,8 @@ export const useSocialStore = create<SocialState>((set, get) => ({
   fetchPosts: async () => {
     set({ isPostsLoading: true });
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const currentUserId = sessionData.session?.user?.id;
+      // Read userId from cached auth state — avoids an extra getSession() network call
+      const currentUserId = useAuthStore.getState().session?.user?.id;
 
       const { data, error } = await supabase
         .from('posts')
