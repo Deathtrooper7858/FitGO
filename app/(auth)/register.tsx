@@ -42,6 +42,12 @@ export default function RegisterScreen() {
 
     if (errorCode) throw new Error(errorCode);
 
+    if (params.code) {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(params.code);
+      if (error) throw error;
+      return data.session;
+    }
+
     const { access_token, refresh_token } = params;
 
     if (!access_token) return;
