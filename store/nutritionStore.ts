@@ -16,6 +16,7 @@ import { getLocalDateString } from '../utils/date';
 import { useAuthStore } from './authStore';
 import { useLeagueStore, POINTS } from './leagueStore';
 import { supabase } from '../services/supabase';
+import { useToastStore } from './toastStore';
 import { NotificationTriggers } from '../utils/notificationTriggers';
 import * as Crypto from 'expo-crypto';
 
@@ -230,6 +231,16 @@ export const useNutritionStore = create<NutritionState>()(
         set((s) => ({ todayLogs: [...s.todayLogs, safeLog] }));
         get().updateActivity(safeLog.loggedAt.split('T')[0]);
 
+        const mealTranslations: Record<string, string> = { breakfast: 'Desayuno', lunch: 'Almuerzo', dinner: 'Cena', snack: 'Snack' };
+        useToastStore.getState().addNotification({
+          title: `${mealTranslations[safeLog.meal.toLowerCase()] || 'Comida'} Registrada`,
+          description: `Se han añadido ${safeLog.calories} kcal a tu día.`,
+          icon: '🍽️',
+          iconType: 'emoji',
+          tier: 'success',
+          isAchievement: false
+        });
+
         const { profile } = useAuthStore.getState();
         if (profile?.id) {
           try {
@@ -339,6 +350,14 @@ export const useNutritionStore = create<NutritionState>()(
         const safeml = Math.max(0, ml);
         set((s) => ({ dailyWater: { ...s.dailyWater, [s.selectedDate]: safeml } }));
         if (safeml > 0) get().updateActivity(get().selectedDate);
+        useToastStore.getState().addNotification({
+          title: 'Agua Actualizada',
+          description: `Total de hoy: ${safeml} ml.`,
+          iconType: 'lucide',
+          lucideIcon: 'Droplets',
+          tier: 'info',
+          isAchievement: false
+        });
         // Debounced: rapid taps collapse into one Supabase upsert
         scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
       },
@@ -349,6 +368,14 @@ export const useNutritionStore = create<NutritionState>()(
         }));
         const newVal = get().dailyWater[date] || 0;
         if (newVal > 0) get().updateActivity(date);
+        useToastStore.getState().addNotification({
+          title: 'Agua Añadida',
+          description: `+${ml} ml. Total de hoy: ${newVal} ml.`,
+          iconType: 'lucide',
+          lucideIcon: 'GlassWater',
+          tier: 'info',
+          isAchievement: false
+        });
         scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
       },
       setDate:   (date) => set({ selectedDate: date }),
@@ -366,12 +393,28 @@ export const useNutritionStore = create<NutritionState>()(
         }));
         const newVal = get().dailySteps[date] || 0;
         if (newVal > 0) get().updateActivity(date);
+        useToastStore.getState().addNotification({
+          title: 'Pasos Añadidos',
+          description: `+${steps} pasos. Total de hoy: ${newVal}.`,
+          iconType: 'lucide',
+          lucideIcon: 'Footprints',
+          tier: 'success',
+          isAchievement: false
+        });
         scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
       },
       setSleep:  async (hours) => {
         const date = get().selectedDate;
         set((s) => ({ dailySleep: { ...s.dailySleep, [date]: hours } }));
         if (hours > 0) get().updateActivity(date);
+        useToastStore.getState().addNotification({
+          title: 'Sueño Registrado',
+          description: `Has registrado ${hours} horas de sueño.`,
+          iconType: 'lucide',
+          lucideIcon: 'Moon',
+          tier: 'plata',
+          isAchievement: false
+        });
         // Trigger sync in background without awaiting to keep UI snappy
         scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
       },
@@ -380,6 +423,15 @@ export const useNutritionStore = create<NutritionState>()(
         // Save locally first — this always succeeds even offline
         set((s) => ({ activityLogs: [...s.activityLogs, activity] }));
         get().updateActivity(activity.loggedAt.split('T')[0]);
+
+        useToastStore.getState().addNotification({
+          title: 'Ejercicio Añadido',
+          description: `${activity.name} (${activity.duration} min) - ${activity.calories} kcal.`,
+          icon: activity.icon || '🔥',
+          iconType: 'emoji',
+          tier: 'success',
+          isAchievement: false
+        });
 
         const { profile } = useAuthStore.getState();
         if (profile?.id) {

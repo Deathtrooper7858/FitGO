@@ -4,6 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 import { supabase } from '../services/supabase';
 import { BodyMeasurement } from './types';
 import { useAuthStore } from './authStore';
+import { useToastStore } from './toastStore';
 
 // Secure storage adapter for Zustand
 const secureStorage = {
@@ -115,6 +116,15 @@ export const useBodyStore = create<BodyState>()(
             return {
               measurements: [newM, ...filtered].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             };
+          });
+
+          useToastStore.getState().addNotification({
+            title: 'Medidas Actualizadas',
+            description: `Tus registros corporales han sido guardados.`,
+            iconType: 'lucide',
+            lucideIcon: 'Ruler',
+            tier: 'plata',
+            isAchievement: false
           });
         } catch (error) {
           console.error('[BodyStore] Add/Upsert error:', error);
