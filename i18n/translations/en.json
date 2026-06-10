@@ -175,7 +175,9 @@
     "privacyLink": "Privacy Policy",
     "termsAnd": "and the",
     "mustAcceptTerms": "You must accept the Terms of Service and Privacy Policy to continue.",
-    "emailRequired": "Please enter your email address."
+    "emailRequired": "Please enter your email address.",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Leave blank to keep current"
   },
   "tabs": {
     "dashboard": "Progress",
@@ -471,7 +473,7 @@
     "carbs": "Carbs",
     "fat": "Fat",
     "userIdNotFound": "User ID not found. Please log in again.",
-    "updateFailed": "Failed to update profile",
+    "updateFailed": "Failed to update your account.",
     "updateSuccess": "Profile updated successfully ✨",
     "roleSuperAdmin": "Super Admin",
     "roleAdmin": "Administrator",
@@ -565,7 +567,7 @@
     "exportData": "Export Data (Excel)",
     "restoreSubscription": "Restore subscription",
     "userId": "User ID",
-    "updateEmailPassword": "Update email or password",
+    "updateEmailPassword": "Update Email or Password",
     "terms": "Terms of Service",
     "others": "Others",
     "idCopied": "ID copied to clipboard",
@@ -605,7 +607,13 @@
     "goalReached": "Achieved!",
     "badges": {
       "owner": "Owner"
-    }
+    },
+    "updateAccountDesc": "Enter your new email address or a new password. Only the fields you modify will be updated.",
+    "emailAndPasswordUpdated": "Password updated. Please check the inbox of your new email to confirm the email change.",
+    "emailUpdated": "Check the inbox of your new email to confirm the change.",
+    "passwordUpdated": "Password updated successfully.",
+    "samePasswordError": "The new password must be different from the current password.",
+    "noChanges": "You have not made any changes."
   },
   "recipes": {
     "title": "Recipes",

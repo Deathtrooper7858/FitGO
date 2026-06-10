@@ -1440,23 +1440,19 @@ export default function ProfileScreen() {
   };
 
   const handleUpdateEmailPassword = () => {
-    showAlert(
-      'info',
-      t('profile.updateEmailPassword'),
-      t('profile.updateEmailPasswordInfo', 'Para actualizar tu correo o contraseña, te enviaremos un enlace de recuperación.'),
-      async () => {
-        if (profile?.email) {
-          const { error } = await supabase.auth.resetPasswordForEmail(profile.email);
-          if (error) {
-            setToastMsg({ text: t('profile.updateFailed'), type: 'error' });
-          } else {
-            setToastMsg({ text: t('auth.checkEmail'), type: 'success' });
-          }
-        }
-      },
-      () => {},
-      t('common.continue')
-    );
+    router.push('/modals/update-account');
+  };
+
+  const handleInviteFriends = async () => {
+    try {
+      const { Share } = require('react-native');
+      const result = await Share.share({
+        message: t('profile.inviteMessage', '¡Únete a FitGO y transforma tu estilo de vida! Descarga la app aquí: https://fit-go-smoky.vercel.app/es'),
+        title: 'FitGO',
+      });
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
   };
 
   const handleLogout = async () => {
@@ -1492,6 +1488,14 @@ export default function ProfileScreen() {
     : profile?.goal === 'gain'
     ? '⬆️ ' + t('profile.gainMuscle', 'Ganar Músculo')
     : '⚖️ ' + t('profile.maintain', 'Mantener');
+
+  const handleLanguageSelect = async (lang: string) => {
+    setLanguage(lang as any);
+    setLangModalVisible(false);
+    if (profile?.id) {
+      await supabase.auth.updateUser({ data: { language: lang } });
+    }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -1531,7 +1535,7 @@ export default function ProfileScreen() {
       <LanguageModal
         visible={langModalVisible}
         currentLang={language}
-        onSelect={setLanguage}
+        onSelect={handleLanguageSelect}
         onClose={() => setLangModalVisible(false)}
       />
 
@@ -1844,6 +1848,7 @@ export default function ProfileScreen() {
           style={{ marginHorizontal: Spacing.base, marginBottom: Spacing.base }}
         >
           <Text style={[s.sectionTitle, { color: colors.textMuted }]}>{t('about.title', 'SOBRE FITGO')}</Text>
+          <MenuRow icon={Share2} label={t('profile.inviteFriends', 'Invitar Amigos')} onPress={handleInviteFriends} iconColor="#10B981" />
           <MenuRow icon={FileText} label={t('profile.terms', 'Términos y Condiciones')} onPress={() => router.push({ pathname: '/modals/terms', params: { tab: 'terms' } } as any)} iconColor="#6366F1" />
           <MenuRow icon={ShieldCheck} label={t('profile.privacy', 'Política de Privacidad')} onPress={() => router.push({ pathname: '/modals/terms', params: { tab: 'privacy' } } as any)} iconColor="#10B981" />
           <MenuRow icon={Info} label={t('about.moreInfo', 'Más sobre FitGO')} rightIcon={showAbout ? '▼' : '›'} onPress={() => toggleSection(setShowAbout, showAbout)} iconColor="#3B82F6" />

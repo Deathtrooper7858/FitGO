@@ -115,7 +115,7 @@
     "carbs": "Carboidratos",
     "fat": "Gordura",
     "userIdNotFound": "ID de usuário não encontrado. Por favor, entre novamente.",
-    "updateFailed": "Falha ao atualizar perfil",
+    "updateFailed": "Falha ao atualizar sua conta.",
     "notAuth": "Usuário não autenticado",
     "uploadFailed": "Falha ao carregar foto de perfil",
     "goalQuest": "Qual é o seu objetivo atual?",
@@ -209,7 +209,7 @@
     "exportData": "Exportar Data (Excel)",
     "restoreSubscription": "Restaurar suscripción",
     "userId": "ID Usuario",
-    "updateEmailPassword": "Actualizar correo o contraseña",
+    "updateEmailPassword": "Atualizar E-mail ou Senha",
     "terms": "Termos de Serviço",
     "others": "Otros",
     "idCopied": "ID copiado al portapapeles",
@@ -249,7 +249,13 @@
     "goalReached": "Alcançado!",
     "badges": {
       "owner": "Proprietário"
-    }
+    },
+    "updateAccountDesc": "Insira seu novo endereço de e-mail ou uma nova senha. Apenas os campos modificados serão atualizados.",
+    "emailAndPasswordUpdated": "Senha atualizada. Verifique a caixa de entrada do seu novo e-mail para confirmar a alteração.",
+    "emailUpdated": "Verifique a caixa de entrada do seu novo e-mail para confirmar a alteração.",
+    "passwordUpdated": "Senha atualizada com sucesso.",
+    "samePasswordError": "A nova senha deve ser diferente da senha atual.",
+    "noChanges": "Você não fez nenhuma alteração."
   },
   "coach": {
     "title": "Fitz Coach",
@@ -417,7 +423,9 @@
     "privacyLink": "Política de Privacidade",
     "termsAnd": "e a",
     "mustAcceptTerms": "Você deve aceitar os Termos e a Política de Privacidade para continuar.",
-    "emailRequired": "Por favor, insira o seu endereço de e-mail."
+    "emailRequired": "Por favor, insira o seu endereço de e-mail.",
+    "newPassword": "Nova Senha",
+    "newPasswordPlaceholder": "Deixe em branco para não mudar"
   },
   "dashboard": {
     "greetingMorning": "Bom dia",
