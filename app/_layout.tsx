@@ -32,7 +32,7 @@ import i18n from '../i18n';
 import { useTheme } from '../hooks/useTheme';
 import { useAdMob } from '../hooks/useAdMob';
 import * as NavigationBar from 'expo-navigation-bar';
-import { AchievementToast } from '../components/AchievementToast';
+import { AppToast } from '../components/AppToast';
 
 // Safely detect if edge-to-edge is enabled
 let isEdgeToEdgeActive = false;
@@ -214,7 +214,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={[styles.root, { backgroundColor: colors.background }]}>
         <StatusBar style={theme === 'dark' ? 'light' : 'dark'} backgroundColor={colors.background} />
         <NavigationGuard />
-        <AchievementToast />
+        <AppToast />
         <Stack screenOptions={{ 
           headerShown: false, 
           animation: 'none',

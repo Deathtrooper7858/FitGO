@@ -166,3 +166,13 @@ export interface Reminder {
   notificationId?: string;
 }
 
+export interface AppNotification {
+  id: string;
+  title: string;
+  description: string;
+  icon?: string;
+  iconType: 'emoji' | 'lucide';
+  lucideIcon?: string;
+  tier: 'bronce' | 'plata' | 'oro' | 'diamante' | 'success' | 'info' | 'warning';
+  isAchievement?: boolean;
+}

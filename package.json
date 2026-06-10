@@ -64,6 +64,7 @@
     "react-dom": "19.2.0",
     "react-i18next": "^17.0.6",
     "react-native": "0.83.6",
+    "react-native-android-widget": "^0.20.3",
     "react-native-body-highlighter": "^3.2.0",
     "react-native-fast-tflite": "^3.0.1",
     "react-native-gesture-handler": "~2.30.0",
