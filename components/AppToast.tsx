@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions, TouchableOpacity } from 'react-native';
 import { useToastStore } from '../store/toastStore';
-import { Achievement } from '../hooks/useAchievements';
+
 import { useTheme } from '../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,16 +11,21 @@ import * as Haptics from 'expo-haptics';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+import { AppNotification } from '../store/types';
+
 function getTierColor(tier: string) {
   switch (tier) {
     case 'diamante': return '#38BDF8';
     case 'oro': return '#FBBF24';
     case 'plata': return '#9CA3AF';
+    case 'success': return '#10B981';
+    case 'info': return '#3B82F6';
+    case 'warning': return '#F59E0B';
     default: return '#D97706';
   }
 }
 
-export function AchievementToast() {
+export function AppToast() {
   const colors = useTheme();
   const { t } = useTranslation();
   const { toastQueue, showNext } = useToastStore();
@@ -28,7 +33,7 @@ export function AchievementToast() {
   const slideAnim = useRef(new Animated.Value(-50)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   
-  const [currentToast, setCurrentToast] = useState<Achievement | undefined>(toastQueue[0]);
+  const [currentToast, setCurrentToast] = useState<AppNotification | undefined>(toastQueue[0]);
 
   useEffect(() => {
     if (toastQueue.length > 0 && !currentToast) {
@@ -46,9 +51,10 @@ export function AchievementToast() {
         Animated.spring(scaleAnim, { toValue: 1, friction: 5, tension: 50, useNativeDriver: true }),
       ]).start();
 
+      const duration = currentToast.isAchievement !== false ? 5000 : 3500;
       const timer = setTimeout(() => {
         closeToast();
-      }, 5000);
+      }, duration);
 
       return () => clearTimeout(timer);
     }
@@ -72,6 +78,15 @@ export function AchievementToast() {
   const gradColors = isHolo
     ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5'] as const
     : ['transparent', 'transparent'] as const;
+
+  const isAchievement = currentToast.isAchievement !== false;
+  let headerTitle = t('achievements.newAchievement', '¡NUEVO LOGRO DESBLOQUEADO!');
+  if (!isAchievement) {
+    if (currentToast.tier === 'success') headerTitle = '¡REGISTRO EXITOSO!';
+    else if (currentToast.tier === 'info') headerTitle = '¡ACCIÓN COMPLETADA!';
+    else if (currentToast.tier === 'warning') headerTitle = '¡ATENCIÓN!';
+    else headerTitle = 'NOTIFICACIÓN';
+  }
 
   return (
     <Animated.View 
@@ -101,7 +116,7 @@ export function AchievementToast() {
       </LinearGradient>
       
       <View style={styles.content}>
-        <Text style={[styles.headerText, { color: tierColor }]}>{t('achievements.newAchievement', '¡NUEVO LOGRO DESBLOQUEADO!')}</Text>
+        <Text style={[styles.headerText, { color: tierColor }]}>{headerTitle}</Text>
         <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={1}>{currentToast.title}</Text>
         <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={2}>{currentToast.description}</Text>
       </View>
