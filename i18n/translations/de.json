@@ -115,7 +115,7 @@
     "carbs": "Kohlenhydrate",
     "fat": "Fett",
     "userIdNotFound": "Benutzer-ID nicht gefunden. Bitte erneut anmelden.",
-    "updateFailed": "Profilaktualisierung fehlgeschlagen",
+    "updateFailed": "Fehler beim Aktualisieren Ihres Kontos.",
     "notAuth": "Benutzer nicht authentifiziert",
     "uploadFailed": "Profilbild-Upload fehlgeschlagen",
     "goalQuest": "Was ist Ihr aktuelles Ziel?",
@@ -246,7 +246,13 @@
     "takePhotoDesc": "Verwende die Kamera deines Geräts",
     "chooseGallery": "Aus Galerie wählen",
     "chooseGalleryDesc": "Wähle ein vorhandenes Bild",
-    "goalReached": "Erreicht!"
+    "goalReached": "Erreicht!",
+    "updateAccountDesc": "Geben Sie Ihre neue E-Mail-Adresse oder ein neues Passwort ein. Nur die geänderten Felder werden aktualisiert.",
+    "emailAndPasswordUpdated": "Passwort aktualisiert. Bitte überprüfen Sie den Posteingang Ihrer neuen E-Mail, um die Änderung zu bestätigen.",
+    "emailUpdated": "Überprüfen Sie den Posteingang Ihrer neuen E-Mail, um die Änderung zu bestätigen.",
+    "passwordUpdated": "Passwort erfolgreich aktualisiert.",
+    "samePasswordError": "Das neue Passwort muss sich vom aktuellen Passwort unterscheiden.",
+    "noChanges": "Sie haben keine Änderungen vorgenommen."
   },
   "coach": {
     "title": "Fitz-Trainer",
@@ -414,7 +420,9 @@
     "privacyLink": "Datenschutzrichtlinie",
     "termsAnd": "und die",
     "mustAcceptTerms": "Sie müssen die Nutzungsbedingungen und Datenschutzrichtlinie akzeptieren, um fortzufahren.",
-    "emailRequired": "Bitte gib deine E-Mail-Adresse ein."
+    "emailRequired": "Bitte gib deine E-Mail-Adresse ein.",
+    "newPassword": "Neues Passwort",
+    "newPasswordPlaceholder": "Leer lassen, um beizubehalten"
   },
   "dashboard": {
     "greetingMorning": "Guten Morgen",

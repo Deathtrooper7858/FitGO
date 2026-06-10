@@ -14,11 +14,12 @@ import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import * as WebBrowser from 'expo-web-browser';
 import { CustomAlert, AlertType } from '../../components/CustomAlert';
 import { CheckSquare, Square, Mail, Lock, User, Eye, EyeOff } from 'lucide-react-native';
+import * as Linking from 'expo-linking';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function RegisterScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const colors = useTheme();
   const [name, setName]         = useState('');
   const [email, setEmail]       = useState('');
@@ -69,10 +70,13 @@ export default function RegisterScreen() {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: name } },
+      options: { 
+        data: { full_name: name, language: i18n.language },
+        emailRedirectTo: Linking.createURL('/(auth)/verify-email'),
+      },
     });
     setLoading(false);
 
@@ -85,6 +89,16 @@ export default function RegisterScreen() {
       return;
     }
     
+    // If we have data but no session, email verification is required
+    if (data?.user && !data?.session) {
+      showAlert(
+        t('common.success'), 
+        t('auth.checkEmailSignup', 'Registro exitoso. Por favor revisa tu correo para verificar tu cuenta antes de iniciar sesión.'),
+        'success'
+      );
+      return;
+    }
+
     // NavigationGuard will detect the new session and redirect to /onboarding
     // because the profile record in 'users' table won't exist yet.
   };

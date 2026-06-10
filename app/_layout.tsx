@@ -54,6 +54,9 @@ function NavigationGuard() {
     //    immediately WITHOUT waiting for isLoading to resolve. This eliminates
     //    the ~3-second flash of the onboarding screen on app resume.
     if (session && profile?.onboardingDone && profile?.id) {
+      const isUpdatePassword = segments.join('/') === '(auth)/update-password';
+      if (isUpdatePassword) return; // Stay on the screen to type new password
+
       if (inAuthGroup || inOnboarding || allSegments.length === 0) {
         router.replace('/(tabs)/tracker');
       }
@@ -73,6 +76,9 @@ function NavigationGuard() {
         router.replace('/onboarding');
       }
     } else {
+      const isUpdatePassword = segments.join('/') === '(auth)/update-password';
+      if (isUpdatePassword) return; // Stay on the screen to type new password
+      
       if (inAuthGroup || inOnboarding || allSegments.length === 0) {
         router.replace('/(tabs)/tracker');
       }
@@ -301,6 +307,10 @@ export default function RootLayout() {
           />
           <Stack.Screen
             name="modals/user-profile"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="modals/update-account"
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />
         </Stack>
