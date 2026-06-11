@@ -83,7 +83,7 @@ function NavigationGuard() {
 }
 
 export default function RootLayout() {
-  const { setSession, setLoading, setProfile, fetchProfile, isLoading } = useAuthStore();
+  const { setSession, setLoading, setProfile, fetchProfile, clearAuth, isLoading } = useAuthStore();
   const { initialize: initPurchases } = usePurchaseStore();
   const { language, theme } = useSettingsStore();
   const colors = useTheme();
@@ -117,6 +117,8 @@ export default function RootLayout() {
   }, [theme, segments, colors]);
 
   useEffect(() => {
+    // Hide the native OS splash screen immediately so our custom RN splash takes over
+    SplashScreen.hideAsync();
 
     const handleAuthStateChange = async (newSession: any) => {
       setLoading(true); // <--- PAUSE NAVIGATION WHILE FETCHING PROFILE
@@ -140,16 +142,16 @@ export default function RootLayout() {
             }
           });
         } else {
-          setProfile(null);
+          // Sign out: clear both session and profile atomically
+          clearAuth();
           // Logout from RevenueCat
           // await revenueCat.logout();
         }
       } catch (err) {
         console.error('Error in auth state change:', err);
       } finally {
-        // Only hide splash/set loading false once we have tried to get the profile
+        // Only set loading false once we have tried to get the profile
         setLoading(false);
-        SplashScreen.hideAsync();
       }
     };
 
@@ -174,7 +176,7 @@ export default function RootLayout() {
         
         <Animated.View entering={FadeIn.duration(800).springify()} style={{ alignItems: 'center' }}>
           <Image 
-            source={require('../assets/splash-icon.png')} 
+            source={require('../assets/icon.png')} 
             style={{ width: 120, height: 120, borderRadius: 24, marginBottom: 24 }} 
             resizeMode="contain" 
           />
@@ -228,6 +230,10 @@ export default function RootLayout() {
           />
           <Stack.Screen
             name="modals/paywall"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="modals/premium-colors"
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />
           <Stack.Screen

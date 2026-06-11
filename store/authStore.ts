@@ -54,6 +54,7 @@ export const useAuthStore = create<AuthState>()(
                 email:          data.email,
                 name:           data.name,
                 avatarUrl:      data.avatar_url,
+                nameColor:      data.name_color,
                 sex:            data.sex,
                 age:            data.age,
                 weight:         data.weight,

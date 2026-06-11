@@ -163,14 +163,7 @@ export default function FitGOSocial() {
       }
     });
   
-  if (!profile) {
-    return (
-      <View style={[s.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator color={colors.primary} size="large" />
-      </View>
-    );
-  }
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -205,6 +198,23 @@ export default function FitGOSocial() {
     if (points >= 500) return { label: 'C', color: '#F59E0B', bg: '#F59E0B20', glow: 'transparent' };
     if (points >= 100) return { label: 'D', color: '#8B4513', bg: '#8B451320', glow: 'transparent' };
     return { label: 'F', color: '#6B7280', bg: '#6B728020', glow: 'transparent' };
+  };
+
+  // ── Admin Glow name helper ──────────────────────────────────────────────────
+  const getNameStyle = (nameColor?: string | null, userId?: string): object => {
+    // Always use live profile color for the current user (avoids stale cache)
+    const resolvedColor = userId && userId === profile?.id
+      ? (profile?.nameColor || nameColor)
+      : nameColor;
+    if (resolvedColor === 'admin_glow') {
+      return {
+        color: '#00F0FF',
+        textShadowColor: 'rgba(0, 240, 255, 0.9)',
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 10,
+      };
+    }
+    return { color: resolvedColor || colors.textPrimary };
   };
 
   useEffect(() => {
@@ -398,7 +408,7 @@ export default function FitGOSocial() {
               </View>
             )}
             <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.textPrimary, fontSize: 20, fontWeight: 'bold' }}>{profile?.name}</Text>
+              <Text style={[{ fontSize: 20, fontWeight: 'bold' }, getNameStyle(profile?.nameColor, profile?.id)]}>{profile?.name}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                 <View style={[s.chip, { backgroundColor: currentBadge.colors[0] + '20', flexDirection: 'row', alignItems: 'center', gap: 4 }]}>
                   <Text style={{ fontSize: 12 }}>{currentBadge.icon}</Text>
@@ -516,7 +526,7 @@ export default function FitGOSocial() {
                       </View>
                     )}
                     <View>
-                      <Text style={[s.userName, { color: colors.textPrimary }]}>{post.user_profile?.name}</Text>
+                      <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id)]}>{post.user_profile?.name}</Text>
                       <Text style={{ color: colors.textMuted, fontSize: 11 }}>
                         {new Date(post.created_at).toLocaleDateString()} {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </Text>
@@ -640,7 +650,7 @@ export default function FitGOSocial() {
                     </View>
                   )}
                   <View>
-                    <Text style={[s.userName, { color: colors.textPrimary }]}>{post.user_profile?.name}</Text>
+                    <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id)]}>{post.user_profile?.name}</Text>
                     <Text style={{ color: colors.textMuted, fontSize: 11 }}>
                       {new Date(post.created_at).toLocaleDateString()} {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </Text>
@@ -692,7 +702,7 @@ export default function FitGOSocial() {
                     )}
                     <View style={[s.commentBubble, { backgroundColor: colors.surfaceAlt }]}>
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                        <Text style={[s.commentUser, { color: colors.textPrimary, marginBottom: 0 }]}>{comment.user_profile?.name}</Text>
+                        <Text style={[s.commentUser, getNameStyle(comment.user_profile?.name_color, comment.user_id), { marginBottom: 0 }]}>{comment.user_profile?.name}</Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                           <Text style={{ color: colors.textMuted, fontSize: 9 }}>
                             {new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -837,7 +847,7 @@ export default function FitGOSocial() {
                     </View>
                   )}
                   <View>
-                    <Text style={[s.userName, { color: colors.textPrimary }]}>{user.name}</Text>
+                    <Text style={[s.userName, getNameStyle(user.name_color, user.id)]} numberOfLines={1}>{user.name}</Text>
                     <Text style={{ color: colors.textMuted, fontSize: 12 }}>{user.email}</Text>
                   </View>
                 </TouchableOpacity>
@@ -989,6 +999,14 @@ export default function FitGOSocial() {
     );
   };
 
+  if (!profile) {
+    return (
+      <View style={[s.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator color={colors.primary} size="large" />
+      </View>
+    );
+  }
+
   return (
     <View style={[s.container, { backgroundColor: 'transparent' }]}>
 
@@ -1076,7 +1094,7 @@ export default function FitGOSocial() {
                 )}
               </TouchableOpacity>
 
-              <Text style={{ color: colors.textPrimary, fontSize: 20, fontWeight: '900', letterSpacing: -0.4, marginBottom: 4, textAlign: 'center' }}>{inspectingUser?.name}</Text>
+              <Text style={[{ fontSize: 20, fontWeight: '900', letterSpacing: -0.4, marginBottom: 4, textAlign: 'center' }, getNameStyle(inspectingUser?.name_color)]}>{inspectingUser?.name}</Text>
 
               {/* Points row */}
               {(() => {

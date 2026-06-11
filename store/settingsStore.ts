@@ -27,7 +27,9 @@ interface SettingsState {
   energyUnit: EnergyUnit;
   tempUnit: TempUnit;
   reminders: Reminder[];
+  premiumColor: string | null;
   setTheme: (theme: ThemeMode) => void;
+  setPremiumColor: (color: string | null) => void;
   setLanguage: (lang: AppLanguage) => void;
   setMassUnit: (unit: MassUnit) => void;
   setVolumeUnit: (unit: VolumeUnit) => void;
@@ -56,7 +58,9 @@ export const useSettingsStore = create<SettingsState>()(
       energyUnit: 'kcal',
       tempUnit: 'c',
       reminders: DEFAULT_REMINDERS,
+      premiumColor: null,
       setTheme: (theme) => set({ theme }),
+      setPremiumColor: (premiumColor) => set({ premiumColor }),
       setLanguage: (language) => {
         // Clear cached search recipes so they regenerate in the new language
         useRecipesStore.getState().setRecipes([]);

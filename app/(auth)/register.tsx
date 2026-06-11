@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Spacing, Radius } from '../../constants';
 import { supabase } from '../../services';
 import { useTheme } from '../../hooks/useTheme';
+import { useAuthStore } from '../../store';
 import { useTranslation } from 'react-i18next';
 import { makeRedirectUri } from 'expo-auth-session';
 import * as QueryParams from 'expo-auth-session/build/QueryParams';
@@ -25,11 +26,16 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading]   = useState(false);
+  const { setLoading: setGlobalLoading } = useAuthStore();
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertConfig, setAlertConfig] = useState<{title: string, message: string, type: AlertType}>({ title: '', message: '', type: 'error' });
 
-  const redirectTo = makeRedirectUri();
+  const redirectTo = makeRedirectUri({
+    scheme: 'fitgo',
+    path: 'auth/callback',
+  });
+  if (__DEV__) console.log('[OAuth] redirectTo:', redirectTo);
 
   const showAlert = (title: string, message: string, type: AlertType = 'error') => {
     setAlertConfig({ title, message, type });
@@ -75,6 +81,7 @@ export default function RegisterScreen() {
     }
 
     setLoading(true);
+    setGlobalLoading(true);
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -87,6 +94,7 @@ export default function RegisterScreen() {
       if (errorMessage.toLowerCase().includes('already registered')) {
         errorMessage = 'Este correo electrónico ya está registrado en el sistema de autenticación. Intenta iniciar sesión o recuperar tu contraseña.';
       }
+      setGlobalLoading(false);
       showAlert(t('auth.registerFailed'), errorMessage, 'error');
       return;
     }
@@ -111,10 +119,28 @@ export default function RegisterScreen() {
           data.url,
           redirectTo,
         );
+        if (__DEV__) console.log('[OAuth] WebBrowser result:', res.type, (res as any).url ?? '');
+
         if (res.type === 'success') {
-          const { url } = res;
-          await createSessionFromUrl(url);
+          const { url } = res as { type: 'success'; url: string };
+          try {
+            setGlobalLoading(true);
+            const session = await createSessionFromUrl(url);
+            if (!session) {
+              setGlobalLoading(false);
+              showAlert(t('common.error'), 'No se pudo crear la sesión. Intenta de nuevo.', 'error');
+            }
+          } catch (sessionError: any) {
+            setGlobalLoading(false);
+            showAlert(t('common.error'), sessionError.message ?? 'Error al iniciar sesión con Google', 'error');
+          }
+        } else if (res.type === 'dismiss' || res.type === 'cancel') {
+          // User cancelled — do nothing
+        } else {
+          showAlert(t('common.error'), `Resultado inesperado: ${res.type}`, 'error');
         }
+      } else {
+        showAlert(t('common.error'), 'No se pudo obtener la URL de autorización de Google.', 'error');
       }
     } catch (error: any) {
       showAlert(t('common.error'), error.message, 'error');

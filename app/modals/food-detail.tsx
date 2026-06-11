@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { PieChart } from 'react-native-gifted-charts';
@@ -48,6 +48,7 @@ export default function FoodDetailModal() {
 
   const [meal, setMeal]       = useState<Meal>(initialMeal || getAutoMeal());
   const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = useRef(false); // ref-based lock to prevent double-tap race conditions
   const [logTime, setLogTime] = useState<Date>(new Date());
   const [showTimePicker, setShowTimePicker] = useState(false);
   const { energyUnit } = useSettingsStore();
@@ -122,14 +123,18 @@ export default function FoodDetailModal() {
   ].filter(d => d.value > 0);
 
   const handleSave = async () => {
-    if (isSaving) return;
+    // Dual guard: state + ref to block any double-tap race condition
+    if (isSaving || isSavingRef.current) return;
     if (!g || g <= 0) {
       showAlert('error', t('common.error'), t('foodDetail.invalidAmount'));
       return;
     }
 
+    isSavingRef.current = true;
+    setIsSaving(true);
+    let saveSucceeded = false;
+
     try {
-      setIsSaving(true);
       if (logId) {
         // Update existing log
         await updateLog(logId, {
@@ -169,16 +174,23 @@ export default function FoodDetailModal() {
           transFat,
         });
       }
+      saveSucceeded = true;
     } catch (err) {
       // Log was saved locally; sync error is non-blocking
       console.warn('[FoodDetail] Sync error (local save succeeded):', err);
+      saveSucceeded = true; // local save always succeeds even if Supabase fails
     } finally {
+      isSavingRef.current = false;
       setIsSaving(false);
     }
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/(tabs)/tracker');
+
+    // Navigate only after isSaving state is cleared to avoid stuck purple screen
+    if (saveSucceeded) {
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(tabs)/tracker');
+      }
     }
   };
 

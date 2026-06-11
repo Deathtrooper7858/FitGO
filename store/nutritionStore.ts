@@ -35,6 +35,12 @@ function scheduleSyncDailyMetrics(fn: () => void, ms = 800) {
   }, ms);
 }
 
+// ── Module-level in-flight locks to prevent concurrent fetches causing duplicate logs ──
+// Key: `${userId}:${date}` — only one fetchLogs call runs at a time per user+date.
+const _fetchLogsInProgress = new Set<string>();
+// Only one fetchHistory runs at a time per user.
+const _fetchHistoryInProgress = new Set<string>();
+
 /** Returns true if the string is a valid UUID v4 format. */
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const isValidUUID = (v: string | null | undefined): boolean =>
@@ -506,6 +512,13 @@ export const useNutritionStore = create<NutritionState>()(
       })),
 
       fetchLogs: async (userId, date) => {
+        // ── Concurrency guard: skip if an identical fetch is already in-flight ──
+        // This prevents duplicate log entries when Tracker + Dashboard both call
+        // fetchLogs for the same date simultaneously (e.g. on tab switch).
+        const lockKey = `${userId}:${date}`;
+        if (_fetchLogsInProgress.has(lockKey)) return;
+        _fetchLogsInProgress.add(lockKey);
+
         try {
           // Parallel fetch for better performance.
           // IMPORTANT: Use .maybeSingle() instead of .single() for daily_metrics —
@@ -620,6 +633,21 @@ export const useNutritionStore = create<NutritionState>()(
                 todayLogs: [...otherDaysLogs, ...Array.from(mergedMap.values())] as any
               };
             });
+          } else if (data && data.length === 0) {
+            // Supabase confirms no logs exist for this date.
+            // Only clear local logs for this date if they were previously synced
+            // (i.e. they have valid UUIDs). This avoids wiping optimistic local adds
+            // that haven't reached Supabase yet.
+            set((s) => {
+              const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+              const otherDaysLogs = s.todayLogs.filter(log => !log.loggedAt.startsWith(date));
+              // Keep any local logs for this date that look like valid UUIDs
+              // (they were optimistically added and may not have synced yet)
+              const pendingLocalLogs = s.todayLogs.filter(
+                log => log.loggedAt.startsWith(date) && UUID_RE.test(log.id)
+              );
+              return { todayLogs: [...otherDaysLogs, ...pendingLocalLogs] as any };
+            });
           }
 
           if (hasActivityThisDay) {
@@ -650,10 +678,16 @@ export const useNutritionStore = create<NutritionState>()(
           console.error('[NutritionStore] fetchLogs error:', err);
           // Do NOT clear local logs on error to prevent data loss
           throw err; // Re-throw so UI can handle it
+        } finally {
+          _fetchLogsInProgress.delete(lockKey);
         }
       },
 
       fetchHistory: async (userId) => {
+        // ── Concurrency guard: skip if fetchHistory is already running ──
+        if (_fetchHistoryInProgress.has(userId)) return;
+        _fetchHistoryInProgress.add(userId);
+
         try {
           const thirtyDaysAgo = new Date();
           thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -702,10 +736,16 @@ export const useNutritionStore = create<NutritionState>()(
               transFat:     d.trans_fat,
             }));
 
+            // Full merge-by-ID: Supabase is the source of truth for history.
+            // Replace existing entries with remote data, and add any new ones.
+            // Local-only entries (not yet synced) are preserved if their ID is
+            // not found in the remote response.
             set(s => {
-              const existingIds = new Set(s.todayLogs.map(l => l.id));
-              const newLogs = formattedLogs.filter(l => !existingIds.has(l.id));
-              return { todayLogs: [...s.todayLogs, ...newLogs] as any };
+              const remoteMap = new Map(formattedLogs.map((l: any) => [l.id, l]));
+              // Start from current state, overwrite with remote data
+              const merged = new Map(s.todayLogs.map(l => [l.id, l]));
+              remoteMap.forEach((v, k) => merged.set(k, v));
+              return { todayLogs: Array.from(merged.values()) as any };
             });
             
             const historyActiveDays: Record<string, boolean> = {};
@@ -722,6 +762,8 @@ export const useNutritionStore = create<NutritionState>()(
           }
         } catch (err) {
           console.error('[NutritionStore] fetchHistory error:', err);
+        } finally {
+          _fetchHistoryInProgress.delete(userId);
         }
       },
       reset: () => set({

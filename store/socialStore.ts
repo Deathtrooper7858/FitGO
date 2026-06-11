@@ -19,6 +19,7 @@ export interface Friend {
     name: string;
     email: string;
     avatar_url: string;
+    name_color?: string;
   };
 }
 
@@ -43,6 +44,7 @@ export interface Post {
   user_profile?: {
     name: string;
     avatar_url: string;
+    name_color?: string;
   };
 }
 
@@ -50,6 +52,7 @@ export interface RankedUser {
   id: string;
   name: string;
   avatar_url: string;
+  name_color?: string;
   points: number;
 }
 
@@ -63,6 +66,7 @@ export interface PostComment {
   user_profile?: {
     name: string;
     avatar_url: string;
+    name_color?: string;
   };
 }
 
@@ -341,7 +345,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('friends')
-        .select(`*, user1:user_id_1(id, name, email, avatar_url), user2:user_id_2(id, name, email, avatar_url)`)
+        .select(`*, user1:user_id_1(id, name, email, avatar_url, name_color), user2:user_id_2(id, name, email, avatar_url, name_color)`)
         .or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`);
         
       if (error) throw error;
@@ -471,7 +475,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         .from('posts')
         .select(`
           *,
-          user_profile:user_id(name, avatar_url),
+          user_profile:user_id(name, avatar_url, name_color),
           likes:post_likes(user_id),
           comments:post_comments(id)
         `)
@@ -482,7 +486,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         console.warn('[SocialStore] Query failed, trying fallback:', error.message);
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('posts')
-          .select(`*, user_profile:user_id(name, avatar_url)`)
+          .select(`*, user_profile:user_id(name, avatar_url, name_color)`)
           .order('created_at', { ascending: false })
           .limit(30);
         
@@ -515,7 +519,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data, error } = await supabase.from('posts').insert(post).select(`
         *,
-        user_profile:user_id(name, avatar_url)
+        user_profile:user_id(name, avatar_url, name_color)
       `).single();
       if (error) throw error;
       // Optimistic prepend to avoid full list re-fetch
@@ -637,7 +641,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('post_comments')
-        .select('*, user_profile:user_id(name, avatar_url)')
+        .select('*, user_profile:user_id(name, avatar_url, name_color)')
         .eq('post_id', postId)
         .order('created_at', { ascending: true });
       
@@ -764,7 +768,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
       // Old Spanish-only filter `.ilike('content', '%código de invitación:%')` was a bug.
       const { data, error } = await supabase
         .from('direct_messages')
-        .select('*, sender:sender_id(id, name, avatar_url)')
+        .select('*, sender:sender_id(id, name, avatar_url, name_color)')
         .eq('receiver_id', userId)
         .or('content.ilike.%código de invitación:%,content.ilike.%invite code:%,content.ilike.%invitation code:%,content.ilike.%squad invite:%')
         .order('created_at', { ascending: false });

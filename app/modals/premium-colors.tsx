@@ -1,0 +1,202 @@
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import { useTheme } from '../../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
+import { useSettingsStore, usePurchaseStore } from '../../store';
+import { Check, X, Crown, Lock, Sparkles } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
+
+const PREMIUM_COLORS = [
+  { id: null,       nameKey: 'profile.colors.default', defaultName: 'Morado Clásico', hex: '#7C5CFC', isPro: false },
+  { id: '#FFD700',  nameKey: 'profile.colors.gold',    defaultName: 'Dorado Élite', hex: '#FFD700', isPro: true },
+  { id: '#00F0FF',  nameKey: 'profile.colors.blue',    defaultName: 'Azul Eléctrico', hex: '#00F0FF', isPro: true },
+  { id: '#00E676',  nameKey: 'profile.colors.green',   defaultName: 'Verde Neón', hex: '#00E676', isPro: true },
+  { id: '#FF2A54',  nameKey: 'profile.colors.red',     defaultName: 'Rojo Rubí', hex: '#FF2A54', isPro: true },
+  { id: '#FF00FF',  nameKey: 'profile.colors.magenta', defaultName: 'Magenta Oscuro', hex: '#FF00FF', isPro: true },
+];
+
+export default function PremiumColorsModal() {
+  const colors = useTheme();
+  const { t } = useTranslation();
+  const { premiumColor, setPremiumColor } = useSettingsStore();
+  const { isPro, verifyProStatus } = usePurchaseStore();
+  const [loading, setLoading] = useState(true);
+  const [actualIsPro, setActualIsPro] = useState(isPro);
+
+  useEffect(() => {
+    verifyProStatus().then(status => {
+      setActualIsPro(status);
+      setLoading(false);
+    });
+  }, []);
+
+  const handleSelect = (color: typeof PREMIUM_COLORS[0]) => {
+    Haptics.selectionAsync();
+    
+    if (color.isPro && !actualIsPro) {
+      router.push('/modals/paywall');
+      return;
+    }
+
+    setPremiumColor(color.id);
+  };
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <LinearGradient
+        colors={[premiumColor || colors.primary, 'transparent']}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 0.5 }}
+        style={StyleSheet.absoluteFill}
+        opacity={0.15}
+      />
+      
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
+          <X size={24} color={colors.textPrimary} />
+        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Sparkles size={20} color={premiumColor || colors.primary} />
+          <Text style={[styles.title, { color: colors.textPrimary }]}>Color Premium</Text>
+        </View>
+        <View style={{ width: 40 }} />
+      </View>
+
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        
+        {!actualIsPro && !loading && (
+          <View style={[styles.proBanner, { backgroundColor: '#FFD70015', borderColor: '#FFD700' }]}>
+            <Crown size={24} color="#FFD700" />
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 16 }}>Exclusivo para Pro</Text>
+              <Text style={{ color: colors.textSecondary, fontSize: 13, marginTop: 4 }}>
+                Mejora tu cuenta para desbloquear los colores premium y destacar en la aplicación.
+              </Text>
+            </View>
+            <TouchableOpacity 
+              style={{ backgroundColor: '#FFD700', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 }}
+              onPress={() => router.push('/modals/paywall')}
+            >
+              <Text style={{ color: '#000', fontWeight: '800', fontSize: 13 }}>Mejorar</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <Text style={[styles.description, { color: colors.textSecondary }]}>
+          Personaliza el aspecto de toda la aplicación eligiendo tu color de acento favorito. 
+        </Text>
+
+        <View style={styles.colorGrid}>
+          {PREMIUM_COLORS.map((c) => {
+            const isSelected = premiumColor === c.id;
+            const isLocked = c.isPro && !actualIsPro;
+            
+            return (
+              <TouchableOpacity
+                key={c.id || 'default'}
+                style={[
+                  styles.colorItem, 
+                  { backgroundColor: colors.surfaceAlt, borderColor: isSelected ? c.hex : colors.border },
+                  isSelected && { backgroundColor: c.hex + '15' }
+                ]}
+                activeOpacity={0.8}
+                onPress={() => handleSelect(c)}
+              >
+                <View style={[styles.colorCircle, { backgroundColor: c.hex, shadowColor: c.hex }]}>
+                  {isSelected && <Check size={20} color="#000" strokeWidth={3} />}
+                </View>
+                
+                <View style={{ flex: 1, marginLeft: 16 }}>
+                  <Text style={[styles.colorName, { color: colors.textPrimary }]}>
+                    {t(c.nameKey, c.defaultName)}
+                  </Text>
+                  {c.id === null && (
+                    <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>
+                      El color por defecto
+                    </Text>
+                  )}
+                </View>
+
+                {isLocked && (
+                  <View style={{ backgroundColor: colors.surface, padding: 8, borderRadius: 12 }}>
+                    <Lock size={18} color={colors.textMuted} />
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 20,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  closeBtn: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+  },
+  content: {
+    padding: 20,
+    paddingBottom: 60,
+  },
+  proBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 24,
+  },
+  description: {
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  colorGrid: {
+    gap: 12,
+  },
+  colorItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 2,
+  },
+  colorCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  colorName: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+});
