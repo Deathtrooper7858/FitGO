@@ -11,7 +11,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../../hooks/useTheme';
 import { Radius, Spacing } from '../../constants';
 import { GlassCard } from '../../components/GlassCard';
-import { useSocialStore, useAuthStore, useSettingsStore } from '../../store';
+import { useSocialStore, useAuthStore, useSettingsStore, usePurchaseStore } from '../../store';
 import { generateSocialChallenge } from '../../services/groq';
 import { ImagePickerModal } from '../../components/ImagePickerModal';
 import { ImageViewerModal } from '../../components/ImageViewerModal';
@@ -135,7 +135,8 @@ export default function FitGOSocial() {
   const colors = useTheme();
   const [activeTab, setActiveTab] = useState<TabType>('you');
   const { profile } = useAuthStore();
-  const { language } = useSettingsStore();
+  const { language, premiumColor } = useSettingsStore();
+  const { isPro } = usePurchaseStore();
   const socialStore = useSocialStore();
   const [friendsTab, setFriendsTab] = useState<'list' | 'requests' | 'search'>('list');
   const [deleteFriendAlert, setDeleteFriendAlert] = useState<{ friendId: string; friendName: string } | null>(null);
@@ -436,50 +437,83 @@ export default function FitGOSocial() {
           </View>
         </GlassCard>
 
-        {profile?.pinnedAchievements && profile.pinnedAchievements.length > 0 && (
-          <View style={{ marginBottom: Spacing.md }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
-              <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>{t('social.you.trophyShowcase', '🏆 Trophy Showcase')}</Text>
+        {profile?.pinnedAchievements && profile.pinnedAchievements.length > 0 && (() => {
+          const isValidHex = premiumColor?.startsWith('#');
+          const isPremiumCustom = isPro && isValidHex && premiumColor;
+          const accentColor = (isPro && premiumColor) ? premiumColor : colors.primary;
+          return (
+            <View
+              style={{
+                marginBottom: Spacing.md,
+                borderRadius: 20,
+                overflow: 'hidden',
+                borderWidth: isPremiumCustom ? 1.5 : 1,
+                borderColor: isPremiumCustom && premiumColor ? premiumColor + '80' : colors.border,
+              }}
+            >
+              {isPremiumCustom && premiumColor ? (
+                <LinearGradient
+                  colors={[premiumColor + '25', premiumColor + '10', 'transparent'] as [string, string, string]}
+                  style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                />
+              ) : (
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface, borderRadius: 20 }]} />
+              )}
+              {isPremiumCustom && premiumColor && (
+                <LinearGradient
+                  colors={[premiumColor + 'DD', premiumColor + '00'] as [string, string]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2 }}
+                />
+              )}
+              <View style={{ padding: Spacing.md }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
+                  <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>{t('social.you.trophyShowcase', '🏆 Trophy Showcase')}</Text>
+                </View>
+                <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
+                  {profile.pinnedAchievements.map(id => {
+                    const ach = achievements.find((a: any) => a.id === id);
+                    if (!ach) return null;
+                    const isHolo = ach.tier === 'oro' || ach.tier === 'diamante';
+                    const tierColor = ach.tier === 'diamante' ? '#38BDF8' : 
+                                      ach.tier === 'oro' ? '#FBBF24' : 
+                                      ach.tier === 'plata' ? '#9CA3AF' : '#D97706';
+                    return (
+                      <View key={id} style={{
+                        flex: 1, backgroundColor: colors.surfaceAlt, padding: Spacing.sm, borderRadius: 16, alignItems: 'center',
+                        borderWidth: 1, borderColor: isHolo ? tierColor + '50' : colors.border,
+                        ...(isHolo ? { shadowColor: tierColor, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 } : {})
+                      }}>
+                        <LinearGradient
+                          colors={(isHolo ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5'] : ['transparent', 'transparent']) as [string, string, ...string[]]}
+                          style={{ width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: isHolo ? 'transparent' : colors.surfaceAlt, marginBottom: 8 }}
+                        >
+                          {ach.iconType === 'lucide' && ach.lucideIcon ? (
+                            // @ts-ignore
+                            React.createElement(require('lucide-react-native')[ach.lucideIcon] || require('lucide-react-native').Star, {
+                              size: 24,
+                              color: isHolo ? '#FFF' : tierColor,
+                              strokeWidth: 2.5
+                            })
+                          ) : (
+                            <Text style={{ fontSize: 24 }}>{ach.icon}</Text>
+                          )}
+                        </LinearGradient>
+                        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' }} numberOfLines={1}>{ach.title}</Text>
+                        <Text style={{ fontSize: 9, color: tierColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>
+                          {String(t(`achievements.tiers.${ach.tier === 'bronce' ? 'bronze' : ach.tier === 'plata' ? 'silver' : ach.tier === 'oro' ? 'gold' : ach.tier === 'diamante' ? 'diamond' : ach.tier}`, ach.tier))}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
             </View>
-            <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
-              {profile.pinnedAchievements.map(id => {
-                const ach = achievements.find((a: any) => a.id === id);
-                if (!ach) return null;
-                const isHolo = ach.tier === 'oro' || ach.tier === 'diamante';
-                const tierColor = ach.tier === 'diamante' ? '#38BDF8' : 
-                                  ach.tier === 'oro' ? '#FBBF24' : 
-                                  ach.tier === 'plata' ? '#9CA3AF' : '#D97706';
-                return (
-                  <View key={id} style={{
-                    flex: 1, backgroundColor: colors.surfaceAlt, padding: Spacing.sm, borderRadius: 16, alignItems: 'center',
-                    borderWidth: 1, borderColor: isHolo ? tierColor + '50' : colors.border,
-                    ...(isHolo ? { shadowColor: tierColor, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 } : {})
-                  }}>
-                    <LinearGradient
-                      colors={(isHolo ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5'] : ['transparent', 'transparent']) as [string, string, ...string[]]}
-                      style={{ width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: isHolo ? 'transparent' : colors.surfaceAlt, marginBottom: 8 }}
-                    >
-                      {ach.iconType === 'lucide' && ach.lucideIcon ? (
-                        // @ts-ignore
-                        React.createElement(require('lucide-react-native')[ach.lucideIcon] || require('lucide-react-native').Star, {
-                          size: 24,
-                          color: isHolo ? '#FFF' : tierColor,
-                          strokeWidth: 2.5
-                        })
-                      ) : (
-                        <Text style={{ fontSize: 24 }}>{ach.icon}</Text>
-                      )}
-                    </LinearGradient>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' }} numberOfLines={1}>{ach.title}</Text>
-                    <Text style={{ fontSize: 9, color: tierColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>
-                      {String(t(`achievements.tiers.${ach.tier === 'bronce' ? 'bronze' : ach.tier === 'plata' ? 'silver' : ach.tier === 'oro' ? 'gold' : ach.tier === 'diamante' ? 'diamond' : ach.tier}`, ach.tier))}
-                    </Text>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
-        )}
+          );
+        })()}
 
         <TouchableOpacity
           onPress={() => router.navigate('/modals/achievements' as any)}

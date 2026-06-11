@@ -733,27 +733,68 @@ const VitrinaTrofeoItem = React.memo(function VitrinaTrofeoItem({
 });
 
 const VitrinaTrofeos = React.memo(function VitrinaTrofeos({
-  pinnedAchievements, achievements, onEdit, colors, t
+  pinnedAchievements, achievements, onEdit, colors, t, premiumColor, isPro
 }: {
   pinnedAchievements?: string[];
   achievements: any[];
   onEdit: () => void;
   colors: any;
   t: (...args: any[]) => any;
+  premiumColor?: string;
+  isPro?: boolean;
 }) {
   if (!pinnedAchievements || pinnedAchievements.length === 0) return null;
+  
+  const isValidHex = premiumColor?.startsWith('#');
+  const isPremiumCustom = isPro && premiumColor && isValidHex;
+  const accentColor = (isPro && premiumColor) ? premiumColor : colors.primary;
+
   return (
-    <View style={{ marginHorizontal: Spacing.base, marginTop: Spacing.md, marginBottom: Spacing.sm }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
-        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 {t('achievements.trophyShowcase', 'Vitrina de Trofeos')}</Text>
-        <TouchableOpacity onPress={onEdit}>
-          <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '700' }}>{t('common.edit', 'Editar')} ›</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
-        {pinnedAchievements.map(id => (
-          <VitrinaTrofeoItem key={id} id={id} achievements={achievements} colors={colors} />
-        ))}
+    <View
+      style={[
+        {
+          marginHorizontal: Spacing.base,
+          marginTop: Spacing.md,
+          marginBottom: Spacing.sm,
+          borderRadius: 20,
+          overflow: 'hidden',
+          borderWidth: isPremiumCustom ? 1.5 : 1,
+          borderColor: isPremiumCustom && premiumColor ? premiumColor + '80' : colors.border,
+        },
+      ]}
+    >
+      {/* Premium background gradient */}
+      {isPremiumCustom && premiumColor ? (
+        <LinearGradient
+          colors={[premiumColor + '25', premiumColor + '10', 'transparent'] as [string, string, string]}
+          style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
+      ) : (
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface, borderRadius: 20 }]} />
+      )}
+      {/* Top accent stripe */}
+      {isPremiumCustom && premiumColor && (
+        <LinearGradient
+          colors={[premiumColor + 'DD', premiumColor + '00'] as [string, string]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2 }}
+        />
+      )}
+      <View style={{ padding: Spacing.base }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
+          <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 {t('achievements.trophyShowcase', 'Vitrina de Trofeos')}</Text>
+          <TouchableOpacity onPress={onEdit}>
+            <Text style={{ fontSize: 12, color: accentColor, fontWeight: '700' }}>{t('common.edit', 'Editar')} ›</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
+          {pinnedAchievements.map(id => (
+            <VitrinaTrofeoItem key={id} id={id} achievements={achievements} colors={colors} />
+          ))}
+        </View>
       </View>
     </View>
   );
@@ -1712,6 +1753,8 @@ export default function ProfileScreen() {
           onEdit={() => router.push('/modals/achievements')}
           colors={colors}
           t={t}
+          premiumColor={premiumColor || undefined}
+          isPro={profile?.isPro}
         />
 
         {/* ── Progress Chart ── Gamified Weight Journey */}
