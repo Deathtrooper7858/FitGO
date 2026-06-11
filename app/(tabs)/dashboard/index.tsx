@@ -17,6 +17,7 @@ import { getLocalDateString } from '../../../utils/date';
 import Animated, { FadeIn, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { AnimatedCard } from '../../../components/AnimatedCard';
+import { MuscleSymmetryCard } from '../../../components/MuscleSymmetryCard';
 import { Trophy, Flame, Dumbbell, Heart, ChevronRight, Scale, Target } from 'lucide-react-native';
 import { useAchievements, Achievement } from '../../../hooks/useAchievements';
 import { GoalWizardModal, ACTIVITY_TO_EXERCISE } from '../../../components/GoalWizardModal';
@@ -732,6 +733,11 @@ export default function DashboardScreen() {
             </TouchableOpacity>
           </View>
         </LinearGradient>
+
+        {/* Muscle Symmetry Section */}
+        <View style={{ paddingHorizontal: Spacing.lg }}>
+          <MuscleSymmetryCard />
+        </View>
 
         {/* Statistics Grid */}
         <View style={s.sectionHeader}>

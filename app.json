@@ -25,6 +25,7 @@
         "NSCameraUsageDescription": "Scan food barcodes and take progress photos",
         "NSMicrophoneUsageDescription": "Use voice to log food and talk with your AI coach",
         "NSPhotoLibraryUsageDescription": "Access your photo library for progress photos",
+        "NSMotionUsageDescription": "Allow FitGO to count your steps to track your daily activity.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -46,7 +47,8 @@
         "android.permission.MODIFY_AUDIO_SETTINGS",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
-        "android.permission.POST_NOTIFICATIONS"
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.ACTIVITY_RECOGNITION"
       ]
     },
     "web": {
