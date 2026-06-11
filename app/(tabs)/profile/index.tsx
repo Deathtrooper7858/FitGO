@@ -109,21 +109,24 @@ const toast = StyleSheet.create({
 
 // ─── Inline edit modal (cross-platform, replaces Alert.prompt) ────────────────
 function EditModal({
-  visible, field, title, placeholder, keyboardType, initialValue, onSave, onClose, massUnit, lengthUnit
+  visible, field, title, placeholder, keyboardType, initialValue, onSave, onClose, massUnit, lengthUnit, isPro, initialNameColor, role
 }: {
   visible: boolean; field: string; title: string; placeholder: string;
   keyboardType?: 'numeric' | 'default';
-  initialValue?: string; onSave: (val: string) => void; onClose: () => void;
+  initialValue?: string; onSave: (val: string, color?: string) => void; onClose: () => void;
   massUnit: string; lengthUnit: string;
+  isPro?: boolean; initialNameColor?: string; role?: string;
 }) {
   const { t } = useTranslation();
   const colors = useTheme();
   const [value, setValue] = useState(initialValue ?? '');
+  const [selectedColor, setSelectedColor] = useState(initialNameColor ?? '');
   const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     if (visible) {
       setValue(initialValue ?? '');
+      setSelectedColor(initialNameColor ?? '');
     }
   }, [visible]);
 
@@ -141,6 +144,18 @@ function EditModal({
     FieldIcon = Calendar;
   } else if (field === 'name') {
     FieldIcon = User;
+  }
+
+  const PREMIUM_NAME_COLORS = [
+    { id: 'gold', hex: '#EAB308', name: 'Dorado' },
+    { id: 'electric', hex: '#3B82F6', name: 'Azul Eléctrico' },
+    { id: 'neon', hex: '#10B981', name: 'Verde Neón' },
+    { id: 'ruby', hex: '#EF4444', name: 'Rojo Rubí' },
+    { id: 'magenta', hex: '#D946EF', name: 'Magenta' },
+  ];
+
+  if (role === 'admin' || role === 'owner' || role === 'super_admin') {
+    PREMIUM_NAME_COLORS.push({ id: 'admin_glow', hex: 'admin_glow', name: 'Diamante Admin' });
   }
 
   return (
@@ -198,6 +213,66 @@ function EditModal({
             )}
           </View>
 
+          {field === 'name' && (
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '600', marginBottom: 12 }}>
+                {t('profile.nameColorPro', 'Color del Nombre (Pro)')}
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={{
+                    width: 44, height: 44, borderRadius: 22,
+                    backgroundColor: colors.textPrimary,
+                    justifyContent: 'center', alignItems: 'center',
+                    borderWidth: 3,
+                    borderColor: selectedColor === '' ? colors.primary : 'transparent',
+                  }}
+                  onPress={() => setSelectedColor('')}
+                >
+                  {selectedColor === '' && <Check size={20} color={colors.surface} strokeWidth={3} />}
+                </TouchableOpacity>
+                {PREMIUM_NAME_COLORS.map(c => {
+                  const isSel = selectedColor === c.hex;
+                  const isAdminGlow = c.hex === 'admin_glow';
+                  
+                  return (
+                    <TouchableOpacity
+                      key={c.id}
+                      activeOpacity={0.8}
+                      style={{
+                        width: 44, height: 44, borderRadius: 22,
+                        backgroundColor: isAdminGlow ? 'transparent' : c.hex,
+                        justifyContent: 'center', alignItems: 'center',
+                        borderWidth: 3,
+                        borderColor: isSel ? colors.textPrimary : 'transparent',
+                        opacity: isPro || isAdminGlow ? 1 : 0.5,
+                        overflow: 'hidden'
+                      }}
+                      onPress={() => {
+                        if (isPro || isAdminGlow) {
+                          setSelectedColor(c.hex);
+                        } else {
+                          onClose();
+                          setTimeout(() => router.push('/modals/paywall' as any), 300);
+                        }
+                      }}
+                    >
+                      {isAdminGlow && (
+                        <LinearGradient 
+                          colors={['#00F0FF', '#7C5CFC']} 
+                          style={StyleSheet.absoluteFillObject}
+                        />
+                      )}
+                      {isSel && <Check size={20} color="#fff" strokeWidth={3} style={{ zIndex: 10 }} />}
+                      {!isPro && !isSel && !isAdminGlow && <Lock size={16} color="#fff" />}
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
+
           {/* Buttons action row */}
           <View style={em.row}>
             <TouchableOpacity 
@@ -210,7 +285,7 @@ function EditModal({
             <TouchableOpacity 
               activeOpacity={0.8} 
               style={em.saveBtn} 
-              onPress={() => { onSave(value); onClose(); }}
+              onPress={() => { onSave(value, selectedColor); onClose(); }}
             >
               <LinearGradient colors={colors.gradientPrimary} style={em.saveGrad}>
                 <Check size={18} color="#fff" strokeWidth={2.5} style={{ marginRight: 6 }} />
@@ -691,7 +766,7 @@ export default function ProfileScreen() {
   const { 
     theme, setTheme, language, setLanguage,
     massUnit, setMassUnit, volumeUnit, setVolumeUnit, lengthUnit, setLengthUnit, energyUnit, setEnergyUnit,
-    tempUnit, setTempUnit
+    tempUnit, setTempUnit, premiumColor,
   } = useSettingsStore();
   const { profile, setProfile, clearAuth } = useAuthStore();
   const { isPro, refreshStatus } = usePurchaseStore();
@@ -856,6 +931,7 @@ export default function ProfileScreen() {
       const { error } = await supabase.from('users').update({
         name:             newProfile.name,
         avatar_url:       newProfile.avatarUrl,
+        name_color:       newProfile.nameColor,
         weight:           newProfile.weight,
         height:           newProfile.height,
         age:              newProfile.age,
@@ -989,13 +1065,18 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleSaveEdit = (val: string) => {
+  const handleSaveEdit = (val: string, color?: string) => {
     if (!val.trim() && editModal.field !== 'availableFoods') return;
     const field = editModal.field;
     
     if (field === 'availableFoods') {
       const list = val.split(',').map(s => s.trim()).filter(s => s.length > 0);
       updateProfileField('availableFoods', list);
+      return;
+    }
+
+    if (field === 'name') {
+      updateProfileFields({ name: val, nameColor: color || '' });
       return;
     }
 
@@ -1414,9 +1495,8 @@ export default function ProfileScreen() {
           usePlannerStore.getState().clearPlans();
           usePurchaseStore.setState({ isPro: false, customerInfo: null });
 
+          // Only call signOut — NavigationGuard handles the redirect
           await supabase.auth.signOut();
-          clearAuth();
-          router.replace('/(auth)/welcome');
         } catch (e: any) {
           console.error('Delete account error:', e);
           
@@ -1473,9 +1553,11 @@ export default function ProfileScreen() {
         useProgressStore.getState().reset();
         useSocialStore.getState().reset();
 
+        // Only call signOut — the onAuthStateChange in _layout.tsx will
+        // call clearAuth() + NavigationGuard will redirect to welcome.
+        // Calling clearAuth() + router.replace() here at the same time
+        // causes a "Rendered fewer hooks than expected" crash.
         await supabase.auth.signOut();
-        clearAuth();
-        router.replace('/(auth)/welcome');
       },
       () => {},
       t('profile.signOut'),
@@ -1513,6 +1595,9 @@ export default function ProfileScreen() {
         onClose={() => setEditModal(p => ({ ...p, visible: false }))}
         massUnit={massUnit}
         lengthUnit={lengthUnit}
+        isPro={profile?.isPro}
+        initialNameColor={profile?.nameColor}
+        role={profile?.role}
       />
 
       {toastMsg && <CustomToast message={toastMsg.text} type={toastMsg.type} onHide={() => setToastMsg(null)} />}
@@ -1593,7 +1678,12 @@ export default function ProfileScreen() {
           </TouchableOpacity>
           <View style={{ alignItems: 'center' }}>
             <TouchableOpacity onPress={() => openEdit('name', t('profile.editName'), t('profile.enterName'))}>
-              <Text style={[s.name, { color: colors.textPrimary }]}>{profile?.name ?? 'User'} <Text style={{ fontSize: 14, opacity: 0.5 }}>✎</Text></Text>
+              <Text style={[
+                s.name, 
+                profile?.nameColor === 'admin_glow' 
+                  ? { color: '#00F0FF', textShadowColor: 'rgba(0, 240, 255, 0.8)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 8 }
+                  : { color: profile?.nameColor || colors.textPrimary }
+              ]}>{profile?.name ?? 'User'} <Text style={{ fontSize: 14, opacity: 0.5 }}>✎</Text></Text>
             </TouchableOpacity>
             <Text style={[s.email, { color: colors.textSecondary }]}>{profile?.email ?? ''}</Text>
           </View>
@@ -1760,6 +1850,14 @@ export default function ProfileScreen() {
                 indent 
                 onPress={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
                 iconColor="#8B5CF6"
+              />
+              <MenuRow 
+                icon={Palette} 
+                label={t('profile.premiumColor', 'Color Premium (Pro)')}
+                value={premiumColor ? '●' : t('common.default', 'Predeterminado')}
+                indent 
+                onPress={() => router.push('/modals/premium-colors' as any)} 
+                iconColor={premiumColor || '#FFD700'}
               />
               <MenuRow 
                 icon={Globe} 

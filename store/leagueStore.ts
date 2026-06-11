@@ -19,6 +19,7 @@ export interface SquadMember {
   avatar_url?: string;
   league_points: number;
   current_streak: number;
+  name_color?: string;
 }
 
 export interface Squad {

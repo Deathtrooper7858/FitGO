@@ -25,7 +25,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading]   = useState(false);
-  const { setSession }          = useAuthStore();
+  const { setSession, setLoading: setGlobalLoading } = useAuthStore();
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertConfig, setAlertConfig] = useState<{title: string, message: string, type: AlertType}>({ title: '', message: '', type: 'error' });
 
@@ -34,7 +34,15 @@ export default function LoginScreen() {
     setAlertVisible(true);
   };
 
-  const redirectTo = makeRedirectUri();
+  // In production builds this generates: fitgo://
+  // In Expo Go dev this generates: exp://...
+  const redirectTo = makeRedirectUri({
+    scheme: 'fitgo',
+    path: 'auth/callback',
+  });
+
+  // Log the redirect URI so you can verify it matches what's in Google Console + Supabase
+  if (__DEV__) console.log('[OAuth] redirectTo:', redirectTo);
 
   const createSessionFromUrl = async (url: string) => {
     const { params, errorCode } = QueryParams.getQueryParams(url);
@@ -66,10 +74,12 @@ export default function LoginScreen() {
       return;
     }
     setLoading(true);
+    setGlobalLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     
     if (error) {
       setLoading(false);
+      setGlobalLoading(false);
       showAlert(t('auth.loginFailed'), error.message, 'error');
       return;
     }
@@ -91,10 +101,29 @@ export default function LoginScreen() {
           data.url,
           redirectTo,
         );
+
+        if (__DEV__) console.log('[OAuth] WebBrowser result:', res.type, (res as any).url ?? '');
+
         if (res.type === 'success') {
-          const { url } = res;
-          await createSessionFromUrl(url);
+          const { url } = res as { type: 'success'; url: string };
+          try {
+            setGlobalLoading(true);
+            const session = await createSessionFromUrl(url);
+            if (!session) {
+              setGlobalLoading(false);
+              showAlert(t('common.error'), 'No se pudo crear la sesión. Intenta de nuevo.', 'error');
+            }
+          } catch (sessionError: any) {
+            setGlobalLoading(false);
+            showAlert(t('common.error'), sessionError.message ?? 'Error al iniciar sesión con Google', 'error');
+          }
+        } else if (res.type === 'dismiss' || res.type === 'cancel') {
+          // User cancelled — do nothing
+        } else {
+          showAlert(t('common.error'), `Resultado inesperado: ${res.type}`, 'error');
         }
+      } else {
+        showAlert(t('common.error'), 'No se pudo obtener la URL de autorización de Google.', 'error');
       }
     } catch (error: any) {
       showAlert(t('common.error'), error.message, 'error');

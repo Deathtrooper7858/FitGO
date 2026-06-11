@@ -221,6 +221,23 @@ export default function SocialModal() {
     return { label: 'F', color: '#6B7280', bg: '#6B728020', glow: 'transparent' };
   };
 
+  // ── Admin Glow name helper ──────────────────────────────────────────────────
+  const getNameStyle = (nameColor?: string | null, userId?: string): object => {
+    // Always use live profile color for the current user (avoids stale cache)
+    const resolvedColor = userId && userId === profile?.id
+      ? (profile?.nameColor || nameColor)
+      : nameColor;
+    if (resolvedColor === 'admin_glow') {
+      return {
+        color: '#00F0FF',
+        textShadowColor: 'rgba(0, 240, 255, 0.9)',
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 10,
+      };
+    }
+    return { color: resolvedColor || colors.textPrimary };
+  };
+
   useEffect(() => {
     let unsubscribeEvents: (() => void) | null = null;
     if (profile?.id) {
@@ -648,7 +665,7 @@ export default function SocialModal() {
                     </View>
                   )}
                   <View>
-                    <Text style={[s.userName, { color: colors.textPrimary }]}>{post.user_profile?.name}</Text>
+                    <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id)]}>{post.user_profile?.name}</Text>
                     <Text style={{ color: colors.textMuted, fontSize: 11 }}>
                       {new Date(post.created_at).toLocaleDateString()} {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </Text>
@@ -698,7 +715,7 @@ export default function SocialModal() {
                     )}
                     <View style={[s.commentBubble, { backgroundColor: colors.surfaceAlt }]}>
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                        <Text style={[s.commentUser, { color: colors.textPrimary, marginBottom: 0 }]}>{comment.user_profile?.name}</Text>
+                        <Text style={[s.commentUser, getNameStyle(comment.user_profile?.name_color, comment.user_id), { marginBottom: 0 }]}>{comment.user_profile?.name}</Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                           <Text style={{ color: colors.textMuted, fontSize: 9 }}>
                             {new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -811,7 +828,7 @@ export default function SocialModal() {
                   </View>
                 )}
                 <View>
-                  <Text style={[s.userName, { color: colors.textPrimary }]}>{user.name}</Text>
+                  <Text style={[s.userName, getNameStyle(user.name_color, user.id)]}>{user.name}</Text>
                   <Text style={{ color: colors.textMuted, fontSize: 12 }}>{user.email}</Text>
                 </View>
               </TouchableOpacity>
@@ -840,7 +857,7 @@ export default function SocialModal() {
                         <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
                       </View>
                     )}
-                    <Text style={[s.userName, { color: colors.textPrimary }]}>{req.friend_profile?.name}</Text>
+                    <Text style={[s.userName, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id)]}>{req.friend_profile?.name}</Text>
                   </TouchableOpacity>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     <TouchableOpacity 
@@ -876,7 +893,7 @@ export default function SocialModal() {
                         <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
                       </View>
                     )}
-                    <Text style={[s.userName, { color: colors.textPrimary }]}>{req.friend_profile?.name}</Text>
+                    <Text style={[s.userName, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id)]}>{req.friend_profile?.name}</Text>
                   </TouchableOpacity>
                   <View style={{ backgroundColor: colors.surfaceAlt, paddingHorizontal: 10, paddingVertical: 4, borderRadius: Radius.full }}>
                     <Text style={{ color: colors.textMuted, fontSize: 11 }}>{t('social.friends.pending', 'Pendiente')}</Text>
@@ -905,7 +922,7 @@ export default function SocialModal() {
                       <Text style={[s.avatarInitials, { fontSize: 14 }]}>{friend.friend_profile?.name?.[0]}</Text>
                     </View>
                   )}
-                  <Text style={[s.userName, { color: colors.textPrimary }]}>{friend.friend_profile?.name}</Text>
+                  <Text style={[s.userName, getNameStyle(friend.friend_profile?.name_color, friend.friend_profile?.id)]}>{friend.friend_profile?.name}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={s.iconBtn}
@@ -1021,7 +1038,7 @@ export default function SocialModal() {
                     )}
                   </View>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={[s.userName, { color: colors.textPrimary }]}>{user.name}</Text>
+                    <Text style={[s.userName, getNameStyle(user.name_color, user.id)]}>{user.name}</Text>
                     <View style={[s.rankBadge, { backgroundColor: rank.bg, borderColor: rank.color + '40', borderWidth: 1 }]}>
                       <Text style={[s.rankText, { color: rank.color }]}>{rank.label}</Text>
                     </View>
@@ -1416,7 +1433,7 @@ export default function SocialModal() {
                 )}
               </View>
 
-              <Text style={{ color: colors.textPrimary, fontSize: 20, fontWeight: '900', letterSpacing: -0.4, marginBottom: 4, textAlign: 'center' }}>{inspectingUser?.name}</Text>
+              <Text style={[{ fontSize: 20, fontWeight: '900', letterSpacing: -0.4, marginBottom: 4, textAlign: 'center' }, getNameStyle(inspectingUser?.name_color, inspectingUser?.id)]}>{inspectingUser?.name}</Text>
 
               {/* Points row */}
               {(() => {

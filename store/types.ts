@@ -27,6 +27,7 @@ export interface UserProfile extends HealthProfile {
   name:            string;
   email:           string;
   avatarUrl?:      string;
+  nameColor?:      string;
   sex:             'male' | 'female' | 'other';
   genderOther?:    string;
   age:             number;

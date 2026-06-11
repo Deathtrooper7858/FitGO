@@ -72,6 +72,9 @@ export default function ScanModal() {
   const { gateVisible, setGateVisible, requestAIAction, handleEnergyGranted } = useAIEnergy();
   const [pendingScanCallback, setPendingScanCallback] = useState<(() => void) | null>(null);
 
+  // Ref-based lock to prevent double-tap submissions
+  const isAddingAllRef = useRef(false);
+
   // Custom Alert State
   const [alert, setAlert] = useState<{
     visible: boolean;
@@ -476,7 +479,8 @@ export default function ScanModal() {
   };
 
   const handleAddAllFoods = async () => {
-    if (!editedFoods.length || loading) return;
+    if (!editedFoods.length || loading || isAddingAllRef.current) return;
+    isAddingAllRef.current = true;
     setLoading(true);
 
     const targetMeal = initialMeal || getAutoMeal();
@@ -524,6 +528,7 @@ export default function ScanModal() {
       // Logs were saved locally; Supabase sync error is non-blocking
       console.warn('[ScanModal] Sync error (local save succeeded):', err);
     } finally {
+      isAddingAllRef.current = false;
       setLoading(false);
     }
     // Always show success and navigate back since local save succeeded

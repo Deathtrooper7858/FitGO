@@ -145,6 +145,16 @@ function LeagueBadge({ tier, size = 'md' }: { tier: LeagueTier; size?: 'sm' | 'm
 function MemberRow({ member, rank, onRemove, isMe, onInspect, onMakeLeader }: { member: SquadMember; rank: number; onRemove?: () => void; isMe?: boolean; onInspect?: () => void; onMakeLeader?: () => void }) {
   const colors = useTheme();
   const { t } = useTranslation();
+  const { profile } = useAuthStore();
+  
+  const getNameStyle = (nameColor?: string | null, userId?: string): object => {
+    const resolvedColor = userId && userId === profile?.id ? (profile?.nameColor || nameColor) : nameColor;
+    if (resolvedColor === 'admin_glow') {
+      return { color: '#00F0FF', textShadowColor: 'rgba(0, 240, 255, 0.9)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 10 };
+    }
+    return { color: resolvedColor || colors.textPrimary };
+  };
+
   const rankColor = rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : rank === 3 ? '#CD7F32' : colors.textSecondary;
   return (
     <TouchableOpacity 
@@ -161,7 +171,7 @@ function MemberRow({ member, rank, onRemove, isMe, onInspect, onMakeLeader }: { 
         )}
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={[styles.memberName, { color: colors.textPrimary }]} numberOfLines={1}>{member.name}</Text>
+        <Text style={[styles.memberName, getNameStyle(member.name_color, member.user_id)]} numberOfLines={1}>{member.name}</Text>
         <Text style={[styles.memberSub, { color: colors.textSecondary }]}>
           🔥 {member.current_streak} {t('competitive.squads.days', 'días')}
         </Text>
@@ -290,6 +300,17 @@ function EmptySquad({ onCreate, onJoin }: { onCreate: () => void; onJoin: () => 
 function PodiumCard({ squad, position, onInspect }: { squad: Squad; position: number; onInspect: (s: Squad) => void }) {
   const colors = useTheme();
   const { t } = useTranslation();
+  const { profile } = useAuthStore();
+  const leagueStore = useLeagueStore();
+
+  const getNameStyle = (nameColor?: string | null, userId?: string): object => {
+    const resolvedColor = userId && userId === profile?.id ? (profile?.nameColor || nameColor) : nameColor;
+    if (resolvedColor === 'admin_glow') {
+      return { color: '#00F0FF', textShadowColor: 'rgba(0, 240, 255, 0.9)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 10 };
+    }
+    return { color: resolvedColor || colors.textPrimary };
+  };
+
   const cfg = LEAGUE_CONFIG[squad.league_tier];
   const podiumColors: Record<number, { medal: string; height: number; glow: string }> = {
     1: { medal: '🥇', height: 110, glow: '#FFD700' },
@@ -337,6 +358,14 @@ export default function FitGOCompetitive() {
   } = useLeagueStore();
 
   const socialStore = useSocialStore();
+
+  const getNameStyle = (nameColor?: string | null, userId?: string): object => {
+    const resolvedColor = userId && userId === profile?.id ? (profile?.nameColor || nameColor) : nameColor;
+    if (resolvedColor === 'admin_glow') {
+      return { color: '#00F0FF', textShadowColor: 'rgba(0, 240, 255, 0.9)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 10 };
+    }
+    return { color: resolvedColor || colors.textPrimary };
+  };
 
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
@@ -673,7 +702,7 @@ export default function FitGOCompetitive() {
                               )}
                             </View>
                             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                              <Text style={[styles.restName, { color: colors.textPrimary }]} numberOfLines={1}>{user.name}</Text>
+                              <Text style={[styles.restName, getNameStyle(user.name_color, user.id)]} numberOfLines={1}>{user.name}</Text>
                               {isMe && <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '800' }}>{t('competitive.you', 'TÚ')}</Text>}
                               <View style={{ backgroundColor: grade.bg, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
                                 <Text style={{ color: grade.color, fontSize: 10, fontWeight: '900' }}>{grade.label}</Text>
@@ -789,7 +818,7 @@ export default function FitGOCompetitive() {
                 <View style={[styles.squadCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                   <View style={styles.squadCardRow}>
                     <View style={{ flex: 1 }}>
-                      <Text style={[styles.squadName, { color: colors.textPrimary }]}>{squad.name}</Text>
+                      <Text style={[styles.squadName, getNameStyle(squad.created_by_profile?.name_color, squad.created_by)]}>{squad.name}</Text>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <Users size={14} color={colors.textSecondary} />
                         <Text style={[styles.squadMeta, { color: colors.textSecondary }]}>
@@ -1246,7 +1275,7 @@ export default function FitGOCompetitive() {
                 </View>
 
                 {/* Username */}
-                <Text style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 24 }}>
+                <Text style={[{ fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 24 }, getNameStyle(inspectingUser.name_color, inspectingUser.id)]}>
                   {inspectingUser.name}
                 </Text>
 
