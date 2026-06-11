@@ -1,4 +1,5 @@
-import React, { useMemo, useEffect, useState, useRef } from 'react';
+import React, { useMemo, useEffect, useState, useRef, useCallback } from 'react';
+import { Pedometer } from 'expo-sensors';
 import {
   View, Text, StyleSheet, ScrollView,
   TouchableOpacity, useWindowDimensions, ActivityIndicator
@@ -108,6 +109,61 @@ export default function TrackerScreen() {
   // Multi-select state: Set of selected log IDs
   const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set());
   const { totalUnreadCount, friends } = useSocialStore();
+
+  // Pedometer State
+  const [liveSteps, setLiveSteps] = useState(0);
+  const [historicalSteps, setHistoricalSteps] = useState(0);
+  
+  useEffect(() => {
+    let subscription: any = null;
+    let isMounted = true;
+
+    const setupPedometer = async () => {
+      try {
+        const isAvailable = await Pedometer.isAvailableAsync();
+        if (!isAvailable) return;
+
+        const perm = await Pedometer.requestPermissionsAsync();
+        if (perm.granted) {
+          const end = new Date();
+          const start = new Date();
+          start.setHours(0, 0, 0, 0);
+
+          try {
+            const result = await Pedometer.getStepCountAsync(start, end);
+            if (result && isMounted) {
+              setHistoricalSteps(result.steps);
+            }
+          } catch (err) {
+            console.warn("[Pedometer] Could not get historical steps", err);
+          }
+
+          subscription = Pedometer.watchStepCount(result => {
+            if (isMounted) setLiveSteps(result.steps);
+          });
+        }
+      } catch (err) {
+        console.warn("[Pedometer] Setup error:", err);
+      }
+    };
+
+    setupPedometer();
+
+    return () => {
+      isMounted = false;
+      if (subscription && subscription.remove) subscription.remove();
+    };
+  }, []);
+
+  // Update store if pedometer total > store steps
+  const pedometerTotal = historicalSteps + liveSteps;
+  const currentSteps = Math.max(steps, pedometerTotal);
+  
+  useEffect(() => {
+    if (pedometerTotal > steps) {
+      setSteps(pedometerTotal);
+    }
+  }, [pedometerTotal, steps, setSteps]);
 
   const pendingRequestsCount = useMemo(() => {
     if (!profile?.id) return 0;
@@ -245,6 +301,10 @@ export default function TrackerScreen() {
 
   const handleAddMeal = (meal: Meal) => {
     router.push({ pathname: '/modals/scan', params: { initialMeal: meal, date: selectedDate } } as any);
+  };
+
+  const handleAddMissingFood = (meal: Meal) => {
+    router.push({ pathname: '/modals/scan', params: { initialMeal: meal, date: selectedDate, initialMode: 'search' } } as any);
   };
 
   const days = useMemo(() => {
@@ -817,15 +877,31 @@ export default function TrackerScreen() {
                 );
               })}
 
-              <TouchableOpacity
-                style={[s.addBtn, { backgroundColor: colors.surfaceAlt }]}
-                onPress={() => {
-                  setSelectedLogIds(new Set());
-                  handleAddMeal(m as Meal);
-                }}
-              >
-                <Text style={[s.addBtnText, { color: colors.textPrimary }]}>+</Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <TouchableOpacity
+                  style={[s.addBtn, { backgroundColor: colors.surfaceAlt, flex: 1 }]}
+                  onPress={() => {
+                    setSelectedLogIds(new Set());
+                    handleAddMeal(m as Meal);
+                  }}
+                >
+                  <Text style={[s.addBtnText, { color: colors.textPrimary }]}>+</Text>
+                </TouchableOpacity>
+
+                {mealLogs.length > 0 && (
+                  <TouchableOpacity
+                    style={[s.addBtn, { backgroundColor: colors.primary + '15', flex: 2, borderColor: colors.primary + '33', borderWidth: 1 }]}
+                    onPress={() => {
+                      setSelectedLogIds(new Set());
+                      handleAddMissingFood(m as Meal);
+                    }}
+                  >
+                    <Text style={[s.addBtnText, { color: colors.primary, fontSize: 13 }]}>
+                      ➕ {language === 'es' ? 'Añadir faltante' : 'Add missing'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
               </View>
               </GlassCard>
             </AnimatedCard>
@@ -1193,47 +1269,19 @@ export default function TrackerScreen() {
         <View style={[s.card, { borderWidth: 0 }]}>
           <View style={s.cardHeader}>
             <Text style={[s.cardTitle, { color: colors.textPrimary }]}>{t('tracker.steps')}</Text>
-            <TouchableOpacity onPress={() => setSteps(0)}>
-              <Text style={{ color: colors.textMuted }}>{t('tracker.reset')}</Text>
-            </TouchableOpacity>
+            {/* Automatic tracking, no reset needed. */}
+            <Text style={{ color: colors.success, fontSize: 12, fontWeight: '600' }}>⚡ Automático</Text>
           </View>
           <View style={s.stepsRow}>
             <Text style={{ fontSize: 24 }}>👟</Text>
-            <TouchableOpacity onPress={() => {
-              showAlert(
-                'info',
-                t('tracker.steps'),
-                t('tracker.enterSteps', 'Ingresa el número de pasos:'),
-                (val) => {
-                  if (val && !isNaN(Number(val))) {
-                    setSteps(Number(val));
-                  }
-                },
-                () => {},
-                t('common.save', 'Guardar'),
-                t('common.cancel', 'Cancelar'),
-                undefined,
-                true,
-                steps.toString(),
-                'numeric'
-              );
-            }}>
+            <View>
               <Text style={[s.stepsVal, { color: colors.textPrimary }]}>
-                {steps} <Text style={{ fontSize: 16, color: colors.textSecondary }}>/ 6000 {t('tracker.steps').toLowerCase()}</Text>
+                {currentSteps} <Text style={{ fontSize: 16, color: colors.textSecondary }}>/ 6000 {t('tracker.steps').toLowerCase()}</Text>
               </Text>
-            </TouchableOpacity>
+            </View>
           </View>
-          <View style={[s.progressBar, { backgroundColor: colors.border + '55' }]}>
-            <View style={[s.progressFill, { width: `${Math.min((steps / 6000) * 100, 100)}%`, backgroundColor: colors.success }]} />
-          </View>
-          
-          <View style={s.stepsControls}>
-            <TouchableOpacity style={[s.stepBtn, { backgroundColor: colors.surfaceAlt + '88' }]} onPress={() => addSteps(-100)}>
-              <Text style={[s.stepBtnText, { color: colors.textPrimary }]}>- 100</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[s.stepBtn, { backgroundColor: colors.success }]} onPress={() => addSteps(100)}>
-              <Text style={[s.stepBtnText, { color: '#fff' }]}>+ 100</Text>
-            </TouchableOpacity>
+          <View style={[s.progressBar, { backgroundColor: colors.border + '55', marginBottom: 8 }]}>
+            <View style={[s.progressFill, { width: `${Math.min((currentSteps / 6000) * 100, 100)}%`, backgroundColor: colors.success }]} />
           </View>
         </View>
         </GlassCard>

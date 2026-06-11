@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Spacing, Radius } from '../../../constants';
 import { useAuthStore, useNutritionStore, selectDailyTotals, useSettingsStore, usePurchaseStore, usePlannerStore, PlanItem, WorkoutRoutine } from '../../../store';
+import { useWorkoutHistoryStore } from '../../../store/workoutHistoryStore';
 import { generateMealPlan, generateWorkoutPlan, generateWeeklyAnalysis, generateShoppingList } from '../../../services/groq';
 import { supabase } from '../../../services/supabase';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +16,8 @@ import { CustomAlert, AlertType } from '../../../components/CustomAlert';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
-import { Download, Sparkles, Utensils, Dumbbell, Coffee, Apple, Pizza, CalendarDays, ChevronRight, Activity, Moon, ShoppingCart, AlertTriangle, Info, RefreshCw, ShieldAlert } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
+import { Download, Sparkles, Utensils, Dumbbell, Coffee, Apple, Pizza, CalendarDays, ChevronRight, Activity, Moon, ShoppingCart, AlertTriangle, Info, RefreshCw, ShieldAlert, CheckCircle } from 'lucide-react-native';
 import { AnimatedCard } from '../../../components/AnimatedCard';
 import { getLocalDateString } from '../../../utils/date';
 
@@ -277,6 +279,8 @@ export default function PlannerScreen() {
     setMealPlans, setWorkoutPlans, setWeeklyAnalysis: setAnalysis, clearPlans,
     clearMealPlans, clearWorkoutPlans,
   } = usePlannerStore();
+
+  const { addWorkout, hasCompletedWorkoutToday } = useWorkoutHistoryStore();
 
   const [analyzing, setAnalyzing] = useState(false);
   const [generatingShoppingList, setGeneratingShoppingList] = useState(false);
@@ -592,6 +596,35 @@ export default function PlannerScreen() {
 
   const hasData = mode === 'nutrition' ? Object.keys(mealPlans).length > 0 : Object.keys(workoutPlans).length > 0;
 
+  // ─── Workout completion logic ───────────────────────────────────────────────
+  // Map planner day abbreviation (Mon, Tue...) to an ISO date for this week
+  const getDayDate = (dayAbbr: string) => {
+    const dayIndex = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(dayAbbr);
+    const today = new Date();
+    const currentDay = today.getDay(); // 0=Sun
+    const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + mondayOffset);
+    const target = new Date(monday);
+    target.setDate(monday.getDate() + dayIndex);
+    return getLocalDateString(target);
+  };
+
+  const activeDayDate = getDayDate(activeDay);
+  const todayDate = getLocalDateString();
+  const isActiveToday = activeDayDate === todayDate;
+  const alreadyCompleted = hasCompletedWorkoutToday(activeDayDate);
+
+  const handleCompleteWorkout = () => {
+    if (!workout || workout.exercises.length === 0 || alreadyCompleted) return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    addWorkout({
+      date: activeDayDate,
+      routineName: workout.name,
+      exercises: workout.exercises.map((ex: any) => ({ name: ex.name, sets: ex.sets, reps: ex.reps })),
+    });
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <LinearGradient
@@ -891,6 +924,25 @@ export default function PlannerScreen() {
                         </View>
                       </AnimatedCard>
                     ))}
+                    {/* Complete Workout Button */}
+                    <TouchableOpacity
+                      onPress={handleCompleteWorkout}
+                      disabled={alreadyCompleted}
+                      style={[
+                        s.completeBtn,
+                        alreadyCompleted
+                          ? { backgroundColor: '#10B98122', borderColor: '#10B98166' }
+                          : { backgroundColor: colors.primary + '18', borderColor: colors.primary + '66' }
+                      ]}
+                      activeOpacity={0.75}
+                    >
+                      <CheckCircle size={20} color={alreadyCompleted ? '#10B981' : colors.primary} />
+                      <Text style={[s.completeBtnText, { color: alreadyCompleted ? '#10B981' : colors.primary }]}>
+                        {alreadyCompleted
+                          ? t('planner.workoutDone', '¡Entrenamiento Completado! ✅')
+                          : t('planner.markComplete', 'Marcar como Completado')}
+                      </Text>
+                    </TouchableOpacity>
                   </>
                 ) : (
                   <View style={[s.restDayCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -1212,4 +1264,8 @@ const s = StyleSheet.create({
   fullDisclaimerHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
   fullDisclaimerTitle:  { fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 },
   fullDisclaimerText:   { fontSize: 12, lineHeight: 18, fontWeight: '500' },
+
+  // Complete workout button
+  completeBtn:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 8, marginBottom: 20, paddingVertical: 16, borderRadius: Radius.full, borderWidth: 1.5 },
+  completeBtnText: { fontSize: 16, fontWeight: '800' },
 });

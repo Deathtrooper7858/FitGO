@@ -27,11 +27,11 @@ type Meal = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
 export default function ScanModal() {
   const { t } = useTranslation();
-  const { initialMeal, date } = useLocalSearchParams<{ initialMeal?: Meal, date?: string }>();
+  const { initialMeal, date, initialMode } = useLocalSearchParams<{ initialMeal?: Meal, date?: string, initialMode?: ScanMode }>();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned]           = useState(false);
   const [loading, setLoading]           = useState(false);
-  const [mode, setMode]                 = useState<ScanMode>('photo');
+  const [mode, setMode]                 = useState<ScanMode>(initialMode || 'photo');
   const [textInput, setTextInput]       = useState('');
   
   // Search Mode State
@@ -633,6 +633,23 @@ export default function ScanModal() {
         <View style={[s.resultFooter, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
           <TouchableOpacity style={[s.retryBtn, { borderColor: colors.border }]} onPress={resetPhoto}>
             <Text style={[s.retryText, { color: colors.textSecondary }]}>📷 {t('scan.retake')}</Text>
+          </TouchableOpacity>
+          {/* Add missing food — lets user add what the AI didn't detect */}
+          <TouchableOpacity
+            style={[s.retryBtn, { borderColor: colors.primary + '66', backgroundColor: colors.primary + '12' }]}
+            onPress={() => {
+              // Save current results first, then push scan in search mode
+              handleAddAllFoods().then(() => {
+                router.replace({
+                  pathname: '/modals/scan',
+                  params: { initialMeal: initialMeal || getAutoMeal(), date: date || getLocalDateString(), initialMode: 'search' },
+                } as any);
+              });
+            }}
+          >
+            <Text style={[s.retryText, { color: colors.primary, fontWeight: '700' }]}>
+              ➕ {language === 'es' ? 'Añadir faltante' : 'Add missing'}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity style={s.addAllBtn} onPress={handleAddAllFoods} activeOpacity={0.85}>
             <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.addAllGrad}>
