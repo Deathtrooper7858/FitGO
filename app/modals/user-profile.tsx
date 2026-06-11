@@ -7,7 +7,7 @@ import { ArrowLeft, UserPlus, Check, Trophy, Heart, MessageSquare, Users, Trash2
 import * as LucideIcons from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../../services/supabase';
-import { useAuthStore, useSocialStore } from '../../store';
+import { useAuthStore, useSocialStore, useSettingsStore, usePurchaseStore } from '../../store';
 import { GlassCard } from '../../components/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
 import { useAchievements, ALL_BADGES } from '../../hooks/useAchievements';
@@ -27,6 +27,8 @@ export default function UserProfileModal() {
 
   const colors = useTheme();
   const { profile: myProfile } = useAuthStore();
+  const { premiumColor } = useSettingsStore();
+  const { isPro } = usePurchaseStore();
   const { t } = useTranslation();
   const socialStore = useSocialStore();
   const { achievements: myAchievements } = useAchievements();
@@ -125,6 +127,12 @@ export default function UserProfileModal() {
   }
 
   const displayUser = userProfile || { name: fallbackName, avatar_url: fallbackAvatar, unlockedAchievements: [], role: 'verified' };
+
+  // For own profile: use premiumColor from local store (hex-validated).
+  // For others: use their name_color from DB.
+  const vitrineColor: string | null = isMe
+    ? (isPro && premiumColor && premiumColor.startsWith('#') ? premiumColor : null)
+    : (displayUser.name_color && displayUser.name_color.startsWith('#') ? displayUser.name_color : null);
 
   const friendStatus = socialStore.friends.find(f =>
     (f.user_id_1 === myProfile?.id && f.user_id_2 === userId) ||
@@ -271,12 +279,43 @@ export default function UserProfileModal() {
 
           {/* ── Vitrina de Trofeos (Showcase) ── */}
           {displayUser.pinned_achievements && displayUser.pinned_achievements.length > 0 && (
-            <View style={{ marginBottom: 16 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 {t('achievements.trophyShowcase', 'Vitrina de Trofeos')}</Text>
-              </View>
-              <View style={{ flexDirection: 'row', gap: 12 }}>
-                {displayUser.pinned_achievements.map((id: string) => {
+            <View
+              style={[
+                {
+                  marginBottom: 16,
+                  borderRadius: 20,
+                  overflow: 'hidden',
+                  borderWidth: vitrineColor ? 1.5 : 1,
+                  borderColor: vitrineColor ? vitrineColor + '80' : colors.border,
+                },
+              ]}
+            >
+              {/* Premium background gradient */}
+              {vitrineColor ? (
+                <LinearGradient
+                  colors={[vitrineColor + '25', vitrineColor + '10', 'transparent'] as [string, string, string]}
+                  style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                />
+              ) : (
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface, borderRadius: 20 }]} />
+              )}
+              {/* Top accent stripe */}
+              {vitrineColor && (
+                <LinearGradient
+                  colors={[vitrineColor + 'DD', vitrineColor + '00'] as [string, string]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2 }}
+                />
+              )}
+              <View style={{ padding: 16 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 {t('achievements.trophyShowcase', 'Vitrina de Trofeos')}</Text>
+                </View>
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  {displayUser.pinned_achievements.map((id: string) => {
                   const ach = myAchievements.find((a: any) => a.id === id);
                   if (!ach) return null;
                   const isHolo = ach.tier === 'oro' || ach.tier === 'diamante';
