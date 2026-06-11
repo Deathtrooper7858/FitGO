@@ -52,14 +52,24 @@ export const AD_CONFIG = {
   interstitialCooldownMs: 30 * 60 * 1000,
 
   /**
-   * Créditos de IA que recibe un usuario Free por día.
+   * Créditos de IA que recibe un usuario Free por día (foto).
    */
-  freeAICreditsPerDay: 5,
+  freeAICreditsPerDay: 3,
 
   /**
-   * Créditos de IA que se ganan viendo un video Rewarded.
+   * Créditos de IA que recibe un usuario Free por día (texto).
    */
-  rewardedAdCredits: 2,
+  freeAITextCreditsPerDay: 5,
+
+  /**
+   * Créditos de IA que se ganan viendo un video Rewarded (foto).
+   */
+  rewardedAdCredits: 3,
+
+  /**
+   * Créditos de IA que se ganan viendo un video Rewarded (texto).
+   */
+  rewardedAdTextCredits: 5,
 
   /**
    * Máximo de créditos acumulables (para evitar stockpiling).

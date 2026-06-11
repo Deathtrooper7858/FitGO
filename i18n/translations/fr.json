@@ -115,7 +115,7 @@
     "carbs": "Glucides",
     "fat": "Lipides",
     "userIdNotFound": "ID utilisateur non trouvé. Veuillez vous reconnecter.",
-    "updateFailed": "Échec de la mise à jour du profil",
+    "updateFailed": "Échec de la mise à jour de votre compte.",
     "notAuth": "Utilisateur non authentifié",
     "uploadFailed": "Échec du téléchargement de la photo de profil",
     "goalQuest": "Quel est votre objectif actuel ?",
@@ -246,7 +246,13 @@
     "takePhotoDesc": "Utilisez la caméra de votre appareil",
     "chooseGallery": "Choisir dans la galerie",
     "chooseGalleryDesc": "Sélectionner une image existante",
-    "goalReached": "Accompli !"
+    "goalReached": "Accompli !",
+    "updateAccountDesc": "Saisissez votre nouvel e-mail ou un nouveau mot de passe. Seuls les champs modifiés seront mis à jour.",
+    "emailAndPasswordUpdated": "Mot de passe mis à jour. Veuillez vérifier la boîte de réception de votre nouvel e-mail pour confirmer le changement.",
+    "emailUpdated": "Vérifiez la boîte de réception de votre nouvel e-mail pour confirmer le changement.",
+    "passwordUpdated": "Mot de passe mis à jour avec succès.",
+    "samePasswordError": "Le nouveau mot de passe doit être différent du mot de passe actuel.",
+    "noChanges": "Vous n'avez apporté aucune modification."
   },
   "coach": {
     "title": "Entraîneur Fitz",
@@ -414,7 +420,9 @@
     "privacyLink": "Politique de confidentialité",
     "termsAnd": "et la",
     "mustAcceptTerms": "Vous devez accepter les Conditions Générales et la Politique de Confidentialité pour continuer.",
-    "emailRequired": "Veuillez entrer votre adresse e-mail."
+    "emailRequired": "Veuillez entrer votre adresse e-mail.",
+    "newPassword": "Nouveau mot de passe",
+    "newPasswordPlaceholder": "Laissez vide pour ne pas changer"
   },
   "dashboard": {
     "greetingMorning": "Bonjour",

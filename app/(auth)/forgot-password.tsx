@@ -7,6 +7,7 @@ import { supabase } from '../../services';
 import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '../../hooks/useTheme';
+import * as Linking from 'expo-linking';
 
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();
@@ -21,7 +22,10 @@ export default function ForgotPasswordScreen() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+    const redirectUrl = Linking.createURL('/(auth)/update-password');
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: redirectUrl,
+    });
     setLoading(false);
 
     if (error) {
