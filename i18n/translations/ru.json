@@ -115,7 +115,7 @@
     "carbs": "Углеводы",
     "fat": "Жиры",
     "userIdNotFound": "ID пользователя не найден. Пожалуйста, войдите снова.",
-    "updateFailed": "Не удалось обновить профиль",
+    "updateFailed": "Не удалось обновить ваш аккаунт.",
     "notAuth": "Пользователь не авторизован",
     "uploadFailed": "Не удалось загрузить фото профиля",
     "goalQuest": "Какова ваша текущая цель?",
@@ -209,7 +209,7 @@
     "exportData": "Exportar Data (Excel)",
     "restoreSubscription": "Restaurar suscripción",
     "userId": "ID Usuario",
-    "updateEmailPassword": "Actualizar correo o contraseña",
+    "updateEmailPassword": "Обновить Email или Пароль",
     "terms": "Условия обслуживания",
     "others": "Otros",
     "idCopied": "ID copiado al portapapeles",
@@ -249,7 +249,13 @@
     "goalReached": "Достигнуто!",
     "badges": {
       "owner": "Владелец"
-    }
+    },
+    "updateAccountDesc": "Введите ваш новый email или новый пароль. Будут обновлены только измененные поля.",
+    "emailAndPasswordUpdated": "Пароль обновлен. Пожалуйста, проверьте входящие вашего нового email для подтверждения.",
+    "emailUpdated": "Проверьте входящие вашего нового email для подтверждения изменения.",
+    "passwordUpdated": "Пароль успешно обновлен.",
+    "samePasswordError": "Новый пароль должен отличаться от текущего.",
+    "noChanges": "Вы не внесли никаких изменений."
   },
   "coach": {
     "title": "Fitz Coach",
@@ -417,7 +423,9 @@
     "privacyLink": "Политику конфиденциальности",
     "termsAnd": "и",
     "mustAcceptTerms": "Вы должны принять Условия и Политику конфиденциальности, чтобы продолжить.",
-    "emailRequired": "Пожалуйста, введите свой адрес электронной почты."
+    "emailRequired": "Пожалуйста, введите свой адрес электронной почты.",
+    "newPassword": "Новый Пароль",
+    "newPasswordPlaceholder": "Оставьте пустым, чтобы не менять"
   },
   "dashboard": {
     "greetingMorning": "Доброе утро",

@@ -115,7 +115,7 @@
     "carbs": "Carboidrati",
     "fat": "Grassi",
     "userIdNotFound": "ID utente non trovato. Per favore accedi di nuovo.",
-    "updateFailed": "Aggiornamento profilo fallito",
+    "updateFailed": "Impossibile aggiornare il tuo account.",
     "notAuth": "Utente non autenticato",
     "uploadFailed": "Caricamento foto profilo fallito",
     "goalQuest": "Qual è il tuo obiettivo attuale?",
@@ -209,7 +209,7 @@
     "exportData": "Esporta dati (Excel)",
     "restoreSubscription": "Ripristina abbonamento",
     "userId": "ID utente",
-    "updateEmailPassword": "Aggiorna email o password",
+    "updateEmailPassword": "Aggiorna Email o Password",
     "terms": "Termini di Servizio",
     "others": "Altri",
     "idCopied": "ID copiato negli appunti",
@@ -249,7 +249,13 @@
     "goalReached": "Raggiunto!",
     "badges": {
       "owner": "Proprietario"
-    }
+    },
+    "updateAccountDesc": "Inserisci il tuo nuovo indirizzo email o una nuova password. Solo i campi modificati verranno aggiornati.",
+    "emailAndPasswordUpdated": "Password aggiornata. Controlla la casella di posta della tua nuova email per confermare il cambiamento.",
+    "emailUpdated": "Controlla la casella di posta della tua nuova email per confermare il cambiamento.",
+    "passwordUpdated": "Password aggiornata con successo.",
+    "samePasswordError": "La nuova password deve essere diversa da quella attuale.",
+    "noChanges": "Non hai apportato alcuna modifica."
   },
   "coach": {
     "title": "Allenatore Fitz",
@@ -417,7 +423,9 @@
     "privacyLink": "Informativa sulla privacy",
     "termsAnd": "e l'",
     "mustAcceptTerms": "Devi accettare i Termini e la Privacy Policy per continuare.",
-    "emailRequired": "Inserisci il tuo indirizzo email."
+    "emailRequired": "Inserisci il tuo indirizzo email.",
+    "newPassword": "Nuova Password",
+    "newPasswordPlaceholder": "Lascia vuoto per non cambiare"
   },
   "dashboard": {
     "greetingMorning": "Buongiorno",

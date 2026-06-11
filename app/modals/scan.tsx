@@ -16,7 +16,8 @@ import { useTranslation } from 'react-i18next';
 import { SuccessModal } from '../../components/SuccessModal';
 import { getLocalDateString } from '../../utils/date';
 import { CustomAlert, AlertType } from '../../components/CustomAlert';
-import { AIEnergyGate, useAIEnergy } from '../../components/AIEnergyGate';
+import { AIEnergyGate, useAIEnergy, AIEnergyMode } from '../../components/AIEnergyGate';
+import { useAdStore, MAX_AI_PHOTO_ENERGY, MAX_AI_TEXT_ENERGY } from '../../store/adStore';
 
 import { useAudioRecorder, useAudioRecorderState, AudioModule, RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync } from 'expo-audio';
 import { transcribeAudio, parseVoiceLog } from '../../services/groq';
@@ -60,16 +61,17 @@ export default function ScanModal() {
   const cameraRef = useRef<any>(null);
   const colors = useTheme();
   const { language } = useSettingsStore();
-  const { addLog, fetchLogs, selectedDate, aiPhotoUsageCount, aiTextUsageCount, incrementAiUsage } = useNutritionStore();
+  const { addLog, fetchLogs, selectedDate } = useNutritionStore();
   const { profile } = useAuthStore();
   const { isPro } = usePurchaseStore();
   const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const { aiPhotoEnergy, aiTextEnergy } = useAdStore();
   const [showSuccess, setShowSuccess] = useState(false);
   const [flash, setFlash] = useState<'off' | 'on' | 'auto'>('off');
   const [facing, setFacing] = useState<'back' | 'front'>('back');
 
   // AI Energy Gate (Rewarded Ads)
-  const { gateVisible, setGateVisible, requestAIAction, handleEnergyGranted } = useAIEnergy();
+  const { gateVisible, gateMode, setGateVisible, setGateMode, setPendingAction, requestAIAction, handleEnergyGranted } = useAIEnergy();
   const [pendingScanCallback, setPendingScanCallback] = useState<(() => void) | null>(null);
 
   // Ref-based lock to prevent double-tap submissions
@@ -146,16 +148,8 @@ export default function ScanModal() {
 
   const checkAiLimit = (scanMode: 'photo' | 'text', onAllowed: () => void): void => {
     if (isProActually) { onAllowed(); return; }
-
-    if (scanMode === 'photo' && aiPhotoUsageCount >= 5) {
-      // Try energy gate before paywall
-      requestAIAction(onAllowed);
-      return;
-    } else if (scanMode === 'text' && aiTextUsageCount >= 10) {
-      requestAIAction(onAllowed);
-      return;
-    }
-    onAllowed();
+    // Use adStore energy system (single source of truth)
+    requestAIAction(onAllowed, scanMode as AIEnergyMode);
   };
 
   const [isRecording, setIsRecording] = useState(false);
@@ -290,7 +284,6 @@ export default function ScanModal() {
           originalTransFat: f.transFat,
         })));
         setCapturedUri('text');
-        incrementAiUsage('text');
       } catch (err: any) {
         console.warn('[ScanModal] Text analyze error:', err);
         const isOffline = err?.message?.includes('Sin conexión') || err?.message?.includes('Network Error');
@@ -389,7 +382,6 @@ export default function ScanModal() {
             originalSatFat: f.saturatedFat,
             originalTransFat: f.transFat,
           })));
-          incrementAiUsage('photo');
         }
       } catch (err: any) {
         console.warn('Picker Error:', err);
@@ -438,7 +430,6 @@ export default function ScanModal() {
           originalSatFat: f.saturatedFat,
           originalTransFat: f.transFat,
         })));
-        incrementAiUsage('photo');
       } catch (err: any) {
         console.warn('Analysis Error:', err);
         const isOffline = err?.message?.includes('Sin conexión') || err?.message?.includes('Network Error');
@@ -767,7 +758,24 @@ export default function ScanModal() {
                       <Text style={{ fontSize: 20 }}>🔄</Text>
                     </TouchableOpacity>
                   </View>
-                  {!isProActually && <Text style={s.limitNote}>{t('scan.aiLimitNote', { count: 5 - aiPhotoUsageCount }) || `${5 - aiPhotoUsageCount} AI scans left today`}</Text>}
+                  {!isProActually && (
+                    <TouchableOpacity 
+                      style={s.creditRow} 
+                      onPress={() => {
+                        setGateMode('photo');
+                        setPendingAction(() => {});
+                        setGateVisible(true);
+                      }}
+                    >
+                      {Array.from({ length: MAX_AI_PHOTO_ENERGY }).map((_, i) => (
+                        <View
+                          key={i}
+                          style={[s.creditDot, i < aiPhotoEnergy ? s.creditDotActive : s.creditDotEmpty]}
+                        />
+                      ))}
+                      <Text style={s.limitNote}> {aiPhotoEnergy}/{MAX_AI_PHOTO_ENERGY} ⚡ <Text style={{ color: colors.tabActive, fontWeight: 'bold' }}>+</Text></Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </>
             ) : mode === 'text' ? (
@@ -798,7 +806,24 @@ export default function ScanModal() {
                     {loading ? <ActivityIndicator color="#fff" size="small" /> : <Text style={s.analyzeText}>{t('scan.analyze') || 'Analyze with AI'}</Text>}
                   </LinearGradient>
                 </TouchableOpacity>
-                {!profile?.isPro && <Text style={s.limitNote}>{t('scan.aiLimitNote', { count: 10 - aiTextUsageCount }) || `${10 - aiTextUsageCount} AI scans left today`}</Text>}
+                {!isProActually && (
+                  <TouchableOpacity 
+                    style={[s.creditRow, { justifyContent: 'center' }]}
+                    onPress={() => {
+                      setGateMode('text');
+                      setPendingAction(() => {});
+                      setGateVisible(true);
+                    }}
+                  >
+                    {Array.from({ length: MAX_AI_TEXT_ENERGY }).map((_, i) => (
+                      <View
+                        key={i}
+                        style={[s.creditDot, i < aiTextEnergy ? s.creditDotActive : s.creditDotEmpty]}
+                      />
+                    ))}
+                    <Text style={s.limitNote}> {aiTextEnergy}/{MAX_AI_TEXT_ENERGY} ⚡ texto <Text style={{ color: colors.tabActive, fontWeight: 'bold' }}>+</Text></Text>
+                  </TouchableOpacity>
+                )}
               </ScrollView>
             ) : (
               <View style={[s.searchWrap, { backgroundColor: 'rgba(0,0,0,0.6)', flex: 1, width: '100%' }]}>
@@ -898,6 +923,7 @@ export default function ScanModal() {
         visible={gateVisible}
         onClose={() => setGateVisible(false)}
         onEnergyGranted={handleEnergyGranted}
+        mode={gateMode}
       />
     </View>
   );
@@ -995,7 +1021,11 @@ const s = StyleSheet.create({
   analyzeGrad:   { paddingVertical: 16, alignItems: 'center' },
   analyzeText:   { color: '#fff', fontWeight: '800', fontSize: 16, letterSpacing: 0.5 },
   recordingStatus: { textAlign: 'center', fontSize: 15, fontWeight: '700', letterSpacing: 1 },
-  limitNote:     { textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 12, fontWeight: '600' },
+  limitNote:     { fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: '700' },
+  creditRow:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, marginTop: 10 },
+  creditDot:     { width: 10, height: 10, borderRadius: 5 },
+  creditDotActive: { backgroundColor: '#F59E0B' },
+  creditDotEmpty:  { backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   disclaimerBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, borderRadius: Radius.md, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10, marginTop: -8, marginBottom: 16 },
   disclaimerText: { flex: 1, fontSize: 13, fontWeight: '500', lineHeight: 18 },
   timeSelector: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderRadius: Radius.lg, borderWidth: 1, marginBottom: 16 },

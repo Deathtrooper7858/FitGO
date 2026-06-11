@@ -217,7 +217,7 @@ export async function analyzeFoodPhoto(base64Image: string, language: string = '
   const targetLang = getLang(language);
   const exampleName = targetLang === 'Spanish' ? 'Ensalada de pollo' : 'Chicken salad';
 
-  const prompt = `Analyze this food image and return ONLY a JSON object with this structure: {"foods": [{"name": "${exampleName}", "grams": 150, "calories": 250, "protein": 20, "carbs": 30, "fat": 8, "sugar": 5, "fiber": 3, "sodium": 300, "iron": 1.2, "calcium": 150, "saturatedFat": 2, "transFat": 0}], "totalCalories": 250, "confidence": "high", "notes": ""}. Important: Use ${targetLang} for names and notes.`;
+  const prompt = `Analyze this food image and return ONLY a JSON object with this structure: {"foods": [{"name": "${exampleName}", "grams": 150, "calories": 250, "protein": 20, "carbs": 30, "fat": 8, "sugar": 5, "fiber": 3, "sodium": 300, "iron": 1.2, "calcium": 150, "saturatedFat": 2, "transFat": 0}], "totalCalories": 250, "confidence": "high", "notes": ""}. Important: DO NOT split mixed dishes (like salads, sandwiches, stews) into individual ingredients; keep them as a single unified food item. Use ${targetLang} for names and notes.`;
 
   try {
     const cleanBase64 = base64Image.replace(/^data:image\/\w+;base64,/, '').replace(/\s/g, '');
@@ -647,7 +647,7 @@ Return ONLY a JSON object with this structure:
     }
   ]
 }
-Important: Group multiple units (e.g. "2 eggs") into one entry. Be accurate with nutrition data. Use ${targetLang} for names.`;
+Important: Group multiple units (e.g. "2 eggs") into one entry. DO NOT split mixed dishes (like salads, sandwiches, stews) into individual ingredients; keep them as a single unified food item. Be accurate with nutrition data. Use ${targetLang} for names.`;
 
   try {
     const data = await fetchGroq({

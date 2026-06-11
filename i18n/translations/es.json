@@ -175,7 +175,9 @@
     "privacyLink": "Política de Privacidad",
     "termsAnd": "y la",
     "mustAcceptTerms": "Debes aceptar los Términos y Política de Privacidad para continuar.",
-    "emailRequired": "Por favor ingresa tu dirección de correo electrónico."
+    "emailRequired": "Por favor ingresa tu dirección de correo electrónico.",
+    "newPassword": "Nueva Contraseña",
+    "newPasswordPlaceholder": "Deja en blanco para no cambiar"
   },
   "tabs": {
     "dashboard": "Progreso",
@@ -471,7 +473,7 @@
     "carbs": "Carbohidratos",
     "fat": "Grasas",
     "userIdNotFound": "ID de usuario no encontrado. Por favor inicia sesión de nuevo.",
-    "updateFailed": "Error al actualizar el perfil",
+    "updateFailed": "Error al actualizar tu cuenta.",
     "updateSuccess": "Perfil actualizado con éxito ✨",
     "notAuth": "Usuario no autenticado",
     "uploadFailed": "Error al subir la foto de perfil",
@@ -605,7 +607,13 @@
     "goalReached": "¡Logrado!",
     "badges": {
       "owner": "Propietario"
-    }
+    },
+    "updateAccountDesc": "Ingresa tu nuevo correo electrónico o una nueva contraseña. Solo se actualizarán los campos que modifiques.",
+    "emailAndPasswordUpdated": "Contraseña actualizada. Por favor revisa tu bandeja de entrada en el nuevo correo para confirmar el cambio de email.",
+    "emailUpdated": "Revisa la bandeja de entrada de tu nuevo correo para confirmar el cambio.",
+    "passwordUpdated": "Contraseña actualizada correctamente.",
+    "samePasswordError": "La nueva contraseña debe ser diferente a la contraseña actual.",
+    "noChanges": "No has realizado ningún cambio."
   },
   "recipes": {
     "title": "Recetas",

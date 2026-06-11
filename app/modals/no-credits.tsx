@@ -7,6 +7,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { useAICredits } from '../../hooks/useAICredits';
 import { AD_CONFIG } from '../../constants/adConfig';
 import { Spacing, Radius } from '../../constants';
+import { MAX_AI_PHOTO_ENERGY, MAX_AI_TEXT_ENERGY } from '../../store/adStore';
 
 export default function NoCreditsModal() {
   const colors = useTheme();
@@ -58,8 +59,23 @@ export default function NoCreditsModal() {
               Sin energía IA por hoy
             </Text>
             <Text style={[s.subtitle, { color: colors.textSecondary }]}>
-              Usaste tus {AD_CONFIG.freeAICreditsPerDay} créditos diarios. Elige cómo continuar:
+              Usaste tus créditos diarios. Elige cómo continuar:
             </Text>
+            {/* Credit summary */}
+            <View style={s.creditSummary}>
+              <View style={[s.creditPill, { backgroundColor: '#F59E0B15', borderColor: '#F59E0B40' }]}>
+                <Text style={{ fontSize: 16 }}>📸</Text>
+                <Text style={{ color: '#F59E0B', fontWeight: '800', fontSize: 13 }}>
+                  {MAX_AI_PHOTO_ENERGY} foto/día
+                </Text>
+              </View>
+              <View style={[s.creditPill, { backgroundColor: '#7C5CFC15', borderColor: '#7C5CFC40' }]}>
+                <Text style={{ fontSize: 16 }}>✍️</Text>
+                <Text style={{ color: '#7C5CFC', fontWeight: '800', fontSize: 13 }}>
+                  {MAX_AI_TEXT_ENERGY} texto/día
+                </Text>
+              </View>
+            </View>
           </>
         )}
       </View>
@@ -81,7 +97,7 @@ export default function NoCreditsModal() {
                 Ver video corto
               </Text>
               <Text style={[s.optionDesc, { color: colors.textSecondary }]}>
-                Gana +{AD_CONFIG.rewardedAdCredits} créditos IA gratis ⚡
+                Gana +1 crédito IA ⚡ gratis
               </Text>
             </View>
             {loading ? (
@@ -130,10 +146,12 @@ const s = StyleSheet.create({
   container: { flex: 1, padding: Spacing.xl, paddingTop: 60 },
   closeBtn: { position: 'absolute', top: 16, right: 20, padding: 8, zIndex: 10 },
 
-  hero: { alignItems: 'center', marginBottom: 40, paddingTop: 20 },
+  hero: { alignItems: 'center', marginBottom: 32, paddingTop: 20 },
   iconCircle: { width: 100, height: 100, borderRadius: 50, justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
   title: { fontSize: 26, fontWeight: '900', textAlign: 'center', marginBottom: 10, letterSpacing: -0.5 },
-  subtitle: { fontSize: 16, textAlign: 'center', lineHeight: 24, paddingHorizontal: 20 },
+  subtitle: { fontSize: 15, textAlign: 'center', lineHeight: 22, paddingHorizontal: 20, marginBottom: 16 },
+  creditSummary: { flexDirection: 'row', gap: 10, marginTop: 4 },
+  creditPill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
 
   options: { gap: 0 },
   optionCard: {

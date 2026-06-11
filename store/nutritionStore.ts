@@ -273,8 +273,14 @@ export const useNutritionStore = create<NutritionState>()(
               logged_at: safeLog.loggedAt
             });
             if (error) {
-              console.warn('[NutritionStore] addLog Supabase error:', error);
-              throw error;
+              if (error.code === '23505') {
+                // Duplicate key value violates unique constraint
+                // This means the exact same log is being added again. We can safely ignore it.
+                console.log('[NutritionStore] Duplicate log prevented by Supabase constraint (23505).');
+              } else {
+                console.warn('[NutritionStore] addLog Supabase error:', error);
+                throw error;
+              }
             }
 
             // --- Calorie Triggers ---
