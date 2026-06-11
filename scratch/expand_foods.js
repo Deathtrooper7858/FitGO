@@ -1,0 +1,330 @@
+const fs = require('fs');
+const path = require('path');
+
+const projectRoot = 'c:\\Users\\Anubiz\\Downloads\\fitgo_native';
+const foodSelectionPath = path.join(projectRoot, 'app', 'modals', 'food-selection.tsx');
+
+const foods = {
+  proteins: [
+    { id: 'chicken', label: 'Pollo', en: 'Chicken', emoji: '🍗' },
+    { id: 'beef', label: 'Carne de Res / Vaca', en: 'Beef', emoji: '🥩' },
+    { id: 'fish', label: 'Pescado', en: 'Fish', emoji: '🐟' },
+    { id: 'pork', label: 'Cerdo / Puerco', en: 'Pork', emoji: '🍖' },
+    { id: 'eggs', label: 'Huevos', en: 'Eggs', emoji: '🥚' },
+    { id: 'turkey', label: 'Pavo / Guajolote', en: 'Turkey', emoji: '🦃' },
+    { id: 'tuna', label: 'Atún', en: 'Tuna', emoji: '🐠' },
+    { id: 'salmon', label: 'Salmón', en: 'Salmon', emoji: '🍣' },
+    { id: 'shrimp', label: 'Camarones / Gambas', en: 'Shrimp', emoji: '🦐' },
+    { id: 'tilapia', label: 'Tilapia / Mojarra', en: 'Tilapia', emoji: '🐟' },
+    { id: 'octopus', label: 'Pulpo', en: 'Octopus', emoji: '🐙' },
+    { id: 'squid', label: 'Calamar', en: 'Squid', emoji: '🦑' },
+    { id: 'crab', label: 'Cangrejo / Jaiba', en: 'Crab', emoji: '🦀' },
+    { id: 'sardines', label: 'Sardinas', en: 'Sardines', emoji: '🐟' },
+    { id: 'lamb', label: 'Cordero / Borrego', en: 'Lamb', emoji: '🍖' },
+    { id: 'goat', label: 'Chivo / Cabrito', en: 'Goat Meat', emoji: '🥩' },
+    { id: 'duck', label: 'Pato', en: 'Duck', emoji: '🦆' },
+    { id: 'rabbit', label: 'Conejo', en: 'Rabbit', emoji: '🐇' },
+    { id: 'guinea_pig', label: 'Cuy / Cuye (Andes)', en: 'Guinea Pig', emoji: '🥩' },
+    { id: 'chorizo', label: 'Chorizo', en: 'Chorizo', emoji: '🌭' },
+    { id: 'morcilla', label: 'Morcilla / Rellena', en: 'Blood Sausage', emoji: '🥩' },
+    { id: 'chicharron', label: 'Chicharrón de Cerdo', en: 'Pork Belly / Chicharron', emoji: '🥓' },
+    { id: 'cecina', label: 'Cecina / Carne Seca', en: 'Dried Meat / Jerky', emoji: '🥩' },
+    { id: 'tofu', label: 'Tofu (Soya)', en: 'Tofu', emoji: '🍱' },
+    { id: 'tempeh', label: 'Tempeh', en: 'Tempeh', emoji: '🌱' },
+    { id: 'seitan', label: 'Seitán (Carne Vegetal)', en: 'Seitan', emoji: '🌾' },
+    { id: 'protein_powder', label: 'Proteína en Polvo', en: 'Protein Powder', emoji: '💪' },
+    { id: 'greek_yogurt', label: 'Yogur Griego', en: 'Greek Yogurt', emoji: '🥄' },
+    { id: 'cottage_cheese', label: 'Queso Cottage', en: 'Cottage Cheese', emoji: '🧀' },
+    { id: 'quail_eggs', label: 'Huevos de Codorniz', en: 'Quail Eggs', emoji: '🥚' }
+  ],
+  carbs: [
+    { id: 'rice', label: 'Arroz', en: 'Rice', emoji: '🍚' },
+    { id: 'potato', label: 'Papa', en: 'Potato', emoji: '🥔' },
+    { id: 'sweet_potato', label: 'Camote / Batata / Boniato', en: 'Sweet Potato', emoji: '🍠' },
+    { id: 'cassava', label: 'Yuca / Mandioca / Casabe', en: 'Cassava', emoji: '🥔' },
+    { id: 'corn', label: 'Maíz / Choclo / Elote', en: 'Corn', emoji: '🌽' },
+    { id: 'plantain', label: 'Plátano Macho / Verde / Maduro', en: 'Plantain', emoji: '🍌' },
+    { id: 'beans', label: 'Frijoles / Porotos / Caraotas', en: 'Beans', emoji: '🫘' },
+    { id: 'lentils', label: 'Lentejas', en: 'Lentils', emoji: '🍲' },
+    { id: 'chickpeas', label: 'Garbanzos', en: 'Chickpeas', emoji: '🫘' },
+    { id: 'peas', label: 'Chícharos / Arvejas / Guisantes', en: 'Peas', emoji: '🫛' },
+    { id: 'oats', label: 'Avena', en: 'Oats', emoji: '🫓' },
+    { id: 'quinoa', label: 'Quinua / Quinoa', en: 'Quinoa', emoji: '🌾' },
+    { id: 'amaranth', label: 'Amaranto / Kiwicha', en: 'Amaranth', emoji: '🌾' },
+    { id: 'pasta', label: 'Pasta / Fideos', en: 'Pasta', emoji: '🍝' },
+    { id: 'bread', label: 'Pan (Blanco / Francés / Bolillo)', en: 'Bread', emoji: '🍞' },
+    { id: 'whole_wheat_bread', label: 'Pan Integral', en: 'Whole Wheat Bread', emoji: '🍞' },
+    { id: 'tortilla_corn', label: 'Tortilla de Maíz', en: 'Corn Tortilla', emoji: '🫓' },
+    { id: 'tortilla_flour', label: 'Tortilla de Harina', en: 'Flour Tortilla', emoji: '🫓' },
+    { id: 'arepa', label: 'Arepa', en: 'Arepa', emoji: '🫓' },
+    { id: 'empanada_dough', label: 'Masa de Empanada', en: 'Empanada Dough', emoji: '🥟' },
+    { id: 'tamal_masa', label: 'Masa de Tamal / Hallaca', en: 'Tamal Dough', emoji: '🫔' },
+    { id: 'taro', label: 'Malanga / Ñame / Taro', en: 'Taro / Yam', emoji: '🍠' },
+    { id: 'arracacha', label: 'Arracacha / Apio Criollo', en: 'Arracacha', emoji: '🥔' },
+    { id: 'olluco', label: 'Olluco / Papalisa', en: 'Olluco', emoji: '🥔' },
+    { id: 'mote', label: 'Mote / Maíz Pelado', en: 'Hominy / Mote', emoji: '🌽' },
+    { id: 'tapioca', label: 'Tapioca', en: 'Tapioca', emoji: '🧋' },
+    { id: 'granola', label: 'Granola', en: 'Granola', emoji: '🥣' },
+    { id: 'rice_cakes', label: 'Galletas de Arroz / Maíz', en: 'Rice Cakes', emoji: '🍘' },
+    { id: 'crackers', label: 'Galletas Saladas / Saltines', en: 'Crackers', emoji: '🍘' },
+    { id: 'couscous', label: 'Cuscús / Trigo', en: 'Couscous', emoji: '🍲' }
+  ],
+  fats: [
+    { id: 'avocado', label: 'Aguacate / Palta', en: 'Avocado', emoji: '🥑' },
+    { id: 'olive_oil', label: 'Aceite de Oliva', en: 'Olive Oil', emoji: '🫒' },
+    { id: 'coconut_oil', label: 'Aceite de Coco', en: 'Coconut Oil', emoji: '🥥' },
+    { id: 'avocado_oil', label: 'Aceite de Aguacate', en: 'Avocado Oil', emoji: '🫒' },
+    { id: 'corn_oil', label: 'Aceite de Maíz', en: 'Corn Oil', emoji: '🫒' },
+    { id: 'soybean_oil', label: 'Aceite de Soya', en: 'Soybean Oil', emoji: '🫒' },
+    { id: 'peanut_oil', label: 'Aceite de Maní / Cacahuate', en: 'Peanut Oil', emoji: '🫒' },
+    { id: 'butter', label: 'Mantequilla / Manteca', en: 'Butter', emoji: '🧈' },
+    { id: 'lard', label: 'Manteca de Cerdo', en: 'Lard', emoji: '🧈' },
+    { id: 'ghee', label: 'Mantequilla Clarificada (Ghee)', en: 'Ghee', emoji: '🧈' },
+    { id: 'margarine', label: 'Margarina', en: 'Margarine', emoji: '🧈' },
+    { id: 'peanuts', label: 'Maní / Cacahuates', en: 'Peanuts', emoji: '🥜' },
+    { id: 'almonds', label: 'Almendras', en: 'Almonds', emoji: '🌰' },
+    { id: 'walnuts', label: 'Nueces', en: 'Walnuts', emoji: '🌰' },
+    { id: 'brazil_nuts', label: 'Nueces de Brasil / Castañas', en: 'Brazil Nuts', emoji: '🌰' },
+    { id: 'cashews', label: 'Marañón / Anacardos / Cajú', en: 'Cashews', emoji: '🌰' },
+    { id: 'pecans', label: 'Pecanas', en: 'Pecans', emoji: '🌰' },
+    { id: 'pistachios', label: 'Pistachos', en: 'Pistachios', emoji: '🥜' },
+    { id: 'peanut_butter', label: 'Crema/Mantequilla de Maní', en: 'Peanut Butter', emoji: '🥜' },
+    { id: 'almond_butter', label: 'Mantequilla de Almendra', en: 'Almond Butter', emoji: '🥜' },
+    { id: 'chia_seeds', label: 'Semillas de Chía', en: 'Chia Seeds', emoji: '🌱' },
+    { id: 'flaxseeds', label: 'Semillas de Linaza', en: 'Flaxseeds', emoji: '🌱' },
+    { id: 'pumpkin_seeds', label: 'Semillas de Calabaza (Pepitas)', en: 'Pumpkin Seeds', emoji: '🎃' },
+    { id: 'sunflower_seeds', label: 'Semillas de Girasol / Maravilla', en: 'Sunflower Seeds', emoji: '🌻' },
+    { id: 'sesame_seeds', label: 'Ajonjolí / Sésamo', en: 'Sesame Seeds', emoji: '🌱' },
+    { id: 'olives', label: 'Aceitunas / Olivas', en: 'Olives', emoji: '🫒' },
+    { id: 'cheese_fat', label: 'Quesos Curados (Parmesano, etc)', en: 'Hard Cheese', emoji: '🧀' },
+    { id: 'bacon_fat', label: 'Tocino / Tocineta (Grasa)', en: 'Bacon', emoji: '🥓' },
+    { id: 'dark_chocolate', label: 'Chocolate Oscuro / Cacao', en: 'Dark Chocolate', emoji: '🍫' },
+    { id: 'mayo_fat', label: 'Mayonesa', en: 'Mayonnaise', emoji: '🍳' }
+  ],
+  fruits: [
+    { id: 'banana', label: 'Plátano / Banano / Guineo', en: 'Banana', emoji: '🍌' },
+    { id: 'apple', label: 'Manzana', en: 'Apple', emoji: '🍎' },
+    { id: 'papaya', label: 'Papaya / Lechosa / Mamón', en: 'Papaya', emoji: '🍈' },
+    { id: 'mango', label: 'Mango', en: 'Mango', emoji: '🥭' },
+    { id: 'pineapple', label: 'Piña / Ananá', en: 'Pineapple', emoji: '🍍' },
+    { id: 'watermelon', label: 'Sandía / Patilla', en: 'Watermelon', emoji: '🍉' },
+    { id: 'guava', label: 'Guayaba', en: 'Guava', emoji: '🍐' },
+    { id: 'passion_fruit', label: 'Maracuyá / Parcha / Chinola', en: 'Passion Fruit', emoji: '🥭' },
+    { id: 'lulo', label: 'Lulo / Naranjilla', en: 'Lulo', emoji: '🍊' },
+    { id: 'tree_tomato', label: 'Tomate de Árbol / Tamarillo', en: 'Tree Tomato', emoji: '🍅' },
+    { id: 'orange', label: 'Naranja', en: 'Orange', emoji: '🍊' },
+    { id: 'lime', label: 'Limón Verde / Lima', en: 'Lime', emoji: '🍋' },
+    { id: 'lemon', label: 'Limón Amarillo', en: 'Lemon', emoji: '🍋' },
+    { id: 'grapefruit', label: 'Toronja / Pomelo', en: 'Grapefruit', emoji: '🍊' },
+    { id: 'mandarin', label: 'Mandarina', en: 'Mandarin', emoji: '🍊' },
+    { id: 'grapes', label: 'Uvas', en: 'Grapes', emoji: '🍇' },
+    { id: 'strawberries', label: 'Fresas / Frutillas', en: 'Strawberries', emoji: '🍓' },
+    { id: 'blueberries', label: 'Arándanos', en: 'Blueberries', emoji: '🫐' },
+    { id: 'blackberries', label: 'Zarzamoras / Moras', en: 'Blackberries', emoji: '🫐' },
+    { id: 'melon', label: 'Melón', en: 'Melon', emoji: '🍈' },
+    { id: 'peach', label: 'Durazno / Melocotón', en: 'Peach', emoji: '🍑' },
+    { id: 'plum', label: 'Ciruela', en: 'Plum', emoji: '🍑' },
+    { id: 'pear', label: 'Pera', en: 'Pear', emoji: '🍐' },
+    { id: 'kiwi', label: 'Kiwi', en: 'Kiwi', emoji: '🥝' },
+    { id: 'dragonfruit', label: 'Pitahaya / Fruta del Dragón', en: 'Dragonfruit', emoji: '🐉' },
+    { id: 'soursop', label: 'Guanábana', en: 'Soursop', emoji: '🍈' },
+    { id: 'tamarind', label: 'Tamarindo', en: 'Tamarind', emoji: '🫘' },
+    { id: 'mamey', label: 'Mamey / Zapote', en: 'Mamey', emoji: '🥭' },
+    { id: 'cherimoya', label: 'Chirimoya / Anona', en: 'Cherimoya', emoji: '🍈' },
+    { id: 'coconut', label: 'Coco (Agua/Carne)', en: 'Coconut', emoji: '🥥' }
+  ],
+  veggies: [
+    { id: 'tomato', label: 'Tomate / Jitomate', en: 'Tomato', emoji: '🍅' },
+    { id: 'onion', label: 'Cebolla', en: 'Onion', emoji: '🧅' },
+    { id: 'garlic_veg', label: 'Ajo', en: 'Garlic', emoji: '🧄' },
+    { id: 'bell_pepper', label: 'Pimiento / Ají Morrón', en: 'Bell Pepper', emoji: '🫑' },
+    { id: 'chili_pepper', label: 'Chile / Ají Picante', en: 'Chili Pepper', emoji: '🌶️' },
+    { id: 'carrot', label: 'Zanahoria', en: 'Carrot', emoji: '🥕' },
+    { id: 'broccoli', label: 'Brócoli', en: 'Broccoli', emoji: '🥦' },
+    { id: 'cauliflower', label: 'Coliflor', en: 'Cauliflower', emoji: '🥦' },
+    { id: 'cabbage', label: 'Repollo / Col', en: 'Cabbage', emoji: '🥬' },
+    { id: 'lettuce', label: 'Lechuga', en: 'Lettuce', emoji: '🥬' },
+    { id: 'spinach', label: 'Espinaca', en: 'Spinach', emoji: '🥬' },
+    { id: 'cilantro', label: 'Cilantro / Culantro', en: 'Cilantro', emoji: '🌿' },
+    { id: 'zucchini', label: 'Calabacín / Zapallito', en: 'Zucchini', emoji: '🥒' },
+    { id: 'pumpkin', label: 'Calabaza / Zapallo / Auyama', en: 'Pumpkin', emoji: '🎃' },
+    { id: 'cucumber', label: 'Pepino', en: 'Cucumber', emoji: '🥒' },
+    { id: 'chayote', label: 'Chayote / Guatila / Tayota', en: 'Chayote', emoji: '🍐' },
+    { id: 'cactus', label: 'Nopales', en: 'Nopales / Cactus', emoji: '🌵' },
+    { id: 'jicama', label: 'Jícama', en: 'Jicama', emoji: '🥔' },
+    { id: 'green_beans', label: 'Ejotes / Vainitas / Habichuelas', en: 'Green Beans', emoji: '🫛' },
+    { id: 'celery', label: 'Apio', en: 'Celery', emoji: '🥬' },
+    { id: 'beet', label: 'Remolacha / Betabel', en: 'Beetroot', emoji: '🍠' },
+    { id: 'radish', label: 'Rábano', en: 'Radish', emoji: '🧅' },
+    { id: 'eggplant', label: 'Berenjena', en: 'Eggplant', emoji: '🍆' },
+    { id: 'mushroom', label: 'Champiñón / Seta / Hongo', en: 'Mushroom', emoji: '🍄' },
+    { id: 'asparagus', label: 'Espárragos', en: 'Asparagus', emoji: '🥦' },
+    { id: 'artichoke', label: 'Alcachofa', en: 'Artichoke', emoji: '🥦' },
+    { id: 'leek', label: 'Puerro / Ajoporro', en: 'Leek', emoji: '🧅' },
+    { id: 'scallion', label: 'Cebollín / Cebolla Larga', en: 'Scallion', emoji: '🧅' },
+    { id: 'swiss_chard', label: 'Acelga', en: 'Swiss Chard', emoji: '🥬' },
+    { id: 'watercress', label: 'Berro', en: 'Watercress', emoji: '🌿' }
+  ],
+  condiments: [
+    { id: 'salt', label: 'Sal', en: 'Salt', emoji: '🧂' },
+    { id: 'black_pepper', label: 'Pimienta Negra', en: 'Black Pepper', emoji: '🌶️' },
+    { id: 'cumin', label: 'Comino', en: 'Cumin', emoji: '🌰' },
+    { id: 'oregano', label: 'Orégano', en: 'Oregano', emoji: '🌿' },
+    { id: 'achiote', label: 'Achiote / Onoto / Color', en: 'Annatto', emoji: '🔴' },
+    { id: 'cilantro_cond', label: 'Cilantro Picado', en: 'Cilantro', emoji: '🌿' },
+    { id: 'parsley', label: 'Perejil', en: 'Parsley', emoji: '🌿' },
+    { id: 'garlic_cond', label: 'Ajo en Polvo / Pasta de Ajo', en: 'Garlic Powder', emoji: '🧄' },
+    { id: 'onion_powder', label: 'Cebolla en Polvo', en: 'Onion Powder', emoji: '🧅' },
+    { id: 'paprika', label: 'Pimentón / Paprika / Color', en: 'Paprika', emoji: '🌶️' },
+    { id: 'chili_powder', label: 'Chile en Polvo / Ají Molido', en: 'Chili Powder', emoji: '🌶️' },
+    { id: 'hot_sauce', label: 'Salsa Picante / Ají / Chimichurri', en: 'Hot Sauce', emoji: '🔥' },
+    { id: 'soy_sauce', label: 'Salsa de Soya / Sillao', en: 'Soy Sauce', emoji: '🍶' },
+    { id: 'vinegar', label: 'Vinagre Blanco', en: 'White Vinegar', emoji: '🍶' },
+    { id: 'apple_cider_vinegar', label: 'Vinagre de Manzana', en: 'Apple Cider Vinegar', emoji: '🍎' },
+    { id: 'lemon_juice', label: 'Jugo de Limón', en: 'Lemon Juice', emoji: '🍋' },
+    { id: 'mustard', label: 'Mostaza', en: 'Mustard', emoji: '🌶️' },
+    { id: 'mayonnaise', label: 'Mayonesa', en: 'Mayonnaise', emoji: '🍳' },
+    { id: 'ketchup', label: 'Salsa de Tomate / Ketchup', en: 'Ketchup', emoji: '🍅' },
+    { id: 'hogao', label: 'Hogao / Sofrito / Guiso', en: 'Sofrito', emoji: '🍅' },
+    { id: 'salsa_verde', label: 'Salsa Verde', en: 'Green Salsa', emoji: '🟢' },
+    { id: 'salsa_roja', label: 'Salsa Roja', en: 'Red Salsa', emoji: '🔴' },
+    { id: 'honey', label: 'Miel de Abeja', en: 'Honey', emoji: '🍯' },
+    { id: 'panela', label: 'Panela / Piloncillo / Chancaca', en: 'Panela', emoji: '🟤' },
+    { id: 'cinnamon', label: 'Canela', en: 'Cinnamon', emoji: '🌰' },
+    { id: 'cloves', label: 'Clavos de Olor', en: 'Cloves', emoji: '🌰' },
+    { id: 'vanilla', label: 'Vainilla', en: 'Vanilla', emoji: '🍦' },
+    { id: 'ginger', label: 'Jengibre / Kión', en: 'Ginger', emoji: '🥔' },
+    { id: 'turmeric', label: 'Cúrcuma / Palillo', en: 'Turmeric', emoji: '🫚' },
+    { id: 'bouillon', label: 'Caldo en Cubo / Consomé', en: 'Bouillon Cube', emoji: '🧊' }
+  ],
+  dairy: [
+    { id: 'milk', label: 'Leche de Vaca', en: 'Cow Milk', emoji: '🥛' },
+    { id: 'queso_fresco', label: 'Queso Fresco / Blanco / Campesino', en: 'Fresh Cheese', emoji: '🧀' },
+    { id: 'queso_doble_crema', label: 'Queso Doble Crema / Oaxaca', en: 'Melting Cheese', emoji: '🧀' },
+    { id: 'queso_costeno', label: 'Queso Costeño / Salado', en: 'Salty Cheese', emoji: '🧀' },
+    { id: 'queso_panela', label: 'Queso Panela', en: 'Panela Cheese', emoji: '🧀' },
+    { id: 'queso_rallado', label: 'Queso Rallado / Parmesano', en: 'Grated Cheese', emoji: '🧀' },
+    { id: 'mozzarella', label: 'Queso Mozzarella', en: 'Mozzarella', emoji: '🧀' },
+    { id: 'cheddar', label: 'Queso Cheddar / Amarillo', en: 'Cheddar', emoji: '🧀' },
+    { id: 'cream_cheese', label: 'Queso Crema', en: 'Cream Cheese', emoji: '🧀' },
+    { id: 'suero', label: 'Suero Costeño / Sour Cream / Nata', en: 'Sour Cream', emoji: '🥣' },
+    { id: 'crema_leche', label: 'Crema de Leche / Media Crema', en: 'Heavy Cream', emoji: '🥛' },
+    { id: 'yogurt', label: 'Yogur Entero', en: 'Yogurt', emoji: '🥄' },
+    { id: 'greek_yogurt_dairy', label: 'Yogur Griego', en: 'Greek Yogurt', emoji: '🥄' },
+    { id: 'kefir', label: 'Kéfir / Leche Cultivada', en: 'Kefir', emoji: '🥛' },
+    { id: 'butter_dairy', label: 'Mantequilla', en: 'Butter', emoji: '🧈' },
+    { id: 'dulce_de_leche', label: 'Arequipe / Dulce de Leche / Manjar', en: 'Dulce de Leche', emoji: '🍯' },
+    { id: 'condensed_milk', label: 'Leche Condensada', en: 'Condensed Milk', emoji: '🥛' },
+    { id: 'evaporated_milk', label: 'Leche Evaporada', en: 'Evaporated Milk', emoji: '🥛' },
+    { id: 'powdered_milk', label: 'Leche en Polvo', en: 'Powdered Milk', emoji: '🥛' },
+    { id: 'ice_cream', label: 'Helado de Crema', en: 'Ice Cream', emoji: '🍦' },
+    { id: 'lactose_free_milk', label: 'Leche Deslactosada', en: 'Lactose Free Milk', emoji: '🥛' },
+    { id: 'skim_milk', label: 'Leche Descremada', en: 'Skim Milk', emoji: '🥛' },
+    { id: 'almond_milk_dairy', label: 'Leche de Almendras', en: 'Almond Milk', emoji: '🥛' },
+    { id: 'oat_milk_dairy', label: 'Leche de Avena', en: 'Oat Milk', emoji: '🥛' },
+    { id: 'soy_milk_dairy', label: 'Leche de Soya', en: 'Soy Milk', emoji: '🥛' },
+    { id: 'coconut_milk_dairy', label: 'Leche de Coco', en: 'Coconut Milk', emoji: '🥥' },
+    { id: 'ricotta', label: 'Queso Ricotta / Requesón', en: 'Ricotta / Requeson', emoji: '🧀' },
+    { id: 'cottage_cheese_dairy', label: 'Queso Cottage', en: 'Cottage Cheese', emoji: '🧀' },
+    { id: 'goat_cheese', label: 'Queso de Cabra', en: 'Goat Cheese', emoji: '🧀' },
+    { id: 'goat_milk', label: 'Leche de Cabra', en: 'Goat Milk', emoji: '🥛' }
+  ],
+  beverages: [
+    { id: 'water', label: 'Agua Natural', en: 'Water', emoji: '💧' },
+    { id: 'sparkling_water', label: 'Agua con Gas / Soda', en: 'Sparkling Water', emoji: '🫧' },
+    { id: 'coffee', label: 'Café (Tinto / Negrito)', en: 'Coffee', emoji: '☕' },
+    { id: 'cafe_con_leche', label: 'Café con Leche / Pintadito', en: 'Coffee with Milk', emoji: '☕' },
+    { id: 'agua_panela', label: 'Aguapanela / Papelón con Limón', en: 'Panela Water', emoji: '🍹' },
+    { id: 'mate', label: 'Mate / Yerba Mate', en: 'Mate', emoji: '🧉' },
+    { id: 'tea', label: 'Té (Negro, Verde, Manzanilla)', en: 'Tea', emoji: '🍵' },
+    { id: 'hot_chocolate', label: 'Chocolate Caliente', en: 'Hot Chocolate', emoji: '☕' },
+    { id: 'jugo_naranja', label: 'Jugo de Naranja', en: 'Orange Juice', emoji: '🍊' },
+    { id: 'jugo_mora', label: 'Jugo de Mora', en: 'Blackberry Juice', emoji: '🧃' },
+    { id: 'jugo_lulo', label: 'Jugo de Lulo / Naranjilla', en: 'Lulo Juice', emoji: '🍹' },
+    { id: 'jugo_maracuya', label: 'Jugo de Maracuyá / Parcha', en: 'Passion Fruit Juice', emoji: '🧃' },
+    { id: 'jugo_guanabana', label: 'Jugo de Guanábana', en: 'Soursop Juice', emoji: '🥤' },
+    { id: 'lemonade', label: 'Limonada', en: 'Lemonade', emoji: '🍋' },
+    { id: 'agua_fresca', label: 'Agua Fresca (Horchata, Jamaica, Tamarindo)', en: 'Agua Fresca', emoji: '🍹' },
+    { id: 'chicha', label: 'Chicha (Maíz / Arroz)', en: 'Chicha', emoji: '🥤' },
+    { id: 'avena_bebida', label: 'Avena (Bebida / Refresco)', en: 'Oatmeal Drink', emoji: '🥤' },
+    { id: 'smoothie', label: 'Batido / Licuado de Frutas', en: 'Smoothie / Milkshake', emoji: '🥤' },
+    { id: 'protein_shake_bev', label: 'Batido de Proteína', en: 'Protein Shake', emoji: '🧃' },
+    { id: 'coconut_water', label: 'Agua de Coco', en: 'Coconut Water', emoji: '🥥' },
+    { id: 'sports_drink', label: 'Bebida Deportiva (Gatorade, Powerade)', en: 'Sports Drink', emoji: '🧃' },
+    { id: 'energy_drink', label: 'Bebida Energizante', en: 'Energy Drink', emoji: '⚡' },
+    { id: 'soda', label: 'Refresco / Gaseosa', en: 'Soda / Soft Drink', emoji: '🥤' },
+    { id: 'diet_soda', label: 'Gaseosa Zero / Light', en: 'Diet Soda', emoji: '🥤' },
+    { id: 'kombucha', label: 'Kombucha', en: 'Kombucha', emoji: '🍹' },
+    { id: 'beer', label: 'Cerveza / Chela / Pola', en: 'Beer', emoji: '🍺' },
+    { id: 'wine', label: 'Vino (Tinto / Blanco)', en: 'Wine', emoji: '🍷' },
+    { id: 'aguardiente', label: 'Aguardiente / Pisco / Tequila', en: 'Liquor (Aguardiente, etc)', emoji: '🥃' },
+    { id: 'bone_broth', label: 'Caldo de Huesos', en: 'Bone Broth', emoji: '🍲' },
+    { id: 'aloe_vera', label: 'Jugo de Sábila / Aloe Vera', en: 'Aloe Vera Juice', emoji: '🧃' }
+  ]
+};
+
+const mapArr = (arr) => arr.map(i => "      { id: '" + i.id + "', label: '" + i.id + "', emoji: '" + i.emoji + "' }").join(',\\n');
+
+const newCategoriesCode = "const FOOD_CATEGORIES = [\\n" +
+  "  {\\n" +
+  "    id: 'proteins', title: 'proteins', min: 3,\\n" +
+  "    items: [\\n" +
+  mapArr(foods.proteins) + "\\n" +
+  "    ]\\n" +
+  "  },\\n" +
+  "  {\\n" +
+  "    id: 'carbs', title: 'carbs', min: 3,\\n" +
+  "    items: [\\n" +
+  mapArr(foods.carbs) + "\\n" +
+  "    ]\\n" +
+  "  },\\n" +
+  "  {\\n" +
+  "    id: 'fats', title: 'fats', min: 1,\\n" +
+  "    items: [\\n" +
+  mapArr(foods.fats) + "\\n" +
+  "    ]\\n" +
+  "  },\\n" +
+  "  {\\n" +
+  "    id: 'fruits', title: 'fruits', min: 2,\\n" +
+  "    items: [\\n" +
+  mapArr(foods.fruits) + "\\n" +
+  "    ]\\n" +
+  "  },\\n" +
+  "  {\\n" +
+  "    id: 'veggies', title: 'veggies', min: 2,\\n" +
+  "    items: [\\n" +
+  mapArr(foods.veggies) + "\\n" +
+  "    ]\\n" +
+  "  },\\n" +
+  "  {\\n" +
+  "    id: 'condiments', title: 'condiments', min: 1,\\n" +
+  "    items: [\\n" +
+  mapArr(foods.condiments) + "\\n" +
+  "    ]\\n" +
+  "  },\\n" +
+  "  {\\n" +
+  "    id: 'dairy', title: 'dairy', min: 0,\\n" +
+  "    items: [\\n" +
+  mapArr(foods.dairy) + "\\n" +
+  "    ]\\n" +
+  "  },\\n" +
+  "  {\\n" +
+  "    id: 'beverages', title: 'beverages', min: 0,\\n" +
+  "    items: [\\n" +
+  mapArr(foods.beverages) + "\\n" +
+  "    ]\\n" +
+  "  }\\n" +
+  "];";
+
+const foodTsx = fs.readFileSync(foodSelectionPath, 'utf8');
+const startIdx = foodTsx.indexOf('const FOOD_CATEGORIES = [');
+
+// Let's use a regex instead since the end line has \n\n or \n
+const regex = /const FOOD_CATEGORIES = \[[\s\S]*?\];/;
+if (regex.test(foodTsx)) {
+  const updatedTsx = foodTsx.replace(regex, newCategoriesCode);
+  fs.writeFileSync(foodSelectionPath, updatedTsx, 'utf8');
+  console.log('Updated food-selection.tsx');
+} else {
+  console.error('Could not find FOOD_CATEGORIES in food-selection.tsx using Regex');
+}
