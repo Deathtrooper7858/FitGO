@@ -664,17 +664,28 @@ export default function ScanModal() {
       </View>
     );
   } else {
+    const isCameraMode = mode === 'barcode' || mode === 'photo';
+
     content = (
-      <View style={[s.container, { backgroundColor: '#000' }]}>
-        <CameraView
-          ref={cameraRef}
-          style={StyleSheet.absoluteFill}
-          facing={facing}
-          flash={flash}
-          enableTorch={flash === 'on'}
-          onBarcodeScanned={mode === 'barcode' && !scanned ? handleBarcode : undefined}
-          barcodeScannerSettings={mode === 'barcode' ? { barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'qr', 'code128'] } : undefined}
-        />
+      <View style={[s.container, { backgroundColor: colors.background }]}>
+        {isCameraMode ? (
+          <CameraView
+            ref={cameraRef}
+            style={StyleSheet.absoluteFill}
+            facing={facing}
+            flash={flash}
+            enableTorch={flash === 'on'}
+            onBarcodeScanned={mode === 'barcode' && !scanned ? handleBarcode : undefined}
+            barcodeScannerSettings={mode === 'barcode' ? { barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'qr', 'code128'] } : undefined}
+          />
+        ) : (
+          <LinearGradient
+            colors={['#0F172A', '#1E1B4B', '#0F172A']}
+            style={StyleSheet.absoluteFill}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+        )}
 
         <View style={s.overlay}>
           <View style={s.header}>

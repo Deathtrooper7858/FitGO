@@ -14,20 +14,20 @@
 
 /** Shared brand & semantic colours — do NOT use directly in components. */
 const Palette = {
-  // ── Brand ────────────────────────────────────────────────────
+  // ── Brand ────────────────────────────────────────────────
   primary:      '#8B5CF6',   // violet-500
   primaryLight: '#C4B5FD',   // violet-300
   primaryDark:  '#6D28D9',   // violet-700
   secondary:    '#06B6D4',   // cyan-500
   accent:       '#F43F5E',   // rose-500
 
-  // ── Feedback ─────────────────────────────────────────────────
+  // ── Feedback ─────────────────────────────────────────────
   success:      '#10B981',   // emerald-500
   warning:      '#F59E0B',   // amber-500
   error:        '#EF4444',   // red-500
   info:         '#3B82F6',   // blue-500
 
-  // ── Macro nutrients ──────────────────────────────────────────
+  // ── Macro nutrients ──────────────────────────────────────
   protein:      '#8B5CF6',   // violet
   carbs:        '#06B6D4',   // cyan
   fat:          '#F59E0B',   // amber
@@ -70,6 +70,23 @@ export const Colors = {
     // ── Pro ─────────────────────────────────────────────────────
     pro:           '#F59E0B',
     proGradient:   ['#F59E0B', '#D97706'] as const,
+
+    // ── Medals (premium animated) ────────────────────────────────
+    medalBronze:      '#CD7F32',
+    medalBronzeGlow:  'rgba(205,127,50,0.35)',
+    medalBronzeGrad:  ['#CD7F32', '#A0522D'] as const,
+    medalSilver:      '#CBD5E1',
+    medalSilverGlow:  'rgba(148,163,184,0.30)',
+    medalSilverGrad:  ['#CBD5E1', '#94A3B8'] as const,
+    medalGold:        '#FFD700',
+    medalGoldGlow:    'rgba(255,215,0,0.40)',
+    medalGoldGrad:    ['#FFD700', '#F59E0B'] as const,
+    medalDiamond:     '#00F0FF',
+    medalDiamondGlow: 'rgba(0,240,255,0.40)',
+    medalDiamondGrad: ['#00F0FF', '#8B5CF6'] as const,
+
+    // ── Muscle map ───────────────────────────────────────────────
+    musclePulse:   'rgba(139,92,246,0.25)',
   },
   light: {
     ...Palette,
@@ -106,6 +123,23 @@ export const Colors = {
     // ── Pro ─────────────────────────────────────────────────────
     pro:           '#F59E0B',
     proGradient:   ['#F59E0B', '#D97706'] as const,
+
+    // ── Medals (premium animated) ────────────────────────────────
+    medalBronze:      '#CD7F32',
+    medalBronzeGlow:  'rgba(205,127,50,0.20)',
+    medalBronzeGrad:  ['#CD7F32', '#A0522D'] as const,
+    medalSilver:      '#CBD5E1',
+    medalSilverGlow:  'rgba(148,163,184,0.20)',
+    medalSilverGrad:  ['#CBD5E1', '#94A3B8'] as const,
+    medalGold:        '#FFD700',
+    medalGoldGlow:    'rgba(255,215,0,0.25)',
+    medalGoldGrad:    ['#FFD700', '#F59E0B'] as const,
+    medalDiamond:     '#00F0FF',
+    medalDiamondGlow: 'rgba(0,240,255,0.25)',
+    medalDiamondGrad: ['#00F0FF', '#8B5CF6'] as const,
+
+    // ── Muscle map ───────────────────────────────────────────────
+    musclePulse:   'rgba(139,92,246,0.15)',
   },
 };
 
