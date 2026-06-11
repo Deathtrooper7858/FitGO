@@ -27,11 +27,11 @@ type Meal = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
 export default function ScanModal() {
   const { t } = useTranslation();
-  const { initialMeal, date } = useLocalSearchParams<{ initialMeal?: Meal, date?: string }>();
+  const { initialMeal, date, initialMode } = useLocalSearchParams<{ initialMeal?: Meal, date?: string, initialMode?: ScanMode }>();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned]           = useState(false);
   const [loading, setLoading]           = useState(false);
-  const [mode, setMode]                 = useState<ScanMode>('photo');
+  const [mode, setMode]                 = useState<ScanMode>(initialMode || 'photo');
   const [textInput, setTextInput]       = useState('');
   
   // Search Mode State
@@ -634,6 +634,23 @@ export default function ScanModal() {
           <TouchableOpacity style={[s.retryBtn, { borderColor: colors.border }]} onPress={resetPhoto}>
             <Text style={[s.retryText, { color: colors.textSecondary }]}>📷 {t('scan.retake')}</Text>
           </TouchableOpacity>
+          {/* Add missing food — lets user add what the AI didn't detect */}
+          <TouchableOpacity
+            style={[s.retryBtn, { borderColor: colors.primary + '66', backgroundColor: colors.primary + '12' }]}
+            onPress={() => {
+              // Save current results first, then push scan in search mode
+              handleAddAllFoods().then(() => {
+                router.replace({
+                  pathname: '/modals/scan',
+                  params: { initialMeal: initialMeal || getAutoMeal(), date: date || getLocalDateString(), initialMode: 'search' },
+                } as any);
+              });
+            }}
+          >
+            <Text style={[s.retryText, { color: colors.primary, fontWeight: '700' }]}>
+              ➕ {language === 'es' ? 'Añadir faltante' : 'Add missing'}
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity style={s.addAllBtn} onPress={handleAddAllFoods} activeOpacity={0.85}>
             <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.addAllGrad}>
               <Text style={s.addAllText}>
@@ -647,17 +664,28 @@ export default function ScanModal() {
       </View>
     );
   } else {
+    const isCameraMode = mode === 'barcode' || mode === 'photo';
+
     content = (
-      <View style={[s.container, { backgroundColor: '#000' }]}>
-        <CameraView
-          ref={cameraRef}
-          style={StyleSheet.absoluteFill}
-          facing={facing}
-          flash={flash}
-          enableTorch={flash === 'on'}
-          onBarcodeScanned={mode === 'barcode' && !scanned ? handleBarcode : undefined}
-          barcodeScannerSettings={mode === 'barcode' ? { barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'qr', 'code128'] } : undefined}
-        />
+      <View style={[s.container, { backgroundColor: colors.background }]}>
+        {isCameraMode ? (
+          <CameraView
+            ref={cameraRef}
+            style={StyleSheet.absoluteFill}
+            facing={facing}
+            flash={flash}
+            enableTorch={flash === 'on'}
+            onBarcodeScanned={mode === 'barcode' && !scanned ? handleBarcode : undefined}
+            barcodeScannerSettings={mode === 'barcode' ? { barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'qr', 'code128'] } : undefined}
+          />
+        ) : (
+          <LinearGradient
+            colors={['#0F172A', '#1E1B4B', '#0F172A']}
+            style={StyleSheet.absoluteFill}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+        )}
 
         <View style={s.overlay}>
           <View style={s.header}>
