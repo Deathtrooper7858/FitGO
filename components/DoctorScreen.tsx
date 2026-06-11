@@ -14,7 +14,7 @@ import {
   MessageSquarePlus, Apple, Salad, Flame, 
   BarChart2, Edit2, ShieldAlert, Heart, Compass, Zap, Activity, Dumbbell
 } from 'lucide-react-native';
-import { useAuthStore, useCoachStore, CoachMessage, useSettingsStore, usePurchaseStore } from '../store';
+import { useAuthStore, useCoachStore, CoachMessage, useSettingsStore, usePurchaseStore, usePlannerStore, useBodyStore, useWorkoutHistoryStore } from '../store';
 import { sendCoachMessage, buildCoachSystemPrompt, transcribeAudio } from '../services/groq';
 import { supabase } from '../services/supabase';
 import { Spacing, Radius } from '../constants';
@@ -567,6 +567,10 @@ export default function DoctorScreen() {
         }
       }
 
+      const { mealPlans, workoutPlans } = usePlannerStore.getState();
+      const { sleepLogs } = useBodyStore.getState();
+      const { workouts } = useWorkoutHistoryStore.getState();
+
       const systemPrompt = buildCoachSystemPrompt({
         name:           profile.name           ?? 'User',
         goal:           profile.goal           ?? 'maintain',
@@ -583,6 +587,10 @@ export default function DoctorScreen() {
         medicalConditions: profile.medicalConditions,
         medicationsSupplements: profile.medicationsSupplements,
         preferences:    profile.preferences,
+        mealPlans,
+        workoutPlans,
+        sleepLogs,
+        workoutHistory: workouts,
       }, language, coachType);
 
       const reply = await sendCoachMessage(history, text, systemPrompt, currentImg ?? undefined);

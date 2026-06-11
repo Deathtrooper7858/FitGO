@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Image, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Camera, X, Upload, Brain, CheckCircle, ArrowUpCircle, History, ChevronRight } from 'lucide-react-native';
+import { Camera, X, Upload, Brain, CheckCircle, ArrowUpCircle, History, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,30 @@ import { AdTimerOverlay } from '../../components/AdTimerOverlay';
 import { getLocalDateString } from '../../utils/date';
 import { LinearGradient } from 'expo-linear-gradient';
 
+const Accordion = ({ title, icon, color, defaultExpanded = false, children, colors }: any) => {
+  const [expanded, setExpanded] = useState(defaultExpanded);
+  return (
+    <View style={[s.listCard, { backgroundColor: colors.surface, padding: 0, overflow: 'hidden', marginBottom: Spacing.md }]}>
+      <TouchableOpacity 
+        style={[s.listHeader, { padding: Spacing.lg, marginBottom: 0 }]} 
+        onPress={() => setExpanded(!expanded)}
+        activeOpacity={0.7}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+          {icon}
+          <Text style={[s.listTitle, { color }]}>{title}</Text>
+        </View>
+        {expanded ? <ChevronUp size={20} color={colors.textSecondary} /> : <ChevronDown size={20} color={colors.textSecondary} />}
+      </TouchableOpacity>
+      {expanded && (
+        <View style={{ paddingHorizontal: Spacing.lg, paddingBottom: Spacing.lg }}>
+          {children}
+        </View>
+      )}
+    </View>
+  );
+};
+
 export default function ProgressEvaluationModal() {
   const { t } = useTranslation();
   const colors = useTheme();
@@ -23,6 +47,9 @@ export default function ProgressEvaluationModal() {
 
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [base64Image, setBase64Image] = useState<string | null>(null);
+  type TargetArea = 'full' | 'upper' | 'lower' | 'back' | 'arms' | 'core';
+  const [targetArea, setTargetArea] = useState<TargetArea>('full');
+  const [userContext, setUserContext] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<{
     id?: string;
@@ -31,6 +58,9 @@ export default function ProgressEvaluationModal() {
     improvements: string[];
     estimatedFatPercentage: string;
     base64ImageData?: string;
+    postureAnalysis?: string;
+    symmetry?: string;
+    recommendations?: string[];
   } | null>(null);
 
   const [showHistory, setShowHistory] = useState(false);
@@ -71,7 +101,7 @@ export default function ProgressEvaluationModal() {
         }
         result = await ImagePicker.launchCameraAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
+          allowsEditing: false,
           aspect: [3, 4],
           quality: 0.8,
           base64: true,
@@ -84,7 +114,7 @@ export default function ProgressEvaluationModal() {
         }
         result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
+          allowsEditing: false,
           aspect: [3, 4],
           quality: 0.8,
           base64: true,
@@ -106,7 +136,7 @@ export default function ProgressEvaluationModal() {
     if (!base64Image || !imageUri) return;
     setIsAnalyzing(true);
     try {
-      const response = await analyzePhysiquePhoto(base64Image, language);
+      const response = await analyzePhysiquePhoto(base64Image, language, targetArea, userContext);
       
       // Save image to filesystem for persistence instead of keeping base64 in AsyncStorage
       const fileName = `eval_${Date.now()}.jpg`;
@@ -145,25 +175,37 @@ export default function ProgressEvaluationModal() {
           </View>
         </View>
 
-        <View style={[s.listCard, { backgroundColor: colors.surface }]}>
-          <View style={s.listHeader}>
-            <CheckCircle size={20} color={colors.success} />
-            <Text style={[s.listTitle, { color: colors.success }]}>{t('evaluation.strengths', 'Puntos Fuertes')}</Text>
-          </View>
+        {res.postureAnalysis && (
+          <Accordion title={t('evaluation.posture', 'Análisis de Postura')} icon={<Text style={{fontSize: 20}}>🧍‍♂️</Text>} color={colors.primary} defaultExpanded={false} colors={colors}>
+            <Text style={[s.listItem, { color: colors.textPrimary }]}>{res.postureAnalysis}</Text>
+          </Accordion>
+        )}
+
+        {res.symmetry && (
+          <Accordion title={t('evaluation.symmetry', 'Simetría y Proporción')} icon={<Text style={{fontSize: 20}}>⚖️</Text>} color={colors.primary} defaultExpanded={false} colors={colors}>
+            <Text style={[s.listItem, { color: colors.textPrimary }]}>{res.symmetry}</Text>
+          </Accordion>
+        )}
+
+        <Accordion title={t('evaluation.strengths', 'Puntos Fuertes')} icon={<CheckCircle size={20} color={colors.success} />} color={colors.success} defaultExpanded={true} colors={colors}>
           {res.strengths.map((str, i) => (
             <Text key={i} style={[s.listItem, { color: colors.textPrimary }]}>• {str}</Text>
           ))}
-        </View>
+        </Accordion>
 
-        <View style={[s.listCard, { backgroundColor: colors.surface }]}>
-          <View style={s.listHeader}>
-            <ArrowUpCircle size={20} color={colors.warning} />
-            <Text style={[s.listTitle, { color: colors.warning }]}>{t('evaluation.improvements', 'Áreas de Mejora')}</Text>
-          </View>
+        <Accordion title={t('evaluation.improvements', 'Áreas de Mejora')} icon={<ArrowUpCircle size={20} color={colors.warning} />} color={colors.warning} defaultExpanded={true} colors={colors}>
           {res.improvements.map((imp, i) => (
             <Text key={i} style={[s.listItem, { color: colors.textPrimary }]}>• {imp}</Text>
           ))}
-        </View>
+        </Accordion>
+        
+        {res.recommendations && res.recommendations.length > 0 && (
+          <Accordion title={t('evaluation.recommendations', 'Recomendaciones')} icon={<Text style={{fontSize: 20}}>💡</Text>} color="#F59E0B" defaultExpanded={false} colors={colors}>
+            {res.recommendations.map((rec, i) => (
+              <Text key={i} style={[s.listItem, { color: colors.textPrimary }]}>• {rec}</Text>
+            ))}
+          </Accordion>
+        )}
         
         {!hideNewBtn && (
           <TouchableOpacity style={[s.primaryBtn, { backgroundColor: colors.primary, marginTop: Spacing.lg }]} onPress={() => { setImageUri(null); setResult(null); }}>
@@ -222,6 +264,26 @@ export default function ProgressEvaluationModal() {
               {t('evaluation.instruction', 'Sube o toma una foto de tu físico actual para recibir un análisis detallado de la IA sobre tus puntos fuertes y áreas a mejorar.')}
             </Text>
             
+            <Text style={[s.sectionSubtitle, { color: colors.textPrimary }]}>{t('evaluation.selectArea', '¿Qué zona deseas evaluar?')}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.areaScroll} contentContainerStyle={s.areaScrollContent}>
+              {[
+                { id: 'full', label: '🧍‍♂️ Cuerpo Completo' },
+                { id: 'upper', label: '👕 Tren Superior' },
+                { id: 'lower', label: '👖 Piernas' },
+                { id: 'back', label: '🔙 Espalda' },
+                { id: 'arms', label: '💪 Brazos' },
+                { id: 'core', label: '🍫 Abdomen' },
+              ].map(area => (
+                <TouchableOpacity 
+                  key={area.id} 
+                  style={[s.areaBtn, targetArea === area.id ? { backgroundColor: colors.primary, borderColor: colors.primary } : { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  onPress={() => setTargetArea(area.id as TargetArea)}
+                >
+                  <Text style={[s.areaBtnText, targetArea === area.id ? { color: '#FFF' } : { color: colors.textPrimary }]}>{area.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
             <View style={s.buttonRow}>
               <TouchableOpacity style={[s.actionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => pickImage(true)}>
                 <Camera size={24} color={colors.primary} />
@@ -246,14 +308,26 @@ export default function ProgressEvaluationModal() {
             <Image source={{ uri: imageUri }} style={s.previewImage} resizeMode="cover" />
             
             {!result && !isAnalyzing && (
-              <View style={s.buttonRowImage}>
-                <TouchableOpacity style={[s.secondaryBtn, { backgroundColor: colors.surface }]} onPress={() => { setImageUri(null); setResult(null); }}>
+              <View style={{ width: '100%' }}>
+                <View style={{ width: '100%', marginTop: Spacing.lg }}>
+                  <Text style={[s.statLabel, { color: colors.textSecondary, marginBottom: 8 }]}>{t('evaluation.optionalContext', 'Contexto opcional (ej: "Es mi brazo derecho haciendo flexión")')}</Text>
+                  <TextInput
+                    style={[s.contextInput, { backgroundColor: colors.surface, color: colors.textPrimary, borderColor: colors.border }]}
+                    placeholder={t('evaluation.contextPlaceholder', 'Escribe detalles aquí...')}
+                    placeholderTextColor={colors.textSecondary}
+                    value={userContext}
+                    onChangeText={setUserContext}
+                  />
+                </View>
+                <View style={s.buttonRowImage}>
+                  <TouchableOpacity style={[s.secondaryBtn, { backgroundColor: colors.surface }]} onPress={() => { setImageUri(null); setResult(null); setUserContext(''); }}>
                   <Text style={[s.secondaryBtnText, { color: colors.textPrimary }]}>{t('common.retake', 'Cambiar')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[s.primaryBtn, { backgroundColor: colors.primary }]} onPress={handleAnalyze}>
                   <Brain size={20} color="#FFF" />
                   <Text style={s.primaryBtnText}>{t('evaluation.analyzeBtn', 'Analizar Físico')}</Text>
                 </TouchableOpacity>
+              </View>
               </View>
             )}
           </View>
@@ -331,4 +405,10 @@ const s = StyleSheet.create({
   proBtn:           { width: '100%', borderRadius: Radius.md, overflow: 'hidden' },
   proGrad:          { padding: 16, alignItems: 'center' },
   proText:          { color: '#fff', fontWeight: '700', fontSize: 16 },
+  sectionSubtitle:  { fontSize: 16, fontWeight: '600', marginBottom: 12, alignSelf: 'flex-start' },
+  areaScroll:       { width: '100%', marginBottom: Spacing.xl },
+  areaScrollContent:{ gap: Spacing.md, paddingRight: Spacing.xl },
+  areaBtn:          { paddingHorizontal: 16, paddingVertical: 10, borderRadius: Radius.full, borderWidth: 1 },
+  areaBtnText:      { fontSize: 14, fontWeight: '600' },
+  contextInput:     { borderWidth: 1, borderRadius: Radius.lg, padding: 12, fontSize: 15 },
 });

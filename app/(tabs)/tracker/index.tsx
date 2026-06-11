@@ -106,9 +106,10 @@ export default function TrackerScreen() {
   const { energyUnit, volumeUnit } = useSettingsStore();
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
-  // Multi-select state: Set of selected log IDs
   const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set());
   const { totalUnreadCount, friends } = useSocialStore();
+  
+  const steps = dailySteps[selectedDate] || 0;
 
   // Pedometer State
   const [liveSteps, setLiveSteps] = useState(0);
@@ -348,7 +349,6 @@ export default function TrackerScreen() {
 
   const rawWater = dailyWater[selectedDate] || 0;
   const waterIntake = volumeUnit === 'ml' ? rawWater : Number(convertVolume(rawWater, 'ml', volumeUnit).toFixed(1));
-  const steps = dailySteps[selectedDate] || 0;
 
   const handleActivityPress = (act: any) => {
     showAlert(

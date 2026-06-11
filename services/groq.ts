@@ -94,8 +94,9 @@ export function buildCoachSystemPrompt(userProfile: {
   medicalConditions?: string[];
   medicationsSupplements?: string[];
   preferences?: string[];
-  mealPlans?: Record<string, any[]>;
   workoutPlans?: Record<string, any>;
+  sleepLogs?: Record<string, any>;
+  workoutHistory?: any[];
 }, language: string = 'en', coachType: 'nutritionist' | 'trainer' | 'doctor' = 'nutritionist') {
   const targetLang = getLang(language);
 
@@ -119,7 +120,11 @@ Health Profile (CRITICAL):
 - Diet Type Preference: ${userProfile.preferences?.[0] ?? 'Balanced'}
 
 ${userProfile.mealPlans && Object.keys(userProfile.mealPlans).length > 0 ? `Current Weekly Meal Plan:\n${JSON.stringify(userProfile.mealPlans)}` : ''}
-${userProfile.workoutPlans && Object.keys(userProfile.workoutPlans).length > 0 ? `Current Weekly Workout Plan:\n${JSON.stringify(userProfile.workoutPlans)}` : ''}`;
+${userProfile.workoutPlans && Object.keys(userProfile.workoutPlans).length > 0 ? `Current Weekly Workout Plan:\n${JSON.stringify(userProfile.workoutPlans)}` : ''}
+
+Recent App Activity & Progress (CRITICAL):
+${userProfile.sleepLogs && Object.keys(userProfile.sleepLogs).length > 0 ? `Recent Sleep Logs (Hours slept per day):\n${JSON.stringify(userProfile.sleepLogs)}` : 'No recent sleep logs.'}
+${userProfile.workoutHistory && userProfile.workoutHistory.length > 0 ? `Recent Completed Workouts (Routines actually done, muscles trained):\n${JSON.stringify(userProfile.workoutHistory.slice(0, 10))}` : 'No workouts completed recently.'}`;
 
   const roles: Record<string, Record<string, string>> = {
     trainer: {
@@ -260,27 +265,49 @@ export async function analyzeFoodPhoto(base64Image: string, language: string = '
 }
 
 // ─── Physique photo analysis ───────────────────────────────────────────────────
-export async function analyzePhysiquePhoto(base64Image: string, language: string = 'en'): Promise<{
+export async function analyzePhysiquePhoto(base64Image: string, language: string = 'en', targetArea: string = 'full', userContext: string = ''): Promise<{
   feedback: string;
   strengths: string[];
   improvements: string[];
   estimatedFatPercentage: string;
+  postureAnalysis?: string;
+  symmetry?: string;
+  recommendations?: string[];
 }> {
   if (!base64Image) {
     throw new Error('Image data is missing or empty.');
   }
 
   const targetLang = getLang(language);
+  
+  const areaInstructions: Record<string, string> = {
+    'full': 'Evaluate the entire full body physique.',
+    'upper': 'Focus your evaluation EXCLUSIVELY on the Upper Body (chest, shoulders, upper back). Ignore the lower body.',
+    'lower': 'Focus your evaluation EXCLUSIVELY on the Lower Body (legs, glutes, calves). Ignore the upper body.',
+    'back': 'Focus your evaluation EXCLUSIVELY on the Back (lats, traps, lower back). Ignore the front.',
+    'arms': 'Focus your evaluation EXCLUSIVELY on the Arms (biceps, triceps, forearms).',
+    'core': 'Focus your evaluation EXCLUSIVELY on the Core and Abdominals (abs, obliques).',
+  };
+  const focusInstruction = areaInstructions[targetArea] || areaInstructions['full'];
+  const userContextStr = userContext ? `\nUSER CONTEXT (Treat this as absolute truth): ${userContext}` : '';
 
-  const prompt = `You are a professional bodybuilding and fitness coach. Analyze this physique photo.
-Return ONLY a JSON object with this exact structure:
+  const prompt = `You are a professional biomechanics analyst and elite fitness coach. Perform a deep, comprehensive analysis of this physique photo.
+CRITICAL FOCUS INSTRUCTION: ${focusInstruction}${userContextStr}
+Return ONLY a valid JSON object with this exact structure:
 {
-  "feedback": "Overall encouraging assessment of the physique in ${targetLang}",
-  "strengths": ["Strong points, e.g., 'Good shoulder development'", "Another point"],
-  "improvements": ["Areas to focus on, e.g., 'Upper chest volume'", "Another point"],
-  "estimatedFatPercentage": "12-15%"
+  "feedback": "A comprehensive, highly detailed, and constructive assessment focusing on the requested area in ${targetLang}",
+  "strengths": ["Strong point 1, e.g., 'Good shoulder development'", "Strong point 2"],
+  "improvements": ["Area to focus 1, e.g., 'Upper chest volume'", "Area to focus 2"],
+  "estimatedFatPercentage": "12-15%",
+  "postureAnalysis": "Brief analysis of visible posture (e.g., rounded shoulders, anterior pelvic tilt, or good alignment) in ${targetLang}",
+  "symmetry": "Analysis of left/right balance and proportions in ${targetLang}",
+  "recommendations": ["Specific actionable advice for training 1", "Specific actionable advice for nutrition 2"]
 }
-Be realistic, constructive, and highly encouraging. If the image is not a physique photo, kindly mention it in the feedback but try your best to return the JSON structure. Use ${targetLang} for all text fields.`;
+CRITICAL RULES:
+1. Do NOT mention age, age estimation, or lack of context. 
+2. Do NOT say you cannot determine precision. Provide a confident assessment and estimated fat percentage based strictly on the visual information available.
+3. Be realistic, analytical, and highly encouraging.
+If the image is not a physique photo, kindly mention it in the feedback but try your best to return the JSON structure. Use ${targetLang} for all text fields.`;
 
   try {
     const cleanBase64 = base64Image.replace(/^data:image\/\w+;base64,/, '').replace(/\s/g, '');
