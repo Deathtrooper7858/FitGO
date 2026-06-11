@@ -17,6 +17,7 @@ import { getLocalDateString } from '../../../utils/date';
 import Animated, { FadeIn, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { AnimatedCard } from '../../../components/AnimatedCard';
+import { MuscleSymmetryCard } from '../../../components/MuscleSymmetryCard';
 import { Trophy, Flame, Dumbbell, Heart, ChevronRight, Scale, Target } from 'lucide-react-native';
 import { useAchievements, Achievement } from '../../../hooks/useAchievements';
 import { GoalWizardModal, ACTIVITY_TO_EXERCISE } from '../../../components/GoalWizardModal';
@@ -34,7 +35,7 @@ const STROKE_WIDTH  = 15;
 const RADIUS        = (RING_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
-// ─── Calorie/Score Ring ─────────────────────────────────────────────────────────
+// ─── Calorie/Score Ring (Premium) ────────────────────────────────────────────
 function ScoreRing({ consumed, target, dateLabel }: { consumed: number; target: number; dateLabel: string }) {
   const { t } = useTranslation();
   const colors = useTheme();
@@ -44,35 +45,76 @@ function ScoreRing({ consumed, target, dateLabel }: { consumed: number; target: 
     ? Math.min(Math.max(safeConsumed / Math.max(safeTarget, 1), 0), 1)
     : 0;
   const strokeDashoffset = useMemo(() => CIRCUMFERENCE - pct * CIRCUMFERENCE, [pct]);
+  const remaining = Math.max(safeTarget - safeConsumed, 0);
+
+  const isOver = consumed > target * 0.9;
+  const ringColorA = isOver ? colors.error : '#00F0FF';
+  const ringColorB = isOver ? '#FF4B4B' : '#7C5CFC';
 
   return (
     <View style={ring.container}>
-      <Text style={[ring.topLabel, { color: colors.textSecondary }]}>{dateLabel}</Text>
-      <View style={{ height: 16 }} />
+      {/* Date pill above */}
+      <View style={[ring.datePill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '30' }]}>
+        <Text style={[ring.topLabel, { color: colors.primary }]}>{dateLabel}</Text>
+      </View>
+      <View style={{ height: 12 }} />
+
       <Svg width={RING_SIZE} height={RING_SIZE}>
         <Defs>
           <SvgLinearGradient id="scoreGrad" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0" stopColor={pct > 0.9 ? colors.error : "#00F0FF"} />
-            <Stop offset="1" stopColor={pct > 0.9 ? "#FF4B4B" : "#7C5CFC"} />
+            <Stop offset="0" stopColor={ringColorA} />
+            <Stop offset="1" stopColor={ringColorB} />
           </SvgLinearGradient>
         </Defs>
-        <Circle cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={RADIUS}
+
+        {/* Ghost track ring */}
+        <Circle
+          cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={RADIUS}
+          stroke={colors.border + '55'}
+          strokeWidth={STROKE_WIDTH}
+          fill="transparent"
+        />
+
+        {/* Inner glow ring (blurred softness) */}
+        <Circle
+          cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={RADIUS}
+          stroke={isOver ? colors.error + '30' : '#7C5CFC30'}
+          strokeWidth={STROKE_WIDTH + 8}
+          strokeDasharray={CIRCUMFERENCE}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round" fill="transparent"
+          rotation="-90" originX={RING_SIZE / 2} originY={RING_SIZE / 2}
+        />
+
+        {/* Main progress ring */}
+        <Circle
+          cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={RADIUS}
           stroke="url(#scoreGrad)"
           strokeWidth={STROKE_WIDTH}
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round" fill="transparent"
-          rotation="-90" originX={RING_SIZE / 2} originY={RING_SIZE / 2} />
+          rotation="-90" originX={RING_SIZE / 2} originY={RING_SIZE / 2}
+        />
       </Svg>
+
       <View style={ring.textWrap}>
         <Text style={[ring.consumed, { color: colors.textPrimary }]}>{consumed}</Text>
-        <Text style={[ring.label, { color: colors.textSecondary }]}>
-          {consumed < target * 0.3 ? t('dashboard.low', 'Bajo') : consumed > target * 0.9 ? t('dashboard.high', 'Alto') : t('dashboard.medium', 'Medio')}
-        </Text>
+        <Text style={[ring.unitLabel, { color: colors.textMuted }]}>kcal consumidas</Text>
+        <View style={[ring.statusPill, { backgroundColor: isOver ? colors.error + '20' : colors.primary + '15', borderColor: isOver ? colors.error + '40' : colors.primary + '30' }]}>
+          <Text style={[ring.label, { color: isOver ? colors.error : colors.primary }]}>
+            {isOver
+              ? `+${consumed - target} sobre meta`
+              : remaining > 0
+                ? `${remaining} restantes`
+                : t('dashboard.medium', 'En meta')}
+          </Text>
+        </View>
       </View>
     </View>
   );
 }
+
 
 // ─── Widget Ad Timer Overlay ───────────────────────────────────────────────────
 function WidgetAdTimer({ featureId }: { featureId: string }) {
@@ -111,13 +153,18 @@ function WidgetAdTimer({ featureId }: { featureId: string }) {
   );
 }
 
+
 const ring = StyleSheet.create({
-  container: { alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginVertical: 12 },
-  topLabel:  { fontSize: 16, fontWeight: '500', position: 'absolute', top: -10 },
-  textWrap:  { position: 'absolute', alignItems: 'center', zIndex: 2, top: RING_SIZE / 2 - 10 },
-  consumed:  { fontSize: 40, fontWeight: '800' },
-  label:     { fontSize: 16, marginTop: 4 },
+  container:  { alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginVertical: 12 },
+  datePill:   { paddingHorizontal: 14, paddingVertical: 5, borderRadius: 20, borderWidth: 1, marginBottom: 4 },
+  topLabel:   { fontSize: 13, fontWeight: '700', letterSpacing: 0.5 },
+  textWrap:   { position: 'absolute', alignItems: 'center', zIndex: 2, top: RING_SIZE / 2 - 26 },
+  consumed:   { fontSize: 42, fontWeight: '900', letterSpacing: -2 },
+  unitLabel:  { fontSize: 11, fontWeight: '600', letterSpacing: 0.5, marginTop: 2, opacity: 0.7 },
+  statusPill: { marginTop: 10, paddingHorizontal: 14, paddingVertical: 5, borderRadius: 20, borderWidth: 1 },
+  label:      { fontSize: 12, fontWeight: '800', letterSpacing: 0.3 },
 });
+
 
 // ─── Widget Card ────────────────────────────────────────────────────────────────
 interface WidgetProps {
@@ -630,12 +677,18 @@ export default function DashboardScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <LinearGradient
-        colors={['rgba(59, 130, 246, 0.45)', 'rgba(147, 51, 234, 0.15)', 'transparent']}
-        style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 500 }}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-      />
+      {/* Premium Full-Screen Competitive Background */}
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <LinearGradient
+          colors={['#4C1D95', '#BE123C', '#0F172A']} // Deep purple -> Crimson red -> Dark Slate
+          locations={[0, 0.4, 1]}
+          style={StyleSheet.absoluteFill}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+        />
+        {/* Subtle dark overlay to ensure text readability */}
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(15, 23, 42, 0.45)' }]} />
+      </View>
       <SafeAreaView style={[s.safe, { backgroundColor: 'transparent' }]}>
       <CustomAlert 
         visible={alert.visible}
@@ -652,29 +705,53 @@ export default function DashboardScreen() {
         <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={s.header}>
-          <View>
-            <Text style={[s.greeting, { color: colors.textPrimary }]}>{t('dashboard.hello', '¡Hola')} {name}!</Text>
-            <Text style={[s.date, { color: colors.textSecondary }]}>
-              {new Date(selectedDate + 'T12:00:00').toLocaleDateString(language, { weekday: 'long', day: 'numeric', month: 'long' })}
+          <View style={{ gap: 4 }}>
+            <Text style={[s.greeting, { color: colors.textPrimary }]}>
+              {t('dashboard.hello', '¡Hola')}{' '}
+              <Text style={{ color: colors.primary }}>{name}!</Text>
             </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <View style={[s.datePill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '30' }]}>
+                <Text style={[s.dateText, { color: colors.primary }]}>
+                  {new Date(selectedDate + 'T12:00:00').toLocaleDateString(language, { weekday: 'short', day: 'numeric', month: 'short' })}
+                </Text>
+              </View>
+            </View>
           </View>
           <AchievementPreview achievements={achievements} onPress={() => router.push('/modals/achievements' as any)} />
         </View>
 
         {/* Nutritional Score Card */}
         <View style={s.sectionHeader}>
-          <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>⚡ {t('dashboard.scoreTitle', 'Score Nutricional')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={[s.sectionIconWrap, { backgroundColor: colors.primary + '20' }]}>
+              <Text style={{ fontSize: 14 }}>⚡</Text>
+            </View>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>{t('dashboard.scoreTitle', 'Score Nutricional')}</Text>
+          </View>
         </View>
-        <View style={[s.cardFull, { backgroundColor: colors.surface }]}>
+        <View style={[s.cardFull, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border + '50' }]}>
+          <LinearGradient
+            colors={['rgba(139,92,246,0.06)', 'transparent']}
+            style={StyleSheet.absoluteFill}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            pointerEvents="none"
+          />
           <ScoreRing consumed={calories} target={target} dateLabel={dateLabel} />
         </View>
 
 
         {/* Phase Card */}
         <View style={s.sectionHeader}>
-          <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>🎯 {t('dashboard.phaseTitle', 'Fase')}</Text>
-          <TouchableOpacity onPress={() => setGoalModalVisible(true)}>
-            <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 14 }}>{t('common.edit', 'Editar')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={[s.sectionIconWrap, { backgroundColor: colors.accent + '20' }]}>
+              <Text style={{ fontSize: 14 }}>🎯</Text>
+            </View>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>{t('dashboard.phaseTitle', 'Fase')}</Text>
+          </View>
+          <TouchableOpacity onPress={() => setGoalModalVisible(true)} style={[s.editBtn, { borderColor: colors.primary + '50', backgroundColor: colors.primary + '10' }]}>
+            <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 13 }}>{t('common.edit', 'Editar')}</Text>
           </TouchableOpacity>
         </View>
         <LinearGradient
@@ -733,9 +810,19 @@ export default function DashboardScreen() {
           </View>
         </LinearGradient>
 
+        {/* Muscle Symmetry Section */}
+        <View style={{ paddingHorizontal: Spacing.lg }}>
+          <MuscleSymmetryCard />
+        </View>
+
         {/* Statistics Grid */}
         <View style={s.sectionHeader}>
-          <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>📊 {t('dashboard.statsTitle', 'Estadísticas')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={[s.sectionIconWrap, { backgroundColor: colors.carbs + '20' }]}>
+              <Text style={{ fontSize: 14 }}>📊</Text>
+            </View>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>{t('dashboard.statsTitle', 'Estadísticas')}</Text>
+          </View>
           {isEditing && (
             <TouchableOpacity onPress={saveWidgetsOrder} style={s.doneBtn}>
               <Text style={s.doneText}>{t('common.done', 'Listo')}</Text>
@@ -862,15 +949,43 @@ const s = StyleSheet.create({
   safe: { flex: 1 },
   scroll: { flex: 1, paddingHorizontal: Spacing.base },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: Spacing.lg },
-  greeting: { fontSize: 24, fontWeight: '800' },
-  date: { fontSize: 14, marginTop: 4, textTransform: 'capitalize' },
+  greeting: { fontSize: 26, fontWeight: '900', letterSpacing: -0.5 },
+  // date pill
+  datePill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignSelf: 'flex-start',
+  },
+  dateText: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+    textTransform: 'capitalize',
+  },
   avatar: { width: 48, height: 48, borderRadius: 24, overflow: 'hidden' },
   avatarGrad: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   avatarText: { fontSize: 18, fontWeight: '700', color: '#fff' },
   avatarImage: { width: 48, height: 48, borderRadius: 24 },
+  // Section headers
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: Spacing.lg, marginBottom: Spacing.md },
-  sectionTitle: { fontSize: 20, fontWeight: '700' },
-  cardFull: { borderRadius: Radius.xl, padding: Spacing.lg, ...Shadow.md },
+  sectionTitle: { fontSize: 18, fontWeight: '800', letterSpacing: -0.3 },
+  sectionIconWrap: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  editBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  // Cards
+  cardFull: { borderRadius: Radius.xl, padding: Spacing.lg, ...Shadow.md, overflow: 'hidden' },
   progressBar: { height: 8, borderRadius: 4, overflow: 'hidden' },
   progressFill: { height: '100%', borderRadius: 4 },
   updateBtn: { height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
