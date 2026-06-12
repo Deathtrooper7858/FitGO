@@ -90,6 +90,7 @@ export function useAchievements() {
   const { t } = useTranslation();
   const { profile } = useAuthStore();
   const { todayLogs, dailySleep, streakDays, dailySteps, activityLogs, dailyWater } = useNutritionStore();
+  const totalsData = useNutritionStore(selectDailyTotals);
   const { measurements, latest } = useBodyStore();
   const { photos } = useProgressStore();
   const { posts, friends } = useSocialStore();
@@ -103,7 +104,6 @@ export function useAchievements() {
     const targetWeight = profile.targetWeight || currentWeight;
     const weightDiff = Math.abs(currentWeight - targetWeight);
 
-    const totalsData = selectDailyTotals(useNutritionStore.getState());
     const healthyEater = Math.abs(totalsData.calories - (profile.targetCalories || 2000)) <= ((profile.targetCalories || 2000) * 0.1);
 
     const proteinGoal = profile.macros?.protein || 100;
@@ -288,7 +288,7 @@ export function useAchievements() {
     ];
   }, [
     profile, todayLogs, dailySleep, streakDays, dailySteps, activityLogs, dailyWater,
-    measurements, latest, photos, posts, friends
+    measurements, latest, photos, posts, friends, totalsData
   ]);
 
   const unlockedCount = achievements.filter(a => a.unlocked).length;

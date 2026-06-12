@@ -14,7 +14,7 @@ import { FoodLog, ActivityLog } from './types';
 import type { FoodItem } from '../services/foodDatabase';
 import { getLocalDateString } from '../utils/date';
 import { useAuthStore } from './authStore';
-import { useLeagueStore, POINTS } from './leagueStore';
+import { useLeagueStore, LEAGUE_POINTS } from './leagueStore';
 import { supabase } from '../services/supabase';
 import { useToastStore } from './toastStore';
 import { NotificationTriggers } from '../utils/notificationTriggers';
@@ -301,7 +301,7 @@ export const useNutritionStore = create<NutritionState>()(
             void (async () => {
               try {
                 const ls = useLeagueStore.getState();
-                await ls.awardPoints(profile.id, POINTS.MEAL_LOG, 'meal_log');
+                await ls.awardPoints(profile.id, LEAGUE_POINTS.MEAL_LOG, 'meal_log');
                 
                 // Check if this log perfected the macros for the day
                 const totals = selectDailyTotals(get());

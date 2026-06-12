@@ -17,7 +17,7 @@ import {
 // import RevenueCatUI from 'react-native-purchases-ui';
 import { decode } from 'base64-arraybuffer';
 import { supabase } from '../../../services/supabase';
-import { calculateTDEE, calculateMacros } from '../../../services/foodDatabase';
+import { calculateTDEE, calculateMacros, resolveActivityLevel } from '../../../services/foodDatabase';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../hooks/useTheme';
 import LanguageModal from '../../../components/LanguageModal';
@@ -1151,13 +1151,7 @@ export default function ProfileScreen() {
     if (!profile) return;
     
     // Combine Lifestyle and Exercise to get final activityLevel for TDEE
-    const LIFESTYLE_MAP: Record<string, number> = { seated: 0, standing_sometimes: 1, standing_mostly: 2, moving: 3, physical_work: 4 };
-    const EXERCISE_MAP: Record<string, number> = { none: 0, '1-2': 1, '3-4': 2, '5-6': 3, daily: 4 };
-    const REVERSE_MAP: Record<number, UserProfile['activityLevel']> = { 0: 'sedentary', 1: 'light', 2: 'moderate', 3: 'active', 4: 'very_active' };
-
-    const lifeScore = LIFESTYLE_MAP[newData.lifestyle] || 0;
-    const exeScore  = EXERCISE_MAP[newData.exerciseLevel] || 0;
-    const finalActivityLevel = REVERSE_MAP[Math.max(lifeScore, exeScore)];
+    const finalActivityLevel = resolveActivityLevel(newData.lifestyle, newData.exerciseLevel);
 
     const { tdee } = calculateTDEE({
       weight: newData.weight || profile.weight,

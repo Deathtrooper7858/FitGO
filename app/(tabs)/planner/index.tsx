@@ -18,7 +18,7 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import { GlobalBackground } from '../../../components/GlobalBackground';
 import * as Haptics from 'expo-haptics';
-import { Download, Sparkles, Utensils, Dumbbell, Coffee, Apple, Pizza, CalendarDays, ChevronRight, Activity, Moon, ShoppingCart, AlertTriangle, Info, RefreshCw, ShieldAlert, CheckCircle } from 'lucide-react-native';
+import { Download, Sparkles, Utensils, Dumbbell, Coffee, Apple, Pizza, CalendarDays, ChevronRight, ChevronDown, ChevronUp, Activity, Moon, ShoppingCart, AlertTriangle, Info, RefreshCw, ShieldAlert, CheckCircle } from 'lucide-react-native';
 import { AnimatedCard } from '../../../components/AnimatedCard';
 import { getNameStyle } from '../../../utils/styles';
 import { GlassCard } from '../../../components/GlassCard';
@@ -283,11 +283,13 @@ export default function PlannerScreen() {
     clearMealPlans, clearWorkoutPlans,
   } = usePlannerStore();
 
-  const { addWorkout, hasCompletedWorkoutToday } = useWorkoutHistoryStore();
+  const { addWorkout, hasCompletedWorkoutToday, clearHistory } = useWorkoutHistoryStore();
 
   const [analyzing, setAnalyzing] = useState(false);
   const [generatingShoppingList, setGeneratingShoppingList] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showWarnings, setShowWarnings] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
   const { profile }               = useAuthStore();
   const [isHomeWorkout, setIsHomeWorkout] = useState(false);
   const [homeEquipment, setHomeEquipment] = useState('');
@@ -624,7 +626,12 @@ export default function PlannerScreen() {
     addWorkout({
       date: activeDayDate,
       routineName: workout.name,
-      exercises: workout.exercises.map((ex: any) => ({ name: ex.name, sets: ex.sets, reps: ex.reps })),
+      exercises: workout.exercises.map((ex: any) => ({ 
+        name: ex.name, 
+        englishName: ex.englishName, 
+        sets: ex.sets, 
+        reps: ex.reps 
+      })),
     });
   };
 
@@ -772,50 +779,69 @@ export default function PlannerScreen() {
           </View>
         )}
 
-        {/* ── Prominent AI Disclaimer Banner (shown when plan exists) ── */}
+        {/* ── Collapsible Warnings Section ── */}
         {hasData && (
-          <View style={[s.aiDisclaimerBanner, { backgroundColor: colors.primary + '0D', borderColor: colors.primary + '33' }]}>
-            <View style={s.aiDisclaimerRow}>
-              <View style={[s.aiDisclaimerIcon, { backgroundColor: colors.primary + '20' }]}>
-                <ShieldAlert size={18} color={colors.primary} />
+          <View style={{ marginHorizontal: Spacing.base, marginBottom: Spacing.md }}>
+            <TouchableOpacity 
+              style={[s.aiDisclaimerBanner, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, marginHorizontal: 0, marginBottom: 0 }]}
+              onPress={() => setShowWarnings(!showWarnings)}
+              activeOpacity={0.8}
+            >
+              <View style={[s.aiDisclaimerRow, { alignItems: 'center' }]}>
+                <AlertTriangle size={18} color={warning ? colors.error : colors.warning} />
+                <Text style={[s.aiDisclaimerTitle, { color: colors.textPrimary, flex: 1, marginLeft: 8 }]}>
+                  {t('planner.warningsTitle', 'Advertencias y Precauciones')}
+                </Text>
+                {showWarnings ? <ChevronUp size={20} color={colors.textMuted} /> : <ChevronDown size={20} color={colors.textMuted} />}
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[s.aiDisclaimerTitle, { color: colors.primary }]}>
-                  {t('planner.aiDisclaimerTitle', 'Plan generado por IA')}
-                </Text>
-                <Text style={[s.aiDisclaimerText, { color: colors.textSecondary }]}>
-                  {t('planner.aiDisclaimerText', 'Este plan es orientativo y no reemplaza el asesoramiento de un dietista o médico profesional. Consulta a un especialista antes de realizar cambios significativos en tu alimentación o entrenamiento.')}
-                </Text>
-              </View>
-            </View>
-          </View>
-        )}
-        
-        {/* Additional disclaimer in Routines section if mode is workouts and has data */}
-        {mode === 'workouts' && hasData && (
-          <View style={[s.aiDisclaimerBanner, { backgroundColor: colors.warning + '12', borderColor: colors.warning + '40', marginBottom: 12 }]}>
-            <View style={s.aiDisclaimerRow}>
-              <AlertTriangle size={18} color={colors.warning} style={{ marginTop: 2 }} />
-              <View style={{ flex: 1 }}>
-                <Text style={[s.aiDisclaimerTitle, { color: colors.warning }]}>
-                  {t('planner.workoutWarningTitle', 'Advertencia de Entrenamiento')}
-                </Text>
-                <Text style={[s.aiDisclaimerText, { color: colors.textSecondary }]}>
-                  {t('planner.workoutWarningText', 'Realiza los ejercicios bajo tu propia responsabilidad. Si sientes dolor, detente inmediatamente. Asegúrate de calentar antes de iniciar y verificar la técnica.')}
-                </Text>
-              </View>
-            </View>
-          </View>
-        )}
+            </TouchableOpacity>
 
-        {/* AI Safety Warning from plan */}
-        {warning && (
-          <View style={[s.warningBox, { backgroundColor: colors.error + '10', borderColor: colors.error + '30' }]}>
-            <View style={s.warningHeader}>
-              <Text style={{ fontSize: 18 }}>⚠️</Text>
-              <Text style={[s.warningTitle, { color: colors.error }]}>{t('common.warning', 'Advertencia')}</Text>
-            </View>
-            <Text style={[s.warningText, { color: colors.textPrimary }]}>{warning}</Text>
+            {showWarnings && (
+              <View style={{ marginTop: 8, gap: 8 }}>
+                {/* Prominent AI Disclaimer Banner */}
+                <View style={[s.aiDisclaimerBanner, { backgroundColor: colors.primary + '0D', borderColor: colors.primary + '33', marginHorizontal: 0, marginBottom: 0 }]}>
+                  <View style={s.aiDisclaimerRow}>
+                    <View style={[s.aiDisclaimerIcon, { backgroundColor: colors.primary + '20' }]}>
+                      <ShieldAlert size={18} color={colors.primary} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[s.aiDisclaimerTitle, { color: colors.primary }]}>
+                        {t('planner.aiDisclaimerTitle', 'Plan generado por IA')}
+                      </Text>
+                      <Text style={[s.aiDisclaimerText, { color: colors.textSecondary }]}>
+                        {t('planner.aiDisclaimerText', 'Este plan es orientativo y no reemplaza el asesoramiento de un dietista o médico profesional. Consulta a un especialista antes de realizar cambios significativos en tu alimentación o entrenamiento.')}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+                
+                {/* Additional disclaimer in Routines section always visible per user request */}
+                <View style={[s.aiDisclaimerBanner, { backgroundColor: colors.warning + '12', borderColor: colors.warning + '40', marginHorizontal: 0, marginBottom: 0 }]}>
+                  <View style={s.aiDisclaimerRow}>
+                    <AlertTriangle size={18} color={colors.warning} style={{ marginTop: 2 }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={[s.aiDisclaimerTitle, { color: colors.warning }]}>
+                        {t('planner.workoutWarningTitle', 'Advertencia de Entrenamiento')}
+                      </Text>
+                      <Text style={[s.aiDisclaimerText, { color: colors.textSecondary }]}>
+                        {t('planner.workoutWarningText', 'Realiza los ejercicios bajo tu propia responsabilidad. Si sientes dolor, detente inmediatamente. Asegúrate de calentar antes de iniciar y verificar la técnica.')}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* AI Safety Warning from plan - always visible inside accordion per user request */}
+                <View style={[s.warningBox, { backgroundColor: colors.error + '10', borderColor: colors.error + '30', marginHorizontal: 0, marginBottom: 0 }]}>
+                  <View style={s.warningHeader}>
+                    <Text style={{ fontSize: 18 }}>⚠️</Text>
+                    <Text style={[s.warningTitle, { color: colors.error }]}>{t('common.warning', 'Advertencia')}</Text>
+                  </View>
+                  <Text style={[s.warningText, { color: colors.textPrimary }]}>
+                    {warning || t('planner.defaultAIWarning', 'Advertencia: soy una inteligencia artificial y no un profesional certificado en entrenamiento físico. Antes de seguir este plan de entrenamiento, es importante que consultes a un profesional de la salud o un entrenador personal para asegurarte de que es adecuado para tus necesidades y condiciones individuales.')}
+                  </Text>
+                </View>
+              </View>
+            )}
           </View>
         )}
 
@@ -941,6 +967,23 @@ export default function PlannerScreen() {
                           : t('planner.markComplete', 'Marcar como Completado')}
                       </Text>
                     </TouchableOpacity>
+
+                    {/* TEST BUTTON TO CLEAR HISTORY */}
+                    <TouchableOpacity
+                      onPress={() => {
+                        clearHistory();
+                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                      }}
+                      style={[
+                        s.completeBtn,
+                        { backgroundColor: '#EF444422', borderColor: '#EF444466', marginTop: 12 }
+                      ]}
+                      activeOpacity={0.75}
+                    >
+                      <Text style={[s.completeBtnText, { color: '#EF4444' }]}>
+                        [TEST] Borrar Historial de Entrenamientos
+                      </Text>
+                    </TouchableOpacity>
                   </>
                 ) : (
                   <View style={[s.restDayCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -961,19 +1004,26 @@ export default function PlannerScreen() {
 
         {/* ── Full Disclaimer Footer (always visible when plan exists) ── */}
         {hasData && (
-          <View style={[s.fullDisclaimerBox, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-            <View style={s.fullDisclaimerHeader}>
+          <TouchableOpacity 
+            style={[s.fullDisclaimerBox, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+            onPress={() => setShowDisclaimer(!showDisclaimer)}
+            activeOpacity={0.8}
+          >
+            <View style={[s.fullDisclaimerHeader, !showDisclaimer && { marginBottom: 0 }]}>
               <AlertTriangle size={15} color={colors.textMuted} />
-              <Text style={[s.fullDisclaimerTitle, { color: colors.textMuted }]}>
+              <Text style={[s.fullDisclaimerTitle, { color: colors.textMuted, flex: 1, marginLeft: 4 }]}>
                 {t('planner.fullDisclaimerTitle', 'Descargo de responsabilidad')}
               </Text>
+              {showDisclaimer ? <ChevronUp size={16} color={colors.textMuted} /> : <ChevronDown size={16} color={colors.textMuted} />}
             </View>
-            <Text style={[s.fullDisclaimerText, { color: colors.textMuted }]}>
-              {t('planner.fullDisclaimerText',
-                'El plan generado por FitGO es producido por inteligencia artificial con fines informativos y de orientación general. No constituye consejo médico, nutricional o de salud profesional. Los resultados individuales pueden variar. Siempre consulte a un dietista registrado, nutricionista certificado o médico antes de realizar cambios significativos en su dieta o rutina de ejercicio. FitGO no se responsabiliza de ningún daño o consecuencia derivada del uso de estos planes. Este plan se renueva automáticamente cada domingo a las 23:59.'
-              )}
-            </Text>
-          </View>
+            {showDisclaimer && (
+              <Text style={[s.fullDisclaimerText, { color: colors.textMuted }]}>
+                {t('planner.fullDisclaimerText',
+                  'El plan generado por FitGO es producido por inteligencia artificial con fines informativos y de orientación general. No constituye consejo médico, nutricional o de salud profesional. Los resultados individuales pueden variar. Siempre consulte a un dietista registrado, nutricionista certificado o médico antes de realizar cambios significativos en su dieta o rutina de ejercicio. FitGO no se responsabiliza de ningún daño o consecuencia derivada del uso de estos planes. Este plan se renueva automáticamente cada domingo a las 23:59.'
+                )}
+              </Text>
+            )}
+          </TouchableOpacity>
         )}
 
         {hasData && (
