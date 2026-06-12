@@ -16,7 +16,7 @@ export default function ShoppingListModal() {
   const shoppingList = usePlannerStore(s => s.shoppingList);
   const setShoppingList = usePlannerStore(s => s.setShoppingList);
   
-  const [loading, setLoading] = useState(!shoppingList);
+  const [loading, setLoading] = useState(!shoppingList || shoppingList.length === 0);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function ShoppingListModal() {
 
   useEffect(() => {
     async function load() {
-      if (shoppingList) return;
+      if (shoppingList && shoppingList.length > 0) return;
       try {
         setLoading(true);
         const res = await generateShoppingListJSON(mealPlans, i18n.language);

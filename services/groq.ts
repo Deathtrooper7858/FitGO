@@ -69,6 +69,9 @@ async function fetchGroq(payload: any) {
       throw new Error('AI Service Error: Sin conexión a internet. Por favor verifica tu conexión.');
     }
     let errorMsg = error.response?.data?.error || error.message || 'Unknown error';
+    if (typeof errorMsg === 'object') {
+      errorMsg = errorMsg.message || JSON.stringify(errorMsg);
+    }
     if (error.response?.status === 400 && errorMsg === 'Unknown error') {
       errorMsg = 'Bad Request (400) - Check model availability or parameters.';
     }
