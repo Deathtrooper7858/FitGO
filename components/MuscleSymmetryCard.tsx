@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Modal,
   Pressable,
+  ScrollView,
 } from 'react-native';
 import Body from 'react-native-body-highlighter';
 import Animated, {
@@ -27,6 +28,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Dumbbell, Eye, RefreshCw, X, Activity, Zap } from 'lucide-react-native';
 import { useWorkoutHistoryStore } from '../store/workoutHistoryStore';
+import { useAuthStore } from '../store/authStore';
 import { useTheme } from '../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import exercisesData from '../excercise/exercises.json';
@@ -52,34 +54,80 @@ const MUSCLE_LABELS: Record<string, string> = {
   adductors:       'Aductores',
 };
 
-// ─── Muscle → slug map ───────────────────────────────────────────────────────
+// ─── Muscle → slug map ──────────────────────────────────────────────────────────────────
 const MUSCLE_MAP: Record<string, string> = {
-  'traps':       'trapezius',
-  'trapezius':   'trapezius',
-  'triceps':     'triceps',
-  'biceps':      'biceps',
-  'chest':       'chest',
-  'pectorals':   'chest',
-  'lats':        'upper-back',
-  'glutes':      'gluteal',
-  'hamstrings':  'hamstring',
-  'quads':       'quadriceps',
-  'delts':       'deltoids',
-  'shoulders':   'deltoids',
-  'abs':         'abs',
-  'calves':      'calves',
-  'forearms':    'forearm',
-  'obliques':    'obliques',
-  'adductors':   'adductors',
-  'lower back':  'lower-back',
+  // Traps
+  'traps':              'trapezius',
+  'trapezius':          'trapezius',
+  'levator scapulae':   'trapezius',
+  // Triceps
+  'triceps':            'triceps',
+  // Biceps
+  'biceps':             'biceps',
+  'brachialis':         'biceps',
+  // Chest / Pectorals
+  'chest':              'chest',
+  'pectorals':          'chest',
+  'upper chest':        'chest',
+  'serratus anterior':  'chest',
+  // Back
+  'lats':               'upper-back',
+  'latissimus dorsi':   'upper-back',
+  'upper back':         'upper-back',
+  'rhomboids':          'upper-back',
+  'lower back':         'lower-back',
+  'back':               'upper-back',
+  // Glutes
+  'glutes':             'gluteal',
+  // Hamstrings
+  'hamstrings':         'hamstring',
+  // Quads
+  'quads':              'quadriceps',
+  'quadriceps':         'quadriceps',
+  // Shoulders
+  'delts':              'deltoids',
+  'deltoids':           'deltoids',
+  'shoulders':          'deltoids',
+  'rear deltoids':      'deltoids',
+  // Core / Abs
+  'abs':                'abs',
+  'abdominals':         'abs',
+  'lower abs':          'abs',
+  'core':               'abs',
+  'obliques':           'obliques',
+  // Calves
+  'calves':             'calves',
+  'soleus':             'calves',
+  // Forearms
+  'forearms':           'forearm',
+  'wrist flexors':      'forearm',
+  'wrist extensors':    'forearm',
+  // Adductors / Abductors
+  'adductors':          'adductors',
+  'abductors':          'adductors',
+  'inner thighs':       'adductors',
+  'groin':              'adductors',
+  // Hip flexors → map to quadriceps (closest visible muscle)
+  'hip flexors':        'quadriceps',
+  // Rotator cuff → deltoids
+  'rotator cuff':       'deltoids',
+  // Cardiovascular / misc (no visual, skip)
 };
 
-// ─── Levels ──────────────────────────────────────────────────────────────────
+// ─── Levels ──────────────────────────────────────────────────────────────────────────────
 const LEVELS = [
-  { min: 1,  max: 2,  color: '#CD7F32', glowColor: 'rgba(205,127,50,0.4)',   gradStart: '#E8A050', gradEnd: '#A0522D', name: 'Bronce',   icon: '🥉' },
-  { min: 3,  max: 5,  color: '#CBD5E1', glowColor: 'rgba(203,213,225,0.4)',  gradStart: '#E2E8F0', gradEnd: '#94A3B8', name: 'Plata',    icon: '🥈' },
-  { min: 6,  max: 9,  color: '#FFD700', glowColor: 'rgba(255,215,0,0.45)',   gradStart: '#FFE55C', gradEnd: '#D97706', name: 'Oro',      icon: '🥇' },
-  { min: 10, max: 99, color: '#00F0FF', glowColor: 'rgba(0,240,255,0.45)',   gradStart: '#80F8FF', gradEnd: '#8B5CF6', name: 'Diamante', icon: '💎' },
+  // Mortal — Stone gray, humble beginning
+  { min: 1,  max: 3,   color: '#A8A8B3', glowColor: 'rgba(168,168,179,0.35)', gradStart: '#D1D5DB', gradEnd: '#4B5563', name: 'Mortal',    icon: '\u2694\uFE0F' },
+  // Guerrero — Burning copper-crimson
+  { min: 4,  max: 8,   color: '#F97316', glowColor: 'rgba(249,115,22,0.5)',   gradStart: '#FDBA74', gradEnd: '#9A3412', name: 'Guerrero',  icon: '\uD83D\uDEE1\uFE0F' },
+  // Espartano — Arctic steel blue
+  { min: 9,  max: 16,  color: '#38BDF8', glowColor: 'rgba(56,189,248,0.5)',   gradStart: '#7DD3FC', gradEnd: '#075985', name: 'Espartano', icon: '\uD83C\uDFDB\uFE0F' },
+  // Semidi\u00f3s — Solar divine gold
+  { min: 17, max: 27,  color: '#EAB308', glowColor: 'rgba(234,179,8,0.6)',    gradStart: '#FEF08A', gradEnd: '#92400E', name: 'Semidi\u00f3s',  icon: '\u26A1' },
+  // Ol\u00edmpico — Amethyst royalty
+  { min: 28, max: 40,  color: '#A855F7', glowColor: 'rgba(168,85,247,0.6)',   gradStart: '#D8B4FE', gradEnd: '#581C87', name: 'Ol\u00edmpico',  icon: '\uD83D\uDC51' },
+  // Tit\u00e1n — Cosmic aurora (cyan \u2192 violet)
+  { min: 41, max: 999, color: '#06B6D4', glowColor: 'rgba(6,182,212,0.65)',   gradStart: '#67E8F9', gradEnd: '#6D28D9', name: 'Tit\u00e1n',     icon: '\uD83C\uDF0C' },
 ];
 
 function getColorForCount(count: number): string {
@@ -102,26 +150,74 @@ function getDaysAgo(n: number): string {
   return getLocalDateString(d);
 }
 
-function buildBodyData(workouts: any[]) {
+// ─── Unified exercise lookup ─────────────────────────────────────────────────
+function findExercise(ex: any) {
+  const searchName = (ex.englishName || ex.name || '').toLowerCase().trim();
+  if (!searchName) return null;
+  
+  // 1. Exact match
+  let found = (exercisesData as any[]).find(
+    (e: any) => e.name.toLowerCase() === searchName
+  );
+  if (found) return found;
+  
+  // 2. DB entry contains search name (e.g. search="bench press", db="barbell bench press")
+  found = (exercisesData as any[]).find(
+    (e: any) => e.name.toLowerCase().includes(searchName)
+  );
+  if (found) return found;
+  
+  // 3. Search name contains DB entry (e.g. search="barbell wide bench press", db="bench press")
+  // Only match if the db name is at least 5 chars to avoid false positives
+  found = (exercisesData as any[]).find(
+    (e: any) => e.name.length >= 5 && searchName.includes(e.name.toLowerCase())
+  );
+  if (found) return found;
+  
+  // 4. Word overlap: at least 2 significant words must match
+  const searchWords = searchName.split(' ').filter((w: string) => w.length > 3);
+  if (searchWords.length >= 2) {
+    found = (exercisesData as any[]).find((e: any) => {
+      const dbWords = e.name.toLowerCase().split(' ');
+      const matches = searchWords.filter((w: string) => dbWords.includes(w));
+      return matches.length >= 2;
+    });
+  }
+  return found || null;
+}
+
+function buildMuscleCounts(workouts: any[]): Record<string, number> {
   const cutoff = getDaysAgo(30);
   const recent = workouts.filter(w => w.date >= cutoff);
   const counts: Record<string, number> = {};
 
   recent.forEach(workout => {
     workout.exercises.forEach((ex: any) => {
-      const dbEx = exercisesData.find(
-        e => e.name.toLowerCase() === ex.name.toLowerCase()
-      );
+      const dbEx = findExercise(ex);
       if (dbEx?.targetMuscles) {
-        dbEx.targetMuscles.forEach(m => {
+        dbEx.targetMuscles.forEach((m: string) => {
           const slug = MUSCLE_MAP[m.toLowerCase()] || m.toLowerCase();
-          counts[slug] = (counts[slug] || 0) + 1;
+          if (MUSCLE_LABELS[slug]) { // only count slugs we know how to display
+            counts[slug] = (counts[slug] || 0) + 2; // primary muscles count double
+          }
+        });
+      }
+      // Also add secondary muscles at half weight
+      if (dbEx?.secondaryMuscles) {
+        dbEx.secondaryMuscles.forEach((m: string) => {
+          const slug = MUSCLE_MAP[m.toLowerCase()] || m.toLowerCase();
+          if (MUSCLE_LABELS[slug]) {
+            counts[slug] = (counts[slug] || 0) + 1;
+          }
         });
       }
     });
   });
+  return counts;
+}
 
-  return Object.entries(counts)
+function buildBodyData(muscleCounts: Record<string, number>) {
+  return Object.entries(muscleCounts)
     .filter(([, count]) => count > 0)
     .map(([slug, count]) => ({
       slug,
@@ -226,9 +322,9 @@ const medalSt = StyleSheet.create({
     zIndex: -1,
   },
   badge: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -237,12 +333,13 @@ const medalSt = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  icon: { fontSize: 24 },
+  icon: { fontSize: 18 },
   label: {
-    fontSize: 10,
-    fontWeight: '600',
-    letterSpacing: 0.3,
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 0.2,
     textTransform: 'uppercase',
+    textAlign: 'center',
   },
   activeDot: {
     width: 5,
@@ -324,7 +421,7 @@ function MuscleTooltip({
                 />
               </View>
               <Text style={[tipSt.progressLabel, { color: colors.textMuted }]}>
-                {sessionCount}/{level.max} sesiones para subir de nivel
+                {sessionCount}/{level.max} sesiones para siguiente rango
               </Text>
             </View>
           )}
@@ -440,31 +537,16 @@ export function MuscleSymmetryCard() {
   }>({ visible: false, slug: '', count: 0 });
 
   // Reactive subscription
-  const workouts = useWorkoutHistoryStore(state => state.workouts);
-  const bodyData = useMemo(() => buildBodyData(workouts), [workouts]);
+  const allWorkouts = useWorkoutHistoryStore(state => state.workouts);
+  const userId = useAuthStore(state => state.profile?.id);
+  
+  const workouts = useMemo(() => {
+    return allWorkouts.filter(w => !w.userId || w.userId === userId);
+  }, [allWorkouts, userId]);
 
-  const hasHistory = workouts.length > 0;
-
-  // Build slug→count map for tooltip
-  const muscleCounts = useMemo(() => {
-    const cutoff = getDaysAgo(30);
-    const recent = workouts.filter(w => w.date >= cutoff);
-    const counts: Record<string, number> = {};
-    recent.forEach(workout => {
-      workout.exercises.forEach((ex: any) => {
-        const dbEx = exercisesData.find(
-          e => e.name.toLowerCase() === ex.name.toLowerCase()
-        );
-        if (dbEx?.targetMuscles) {
-          dbEx.targetMuscles.forEach(m => {
-            const slug = MUSCLE_MAP[m.toLowerCase()] || m.toLowerCase();
-            counts[slug] = (counts[slug] || 0) + 1;
-          });
-        }
-      });
-    });
-    return counts;
-  }, [workouts]);
+  const muscleCounts = useMemo(() => buildMuscleCounts(workouts), [workouts]);
+  const bodyData = useMemo(() => buildBodyData(muscleCounts), [muscleCounts]);
+  const hasHistory = bodyData.length > 0;
 
   // Determine highest active medal level
   const highestLevel = useMemo(() => {
@@ -513,10 +595,12 @@ export function MuscleSymmetryCard() {
   const handleMusclePress = useCallback((data: any) => {
     if (!data?.slug) return;
     const count = muscleCounts[data.slug] || 0;
-    if (count === 0) return;
+    // Allow pressing ANY muscle that is highlighted (has color), even if count calculation differs
+    const isHighlighted = bodyData.some(d => d.slug === data.slug);
+    if (count === 0 && !isHighlighted) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setTooltip({ visible: true, slug: data.slug, count });
-  }, [muscleCounts]);
+    setTooltip({ visible: true, slug: data.slug, count: count > 0 ? count : 1 });
+  }, [muscleCounts, bodyData]);
 
   const tooltipLevel = tooltip.count > 0 ? getLevelForCount(tooltip.count) : null;
   const tooltipMuscle = MUSCLE_LABELS[tooltip.slug] ?? tooltip.slug;
@@ -545,10 +629,7 @@ export function MuscleSymmetryCard() {
           </LinearGradient>
           <View>
             <Text style={[styles.title, { color: colors.textPrimary }]}>
-              Muscle Map
-            </Text>
-            <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-              {t('dashboard.musclemapSub', 'Últimos 30 días de entrenamiento')}
+              Evolución Muscular
             </Text>
           </View>
         </View>
@@ -562,15 +643,22 @@ export function MuscleSymmetryCard() {
       </View>
 
       {/* ── Medal Legend (premium) ── */}
-      <View style={styles.medalsRow}>
-        {LEVELS.map((lvl, i) => (
-          <MedalBadge
-            key={lvl.name}
-            level={lvl}
-            isActive={highestLevel?.name === lvl.name}
-            index={i}
-          />
-        ))}
+      <View style={styles.medalsContainer}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.medalsRowScroll}
+          overScrollMode="never"
+        >
+          {LEVELS.map((lvl, i) => (
+            <MedalBadge
+              key={lvl.name}
+              level={lvl}
+              isActive={highestLevel?.name === lvl.name}
+              index={i}
+            />
+          ))}
+        </ScrollView>
       </View>
 
       {/* ── Toggle Frente / Atrás ── */}
@@ -658,9 +746,11 @@ export function MuscleSymmetryCard() {
               ? t('common.front', 'Frente').toUpperCase()
               : t('common.back', 'Espalda').toUpperCase()}
           </Text>
-          <Text style={[styles.bodyHint, { color: colors.textMuted }]}>
-            Toca un músculo para ver detalles
-          </Text>
+          {bodyData.length > 0 && (
+            <Text style={[styles.bodyHint, { color: colors.textMuted }]}>
+              💡 Toca un músculo coloreado para ver detalles
+            </Text>
+          )}
         </Animated.View>
       ) : (
         <View style={styles.emptyState}>
@@ -750,12 +840,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
 
-  // Medals
-  medalsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  // Medals / Ranks
+  medalsContainer: {
     marginBottom: 20,
-    paddingHorizontal: 8,
+    marginHorizontal: -12, // Pull out slightly to allow full scrolling
+  },
+  medalsRowScroll: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    gap: 16, // Increase spacing since it scrolls now
   },
 
   // Toggle

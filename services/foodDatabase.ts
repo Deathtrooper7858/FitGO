@@ -274,3 +274,16 @@ export function calculateMacros(calories: number, goal: 'lose' | 'maintain' | 'g
     fat:     Math.round((adjustedCalories * 0.30) / 9),  // 30% fat
   };
 }
+
+export function resolveActivityLevel(
+  lifestyle: string,
+  exerciseLevel: string
+): 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' {
+  const LIFESTYLE_MAP: Record<string, number> = { seated: 0, standing_sometimes: 1, standing_mostly: 2, moving: 3, physical_work: 4 };
+  const EXERCISE_MAP: Record<string, number> = { none: 0, '1-2': 1, '3-4': 2, '5-6': 3, daily: 4 };
+  const REVERSE_MAP: Record<number, 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active'> = { 0: 'sedentary', 1: 'light', 2: 'moderate', 3: 'active', 4: 'very_active' };
+
+  const lifeScore = LIFESTYLE_MAP[lifestyle] || 0;
+  const exeScore  = EXERCISE_MAP[exerciseLevel] || 0;
+  return REVERSE_MAP[Math.max(lifeScore, exeScore)] || 'sedentary';
+}

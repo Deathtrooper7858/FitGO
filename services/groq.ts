@@ -502,8 +502,8 @@ Return ONLY valid JSON (no markdown). Use this exact structure:
   "Mon": {
     "name": "${targetLang === 'Spanish' ? 'Pecho y Tríceps' : 'Chest & Triceps'}",
     "exercises": [
-      { "name": "${targetLang === 'Spanish' ? 'Press de Banca' : 'Bench Press'}", "sets": 3, "reps": "10-12", "rest": "90s" },
-      { "name": "${targetLang === 'Spanish' ? 'Press Superior con Mancuernas' : 'Incline DB Press'}", "sets": 3, "reps": "12", "rest": "60s" }
+      { "name": "${targetLang === 'Spanish' ? 'Press de Banca' : 'Bench Press'}", "englishName": "Bench Press", "sets": 3, "reps": "10-12", "rest": "90s" },
+      { "name": "${targetLang === 'Spanish' ? 'Press Superior con Mancuernas' : 'Incline DB Press'}", "englishName": "Incline DB Press", "sets": 3, "reps": "12", "rest": "60s" }
     ]
   },
   "Tue": { "name": "${targetLang === 'Spanish' ? 'Día de Descanso' : 'Rest Day'}", "exercises": [] },

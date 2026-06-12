@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from './authStore';
+import { useLeagueStore } from './leagueStore';
 import * as FileSystem from 'expo-file-system/legacy';
 import { decode } from 'base64-arraybuffer';
 import { triggerInstantNotification } from '../services/notifications';
@@ -512,19 +513,17 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         // Cerrar el reto
         await supabase.from('challenges').update({ status: 'completed' }).eq('id', challengeId);
         
-        // Repartir puntos. Supongamos 500 puntos base a dividir entre los que completaron
+        // Repartir puntos. 500 puntos base divididos entre los participantes que completaron.
         const basePoints = 500;
         const rewardPoints = Math.floor(basePoints / (activeParts.length || 1));
         
-        // Usar leagueStore.awardPoints para cada uno (en un entorno real el servidor lo haría, aquí es mock)
-        const { useLeagueStore } = require('./leagueStore');
+        // ✅ Usar el import estático (eliminado el require() dinámico que causaba crash en runtime)
+        const leagueStore = useLeagueStore.getState();
         for (const p of activeParts) {
+          await leagueStore.awardPoints(p.user_id, rewardPoints, 'Reto Completado');
+          // Solo mostrar la animación de recompensa al usuario actual
           if (p.user_id === userId) {
-            await useLeagueStore.getState().awardPoints(p.user_id, rewardPoints, 'Reto Completado');
-            useLeagueStore.getState().showReward(rewardPoints);
-          } else {
-            // El otro usuario recibirá los puntos cuando se sincronice, por simplicidad aquí llamamos awardPoints también
-            await useLeagueStore.getState().awardPoints(p.user_id, rewardPoints, 'Reto Completado');
+            leagueStore.showReward(rewardPoints);
           }
         }
       }
@@ -865,6 +864,17 @@ export const useSocialStore = create<SocialState>((set, get) => ({
   },
 
   reset: () => {
+    // Limpiar canales realtime globales para evitar que queden
+    // vivos tras un logout/cambio de cuenta.
+    if (activeUnreadChannel) {
+      supabase.removeChannel(activeUnreadChannel);
+      activeUnreadChannel = null;
+    }
+    if (activeSocialChannel) {
+      supabase.removeChannel(activeSocialChannel);
+      activeSocialChannel = null;
+    }
+
     set({
       friends: [],
       challenges: [],

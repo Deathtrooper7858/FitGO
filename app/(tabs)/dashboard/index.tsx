@@ -12,7 +12,7 @@ import { useAuthStore, useNutritionStore, selectDailyTotals, useSettingsStore, u
 import { useTheme } from '../../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../../services/supabase';
-import { calculateTDEE, calculateMacros } from '../../../services/foodDatabase';
+import { calculateTDEE, calculateMacros, resolveActivityLevel } from '../../../services/foodDatabase';
 import { getLocalDateString } from '../../../utils/date';
 import Animated, { FadeIn, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -27,6 +27,8 @@ import { useInterstitial } from '../../../hooks/useInterstitial';
 import { PremiumGate } from '../../../components/PremiumGate';
 import { useAdStore } from '../../../store/adStore';
 import { CustomAlert, AlertType } from '../../../components/CustomAlert';
+import { calculateProgressPct, handleGoalSave } from '../../../hooks/useDashboardLogic';
+import { renderDashboardWidget } from '../../../components/dashboard/WidgetRenderer';
 
 const { width } = Dimensions.get('window');
 
@@ -49,9 +51,11 @@ function ScoreRing({ consumed, target, dateLabel }: { consumed: number; target: 
   const strokeDashoffset = useMemo(() => CIRCUMFERENCE - pct * CIRCUMFERENCE, [pct]);
   const remaining = Math.max(safeTarget - safeConsumed, 0);
 
-  const isOver = consumed > target * 0.9;
-  const ringColorA = isOver ? colors.error : '#00F0FF';
-  const ringColorB = isOver ? '#FF4B4B' : '#7C5CFC';
+  const isOver = consumed > target;
+  const isWarning = consumed >= target * 0.9 && consumed <= target;
+  
+  const ringColorA = isOver ? colors.error : (isWarning ? '#FFB800' : '#00F0FF');
+  const ringColorB = isOver ? '#FF4B4B' : (isWarning ? '#F59E0B' : '#7C5CFC');
 
   return (
     <View style={ring.container}>
@@ -80,7 +84,7 @@ function ScoreRing({ consumed, target, dateLabel }: { consumed: number; target: 
         {/* Inner glow ring (blurred softness) */}
         <Circle
           cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={RADIUS}
-          stroke={isOver ? colors.error + '30' : '#7C5CFC30'}
+          stroke={isOver ? colors.error + '30' : (isWarning ? '#FFB80030' : '#7C5CFC30')}
           strokeWidth={STROKE_WIDTH + 8}
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={strokeDashoffset}
@@ -103,12 +107,15 @@ function ScoreRing({ consumed, target, dateLabel }: { consumed: number; target: 
       <View style={ring.textWrap}>
         <Text style={[ring.consumed, { color: colors.textPrimary }]}>{consumed}</Text>
         <Text style={[ring.unitLabel, { color: colors.textMuted }]}>kcal consumidas</Text>
-        <View style={[ring.statusPill, { backgroundColor: isOver ? colors.error + '20' : colors.primary + '15', borderColor: isOver ? colors.error + '40' : colors.primary + '30' }]}>
-          <Text style={[ring.label, { color: isOver ? colors.error : colors.primary }]}>
+        <View style={[ring.statusPill, { 
+          backgroundColor: isOver ? colors.error + '20' : (isWarning ? '#FFB80020' : colors.primary + '15'), 
+          borderColor: isOver ? colors.error + '40' : (isWarning ? '#FFB80040' : colors.primary + '30') 
+        }]}>
+          <Text style={[ring.label, { color: isOver ? colors.error : (isWarning ? '#F59E0B' : colors.primary) }]}>
             {isOver
-              ? `+${consumed - target} sobre meta`
+              ? `+${Math.round(consumed - target)} sobre meta`
               : remaining > 0
-                ? `${remaining} restantes`
+                ? `${Math.round(remaining)} restantes`
                 : t('dashboard.medium', 'En meta')}
           </Text>
         </View>
@@ -116,46 +123,6 @@ function ScoreRing({ consumed, target, dateLabel }: { consumed: number; target: 
     </View>
   );
 }
-
-
-// ─── Widget Ad Timer Overlay ───────────────────────────────────────────────────
-function WidgetAdTimer({ featureId }: { featureId: string }) {
-  const { profile } = useAuthStore();
-  const { premiumAdRemainingSeconds, hasPremiumAdAccess } = useAdStore();
-  const [timeLeft, setTimeLeft] = useState(premiumAdRemainingSeconds(featureId));
-
-  const isPro = !!profile?.isPro;
-
-  useEffect(() => {
-    if (isPro) return;
-    const timer = setInterval(() => {
-      setTimeLeft(premiumAdRemainingSeconds(featureId));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [isPro, featureId]);
-
-  if (isPro || !hasPremiumAdAccess(featureId) || timeLeft <= 0) return null;
-
-  const m = Math.floor(timeLeft / 60);
-  const s = timeLeft % 60;
-  const timeStr = `${m}:${s.toString().padStart(2, '0')}`;
-
-  return (
-    <View style={[StyleSheet.absoluteFill, {
-      backgroundColor: 'rgba(124, 92, 252, 0.75)',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 50,
-      padding: 12,
-      borderRadius: Radius.xl,
-    }]}>
-      <Text style={{ color: '#FFF', fontWeight: '900', fontSize: 28, fontVariant: ['tabular-nums'] }}>{timeStr}</Text>
-      <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 11, fontWeight: '800', marginTop: 4, letterSpacing: 0.5, textAlign: 'center' }}>ACCESO PREMIUM</Text>
-    </View>
-  );
-}
-
-
 const ring = StyleSheet.create({
   container:  { alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginVertical: 12 },
   datePill:   { paddingHorizontal: 14, paddingVertical: 5, borderRadius: 20, borderWidth: 1, marginBottom: 4 },
@@ -166,86 +133,6 @@ const ring = StyleSheet.create({
   statusPill: { marginTop: 10, paddingHorizontal: 14, paddingVertical: 5, borderRadius: 20, borderWidth: 1 },
   label:      { fontSize: 12, fontWeight: '800', letterSpacing: 0.3 },
 });
-
-
-// ─── Widget Card ────────────────────────────────────────────────────────────────
-interface WidgetProps {
-  id?: string;
-  title: string;
-  icon: any;
-  value?: string;
-  subValue?: string;
-  onPress?: () => void;
-  index: number;
-  customContent?: React.ReactNode;
-  canMoveLeft?: boolean;
-  canMoveRight?: boolean;
-  onMoveLeft?: () => void;
-  onMoveRight?: () => void;
-  isEditing?: boolean;
-  adTimerFeatureId?: string;
-}
-
-function WidgetCard({ title, icon, value, subValue, onPress, customContent, onLongPress, isEditing, onMoveLeft, onMoveRight, canMoveLeft, canMoveRight, index, adTimerFeatureId }: any) {
-  const colors = useTheme();
-  
-  return (
-    <AnimatedCard index={index} direction="up" style={{ width: WIDGET_WIDTH }}>
-      <TouchableOpacity 
-        style={[
-          w.card, 
-          { backgroundColor: colors.surface, borderColor: isEditing ? '#7C5CFC' : 'transparent' },
-          isEditing && { borderWidth: 2 }
-        ]} 
-        onPress={isEditing ? undefined : onPress} 
-        activeOpacity={0.8} 
-        delayLongPress={500} 
-        onLongPress={onLongPress}
-      >
-        <LinearGradient
-          colors={['rgba(124, 92, 252, 0.08)', 'transparent']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[StyleSheet.absoluteFill, { borderRadius: Radius.xl }]}
-        />
-        <View style={w.header}>
-          <View style={[w.iconWrap, { backgroundColor: 'rgba(124, 92, 252, 0.15)' }]}>
-            <Text style={w.icon}>{icon}</Text>
-          </View>
-          <Text style={[w.title, { color: colors.textPrimary }]} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
-        </View>
-        {customContent ? customContent : (
-          <View style={w.content}>
-            <Text style={[w.value, { color: colors.textPrimary }]} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
-            {subValue && <Text style={[w.subValue, { color: colors.textSecondary }]} numberOfLines={1}>{subValue}</Text>}
-          </View>
-        )}
-        
-        {isEditing && (
-          <View style={[StyleSheet.absoluteFill, w.editOverlay]}>
-            <TouchableOpacity 
-              style={[w.moveBtn, !canMoveLeft && { opacity: 0.3 }]} 
-              onPress={onMoveLeft} 
-              disabled={!canMoveLeft}
-            >
-              <Text style={w.moveIcon}>←</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[w.moveBtn, !canMoveRight && { opacity: 0.3 }]} 
-              onPress={onMoveRight} 
-              disabled={!canMoveRight}
-            >
-              <Text style={w.moveIcon}>→</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        
-        {adTimerFeatureId && <WidgetAdTimer featureId={adTimerFeatureId} />}
-
-      </TouchableOpacity>
-    </AnimatedCard>
-  );
-}
 
 // ─── Achievement Preview ───────────────────────────────────────────────────────
 function AchievementPreview({ achievements, onPress }: { achievements: Achievement[]; onPress: () => void }) {
@@ -279,49 +166,7 @@ const ap = StyleSheet.create({
   value: { fontSize: 14, fontWeight: '800' },
 });
 
-const w = StyleSheet.create({
-  card: { width: WIDGET_WIDTH, height: 160, borderRadius: Radius.xl, padding: Spacing.lg, justifyContent: 'space-between', borderWidth: 1, overflow: 'hidden' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  iconWrap: { width: 34, height: 34, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  icon: { fontSize: 18 },
-  title: { fontSize: 15, fontWeight: '700', flex: 1, letterSpacing: -0.3 },
-  content: { flex: 1, justifyContent: 'flex-end', paddingBottom: 4 },
-  value: { fontSize: 32, fontWeight: '900', letterSpacing: -1 },
-  subValue: { fontSize: 13, marginTop: 4, fontWeight: '500', opacity: 0.8 },
-  editOverlay: { backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: Radius.xl, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10 },
-  moveBtn: { backgroundColor: '#7C5CFC', width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  moveIcon: { color: '#FFF', fontSize: 20, fontWeight: 'bold' },
-  // Premium lock styles
-  lockOverlay: {
-    position: 'absolute',
-    bottom: -6,
-    right: -10,
-    backgroundColor: '#1a1a2e',
-    borderRadius: 12,
-    width: 22,
-    height: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#7C5CFC',
-  },
-  lockIcon: { fontSize: 11 },
-  premiumTag: {
-    marginTop: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-    backgroundColor: 'rgba(124, 92, 252, 0.18)',
-    borderWidth: 1,
-    borderColor: 'rgba(124, 92, 252, 0.4)',
-  },
-  premiumTagText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#A78BFA',
-    letterSpacing: 0.5,
-  },
-});
+
 
 // ─── Dashboard (Progreso) Screen ────────────────────────────────────────────────
 export default function DashboardScreen() {
@@ -367,32 +212,8 @@ export default function DashboardScreen() {
   const sleepHours = Number(dailySleep[selectedDate]) || 0;
   const bodyFat = dateMeasurement?.bodyFat;
 
-  let progressPct = 0;
-  if (profile?.goal === 'lose') {
-    const totalToLose = initialWeight - targetWeight;
-    const lostSoFar = initialWeight - currentWeight;
-    if (totalToLose > 0) {
-      progressPct = Math.max(0, Math.min(100, (lostSoFar / totalToLose) * 100));
-    } else {
-      // Target is >= Initial: already "lost" if current is <= target, but contradictory
-      progressPct = currentWeight <= targetWeight ? 100 : 0;
-    }
-  } else if (profile?.goal === 'gain') {
-    const totalToGain = targetWeight - initialWeight;
-    const gainedSoFar = currentWeight - initialWeight;
-    if (totalToGain > 0) {
-      progressPct = Math.max(0, Math.min(100, (gainedSoFar / totalToGain) * 100));
-    } else {
-      // Target is <= Initial: contradictory for GAIN goal
-      progressPct = currentWeight >= targetWeight && initialWeight > targetWeight ? 0 : (currentWeight >= targetWeight ? 100 : 0);
-    }
-  } else {
-    // Maintain: 100% as long as they are within 1.5kg of target
-    const diff = Math.abs(currentWeight - targetWeight);
-    progressPct = diff <= 1.5 ? 100 : Math.max(0, 100 - (diff * 10));
-  }
-
-  const safeProgressPct = Number.isFinite(progressPct) ? progressPct : 0;
+  const progressPct = calculateProgressPct(profile?.goal, initialWeight, currentWeight, targetWeight);
+  const safeProgressPct = progressPct;
 
   const todayStr = getLocalDateString();
   let dateLabel = t('tracker.today', 'Hoy');
@@ -480,9 +301,17 @@ export default function DashboardScreen() {
     });
   };
 
+  const DEFAULT_WIDGETS = ['weight', 'bodyFat', 'muscle_directory', 'recipe_search', 'photos', 'measurements', 'sleep', 'calories'];
+
   const [widgetsOrder, setWidgetsOrder] = useState(() => {
-    return ['weight', 'bodyFat', 'muscle_directory', 'recipe_search', 'photos', 'measurements', 'sleep', 'calories'];
+    return profile?.widgetsOrder ?? DEFAULT_WIDGETS;
   });
+
+  useEffect(() => {
+    if (profile?.widgetsOrder) {
+      setWidgetsOrder(profile.widgetsOrder);
+    }
+  }, [profile?.widgetsOrder]);
 
   const saveWidgetsOrder = async () => {
     setIsEditing(false);
@@ -512,169 +341,6 @@ export default function DashboardScreen() {
     Haptics.selectionAsync();
   };
 
-  const renderWidget = (id: string, index: number) => {
-    const commonProps = {
-      index,
-      isEditing,
-      onLongPress: handleEditMode,
-      onMoveLeft: () => moveWidget(index, -1),
-      onMoveRight: () => moveWidget(index, 1),
-      canMoveLeft: index > 0,
-      canMoveRight: index < widgetsOrder.length - 1,
-    };
-
-    switch (id) {
-      case 'weight':
-        return (
-          <WidgetCard key={id} {...commonProps} title={t('dashboard.weightWidget')} icon="⚖️"
-            value={`${currentWeight}`} subValue="kg"
-            onPress={() => router.push('/modals/body-measurements')}
-          />
-        );
-      case 'sleep':
-        return (
-          <WidgetCard key={id} {...commonProps} title={t('dashboard.sleepWidget')} icon="🌙"
-            customContent={
-              <View style={w.content}>
-                 <Text style={[w.value, { color: colors.textPrimary }]}>{sleepHours > 0 ? `${sleepHours}h` : '--'}</Text>
-                 <Text style={[w.subValue, { color: colors.textSecondary }]}>{sleepHours > 0 ? t('dashboard.loggedToday') : t('dashboard.tapToAdd')}</Text>
-              </View>
-            }
-            onPress={() => router.push('/modals/sleep' as any)}
-          />
-        );
-      case 'calories':
-        return (
-          <WidgetCard key={id} {...commonProps} title={t('dashboard.caloriesWidget')} icon="⚡"
-            customContent={
-              <View style={w.content}>
-                <Text style={{fontSize: 24, fontWeight: '800', color: colors.textPrimary}}>{calories}</Text>
-                <Text style={[w.subValue, { color: colors.textSecondary }]}>{t('dashboard.logFood')}</Text>
-              </View>
-            }
-            onPress={() => router.push('/(tabs)/tracker')}
-          />
-        );
-      case 'bodyFat':
-        return (
-          <WidgetCard key={id} {...commonProps} title={t('dashboard.bodyFatWidget')} icon="🔥"
-            value={bodyFat ? `${bodyFat}%` : '--'} subValue={t('dashboard.tapToUpdate')}
-            onPress={() => router.push('/modals/body-measurements')}
-          />
-        );
-      case 'macros':
-        return (
-          <WidgetCard key={id} {...commonProps} title={t('dashboard.macrosWidget')} icon="🥗"
-            customContent={
-              <View style={[w.content, { gap: 4 }]}>
-                <Text style={{ fontSize: 13, color: colors.protein }}>P: {totalsData.protein}g</Text>
-                <Text style={{ fontSize: 13, color: colors.carbs }}>C: {totalsData.carbs}g</Text>
-                <Text style={{ fontSize: 13, color: colors.fat }}>G: {totalsData.fat}g</Text>
-              </View>
-            }
-            onPress={() => router.push('/(tabs)/tracker')}
-          />
-        );
-      case 'measurements':
-        return (
-          <WidgetCard key={id} {...commonProps} title={t('dashboard.measurementsWidget')} icon="📏"
-            value={t('dashboard.seeHistory', 'Ver historial')} subValue={t('dashboard.measurementsSub', 'Cintura, pecho, etc.')}
-            onPress={() => router.push('/modals/body-measurements')}
-          />
-        );
-      case 'photos':
-        return (
-          <WidgetCard key={id} {...commonProps} title={t('dashboard.evaluationWidget', 'Evaluación IA')} icon="🤖"
-            adTimerFeatureId="evaluation"
-            customContent={
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <View style={{ position: 'relative' }}>
-                  <Text style={{ fontSize: 32, color: colors.textSecondary }}>📷</Text>
-                  {!isPro && !hasPremiumAdAccess('evaluation') && (
-                    <View style={w.lockOverlay}>
-                      <Text style={w.lockIcon}>🔒</Text>
-                    </View>
-                  )}
-                </View>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginTop: 8 }}>{t('dashboard.evaluatePhysique', 'Evaluar Físico')}</Text>
-                <Text style={[w.subValue, { color: colors.textSecondary }]}>{t('dashboard.getAIFeedback', 'Recibe feedback IA')}</Text>
-                {!isPro && !hasPremiumAdAccess('evaluation') && (
-                  <View style={w.premiumTag}>
-                    <Text style={w.premiumTagText}>👑 Premium</Text>
-                  </View>
-                )}
-              </View>
-            }
-            onPress={() => handlePremiumFeaturePress(
-              'evaluation',
-              t('dashboard.evaluationWidget', 'Evaluación IA'),
-              '📷',
-              '/modals/progress-evaluation'
-            )}
-          />
-        );
-      case 'achievements':
-        return null; // Removed from grid as requested
-      case 'recipe_search':
-        return (
-          <WidgetCard key={id} {...commonProps} title={t('dashboard.recipeSearchWidget', 'Buscar Recetas')} icon="🍳"
-            adTimerFeatureId="recipes"
-            customContent={
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <View style={{ position: 'relative' }}>
-                  <Text style={{ fontSize: 32, color: colors.textSecondary }}>🥗</Text>
-                  {!isPro && !hasPremiumAdAccess('recipes') && (
-                    <View style={w.lockOverlay}>
-                      <Text style={w.lockIcon}>🔒</Text>
-                    </View>
-                  )}
-                </View>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginTop: 8 }}>{t('dashboard.recipeSearchWidget', 'Buscar Recetas')}</Text>
-                <Text style={[w.subValue, { color: colors.textSecondary }]}>{t('dashboard.withAI', 'Con IA')}</Text>
-                {!isPro && !hasPremiumAdAccess('recipes') && (
-                  <View style={w.premiumTag}>
-                    <Text style={w.premiumTagText}>👑 Premium</Text>
-                  </View>
-                )}
-              </View>
-            }
-            onPress={() => handlePremiumFeaturePress(
-              'recipes',
-              t('dashboard.recipeSearchWidget', 'Buscar Recetas con IA'),
-              '🥗',
-              '/modals/recipes'
-            )}
-          />
-        );
-      case 'muscle_directory':
-        return (
-          <WidgetCard key={id} {...commonProps} title={t('dashboard.muscleDirWidget', 'Ejercicios')} icon="💪"
-            adTimerFeatureId="directory"
-            customContent={
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <View style={{ position: 'relative' }}>
-                  <Text style={{ fontSize: 32, color: colors.textSecondary }}>📖</Text>
-                  {!isPro && !hasPremiumAdAccess('directory') && (
-                    <View style={w.lockOverlay}>
-                      <Text style={w.lockIcon}>🔒</Text>
-                    </View>
-                  )}
-                </View>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginTop: 8 }}>{t('dashboard.muscleDirTitle', 'Directorio')}</Text>
-                <Text style={[w.subValue, { color: colors.textSecondary }]}>{t('dashboard.muscleDirSub', 'Por músculos')}</Text>
-              </View>
-            }
-            onPress={() => handlePremiumFeaturePress(
-              'directory',
-              t('dashboard.muscleDirWidget', 'Directorio de Ejercicios'),
-              '📖',
-              '/modals/muscle-directory'
-            )}
-          />
-        );
-      default: return null;
-    }
-  };
 
 
   return (
@@ -821,7 +487,17 @@ export default function DashboardScreen() {
           )}
         </View>
         <View style={s.widgetGrid}>
-          {widgetsOrder.map((id, index) => renderWidget(id, index))}
+          {widgetsOrder.map((id, index) => renderDashboardWidget({
+            id, index, isEditing,
+            canMoveLeft: index > 0,
+            canMoveRight: index < widgetsOrder.length - 1,
+            onMoveLeft: () => moveWidget(index, -1),
+            onMoveRight: () => moveWidget(index, 1),
+            onLongPress: () => { setIsEditing(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); },
+            currentWeight, sleepHours, calories, bodyFat, totalsData,
+            isPro: !!profile?.isPro, colors, t, router,
+            hasPremiumAdAccess, handlePremiumFeaturePress
+          }))}
         </View>
 
         <View style={{ height: 40 }} />
@@ -850,86 +526,7 @@ export default function DashboardScreen() {
           lifestyle: profile?.lifestyle || 'seated',
           exerciseLevel: profile?.activityLevel || 'none'
         }}
-        onSave={async (newData) => {
-          if (!profile) return;
-          try {
-            // Combine Lifestyle and Exercise to get final activityLevel for TDEE
-            const LIFESTYLE_MAP: Record<string, number> = { seated: 0, standing_sometimes: 1, standing_mostly: 2, moving: 3, physical_work: 4 };
-            const EXERCISE_MAP: Record<string, number> = { none: 0, '1-2': 1, '3-4': 2, '5-6': 3, daily: 4 };
-            const REVERSE_MAP: Record<number, UserProfile['activityLevel']> = { 0: 'sedentary', 1: 'light', 2: 'moderate', 3: 'active', 4: 'very_active' };
-
-            const lifeScore = LIFESTYLE_MAP[newData.lifestyle] || 0;
-            const exeScore  = EXERCISE_MAP[newData.exerciseLevel] || 0;
-            const finalActivityLevel = REVERSE_MAP[Math.max(lifeScore, exeScore)];
-
-            // Recalculate and update store
-            const { tdee } = calculateTDEE({
-              weight: newData.weight,
-              height: profile.height,
-              age: profile.age,
-              sex: profile.sex,
-              activityLevel: finalActivityLevel,
-              lifestyleLevel: newData.lifestyle
-            });
-            
-            const { targetCalories, protein, carbs, fat } = calculateMacros(tdee, newData.goal);
-
-            // Reset starting weight if they change their main goal (e.g., lose to gain)
-            const newStartingWeight = profile.goal !== newData.goal ? newData.weight : (profile.startingWeight || newData.weight);
-
-            // Update Supabase
-            const { error: upsertError } = await supabase
-              .from('users')
-              .update({
-                weight: newData.weight,
-                target_weight: newData.targetWeight,
-                starting_weight: newStartingWeight,
-                goal: newData.goal,
-                lifestyle: newData.lifestyle,
-                activity_level: finalActivityLevel,
-                tdee,
-                target_calories: targetCalories,
-                macros: { protein, carbs, fat },
-                updated_at: new Date().toISOString(),
-              })
-              .eq('id', profile.id);
-
-            if (upsertError) throw upsertError;
-
-            // Also update bodyStore measurement if weight changed
-            const { addMeasurement } = useBodyStore.getState();
-            await addMeasurement({
-              id: `bm-${Date.now()}`,
-              date: getLocalDateString(),
-              weight: newData.weight,
-            });
-
-            setProfile({
-              ...profile,
-              weight: newData.weight,
-              startingWeight: newStartingWeight,
-              targetWeight: newData.targetWeight,
-              goal: newData.goal,
-              lifestyle: newData.lifestyle,
-              activityLevel: finalActivityLevel,
-              tdee,
-              targetCalories,
-              macros: { protein, carbs, fat }
-            });
-
-            // Sync today's activity in tracker
-            const { setNeat, setExerciseLevel } = useNutritionStore.getState();
-            setNeat(newData.lifestyle);
-            setExerciseLevel(newData.exerciseLevel);
-
-            setGoalModalVisible(false);
-            showAlert('success', t('common.success'), t('profile.updateSuccess'));
-          } catch (err) {
-            console.error('Error updating goals:', err);
-            showAlert('error', t('common.error'), t('profile.updateFailed'));
-          }
-
-        }}
+        onSave={(newData) => handleGoalSave(newData, profile, setProfile, setGoalModalVisible, showAlert, t)}
       />
     </SafeAreaView>
     </View>

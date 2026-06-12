@@ -75,7 +75,7 @@ interface LeagueStore {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const POINTS = {
+export const LEAGUE_POINTS = {
   MEAL_LOG: 10,
   MACRO_PERFECT: 100,
   SQUAD_SYNERGY: 50,
@@ -328,17 +328,28 @@ export const useLeagueStore = create<LeagueStore>()(
   leaveSquad: async (userId: string) => {
     const { squad } = get();
     if (!squad) return;
-    await supabase
-      .from('squad_members')
-      .delete()
-      .match({ squad_id: squad.id, user_id: userId });
     
-    // Reset points
-    await supabase.from('users').update({ league_points: 0 }).eq('id', userId);
-    
-    await supabase.rpc('recalculate_league_tier', { p_squad_id: squad.id });
-    
-    set({ squad: null, members: [], myPoints: 0, todayPointsEarned: 0 });
+    set({ loading: true, error: null });
+    try {
+      const { error } = await supabase
+        .from('squad_members')
+        .delete()
+        .match({ squad_id: squad.id, user_id: userId });
+      
+      if (error) throw error;
+      
+      // Reset points
+      await supabase.from('users').update({ league_points: 0 }).eq('id', userId);
+      
+      await supabase.rpc('recalculate_league_tier', { p_squad_id: squad.id });
+      
+      set({ squad: null, members: [], myPoints: 0, todayPointsEarned: 0 });
+    } catch (err: any) {
+      console.error('[LeagueStore] Error leaving squad:', err);
+      set({ error: err.message });
+    } finally {
+      set({ loading: false });
+    }
   },
 
   // ── Remove a member (leader only) ─────────────────────────────────────────
@@ -494,8 +505,8 @@ export const useLeagueStore = create<LeagueStore>()(
     const caloriesOk = isWithinMargin(consumed.calories, target.calories);
 
     if (proteinOk && carbsOk && fatOk && caloriesOk) {
-      await get().awardPoints(userId, POINTS.MACRO_PERFECT, 'macro_perfect');
-      get().showReward(POINTS.MACRO_PERFECT);
+      await get().awardPoints(userId, LEAGUE_POINTS.MACRO_PERFECT, 'macro_perfect');
+      get().showReward(LEAGUE_POINTS.MACRO_PERFECT);
     }
   },
 
@@ -525,4 +536,4 @@ export const useLeagueStore = create<LeagueStore>()(
   )
 );
 
-export { POINTS, getStreakMultiplier };
+export { getStreakMultiplier };

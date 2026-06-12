@@ -39,7 +39,7 @@ export interface PlanItem {
 
 export interface WorkoutRoutine {
   name: string;
-  exercises: { name: string; sets: number; reps: string; rest: string }[];
+  exercises: { name: string; englishName?: string; sets: number; reps: string; rest: string }[];
 }
 
 interface PlannerState {

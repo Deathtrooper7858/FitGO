@@ -10,23 +10,31 @@ import { useTranslation } from 'react-i18next';
 
 // Ignore specific warnings in the UI
 LogBox.ignoreLogs([
-  'AuthApiError: Invalid Refresh Token: Refresh Token Not Found',
   'setLayoutAnimationEnabledExperimental is currently a no-op',
   'is not supported with edge-to-edge enabled',
   'Prop "resizeMode" is deprecated'
 ]);
+// NOTA: 'AuthApiError: Invalid Refresh Token' fue eliminado de la lista de warnings
+// ignorados intencionalmente: este error indica sesión inválida y debe ser visible.
 
-// Suppress specific warnings in the Metro console
+// Interceptar console.warn para limpiar la terminal de avisos de librerías de terceros
 const originalWarn = console.warn;
 console.warn = (...args) => {
-  if (typeof args[0] === 'string') {
-    if (args[0].includes('setLayoutAnimationEnabledExperimental is currently a no-op')) return;
-    if (args[0].includes('is not supported with edge-to-edge enabled')) return;
+  const msg = args[0];
+  if (typeof msg === 'string' && (
+    msg.includes('is not supported with edge-to-edge enabled') ||
+    msg.includes('setLayoutAnimationEnabledExperimental') ||
+    msg.includes('Could not get historical steps') ||
+    msg.includes('Reduced motion setting is enabled') ||
+    msg.includes('Firebase not configured in this build')
+  )) {
+    return;
   }
   originalWarn(...args);
 };
 import { supabase } from '../services/supabase';
 import { useAuthStore, useSettingsStore, usePurchaseStore } from '../store';
+import { useSocialStore } from '../store/socialStore';
 import { registerForPushNotificationsAsync } from '../services/notifications';
 import { Colors } from '../constants';
 import i18n from '../i18n';
@@ -127,7 +135,14 @@ export default function RootLayout() {
     // Hide the native OS splash screen immediately so our custom RN splash takes over
     SplashScreen.hideAsync();
 
+    // ── Race condition guard ────────────────────────────────────────────────────
+    // onAuthStateChange puede dispararse varias veces seguidas (token refresh +
+    // user update). El guard de versión garantiza que solo la llamada más reciente
+    // llame a setLoading(false), evitando pantallas de loading infinito.
+    let authCallVersion = 0;
+
     const handleAuthStateChange = async (newSession: any) => {
+      const thisCall = ++authCallVersion;
       setLoading(true); // <--- PAUSE NAVIGATION WHILE FETCHING PROFILE
       try {
         setSession(newSession);
@@ -135,34 +150,38 @@ export default function RootLayout() {
           await fetchProfile(newSession.user.id);
           // Initialize RevenueCat with user ID
           await initPurchases(newSession.user.id);
-          
-          // Desactivado temporalmente porque no usamos notificaciones remotas
-          // y esto causaba advertencias de Firebase (google-services.json missing).
-          // Las notificaciones LOCALES (recordatorios) funcionan perfectamente sin esto.
+
+          // Lógica de push notifications (Corregida, pero desactivada temporalmente en dev sin google-services.json)
           /*
-          registerForPushNotificationsAsync().then(async (token) => {
+          registerForPushNotificationsAsync().then(token => {
             if (token) {
               const currentProfile = useAuthStore.getState().profile;
               if (currentProfile && currentProfile.expoPushToken !== token) {
-                const { error } = await supabase.from('users').update({ expo_push_token: token }).eq('id', newSession.user.id);
-                if (!error) {
-                  setProfile({ ...currentProfile, expoPushToken: token });
-                }
+                supabase.from('users')
+                  .update({ expo_push_token: token })
+                  .eq('id', newSession.user.id)
+                  .then(({ error }) => {
+                    if (error) console.error('Error updating push token:', error);
+                  });
               }
             }
-          });
+          }).catch(err => console.error('Error registering push token:', err));
           */
         } else {
           // Sign out: clear both session and profile atomically
           clearAuth();
-          // Logout from RevenueCat
-          // await revenueCat.logout();
+          // Limpiar canales Realtime del usuario anterior para evitar fugas de
+          // memoria y que mensajes de un usuario lleguen a otro tras cambio de sesión.
+          useSocialStore.getState().reset();
         }
       } catch (err) {
         console.error('Error in auth state change:', err);
       } finally {
-        // Only set loading false once we have tried to get the profile
-        setLoading(false);
+        // Solo setLoading(false) si esta llamada sigue siendo la más reciente.
+        // Esto previene que una llamada antigua pisone a una más nueva.
+        if (thisCall === authCallVersion) {
+          setLoading(false);
+        }
       }
     };
 
