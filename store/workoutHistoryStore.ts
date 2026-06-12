@@ -6,7 +6,7 @@ export interface CompletedWorkout {
   id: string;
   date: string; // ISO date string YYYY-MM-DD
   routineName: string;
-  exercises: { name: string; englishName?: string; sets: number; reps: string }[];
+  exercises: { name: string; englishName?: string; sets: number; reps: string; weight?: string; rpe?: string }[];
   completedAt: number; // timestamp
   userId?: string;
 }

@@ -304,12 +304,17 @@ export default function DashboardScreen() {
   const DEFAULT_WIDGETS = ['weight', 'bodyFat', 'muscle_directory', 'recipe_search', 'photos', 'measurements', 'sleep', 'calories'];
 
   const [widgetsOrder, setWidgetsOrder] = useState(() => {
-    return profile?.widgetsOrder ?? DEFAULT_WIDGETS;
+    if (profile?.widgetsOrder) {
+      const missing = DEFAULT_WIDGETS.filter(w => !profile.widgetsOrder.includes(w));
+      return [...profile.widgetsOrder, ...missing];
+    }
+    return DEFAULT_WIDGETS;
   });
 
   useEffect(() => {
     if (profile?.widgetsOrder) {
-      setWidgetsOrder(profile.widgetsOrder);
+      const missing = DEFAULT_WIDGETS.filter(w => !profile.widgetsOrder.includes(w));
+      setWidgetsOrder([...profile.widgetsOrder, ...missing]);
     }
   }, [profile?.widgetsOrder]);
 
