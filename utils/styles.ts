@@ -2,11 +2,17 @@ export const getNameStyle = (
   nameColor?: string | null,
   userId?: string,
   currentUserId?: string,
-  currentUserColor?: string | null
+  currentUserColor?: string | null,
+  /** Pass the local store premiumColor so own-user rows always reflect real-time changes */
+  storePremiumColor?: string | null
 ): any => {
   // Always use live profile color for the current user (avoids stale cache)
   const isMe = userId && userId === currentUserId;
-  const resolvedColor = isMe ? (currentUserColor || nameColor) : nameColor;
+  const baseColor = isMe ? (currentUserColor || nameColor) : nameColor;
+
+  // Never override admin_glow with a local store premium color. 
+  // We use storePremiumColor only as a fallback if baseColor is missing.
+  const resolvedColor = baseColor || (isMe ? storePremiumColor : null);
 
   if (resolvedColor === 'admin_glow') {
     return {

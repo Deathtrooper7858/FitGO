@@ -88,11 +88,13 @@ export async function scheduleReminder(reminder: Reminder): Promise<string | und
         title: reminder.title,
         body: reminder.body,
         sound: true,
+        channelId: 'default',
       },
       trigger: {
+        type: 'daily',
         hour,
         minute,
-        repeats: true,
+        channelId: 'default',
       },
     });
 

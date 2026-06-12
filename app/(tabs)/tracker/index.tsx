@@ -306,7 +306,7 @@ export default function TrackerScreen() {
   };
 
   const handleAddMissingFood = (meal: Meal) => {
-    router.push({ pathname: '/modals/scan', params: { initialMeal: meal, date: selectedDate, initialMode: 'search' } } as any);
+    router.push({ pathname: '/modals/scan', params: { initialMeal: meal, date: selectedDate, initialMode: 'photo' } } as any);
   };
 
   const days = useMemo(() => {
@@ -875,28 +875,29 @@ export default function TrackerScreen() {
 
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 <TouchableOpacity
-                  style={[s.addBtn, { backgroundColor: colors.surfaceAlt, flex: 1 }]}
+                  style={[s.addBtn, { flex: 1, overflow: 'hidden', padding: 0, borderWidth: 0 }]}
                   onPress={() => {
                     setSelectedLogIds(new Set());
-                    handleAddMeal(m as Meal);
+                    if (mealLogs.length > 0) {
+                      handleAddMissingFood(m as Meal);
+                    } else {
+                      handleAddMeal(m as Meal);
+                    }
                   }}
                 >
-                  <Text style={[s.addBtnText, { color: colors.textPrimary }]}>+</Text>
-                </TouchableOpacity>
-
-                {mealLogs.length > 0 && (
-                  <TouchableOpacity
-                    style={[s.addBtn, { backgroundColor: colors.primary + '15', flex: 2, borderColor: colors.primary + '33', borderWidth: 1 }]}
-                    onPress={() => {
-                      setSelectedLogIds(new Set());
-                      handleAddMissingFood(m as Meal);
-                    }}
+                  <LinearGradient
+                    colors={[colors.primary, colors.secondary || '#A855F7']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={{ flex: 1, width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: 48 }}
                   >
-                    <Text style={[s.addBtnText, { color: colors.primary, fontSize: 13 }]}>
-                      ➕ {language === 'es' ? 'Añadir faltante' : 'Add missing'}
+                    <Text style={[s.addBtnText, { color: '#fff', fontSize: 15, fontWeight: '800' }]}>
+                      ➕ {mealLogs.length > 0 
+                           ? (language === 'es' ? 'Añadir faltante' : 'Add missing')
+                           : (language === 'es' ? 'Añadir alimento' : 'Add food')}
                     </Text>
-                  </TouchableOpacity>
-                )}
+                  </LinearGradient>
+                </TouchableOpacity>
               </View>
               </View>
               </GlassCard>

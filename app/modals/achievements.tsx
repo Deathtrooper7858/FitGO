@@ -12,6 +12,7 @@ import { supabase } from '../../services/supabase';
 import { GlassCard } from '../../components/GlassCard';
 import { useAuthStore } from '../../store';
 import { TIER_POINTS } from '../../hooks/useAchievements';
+import { GlobalBackground } from '../../components/GlobalBackground';
 
 const { width } = Dimensions.get('window');
 
@@ -303,8 +304,15 @@ export default function AchievementsModal() {
   const progressPct = achievements.length > 0 ? (unlockedCount / achievements.length) * 100 : 0;
 
   return (
-    <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
+    <View style={s.container}>
+      <GlobalBackground />
+      <LinearGradient
+        colors={[colors.primary + '30', colors.primary + '10', 'transparent']}
+        style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 320 }}
+        pointerEvents="none"
+      />
+      <SafeAreaView style={s.container}>
+        {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={[s.backBtn, { backgroundColor: colors.surface }]}>
           <LucideIcons.ArrowLeft color={colors.textPrimary} size={22} />
@@ -405,6 +413,7 @@ export default function AchievementsModal() {
         ))}
       </ScrollView>
     </SafeAreaView>
+    </View>
   );
 }
 

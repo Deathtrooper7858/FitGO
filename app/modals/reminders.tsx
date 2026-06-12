@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Switch, Platform, Animated, Dimensions
+  Switch, Platform, Animated, Dimensions, LayoutAnimation, UIManager
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,214 +10,411 @@ import { Colors, Spacing, Radius } from '../../constants';
 import { useSettingsStore, Reminder } from '../../store';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
-import { 
-  Bell, ChevronLeft, Clock, Utensils, Droplets, Dumbbell, 
-  Settings, Check, X, AlertCircle, Pill, Footprints, Moon, Coffee
+import {
+  Bell, ChevronLeft, ChevronDown, ChevronUp, Clock, Utensils, Droplets, Dumbbell,
+  Check, AlertCircle, Pill, Footprints, Moon, Coffee,
+  Trophy, Users, Zap, Star, Sword, Target, Medal, MessageSquare
 } from 'lucide-react-native';
 import { GlassCard } from '../../components/GlassCard';
-import { scheduleReminder, cancelReminder, requestNotificationPermissions, sendTestNotification } from '../../services/notifications';
+import { GlobalBackground } from '../../components/GlobalBackground';
+import { scheduleReminder, cancelReminder, requestNotificationPermissions } from '../../services/notifications';
 import DateTimePicker from '@react-native-community/datetimepicker';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+// ─── Category config ────────────────────────────────────────────────────────
+type ReminderCategory = 'meal' | 'water' | 'workout' | 'general' | 'social';
+
+interface CategoryConfig {
+  key: ReminderCategory;
+  labelKey: string;
+  defaultLabel: string;
+  gradient: readonly [string, string, ...string[]];
+  icon: React.ReactNode;
+  textColor: string;
+}
+
+const CATEGORIES: CategoryConfig[] = [
+  {
+    key: 'meal',
+    labelKey: 'reminders.category.meal',
+    defaultLabel: '🍽️  Comidas',
+    gradient: ['#FF6B6B', '#FF4757'],
+    icon: <Utensils size={16} color="#fff" />,
+    textColor: '#FF6B6B',
+  },
+  {
+    key: 'water',
+    labelKey: 'reminders.category.water',
+    defaultLabel: '💧  Hidratación',
+    gradient: ['#3B82F6', '#1D4ED8'],
+    icon: <Droplets size={16} color="#fff" />,
+    textColor: '#3B82F6',
+  },
+  {
+    key: 'workout',
+    labelKey: 'reminders.category.workout',
+    defaultLabel: '💪  Entrenamiento',
+    gradient: ['#10B981', '#059669'],
+    icon: <Dumbbell size={16} color="#fff" />,
+    textColor: '#10B981',
+  },
+  {
+    key: 'general',
+    labelKey: 'reminders.category.general',
+    defaultLabel: '⚡  General',
+    gradient: ['#F59E0B', '#D97706'],
+    icon: <Zap size={16} color="#fff" />,
+    textColor: '#F59E0B',
+  },
+  {
+    key: 'social',
+    labelKey: 'reminders.category.social',
+    defaultLabel: '🏆  Social & Competitivo',
+    gradient: ['#8B5CF6', '#6D28D9'],
+    icon: <Trophy size={16} color="#fff" />,
+    textColor: '#A78BFA',
+  },
+];
+
+// ─── Default reminders with categories ──────────────────────────────────────
+const DEFAULT_REMINDERS: Reminder[] = [
+  // MEAL
+  { id: '1',  title: 'Desayuno',   body: '¡Hora de un desayuno saludable!',               time: '08:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
+  { id: '2',  title: 'Almuerzo',   body: '¡No olvides tu almuerzo nutritivo!',            time: '13:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
+  { id: '3',  title: 'Cena',       body: 'Hora de tu cena. ¡Que aproveche!',              time: '20:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
+  { id: '6',  title: 'Merienda',   body: '¡Hora de un snack saludable!',                  time: '16:30', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
+  // WATER
+  { id: '4',  title: 'Agua',       body: '¡Mantente hidratado! Bebe un vaso de agua.',   time: '10:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'water' },
+  { id: '10', title: 'Agua tarde', body: '¡No olvides hidratarte por la tarde!',          time: '15:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'water' },
+  // WORKOUT
+  { id: '5',  title: 'Entreno',    body: '¡Hora de cumplir tu meta de movimiento!',      time: '18:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'workout' },
+  { id: '8',  title: 'Caminata',   body: '¡Revisa tus pasos! Hora de una caminata.',     time: '12:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'workout' },
+  { id: '11', title: 'Cardio',     body: '¡Activa tu cardio del día!',                   time: '07:00', enabled: false, days: [1,2,3,4,5],     type: 'workout' },
+  // GENERAL
+  { id: '7',  title: 'Vitaminas',  body: '¡Recuerda tomar tus vitaminas y suplementos!', time: '09:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'general' },
+  { id: '9',  title: 'Dormir',     body: '¡Descansa bien para recuperarte!',             time: '22:30', enabled: false, days: [0,1,2,3,4,5,6], type: 'general' },
+  { id: '12', title: 'Registro',   body: '¡Registra tus comidas de hoy en FitGo!',      time: '21:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'general' },
+  // SOCIAL & COMPETITIVE
+  { id: '13', title: 'Liga',        body: '¡La batalla de la liga no para! Revisa tu posición.', time: '09:30', enabled: false, days: [1,2,3,4,5], type: 'social' },
+  { id: '14', title: 'Reto diario', body: '¡Completa el reto diario antes de que expire!',      time: '20:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'social' },
+  { id: '15', title: 'Amigos',      body: '¡Mira qué están logrando tus amigos hoy!',          time: '18:30', enabled: false, days: [0,1,2,3,4,5,6], type: 'social' },
+  { id: '16', title: 'Racha',       body: '¡No rompas tu racha! Registra tu progreso.',         time: '20:30', enabled: false, days: [0,1,2,3,4,5,6], type: 'social' },
+  { id: '17', title: 'Logros',      body: '¡Tienes logros desbloqueados esperándote!',          time: '19:00', enabled: false, days: [0,6], type: 'social' },
+  { id: '18', title: 'Leaderboard', body: '🔥 El ranking semanal termina pronto. ¡Sube posiciones!', time: '10:00', enabled: false, days: [5,6], type: 'social' },
+  { id: '19', title: 'Mensajes',    body: '💬 ¡Tienes nuevos mensajes en FitGO Social!',       time: '14:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'social' },
+];
+
+// ─── Icon & color helpers ────────────────────────────────────────────────────
+const getIcon = (type: string, title?: string) => {
+  const lt = (title || '').toLowerCase();
+  if (lt.includes('merienda') || lt.includes('snack'))    return <Coffee    size={20} color="#F59E0B" />;
+  if (lt.includes('vitamin') || lt.includes('suplemento')) return <Pill    size={20} color="#A78BFA" />;
+  if (lt.includes('caminata') || lt.includes('pasos'))    return <Footprints size={20} color="#10B981" />;
+  if (lt.includes('dormir') || lt.includes('sleep'))      return <Moon      size={20} color="#6366F1" />;
+  if (lt.includes('cardio'))                              return <Zap       size={20} color="#10B981" />;
+  if (lt.includes('registro'))                            return <Check     size={20} color="#F59E0B" />;
+  // social
+  if (lt.includes('liga'))                                return <Sword     size={20} color="#A78BFA" />;
+  if (lt.includes('reto'))                                return <Target    size={20} color="#A78BFA" />;
+  if (lt.includes('amigos'))                              return <Users     size={20} color="#A78BFA" />;
+  if (lt.includes('racha'))                               return <Star      size={20} color="#F59E0B" />;
+  if (lt.includes('logros'))                              return <Medal     size={20} color="#A78BFA" />;
+  if (lt.includes('leaderboard') || lt.includes('ranking')) return <Trophy size={20} color="#A78BFA" />;
+  if (lt.includes('mensaje'))                             return <MessageSquare size={20} color="#8B5CF6" />;
+
+  switch (type) {
+    case 'meal':    return <Utensils  size={20} color="#FF6B6B" />;
+    case 'water':   return <Droplets  size={20} color="#3B82F6" />;
+    case 'workout': return <Dumbbell  size={20} color="#10B981" />;
+    case 'social':  return <Trophy    size={20} color="#A78BFA" />;
+    default:        return <Bell      size={20} color="#F59E0B" />;
+  }
+};
+
+const getAccent = (type: string, title?: string) => {
+  const lt = (title || '').toLowerCase();
+  if (lt.includes('merienda') || lt.includes('snack'))    return '#F59E0B';
+  if (lt.includes('vitamin') || lt.includes('suplemento')) return '#A78BFA';
+  if (lt.includes('caminata') || lt.includes('pasos'))    return '#10B981';
+  if (lt.includes('dormir') || lt.includes('sleep'))      return '#6366F1';
+  if (lt.includes('cardio'))                              return '#10B981';
+  if (lt.includes('registro'))                            return '#F59E0B';
+  if (type === 'social')                                  return '#8B5CF6';
+  switch (type) {
+    case 'meal':    return '#FF6B6B';
+    case 'water':   return '#3B82F6';
+    case 'workout': return '#10B981';
+    default:        return '#F59E0B';
+  }
+};
+
+// ─── Main screen ─────────────────────────────────────────────────────────────
 export default function RemindersModal() {
   const { t } = useTranslation();
   const colors = useTheme();
   const { reminders, setReminders } = useSettingsStore();
+
   const [localReminders, setLocalReminders] = useState<Reminder[]>(() => {
     const merged = [...reminders];
-    const defaultReminders: Reminder[] = [
-      { id: '1', title: 'Breakfast', body: 'Time for a healthy breakfast!', time: '08:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
-      { id: '2', title: 'Lunch', body: 'Don\'t forget your nutritious lunch!', time: '13:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
-      { id: '3', title: 'Dinner', body: 'Time for your evening meal.', time: '20:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
-      { id: '4', title: 'Water', body: 'Stay hydrated! Drink some water.', time: '10:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'water' },
-      { id: '5', title: 'Workout', body: 'Time to hit your daily movement goal!', time: '18:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'workout' },
-      { id: '6', title: 'Snack', body: 'Time for a healthy snack!', time: '16:30', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
-      { id: '7', title: 'Vitamins', body: 'Remember to take your vitamins and supplements!', time: '09:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'general' },
-      { id: '8', title: 'Walk', body: 'Check your steps! Time for a short walk.', time: '12:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'workout' },
-      { id: '9', title: 'Sleep', body: 'Wind down and prepare for a restful sleep.', time: '22:30', enabled: false, days: [0,1,2,3,4,5,6], type: 'general' },
-    ];
-    defaultReminders.forEach(def => {
-      if (!merged.some(r => r.id === def.id)) {
-        merged.push(def);
-      }
+    DEFAULT_REMINDERS.forEach(def => {
+      if (!merged.some(r => r.id === def.id)) merged.push(def);
     });
     return merged.sort((a, b) => Number(a.id) - Number(b.id));
   });
+
   const [showTimePicker, setShowTimePicker] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<ReminderCategory | 'all'>('all');
+  
+  // Accordion state - default all collapsed
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    requestNotificationPermissions();
-  }, []);
+  useEffect(() => { requestNotificationPermissions(); }, []);
 
-  const handleToggle = async (id: string) => {
-    const updated = localReminders.map(r => {
-      if (r.id === id) {
-        return { ...r, enabled: !r.enabled };
-      }
-      return r;
-    });
-    setLocalReminders(updated);
+  // Sync to global store instantly and schedule/cancel notification
+  const saveAndSchedule = async (updatedReminders: Reminder[], modifiedId: string) => {
+    setLocalReminders(updatedReminders);
+    
+    const r = updatedReminders.find(rem => rem.id === modifiedId);
+    if (!r) return;
+
+    const final = [...updatedReminders];
+    const index = final.findIndex(rem => rem.id === modifiedId);
+
+    // Cancel existing
+    const oldNotifId = reminders.find(o => o.id === modifiedId)?.notificationId;
+    if (oldNotifId) await cancelReminder(oldNotifId);
+
+    // Schedule new if enabled
+    if (r.enabled) {
+      const notifId = await scheduleReminder(r);
+      final[index] = { ...r, notificationId: notifId };
+    } else {
+      final[index] = { ...r, notificationId: undefined };
+    }
+
+    setReminders(final);
+  };
+
+  const handleToggle = (id: string) => {
+    const updated = localReminders.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r);
+    saveAndSchedule(updated, id);
   };
 
   const handleTimeChange = (event: any, selectedDate?: Date) => {
     if (event.type === 'set' && selectedDate && showTimePicker) {
-      const hours = selectedDate.getHours().toString().padStart(2, '0');
-      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
-      const timeStr = `${hours}:${minutes}`;
+      const hh = selectedDate.getHours().toString().padStart(2, '0');
+      const mm = selectedDate.getMinutes().toString().padStart(2, '0');
       
-      const updated = localReminders.map(r => {
-        if (r.id === showTimePicker) {
-          return { ...r, time: timeStr };
-        }
-        return r;
-      });
-      setLocalReminders(updated);
+      const updated = localReminders.map(r => 
+        r.id === showTimePicker ? { ...r, time: `${hh}:${mm}` } : r
+      );
+      saveAndSchedule(updated, showTimePicker);
     }
     setShowTimePicker(null);
   };
 
-  const handleSave = async () => {
-    // Cancel old ones and schedule new ones
-    // To keep it simple, we cancel all and reschedule all enabled ones
-    // Or we could be more surgical.
-    
-    const finalReminders = [...localReminders];
-    
-    for (let i = 0; i < finalReminders.length; i++) {
-      const r = finalReminders[i];
-      // Cancel previous if exists
-      if (reminders.find(old => old.id === r.id)?.notificationId) {
-        await cancelReminder(reminders.find(old => old.id === r.id)!.notificationId!);
-      }
-      
-      if (r.enabled) {
-        const notifId = await scheduleReminder(r);
-        finalReminders[i] = { ...r, notificationId: notifId };
-      } else {
-        finalReminders[i] = { ...r, notificationId: undefined };
-      }
-    }
-    
-    setReminders(finalReminders);
-    router.back();
+  const toggleGroup = (key: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedGroups(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const getIcon = (type: string, title?: string) => {
-    const lowerTitle = title?.toLowerCase() || '';
-    if (lowerTitle.includes('snack') || lowerTitle.includes('merienda')) {
-      return <Coffee size={20} color="#F59E0B" />;
-    }
-    if (lowerTitle.includes('vitamin') || lowerTitle.includes('suplemento')) {
-      return <Pill size={20} color="#A78BFA" />;
-    }
-    if (lowerTitle.includes('walk') || lowerTitle.includes('pasos') || lowerTitle.includes('caminata')) {
-      return <Footprints size={20} color="#10B981" />;
-    }
-    if (lowerTitle.includes('sleep') || lowerTitle.includes('dormir') || lowerTitle.includes('descanso')) {
-      return <Moon size={20} color="#6366F1" />;
-    }
+  const filtered = activeCategory === 'all'
+    ? localReminders
+    : localReminders.filter(r => r.type === activeCategory);
 
-    switch (type) {
-      case 'meal': return <Utensils size={20} color="#FF4D4D" />;
-      case 'water': return <Droplets size={20} color="#3B82F6" />;
-      case 'workout': return <Dumbbell size={20} color="#10B981" />;
-      default: return <Bell size={20} color="#F59E0B" />;
-    }
-  };
-
-  const getAccentColor = (type: string, title?: string) => {
-    const lowerTitle = title?.toLowerCase() || '';
-    if (lowerTitle.includes('snack') || lowerTitle.includes('merienda')) return '#F59E0B';
-    if (lowerTitle.includes('vitamin') || lowerTitle.includes('suplemento')) return '#A78BFA';
-    if (lowerTitle.includes('walk') || lowerTitle.includes('pasos') || lowerTitle.includes('caminata')) return '#10B981';
-    if (lowerTitle.includes('sleep') || lowerTitle.includes('dormir') || lowerTitle.includes('descanso')) return '#6366F1';
-    
-    switch (type) {
-      case 'meal': return '#FF4D4D';
-      case 'water': return '#3B82F6';
-      case 'workout': return '#10B981';
-      default: return '#F59E0B';
-    }
-  };
+  const grouped = CATEGORIES.map(cat => ({
+    ...cat,
+    items: localReminders.filter(r => r.type === cat.key),
+  })).filter(g => g.items.length > 0);
 
   return (
     <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
+      <GlobalBackground />
+      
+      {/* Header */}
       <View style={s.header}>
         <TouchableOpacity onPress={() => router.back()} style={[s.backBtn, { backgroundColor: colors.surface }]}>
           <ChevronLeft size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={[s.title, { color: colors.textPrimary }]}>{t('profile.reminders', 'Recordatorios')}</Text>
+        <Text style={[s.headerTitle, { color: colors.textPrimary }]}>
+          {t('profile.reminders', 'Recordatorios')}
+        </Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
-        <View style={s.heroSection}>
-          <LinearGradient colors={[colors.primary + '30', 'transparent']} style={s.heroIconContainer}>
-            <Bell size={40} color={colors.primary} />
+      {/* Hero */}
+      <View style={s.hero}>
+        <LinearGradient colors={['#7C3AED40', '#3B82F620']} style={s.heroGlow}>
+          <LinearGradient colors={['#7C3AED', '#4338CA']} style={s.heroBell}>
+            <Bell size={28} color="#fff" />
           </LinearGradient>
-          <Text style={[s.heroTitle, { color: colors.textPrimary }]}>{t('reminders.stayOnTrack', 'Mantente en el Camino')}</Text>
-          <Text style={[s.heroSubtitle, { color: colors.textSecondary }]}>
-            {t('reminders.subtitle', 'Configura alertas para no olvidar tus comidas, hidratación y entrenamientos.')}
-          </Text>
-        </View>
+        </LinearGradient>
+        <Text style={[s.heroTitle, { color: colors.textPrimary }]}>
+          {t('reminders.stayOnTrack', 'Mantente en el Camino')}
+        </Text>
+        <Text style={[s.heroSub, { color: colors.textSecondary }]}>
+          {t('reminders.subtitle', 'Tus alertas se guardan y programan automáticamente al activarlas.')}
+        </Text>
+      </View>
 
-        {localReminders.map((reminder) => {
-          const accent = getAccentColor(reminder.type, reminder.title);
+      {/* Category filter tabs */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={s.tabsRow}
+        style={s.tabsContainer}
+      >
+        <TouchableOpacity
+          onPress={() => setActiveCategory('all')}
+          style={[
+            s.tab,
+            activeCategory === 'all' && s.tabActive,
+            activeCategory === 'all' && { borderColor: '#7C3AED' },
+          ]}
+        >
+          {activeCategory === 'all' && (
+            <LinearGradient colors={['#7C3AED', '#4338CA']} style={StyleSheet.absoluteFill} />
+          )}
+          <Bell size={14} color={activeCategory === 'all' ? '#fff' : colors.textSecondary} />
+          <Text style={[s.tabText, { color: activeCategory === 'all' ? '#fff' : colors.textSecondary }]}>
+            Todos
+          </Text>
+        </TouchableOpacity>
+
+        {CATEGORIES.map(cat => {
+          const isActive = activeCategory === cat.key;
           return (
-            <GlassCard 
-              key={reminder.id} 
-              style={[s.reminderCard, { opacity: reminder.enabled ? 1 : 0.65 }]} 
-              noPadding
-              accentColor={accent}
-              showStripe
+            <TouchableOpacity
+              key={cat.key}
+              onPress={() => {
+                setActiveCategory(cat.key);
+                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                setExpandedGroups(prev => ({ ...prev, [cat.key]: true }));
+              }}
+              style={[s.tab, isActive && s.tabActive, isActive && { borderColor: cat.gradient[0] }]}
             >
-              <View style={s.reminderRow}>
-                <View style={[s.iconBox, { backgroundColor: accent + '15' }]}>
-                  {getIcon(reminder.type, reminder.title)}
-                </View>
-                <View style={s.reminderContent}>
-                  <Text style={[s.reminderTitle, { color: colors.textPrimary }]}>
-                    {t(`reminders.${reminder.title.toLowerCase()}`, reminder.title)}
-                  </Text>
-                  <TouchableOpacity 
-                    onPress={() => setShowTimePicker(reminder.id)}
-                    style={[s.timeSelector, { backgroundColor: colors.surfaceAlt }]}
-                  >
-                    <Clock size={12} color={colors.primary} style={{ marginRight: 4 }} />
-                    <Text style={[s.reminderTime, { color: colors.primary }]}>{reminder.time}</Text>
-                  </TouchableOpacity>
-                </View>
-                <Switch
-                  value={reminder.enabled}
-                  onValueChange={() => handleToggle(reminder.id)}
-                  trackColor={{ false: '#3F3F46', true: colors.primary }}
-                  thumbColor={Platform.OS === 'ios' ? '#fff' : (reminder.enabled ? '#fff' : '#A1A1AA')}
-                />
-              </View>
-            </GlassCard>
+              {isActive && (
+                <LinearGradient colors={cat.gradient} style={StyleSheet.absoluteFill} />
+              )}
+              {isActive
+                ? cat.icon
+                : React.cloneElement(cat.icon as React.ReactElement<any>, { color: colors.textSecondary })}
+              <Text style={[s.tabText, { color: isActive ? '#fff' : colors.textSecondary }]}>
+                {cat.defaultLabel.split('  ')[1]}
+              </Text>
+            </TouchableOpacity>
           );
         })}
+      </ScrollView>
 
+      {/* Reminders list */}
+      <ScrollView
+        contentContainerStyle={s.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        {activeCategory === 'all' ? (
+          // Grouped Accordion view
+          grouped.map(group => {
+            const isExpanded = expandedGroups[group.key];
+            return (
+              <View key={group.key} style={s.group}>
+                <TouchableOpacity 
+                  activeOpacity={0.8}
+                  onPress={() => toggleGroup(group.key)}
+                >
+                  <LinearGradient colors={group.gradient} style={s.groupHeader}>
+                    <View style={s.groupHeaderInner}>
+                      {group.icon}
+                      <Text style={s.groupHeaderText}>{group.defaultLabel}</Text>
+                    </View>
+                    <View style={s.groupHeaderRight}>
+                      <View style={s.groupBadge}>
+                        <Text style={s.groupBadgeText}>
+                          {group.items.filter(r => r.enabled).length}/{group.items.length}
+                        </Text>
+                      </View>
+                      {isExpanded ? (
+                        <ChevronUp size={20} color="#fff" />
+                      ) : (
+                        <ChevronDown size={20} color="#fff" />
+                      )}
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                {isExpanded && (
+                  <View style={s.accordionContent}>
+                    {group.items.map(reminder => (
+                      <ReminderCard
+                        key={reminder.id}
+                        reminder={reminder}
+                        colors={colors}
+                        accent={getAccent(reminder.type, reminder.title)}
+                        icon={getIcon(reminder.type, reminder.title)}
+                        onToggle={handleToggle}
+                        onTimePress={setShowTimePicker}
+                      />
+                    ))}
+                  </View>
+                )}
+              </View>
+            );
+          })
+        ) : (
+          // Filtered view (just show the selected category naturally)
+          <View>
+            {grouped.filter(g => g.key === activeCategory).map(group => (
+              <View key={group.key} style={s.group}>
+                <LinearGradient colors={group.gradient} style={s.groupHeader}>
+                  <View style={s.groupHeaderInner}>
+                    {group.icon}
+                    <Text style={s.groupHeaderText}>{group.defaultLabel}</Text>
+                  </View>
+                  <View style={s.groupBadge}>
+                    <Text style={s.groupBadgeText}>
+                      {group.items.filter(r => r.enabled).length}/{group.items.length}
+                    </Text>
+                  </View>
+                </LinearGradient>
+                {group.items.map(reminder => (
+                  <ReminderCard
+                    key={reminder.id}
+                    reminder={reminder}
+                    colors={colors}
+                    accent={getAccent(reminder.type, reminder.title)}
+                    icon={getIcon(reminder.type, reminder.title)}
+                    onToggle={handleToggle}
+                    onTimePress={setShowTimePicker}
+                  />
+                ))}
+              </View>
+            ))}
+            {filtered.length === 0 && (
+              <View style={s.emptyState}>
+                <Bell size={40} color={colors.textMuted} />
+                <Text style={[s.emptyText, { color: colors.textMuted }]}>
+                  No hay recordatorios en esta categoría
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Permission notice */}
         <View style={s.infoBox}>
-          <AlertCircle size={16} color={colors.textMuted} />
+          <AlertCircle size={14} color={colors.textMuted} />
           <Text style={[s.infoText, { color: colors.textMuted }]}>
-            {t('reminders.permissionInfo', 'Asegúrate de permitir las notificaciones en los ajustes de tu sistema.')}
+            {t('reminders.permissionInfo', 'Permite las notificaciones en los ajustes de tu sistema para recibir alertas.')}
           </Text>
         </View>
       </ScrollView>
 
-      <View style={s.footer}>
-        <TouchableOpacity style={[s.saveBtn, { marginBottom: 12 }]} onPress={handleSave}>
-          <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.saveGrad}>
-            <Check size={20} color="#fff" style={{ marginRight: 8 }} />
-            <Text style={s.saveText}>{t('common.save', 'Guardar Cambios')}</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-
-
-      </View>
-
+      {/* Time picker */}
       {showTimePicker && (
         <DateTimePicker
           value={(() => {
@@ -227,7 +424,7 @@ export default function RemindersModal() {
             return d;
           })()}
           mode="time"
-          is24Hour={true}
+          is24Hour
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handleTimeChange}
         />
@@ -236,131 +433,201 @@ export default function RemindersModal() {
   );
 }
 
+// ─── Reminder Card component ─────────────────────────────────────────────────
+interface ReminderCardProps {
+  reminder: Reminder;
+  colors: any;
+  accent: string;
+  icon: React.ReactNode;
+  onToggle: (id: string) => void;
+  onTimePress: (id: string) => void;
+}
+
+function ReminderCard({ reminder, colors, accent, icon, onToggle, onTimePress }: ReminderCardProps) {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () =>
+    Animated.spring(scaleAnim, { toValue: 0.97, useNativeDriver: true, speed: 25 }).start();
+  const handlePressOut = () =>
+    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 25 }).start();
+
+  return (
+    <Animated.View style={{ transform: [{ scale: scaleAnim }], marginBottom: 10, opacity: reminder.enabled ? 1 : 0.6 }}>
+      <GlassCard
+        style={s.card}
+        noPadding
+        accentColor={accent}
+        showStripe
+      >
+        <View style={s.cardRow}>
+          {/* Icon */}
+          <View style={[s.iconBox, { backgroundColor: accent + '20' }]}>
+            {icon}
+          </View>
+
+          {/* Content */}
+          <View style={s.cardContent}>
+            <Text style={[s.cardTitle, { color: colors.textPrimary }]}>{reminder.title}</Text>
+            <TouchableOpacity
+              onPress={() => onTimePress(reminder.id)}
+              onPressIn={handlePressIn}
+              onPressOut={handlePressOut}
+              style={[s.timeChip, { backgroundColor: accent + '18', borderColor: accent + '40' }]}
+            >
+              <Clock size={11} color={accent} />
+              <Text style={[s.timeText, { color: accent }]}>{reminder.time}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Switch */}
+          <Switch
+            value={reminder.enabled}
+            onValueChange={() => onToggle(reminder.id)}
+            trackColor={{ false: '#3F3F46', true: accent }}
+            thumbColor={Platform.OS === 'ios' ? '#fff' : (reminder.enabled ? '#fff' : '#A1A1AA')}
+          />
+        </View>
+
+        {/* Active glow line */}
+        {reminder.enabled && (
+          <LinearGradient
+            colors={[accent + '00', accent + '30', accent + '00']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={s.activeGlow}
+          />
+        )}
+      </GlassCard>
+    </Animated.View>
+  );
+}
+
+// ─── Styles ──────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
   container: { flex: 1 },
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingVertical: 14,
   },
   backBtn: {
-    width: 40,
-    height: 40,
+    width: 40, height: 40,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  title: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  scroll: {
-    padding: 20,
-    paddingBottom: 100,
-  },
-  heroSection: {
+  headerTitle: { fontSize: 18, fontWeight: '800' },
+
+  hero: {
     alignItems: 'center',
-    marginBottom: 30,
+    paddingHorizontal: 24,
+    paddingBottom: 16,
   },
-  heroIconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  heroGlow: {
+    width: 72, height: 72, borderRadius: 36,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-  },
-  heroTitle: {
-    fontSize: 22,
-    fontWeight: '900',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  heroSubtitle: {
-    fontSize: 14,
-    textAlign: 'center',
-    opacity: 0.7,
-    paddingHorizontal: 20,
-    lineHeight: 20,
-  },
-  reminderCard: {
     marginBottom: 12,
   },
-  reminderRow: {
+  heroBell: {
+    width: 56, height: 56, borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  heroTitle: { fontSize: 20, fontWeight: '900', marginBottom: 6, textAlign: 'center' },
+  heroSub: { fontSize: 13, textAlign: 'center', opacity: 0.7, lineHeight: 19 },
+
+  tabsContainer: { flexGrow: 0, marginBottom: 4 },
+  tabsRow: { paddingHorizontal: 16, paddingVertical: 8, gap: 8 },
+  tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'transparent',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  tabActive: { borderWidth: 1.5 },
+  tabText: { fontSize: 12, fontWeight: '700' },
+
+  scroll: { paddingHorizontal: 16, paddingBottom: 40 },
+
+  group: { marginBottom: 16 },
+  groupHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  groupHeaderInner: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  groupHeaderText: { color: '#fff', fontSize: 15, fontWeight: '800' },
+  groupHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  groupBadge: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  groupBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  
+  accordionContent: {
+    paddingTop: 4,
+  },
+
+  card: { marginBottom: 0 },
+  cardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
   },
   iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 44, height: 44, borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 14,
   },
-  reminderContent: {
-    flex: 1,
-  },
-  reminderTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  timeSelector: {
+  cardContent: { flex: 1 },
+  cardTitle: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
+  timeChip: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 3,
     borderRadius: 8,
-    marginTop: 4,
+    borderWidth: 1,
   },
-  reminderTime: {
-    fontSize: 12,
-    fontWeight: '700',
+  timeText: { fontSize: 12, fontWeight: '700' },
+  activeGlow: {
+    height: 2,
+    borderRadius: 1,
   },
+
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 48,
+    gap: 12,
+  },
+  emptyText: { fontSize: 14, fontWeight: '600' },
+
   infoBox: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
+    alignItems: 'flex-start',
     gap: 8,
+    marginTop: 16,
+    marginBottom: 4,
+    paddingHorizontal: 4,
   },
-  infoText: {
-    fontSize: 12,
-    maxWidth: '80%',
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 20,
-    backgroundColor: 'transparent',
-  },
-  saveBtn: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: '#7C5CFC',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  saveGrad: {
-    paddingVertical: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
-  },
-  saveText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
+  infoText: { fontSize: 12, flex: 1, lineHeight: 17 },
 });

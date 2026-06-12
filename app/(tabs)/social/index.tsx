@@ -36,15 +36,12 @@ export default function SocialTabScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      {activeTab === 'competitive' ? (
-        <LinearGradient
-          colors={['rgba(251, 191, 36, 0.20)', 'rgba(236, 72, 153, 0.08)', 'transparent']}
-          style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 320 }}
-          pointerEvents="none"
-        />
-      ) : (
-        <GlobalBackground />
-      )}
+      <GlobalBackground />
+      <LinearGradient
+        colors={[colors.primary + '30', colors.primary + '10', 'transparent']}
+        style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 320 }}
+        pointerEvents="none"
+      />
 
       <SafeAreaView style={styles.safe} edges={['top']}>
         {/* Header */}

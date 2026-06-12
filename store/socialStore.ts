@@ -463,7 +463,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('challenge_participants')
-        .select(`*, user_profile:user_id(id, name, avatar_url)`)
+        .select(`*, user_profile:user_id(id, name, avatar_url, name_color, is_pro)`)
         .eq('challenge_id', challengeId);
       if (error) throw error;
       return data || [];
