@@ -7,21 +7,19 @@ export function GlobalBackground() {
   const colors = useTheme();
 
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+    <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background }]} pointerEvents="none">
       <LinearGradient
-        // Intense gradient starting from primary color
+        // The glow is drawn ON TOP of the base background
+        // This ensures the custom premium color is correctly visible and not obscured by dark overlays
         colors={[
           colors.primary, 
-          colors.primary + 'AA', // 66% opacity
-          colors.background
+          'transparent'
         ]}
-        locations={[0, 0.35, 1]}
-        style={StyleSheet.absoluteFill}
+        locations={[0, 0.8]}
+        style={[StyleSheet.absoluteFill, { opacity: colors.theme === 'dark' ? 0.15 : 0.08 }]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0.5, y: 1 }}
       />
-      {/* Subtle overlay to ensure text readability */}
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.theme === 'dark' ? 'rgba(15, 23, 42, 0.5)' : 'rgba(255, 255, 255, 0.7)' }]} />
     </View>
   );
 }

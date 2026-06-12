@@ -163,7 +163,7 @@ export interface Reminder {
   time: string; // HH:mm
   enabled: boolean;
   days: number[]; // 0-6
-  type: 'meal' | 'water' | 'workout' | 'general' | 'custom';
+  type: 'meal' | 'water' | 'workout' | 'general' | 'custom' | 'social';
   notificationId?: string;
 }
 

@@ -149,11 +149,15 @@ function EditModal({
   }
 
   const PREMIUM_NAME_COLORS = [
-    { id: 'gold', hex: '#EAB308', name: 'Dorado' },
+    { id: 'gold', hex: '#FFC000', name: 'Dorado Élite' },
     { id: 'electric', hex: '#3B82F6', name: 'Azul Eléctrico' },
     { id: 'neon', hex: '#10B981', name: 'Verde Neón' },
     { id: 'ruby', hex: '#EF4444', name: 'Rojo Rubí' },
     { id: 'magenta', hex: '#D946EF', name: 'Magenta' },
+    { id: 'fire', hex: '#FF5722', name: 'Naranja Fuego' },
+    { id: 'ocean', hex: '#06B6D4', name: 'Turquesa' },
+    { id: 'purple', hex: '#8B5CF6', name: 'Púrpura' },
+    { id: 'silver', hex: '#94A3B8', name: 'Plata' },
   ];
 
   if (role === 'admin' || role === 'owner' || role === 'super_admin') {
@@ -1570,7 +1574,7 @@ export default function ProfileScreen() {
     try {
       const { Share } = require('react-native');
       const result = await Share.share({
-        message: t('profile.inviteMessage', '¡Únete a FitGO y transforma tu estilo de vida! Descarga la app aquí: https://fit-go-smoky.vercel.app/es'),
+        message: t('profile.inviteMessage', '¡Únete a FitGO y transforma tu estilo de vida! Descarga la app aquí: https://fit-go-page.vercel.app/es'),
         title: 'FitGO',
       });
     } catch (error) {
@@ -1613,6 +1617,9 @@ export default function ProfileScreen() {
     : profile?.goal === 'gain'
     ? '⬆️ ' + t('profile.gainMuscle', 'Ganar Músculo')
     : '⚖️ ' + t('profile.maintain', 'Mantener');
+
+  const isValidHex = premiumColor?.startsWith('#');
+  const isPremiumCustom = (isPro || profile?.isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin') && premiumColor && isValidHex;
 
   const handleLanguageSelect = async (lang: string) => {
     setLanguage(lang as any);
@@ -1705,9 +1712,15 @@ export default function ProfileScreen() {
         style={{ flex: 1, backgroundColor: colors.background }} 
         showsVerticalScrollIndicator={false}
       >
-        <LinearGradient colors={colors.gradientCard} style={s.header}>
+        <LinearGradient 
+          colors={isPremiumCustom && premiumColor ? [premiumColor + '30', 'transparent'] : colors.gradientCard} 
+          style={s.header}
+        >
           <TouchableOpacity onPress={() => setPhotoModalVisible(true)} activeOpacity={0.8} style={s.avatarContainer}>
-            <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.avatar}>
+            <LinearGradient 
+              colors={isPremiumCustom && premiumColor ? [premiumColor, premiumColor + '80'] : ['#7C5CFC', '#4338CA']} 
+              style={s.avatar}
+            >
               {profile?.avatarUrl ? (
                 <Image source={{ uri: profile.avatarUrl }} style={s.avatarImage} />
               ) : (
@@ -1715,7 +1728,7 @@ export default function ProfileScreen() {
               )}
             </LinearGradient>
             <View style={[s.editBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Camera size={12} color={colors.primary} strokeWidth={2.5} />
+              <Camera size={12} color={isPremiumCustom && premiumColor ? premiumColor : colors.primary} strokeWidth={2.5} />
             </View>
           </TouchableOpacity>
           <View style={{ alignItems: 'center' }}>
@@ -1737,7 +1750,7 @@ export default function ProfileScreen() {
               <Text style={s.proBadgeText}>{currentBadge.icon} {currentBadge.label}</Text>
             </LinearGradient>
             <View style={[s.badgeAddIcon, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Plus size={10} color={colors.primary} strokeWidth={3} />
+              <Plus size={10} color={isPremiumCustom && premiumColor ? premiumColor : colors.primary} strokeWidth={3} />
             </View>
           </TouchableOpacity>
         </LinearGradient>
@@ -1750,16 +1763,25 @@ export default function ProfileScreen() {
           colors={colors}
           t={t}
           premiumColor={premiumColor || undefined}
-          isPro={profile?.isPro}
+          isPro={isPro || profile?.isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin'}
         />
 
         {/* ── Progress Chart ── Gamified Weight Journey */}
         <GlassCard
           noPadding
           showStripe
-          accentColor={colors.primary}
+          accentColor={isPremiumCustom && premiumColor ? premiumColor : colors.primary}
           style={{ margin: Spacing.base, marginTop: 0 }}
         >
+        {isPremiumCustom && premiumColor && (
+          <LinearGradient
+            colors={[premiumColor + '25', premiumColor + '10', 'transparent'] as [string, string, string]}
+            style={[StyleSheet.absoluteFill, { borderRadius: Radius.lg }]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            pointerEvents="none"
+          />
+        )}
         <View style={{ padding: Spacing.base }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
             <View>
@@ -1992,7 +2014,7 @@ export default function ProfileScreen() {
           
           {showAbout && (
             <View style={{ backgroundColor: colors.surfaceAlt + '10', borderTopWidth: 1, borderTopColor: colors.border + '10' }}>
-              <MenuRow icon={Globe} label={t('about.website', 'Sitio Web')} value="FitGO" indent onPress={() => Linking.openURL('https://fit-go-smoky.vercel.app/es')} iconColor="#3B82F6" />
+              <MenuRow icon={Globe} label={t('about.website', 'Sitio Web')} value="FitGO" indent onPress={() => Linking.openURL('https://fit-go-page.vercel.app/es')} iconColor="#3B82F6" />
               <MenuRow icon={Smartphone} label={t('about.tiktok', 'TikTok')} indent onPress={() => Linking.openURL('https://www.tiktok.com/@fit_go?is_from_webapp=1&sender_device=pc')} iconColor="#FF0050" />
               <MenuRow icon={Camera} label={t('about.instagram', 'Instagram')} indent onPress={() => Linking.openURL('https://www.instagram.com/fit___go/')} iconColor="#E1306C" />
               <MenuRow icon={Mail} label={t('about.email', 'Email')} value="fitgoenterprise@gmail.com" indent onPress={() => Linking.openURL('mailto:fitgoenterprise@gmail.com')} iconColor="#EA4335" />

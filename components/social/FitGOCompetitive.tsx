@@ -11,7 +11,7 @@ import * as Haptics from 'expo-haptics';
 import { Trophy, Users, Zap, Crown, Shield, Copy, LogOut, Plus, Hash, Star, ChevronRight, X, Sword, Trash2 } from 'lucide-react-native';
 import FitGOChallenges from './FitGOChallenges';
 import { useTheme } from '../../hooks/useTheme';
-import { useAuthStore, useSocialStore } from '../../store';
+import { useAuthStore, useSocialStore, useSettingsStore } from '../../store';
 import { useLeagueStore, LeagueTier, SquadMember, Squad } from '../../store/leagueStore';
 import MacroRewardAnimation from '../MacroRewardAnimation';
 import * as Clipboard from 'expo-clipboard';
@@ -147,6 +147,7 @@ function MemberRow({ member, rank, onRemove, isMe, onInspect, onMakeLeader }: { 
   const colors = useTheme();
   const { t } = useTranslation();
   const { profile } = useAuthStore();
+  const { premiumColor } = useSettingsStore();
 
   const rankColor = rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : rank === 3 ? '#CD7F32' : colors.textSecondary;
   return (
@@ -164,7 +165,7 @@ function MemberRow({ member, rank, onRemove, isMe, onInspect, onMakeLeader }: { 
         )}
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={[styles.memberName, { color: colors.textPrimary }, getNameStyle(member.name_color, member.user_id, profile?.id, profile?.nameColor)]} numberOfLines={1}>{member.name}</Text>
+        <Text style={[styles.memberName, { color: colors.textPrimary }, getNameStyle(member.name_color, member.user_id, profile?.id, profile?.nameColor, premiumColor)]} numberOfLines={1}>{member.name}</Text>
         <Text style={[styles.memberSub, { color: colors.textSecondary }]}>
           🔥 {member.current_streak} {t('competitive.squads.days', 'días')}
         </Text>
@@ -335,6 +336,7 @@ export default function FitGOCompetitive() {
   const colors = useTheme();
   const { t } = useTranslation();
   const { profile } = useAuthStore();
+  const { premiumColor } = useSettingsStore();
   const {
     squad, members, myPoints, myStreak,
     rewardVisible, rewardPoints,
@@ -359,6 +361,7 @@ export default function FitGOCompetitive() {
   const [activeSection, setActiveSection] = useState<'my-squad' | 'ranking' | 'challenges'>('ranking');
   const [rankingSubTab, setRankingSubTab] = useState<'squads' | 'individual'>('individual');
   const [showRankingInfo, setShowRankingInfo] = useState(false);
+  const [showRanksList, setShowRanksList] = useState(false);
   const [showSquadInfo, setShowSquadInfo] = useState(false);
   
   const [alert, setAlert] = useState<{
@@ -615,18 +618,31 @@ export default function FitGOCompetitive() {
                         <Text style={[styles.rankingTitle, { color: colors.textPrimary }]}>🌍 {t('social.ranking.globalRanking', 'Ranking Global')}</Text>
                         <Text style={[styles.rankingSub, { color: colors.textSecondary }]}>{t('competitive.individual.subtitle', 'Ranking individual de usuarios')}</Text>
                       </View>
-                      <TouchableOpacity
-                        style={{ backgroundColor: '#F59E0B18', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}
-                        onPress={() => setShowRankingInfo(true)}
-                      >
-                        <Text style={{ color: '#F59E0B', fontSize: 12, fontWeight: '800' }}>INFO</Text>
-                      </TouchableOpacity>
+                      <View style={{ flexDirection: 'row', gap: 8 }}>
+                        <TouchableOpacity
+                          style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                          onPress={() => setShowRanksList(true)}
+                        >
+                          <Trophy size={14} color={colors.primary} />
+                          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '800' }}>RANGOS</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={{ backgroundColor: '#F59E0B18', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}
+                          onPress={() => setShowRankingInfo(true)}
+                        >
+                          <Text style={{ color: '#F59E0B', fontSize: 12, fontWeight: '800' }}>INFO</Text>
+                        </TouchableOpacity>
+                      </View>
                     </View>
                   </View>
 
                   {/* My position card */}
                   {myRankInfo && (
-                    <View style={[styles.myRankCard, { backgroundColor: colors.surface, borderColor: myGrade.color + '50', borderLeftColor: myGrade.color }]}>
+                    <TouchableOpacity 
+                      activeOpacity={0.8}
+                      onPress={() => setShowRanksList(true)}
+                      style={[styles.myRankCard, { backgroundColor: colors.surface, borderColor: myGrade.color + '50', borderLeftColor: myGrade.color }]}
+                    >
                       <View style={[styles.myRankBadge, { backgroundColor: myGrade.bg }]}>
                         <Text style={{ color: myGrade.color, fontSize: 18, fontWeight: '900' }}>{myGrade.label}</Text>
                       </View>
@@ -638,7 +654,7 @@ export default function FitGOCompetitive() {
                         <Text style={{ color: colors.primary, fontSize: 22, fontWeight: '900' }}>{Math.round(myRankInfo.points)}</Text>
                         <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '700' }}>{t('social.ranking.points', 'POINTS')}</Text>
                       </View>
-                    </View>
+                    </TouchableOpacity>
                   )}
 
                   {/* Global list */}
@@ -679,7 +695,7 @@ export default function FitGOCompetitive() {
                               )}
                             </View>
                             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                              <Text style={[styles.restName, { color: colors.textPrimary }, getNameStyle(user.name_color, user.id, profile?.id, profile?.nameColor)]} numberOfLines={1}>{user.name}</Text>
+                              <Text style={[styles.restName, { color: colors.textPrimary }, getNameStyle(user.name_color, user.id, profile?.id, profile?.nameColor, premiumColor)]} numberOfLines={1}>{user.name}</Text>
                               {isMe && <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '800' }}>{t('competitive.you', 'TÚ')}</Text>}
                               <View style={{ backgroundColor: grade.bg, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
                                 <Text style={{ color: grade.color, fontSize: 10, fontWeight: '900' }}>{grade.label}</Text>
@@ -694,6 +710,56 @@ export default function FitGOCompetitive() {
                       })
                     )}
                   </View>
+
+                  {/* Ranks modal */}
+                  <Modal visible={showRanksList} transparent animationType="fade">
+                    <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+                      <View style={{ width: '100%', backgroundColor: colors.surface, borderRadius: 24, padding: 24 }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                            <Trophy size={22} color={colors.primary} />
+                            <Text style={{ color: colors.textPrimary, fontSize: 17, fontWeight: '800' }}>{t('competitive.ranksList', 'Rangos Individuales')}</Text>
+                          </View>
+                          <TouchableOpacity onPress={() => setShowRanksList(false)} style={{ padding: 6, backgroundColor: colors.surfaceAlt, borderRadius: 14 }}>
+                            <X size={18} color={colors.textSecondary} />
+                          </TouchableOpacity>
+                        </View>
+
+                        <ScrollView style={{ maxHeight: 400 }} showsVerticalScrollIndicator={false}>
+                          <View style={{ gap: 8, paddingBottom: 16 }}>
+                            {[
+                              { label: 'S++', pts: 15000, color: '#FF0055', bg: '#FF005520' },
+                              { label: 'S+', pts: 10000, color: '#FFD700', bg: '#FFD70020' },
+                              { label: 'S', pts: 5000, color: '#A855F7', bg: '#A855F720' },
+                              { label: 'A', pts: 2000, color: '#3B82F6', bg: '#3B82F620' },
+                              { label: 'B', pts: 1000, color: '#10B981', bg: '#10B98120' },
+                              { label: 'C', pts: 500, color: '#F59E0B', bg: '#F59E0B20' },
+                              { label: 'D', pts: 100, color: '#8B4513', bg: '#8B451320' },
+                              { label: 'F', pts: 0, color: '#6B7280', bg: '#6B728020' },
+                            ].map((rankItem) => (
+                              <View key={rankItem.label} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surfaceAlt, borderRadius: 12, padding: 12, gap: 12 }}>
+                                <View style={[styles.myRankBadge, { backgroundColor: rankItem.bg, width: 40, height: 40 }]}>
+                                  <Text style={{ color: rankItem.color, fontSize: 16, fontWeight: '900' }}>{rankItem.label}</Text>
+                                </View>
+                                <Text style={{ flex: 1, color: colors.textPrimary, fontSize: 15, fontWeight: '700' }}>Rango {rankItem.label}</Text>
+                                <View style={{ alignItems: 'flex-end' }}>
+                                  <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 14 }}>{rankItem.pts.toLocaleString()}</Text>
+                                  <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '600' }}>pts</Text>
+                                </View>
+                              </View>
+                            ))}
+                          </View>
+                        </ScrollView>
+
+                        <TouchableOpacity
+                          style={{ marginTop: 10, backgroundColor: colors.primary, borderRadius: 14, padding: 14, alignItems: 'center' }}
+                          onPress={() => setShowRanksList(false)}
+                        >
+                          <Text style={{ color: '#fff', fontSize: 15, fontWeight: '800' }}>{t('common.close', 'Cerrar')}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </Modal>
 
                   {/* Info modal */}
                   <Modal visible={showRankingInfo} transparent animationType="fade">
@@ -795,7 +861,7 @@ export default function FitGOCompetitive() {
                 <View style={[styles.squadCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                   <View style={styles.squadCardRow}>
                     <View style={{ flex: 1 }}>
-                      <Text style={[styles.squadName, getNameStyle((squad as any).created_by_profile?.name_color, squad.created_by, profile?.id, profile?.nameColor)]}>{squad.name}</Text>
+                      <Text style={[styles.squadName, getNameStyle((squad as any).created_by_profile?.name_color, squad.created_by, profile?.id, profile?.nameColor, premiumColor)]}>{squad.name}</Text>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <Users size={14} color={colors.textSecondary} />
                         <Text style={[styles.squadMeta, { color: colors.textSecondary }]}>
@@ -1252,7 +1318,7 @@ export default function FitGOCompetitive() {
                 </View>
 
                 {/* Username */}
-                <Text style={[{ fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 24 }, getNameStyle(inspectingUser.name_color, inspectingUser.id)]}>
+                <Text style={[{ fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 24 }, getNameStyle(inspectingUser.name_color, inspectingUser.id, profile?.id, profile?.nameColor, premiumColor)]}>
                   {inspectingUser.name}
                 </Text>
 

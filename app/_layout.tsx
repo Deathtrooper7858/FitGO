@@ -136,7 +136,10 @@ export default function RootLayout() {
           // Initialize RevenueCat with user ID
           await initPurchases(newSession.user.id);
           
-          // Initialize push notifications
+          // Desactivado temporalmente porque no usamos notificaciones remotas
+          // y esto causaba advertencias de Firebase (google-services.json missing).
+          // Las notificaciones LOCALES (recordatorios) funcionan perfectamente sin esto.
+          /*
           registerForPushNotificationsAsync().then(async (token) => {
             if (token) {
               const currentProfile = useAuthStore.getState().profile;
@@ -148,6 +151,7 @@ export default function RootLayout() {
               }
             }
           });
+          */
         } else {
           // Sign out: clear both session and profile atomically
           clearAuth();

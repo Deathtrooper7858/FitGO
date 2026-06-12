@@ -755,12 +755,20 @@ export default function ScanModal() {
             barcodeScannerSettings={mode === 'barcode' ? { barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'qr', 'code128'] } : undefined}
           />
         ) : (
+          <>
           <LinearGradient
-            colors={['#0F172A', '#1E1B4B', '#0F172A']}
+            colors={[colors.background, colors.primary + '30', colors.background]}
             style={StyleSheet.absoluteFill}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           />
+          <LinearGradient
+            colors={[colors.primary + '40', 'transparent']}
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 280 }}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+          />
+          </>
         )}
 
         <View style={s.overlay}>
@@ -778,9 +786,9 @@ export default function ScanModal() {
         </View>
 
           <View style={s.tabContainer}>
-            <View style={[s.modeRow, { backgroundColor: 'rgba(255,255,255,0.1)' }]}>
+            <View style={[s.modeRow, { backgroundColor: colors.primary + '18', borderWidth: 1, borderColor: colors.primary + '30' }]}>
               <TouchableOpacity 
-                style={[s.modePill, mode === 'barcode' && [s.modePillActive, { backgroundColor: colors.tabActive }]]} 
+                style={[s.modePill, mode === 'barcode' && s.modePillActive]} 
                 onPress={() => {
                   if (!isProActually) {
                     showAlert('info', t('paywall.premiumFeature', 'Función Premium'), t('paywall.premiumRequired', 'Esta función es exclusiva para usuarios Premium.'));
@@ -789,22 +797,31 @@ export default function ScanModal() {
                   setMode('barcode');
                 }}
               >
+                {mode === 'barcode' ? (
+                  <LinearGradient colors={[colors.primary, colors.secondary || '#A855F7']} start={{x:0,y:0}} end={{x:1,y:0}} style={[StyleSheet.absoluteFill, { borderRadius: Radius.full }]} />
+                ) : null}
                 <Text style={[s.modeText, mode === 'barcode' && s.modeTextActive]} numberOfLines={1} adjustsFontSizeToFit>🔍 {t('scan.barcode')}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[s.modePill, mode === 'photo' && [s.modePillActive, { backgroundColor: colors.tabActive }]]} 
+                style={[s.modePill, mode === 'photo' && s.modePillActive]} 
                 onPress={() => setMode('photo')}
               >
+                {mode === 'photo' ? (
+                  <LinearGradient colors={[colors.primary, colors.secondary || '#A855F7']} start={{x:0,y:0}} end={{x:1,y:0}} style={[StyleSheet.absoluteFill, { borderRadius: Radius.full }]} />
+                ) : null}
                 <Text style={[s.modeText, mode === 'photo' && s.modeTextActive]} numberOfLines={1} adjustsFontSizeToFit>📸 {t('scan.photo')}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[s.modePill, mode === 'text' && [s.modePillActive, { backgroundColor: colors.tabActive }]]} 
+                style={[s.modePill, mode === 'text' && s.modePillActive]} 
                 onPress={() => setMode('text')}
               >
+                {mode === 'text' ? (
+                  <LinearGradient colors={[colors.primary, colors.secondary || '#A855F7']} start={{x:0,y:0}} end={{x:1,y:0}} style={[StyleSheet.absoluteFill, { borderRadius: Radius.full }]} />
+                ) : null}
                 <Text style={[s.modeText, mode === 'text' && s.modeTextActive]} numberOfLines={1} adjustsFontSizeToFit>✍️ {t('scan.text')}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[s.modePill, mode === 'search' && [s.modePillActive, { backgroundColor: colors.tabActive }]]} 
+                style={[s.modePill, mode === 'search' && s.modePillActive]} 
                 onPress={() => {
                   if (!isProActually) {
                     showAlert('info', t('paywall.premiumFeature', 'Función Premium'), t('paywall.premiumRequired', 'Esta función es exclusiva para usuarios Premium.'));
@@ -813,6 +830,9 @@ export default function ScanModal() {
                   setMode('search');
                 }}
               >
+                {mode === 'search' ? (
+                  <LinearGradient colors={[colors.primary, colors.secondary || '#A855F7']} start={{x:0,y:0}} end={{x:1,y:0}} style={[StyleSheet.absoluteFill, { borderRadius: Radius.full }]} />
+                ) : null}
                 <Text style={[s.modeText, mode === 'search' && s.modeTextActive]} numberOfLines={1} adjustsFontSizeToFit>🔎 {t('common.search') || 'Buscar'}</Text>
               </TouchableOpacity>
             </View>
@@ -906,7 +926,7 @@ export default function ScanModal() {
                 </Text>
                 {isRecording && <Text style={[s.recordingStatus, { color: colors.error }]}>{t('scan.recording') || 'Recording...'}</Text>}
                 <TouchableOpacity style={s.analyzeBtn} onPress={handleTextAnalyze} disabled={loading || !textInput.trim()}>
-                  <LinearGradient colors={[colors.tabActive, colors.tabActive + 'CC']} style={s.analyzeGrad}>
+                  <LinearGradient colors={[colors.primary, colors.secondary || '#A855F7']} start={{x:0,y:0}} end={{x:1,y:0}} style={s.analyzeGrad}>
                     {loading ? <ActivityIndicator color="#fff" size="small" /> : <Text style={s.analyzeText}>{t('scan.analyze') || 'Analyze with AI'}</Text>}
                   </LinearGradient>
                 </TouchableOpacity>
@@ -984,7 +1004,7 @@ export default function ScanModal() {
                           </View>
                         </View>
                       </View>
-                      <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.searchResultAddBtn}>
+                      <LinearGradient colors={[colors.primary, colors.secondary || '#A855F7']} style={s.searchResultAddBtn}>
                         <Text style={{ color: '#fff', fontWeight: '800', fontSize: 18 }}>+</Text>
                       </LinearGradient>
                     </TouchableOpacity>

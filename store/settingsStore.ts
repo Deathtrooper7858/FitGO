@@ -40,11 +40,30 @@ interface SettingsState {
 }
 
 const DEFAULT_REMINDERS: Reminder[] = [
-  { id: '1', title: 'Breakfast', body: 'Time for a healthy breakfast!', time: '08:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
-  { id: '2', title: 'Lunch', body: 'Don\'t forget your nutritious lunch!', time: '13:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
-  { id: '3', title: 'Dinner', body: 'Time for your evening meal.', time: '20:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
-  { id: '4', title: 'Water', body: 'Stay hydrated! Drink some water.', time: '10:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'water' },
-  { id: '5', title: 'Workout', body: 'Time to hit your daily movement goal!', time: '18:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'workout' },
+  // MEAL
+  { id: '1',  title: 'Desayuno',   body: '¡Hora de un desayuno saludable!',               time: '08:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
+  { id: '2',  title: 'Almuerzo',   body: '¡No olvides tu almuerzo nutritivo!',            time: '13:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
+  { id: '3',  title: 'Cena',       body: 'Hora de tu cena. ¡Que aproveche!',              time: '20:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
+  { id: '6',  title: 'Merienda',   body: '¡Hora de un snack saludable!',                  time: '16:30', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
+  // WATER
+  { id: '4',  title: 'Agua',       body: '¡Mantente hidratado! Bebe un vaso de agua.',   time: '10:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'water' },
+  { id: '10', title: 'Agua tarde', body: '¡No olvides hidratarte por la tarde!',          time: '15:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'water' },
+  // WORKOUT
+  { id: '5',  title: 'Entreno',    body: '¡Hora de cumplir tu meta de movimiento!',      time: '18:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'workout' },
+  { id: '8',  title: 'Caminata',   body: '¡Revisa tus pasos! Hora de una caminata.',     time: '12:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'workout' },
+  { id: '11', title: 'Cardio',     body: '¡Activa tu cardio del día!',                   time: '07:00', enabled: false, days: [1,2,3,4,5],     type: 'workout' },
+  // GENERAL
+  { id: '7',  title: 'Vitaminas',  body: '¡Recuerda tomar tus vitaminas y suplementos!', time: '09:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'general' },
+  { id: '9',  title: 'Dormir',     body: '¡Descansa bien para recuperarte!',             time: '22:30', enabled: false, days: [0,1,2,3,4,5,6], type: 'general' },
+  { id: '12', title: 'Registro',   body: '¡Registra tus comidas de hoy en FitGo!',      time: '21:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'general' },
+  // SOCIAL & COMPETITIVE
+  { id: '13', title: 'Liga',        body: '¡La batalla de la liga no para! Revisa tu posición.', time: '09:30', enabled: false, days: [1,2,3,4,5], type: 'social' },
+  { id: '14', title: 'Reto diario', body: '¡Completa el reto diario antes de que expire!',      time: '20:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'social' },
+  { id: '15', title: 'Amigos',      body: '¡Mira qué están logrando tus amigos hoy!',          time: '18:30', enabled: false, days: [0,1,2,3,4,5,6], type: 'social' },
+  { id: '16', title: 'Racha',       body: '¡No rompas tu racha! Registra tu progreso.',         time: '20:30', enabled: false, days: [0,1,2,3,4,5,6], type: 'social' },
+  { id: '17', title: 'Logros',      body: '¡Tienes logros desbloqueados esperándote!',          time: '19:00', enabled: false, days: [0,6], type: 'social' },
+  { id: '18', title: 'Leaderboard', body: '🔥 El ranking semanal termina pronto. ¡Sube posiciones!', time: '10:00', enabled: false, days: [5,6], type: 'social' },
+  { id: '19', title: 'Mensajes',    body: '💬 ¡Tienes nuevos mensajes en FitGO Social!',       time: '14:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'social' },
 ];
 
 export const useSettingsStore = create<SettingsState>()(

@@ -396,7 +396,7 @@ export default function FitGOSocial() {
               </View>
             )}
             <View style={{ flex: 1 }}>
-              <Text style={[{ fontSize: 20, fontWeight: 'bold' }, getNameStyle(profile?.nameColor, profile?.id, profile?.id, profile?.nameColor)]}>{profile?.name}</Text>
+              <Text style={[{ fontSize: 20, fontWeight: 'bold' }, getNameStyle(profile?.nameColor, profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>{profile?.name}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                 <View style={[s.chip, { backgroundColor: currentBadge.colors[0] + '20', flexDirection: 'row', alignItems: 'center', gap: 4 }]}>
                   <Text style={{ fontSize: 12 }}>{currentBadge.icon}</Text>
@@ -551,7 +551,7 @@ export default function FitGOSocial() {
                       </View>
                     )}
                     <View>
-                      <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id, profile?.id, profile?.nameColor)]}>{post.user_profile?.name}</Text>
+                      <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id, profile?.id, profile?.nameColor, premiumColor)]}>{post.user_profile?.name}</Text>
                       <Text style={{ color: colors.textMuted, fontSize: 11 }}>
                         {new Date(post.created_at).toLocaleDateString()} {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </Text>
@@ -723,7 +723,7 @@ export default function FitGOSocial() {
                     )}
                     <View style={[s.commentBubble, { backgroundColor: colors.surfaceAlt }]}>
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                        <Text style={[s.commentUser, getNameStyle(comment.user_profile?.name_color, comment.user_id, profile?.id, profile?.nameColor), { marginBottom: 0 }]}>{comment.user_profile?.name}</Text>
+                        <Text style={[s.commentUser, getNameStyle(comment.user_profile?.name_color, comment.user_id, profile?.id, profile?.nameColor, premiumColor), { marginBottom: 0 }]}>{comment.user_profile?.name}</Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                           <Text style={{ color: colors.textMuted, fontSize: 9 }}>
                             {new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -868,7 +868,7 @@ export default function FitGOSocial() {
                     </View>
                   )}
                   <View>
-                    <Text style={[s.userName, getNameStyle(user.name_color, user.id, profile?.id, profile?.nameColor)]} numberOfLines={1}>{user.name}</Text>
+                    <Text style={[s.userName, getNameStyle(user.name_color, user.id, profile?.id, profile?.nameColor, premiumColor)]} numberOfLines={1}>{user.name}</Text>
                     <Text style={{ color: colors.textMuted, fontSize: 12 }}>{user.email}</Text>
                   </View>
                 </TouchableOpacity>
@@ -902,7 +902,7 @@ export default function FitGOSocial() {
                             <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
                           </View>
                         )}
-                        <Text style={[s.userName, { color: colors.textPrimary }]}>{req.friend_profile?.name}</Text>
+                        <Text style={[s.userName, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>{req.friend_profile?.name}</Text>
                       </TouchableOpacity>
                       <View style={{ flexDirection: 'row', gap: 8 }}>
                         <TouchableOpacity 
@@ -940,7 +940,7 @@ export default function FitGOSocial() {
                             <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
                           </View>
                         )}
-                        <Text style={[s.userName, { color: colors.textPrimary }]}>{req.friend_profile?.name}</Text>
+                        <Text style={[s.userName, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>{req.friend_profile?.name}</Text>
                       </TouchableOpacity>
                       <View style={{ backgroundColor: colors.surfaceAlt, paddingHorizontal: 10, paddingVertical: 4, borderRadius: Radius.full }}>
                         <Text style={{ color: colors.textMuted, fontSize: 11 }}>{t('social.friends.pending', 'Pending')}</Text>
@@ -973,7 +973,7 @@ export default function FitGOSocial() {
                           <Text style={[s.avatarInitials, { fontSize: 14 }]}>{friend.friend_profile?.name?.[0]}</Text>
                         </View>
                       )}
-                      <Text style={[s.userName, { color: colors.textPrimary }]}>{friend.friend_profile?.name}</Text>
+                      <Text style={[s.userName, getNameStyle(friend.friend_profile?.name_color, friend.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>{friend.friend_profile?.name}</Text>
                     </TouchableOpacity>
                     <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
                       <TouchableOpacity 
@@ -1130,7 +1130,7 @@ export default function FitGOSocial() {
                 )}
               </TouchableOpacity>
 
-              <Text style={[{ fontSize: 20, fontWeight: '900', letterSpacing: -0.4, marginBottom: 4, textAlign: 'center' }, getNameStyle(inspectingUser?.name_color, inspectingUser?.id, profile?.id, profile?.nameColor)]}>{inspectingUser?.name}</Text>
+              <Text style={[{ fontSize: 20, fontWeight: '900', letterSpacing: -0.4, marginBottom: 4, textAlign: 'center' }, getNameStyle(inspectingUser?.name_color, inspectingUser?.id, profile?.id, profile?.nameColor, premiumColor)]}>{inspectingUser?.name}</Text>
 
               {/* Points row */}
               {(() => {

@@ -10,6 +10,7 @@ import { GlassCard } from '../../components/GlassCard';
 import { useSocialStore, useAuthStore, useSettingsStore } from '../../store';
 import { generateSocialChallenge } from '../../services/groq';
 import { getLocalDateString } from '../../utils/date';
+import { getNameStyle } from '../../utils/styles';
 
 const s = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontWeight: '800', letterSpacing: -0.3 },
@@ -34,7 +35,7 @@ export default function FitGOChallenges() {
   const { t } = useTranslation();
   const colors = useTheme();
   const { profile } = useAuthStore();
-  const { language } = useSettingsStore();
+  const { language, premiumColor } = useSettingsStore();
   const socialStore = useSocialStore();
 
   const [aiLoading, setAiLoading] = useState(false);
@@ -311,7 +312,7 @@ const generateAIChallenge = async () => {
                     <Text style={[s.avatarInitials, { fontSize: 16 }]}>{profile?.name?.[0]}</Text>
                   </View>
                 )}
-                <Text style={{ color: colors.textPrimary, fontSize: 12, marginTop: 8, fontWeight: '600', textAlign: 'center' }} numberOfLines={1}>
+                <Text style={[{ color: colors.textPrimary, fontSize: 12, marginTop: 8, fontWeight: '600', textAlign: 'center' }, getNameStyle(profile?.nameColor, profile?.id, profile?.id, profile?.nameColor, premiumColor)]} numberOfLines={1}>
                   {t('social.challenges.me', 'Yo')}
                 </Text>
                 {challengeForm.includeSelf && (
@@ -350,7 +351,7 @@ const generateAIChallenge = async () => {
                         <Text style={[s.avatarInitials, { fontSize: 16 }]}>{friend.friend_profile?.name?.[0]}</Text>
                       </View>
                     )}
-                    <Text style={{ color: colors.textPrimary, fontSize: 12, marginTop: 8, fontWeight: '600', textAlign: 'center' }} numberOfLines={1}>
+                    <Text style={[{ color: colors.textPrimary, fontSize: 12, marginTop: 8, fontWeight: '600', textAlign: 'center' }, getNameStyle(friend.friend_profile?.name_color, friend.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]} numberOfLines={1}>
                       {friend.friend_profile?.name?.split(' ')[0]}
                     </Text>
                     {isSelected && (
@@ -489,7 +490,7 @@ const generateAIChallenge = async () => {
                   </View>
                 )}
                 <View style={{ flex: 1, marginLeft: 14 }}>
-                  <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{t('social.challenges.me', 'Yo')} ({profile?.name})</Text>
+                  <Text style={[{ color: colors.textPrimary, fontWeight: '700' }, getNameStyle(profile?.nameColor, profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>{t('social.challenges.me', 'Yo')} ({profile?.name})</Text>
                   <Text style={{ color: colors.textMuted, fontSize: 12 }}>{t('social.challenges.participateInChallenge', 'Participar en el reto')}</Text>
                 </View>
                 <View style={{
@@ -530,7 +531,7 @@ const generateAIChallenge = async () => {
                       </View>
                     )}
                     <View style={{ flex: 1, marginLeft: 14 }}>
-                      <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{friend.friend_profile?.name}</Text>
+                      <Text style={[{ color: colors.textPrimary, fontWeight: '700' }, getNameStyle(friend.friend_profile?.name_color, friend.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>{friend.friend_profile?.name}</Text>
                       <Text style={{ color: colors.textMuted, fontSize: 12 }}>{t('social.friend', 'Amigo')}</Text>
                     </View>
                     <View style={{
@@ -667,7 +668,7 @@ const generateAIChallenge = async () => {
                       </View>
                     )}
                     <View style={{ flex: 1, marginLeft: 12 }}>
-                      <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{p.user_profile?.name || 'Usuario'}</Text>
+                      <Text style={[{ color: colors.textPrimary, fontWeight: '700' }, getNameStyle(p.user_profile?.name_color, p.user_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>{p.user_profile?.name || 'Usuario'}</Text>
                       <Text style={{ 
                         color: p.status === 'completed' ? colors.success : p.status === 'surrendered' ? '#EF4444' : colors.textMuted,
                         fontSize: 12, fontWeight: '600', marginTop: 2 

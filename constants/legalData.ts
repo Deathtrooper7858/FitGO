@@ -54,7 +54,7 @@ export const TERMS_DATA: Record<string, {title?: string, content: string}[]> = {
   },
   {
     "title": "Apple: https://reportaproblem.apple.com",
-    "content": "Google: https://support.google.com/googleplay/answer/2479637\n\nCon carácter excepcional, FitGO podrá estudiar solicitudes de reembolso a través de legal@fitgo.app en casos de fallos técnicos graves atribuibles exclusivamente a FitGO que hayan impedido el uso de las funcionalidades Pro durante un período significativo."
+    "content": "Google: https://support.google.com/googleplay/answer/2479637\n\nCon carácter excepcional, FitGO podrá estudiar solicitudes de reembolso a través de fitgoenterprise@gmail.com en casos de fallos técnicos graves atribuibles exclusivamente a FitGO que hayan impedido el uso de las funcionalidades Pro durante un período significativo."
   },
   {
     "title": "5.1 Requisitos de Registro",
@@ -128,7 +128,7 @@ export const PRIVACY_DATA: Record<string, {title?: string, content: string}[]> =
   },
   {
     "title": "1. INTRODUCCIÓN E IDENTIFICACIÓN DEL RESPONSABLE",
-    "content": "La presente Política de Privacidad describe de manera detallada y transparente cómo FitGO Technologies S.A.S. (\"FitGO\", \"nosotros\", \"nos\" o \"nuestro\"), con domicilio electrónico en privacidad@fitgo.app, recopila, usa, almacena, comparte y protege la información personal de los usuarios (\"usted\", \"el usuario\") que acceden y utilizan la aplicación móvil FitGO (la \"Aplicación\") y los servicios asociados (colectivamente, los \"Servicios\").\n\nEste documento ha sido redactado en cumplimiento del Reglamento General de Protección de Datos de la Unión Europea (GDPR - Reglamento (UE) 2016/679), de la Ley de Privacidad del Consumidor de California (CCPA - Cal. Civ. Code º1798.100 et seq.) y de la Ley 1581 de 2012 de Colombia (Ley de Habeas Data).\n\nAl descargar, instalar, registrarse o utilizar la Aplicación, usted declara haber leído, comprendido y aceptado los términos de esta Política de Privacidad en su totalidad."
+    "content": "La presente Política de Privacidad describe de manera detallada y transparente cómo FitGO Technologies S.A.S. (\"FitGO\", \"nosotros\", \"nos\" o \"nuestro\"), con domicilio electrónico en fitgoenterprise@gmail.com, recopila, usa, almacena, comparte y protege la información personal de los usuarios (\"usted\", \"el usuario\") que acceden y utilizan la aplicación móvil FitGO (la \"Aplicación\") y los servicios asociados (colectivamente, los \"Servicios\").\n\nEste documento ha sido redactado en cumplimiento del Reglamento General de Protección de Datos de la Unión Europea (GDPR - Reglamento (UE) 2016/679), de la Ley de Privacidad del Consumidor de California (CCPA - Cal. Civ. Code º1798.100 et seq.) y de la Ley 1581 de 2012 de Colombia (Ley de Habeas Data).\n\nAl descargar, instalar, registrarse o utilizar la Aplicación, usted declara haber leído, comprendido y aceptado los términos de esta Política de Privacidad en su totalidad."
   },
   {
     "title": "A los efectos de la presente Política, se entenderá por:",
@@ -196,7 +196,7 @@ export const PRIVACY_DATA: Record<string, {title?: string, content: string}[]> =
   },
   {
     "title": "9.3 Cómo Ejercer sus Derechos (incluyendo Derechos ARCO)",
-    "content": "Para ejercer cualquiera de los derechos indicados (GDPR, CCPA, Ley 1581, Derechos ARCO), puede enviarnos una solicitud a: privacidad@fitgo.app. Responderemos dentro de los plazos legalmente establecidos (30 días para GDPR/ARCO; 45 días para CCPA). Podremos solicitarle información adicional para verificar su identidad."
+    "content": "Para ejercer cualquiera de los derechos indicados (GDPR, CCPA, Ley 1581, Derechos ARCO), puede enviarnos una solicitud a: fitgoenterprise@gmail.com. Responderemos dentro de los plazos legalmente establecidos (30 días para GDPR/ARCO; 45 días para CCPA). Podremos solicitarle información adicional para verificar su identidad."
   },
   {
     "title": "10. SEGURIDAD DE LOS DATOS",
@@ -204,7 +204,7 @@ export const PRIVACY_DATA: Record<string, {title?: string, content: string}[]> =
   },
   {
     "title": "11. TRATAMIENTO DE DATOS DE MENORES",
-    "content": "La Aplicación FitGO no está dirigida a menores de 16 años. No recopilamos conscientemente datos personales de menores de dicha edad. Si tiene conocimiento de que un menor ha proporcionado datos a través de la Aplicación sin el consentimiento de sus padres o tutores legales, le rogamos que nos lo comunique a la mayor brevedad a través de privacidad@fitgo.app para proceder a su eliminación inmediata."
+    "content": "La Aplicación FitGO no está dirigida a menores de 16 años. No recopilamos conscientemente datos personales de menores de dicha edad. Si tiene conocimiento de que un menor ha proporcionado datos a través de la Aplicación sin el consentimiento de sus padres o tutores legales, le rogamos que nos lo comunique a la mayor brevedad a través de fitgoenterprise@gmail.com para proceder a su eliminación inmediata."
   },
   {
     "title": "12. COOKIES Y TECNOLOGÍAS DE SEGUIMIENTO",
@@ -225,7 +225,7 @@ export const PRIVACY_DATA: Record<string, {title?: string, content: string}[]> =
   ],
   en: [
     { title: "Last Updated: May 28, 2025", content: "FitGO Technologies S.A.S." },
-    { title: "1. INTRODUCTION AND CONTROLLER", content: "This Privacy Policy describes how FitGO collects, uses, and protects your personal information. Contact: privacidad@fitgo.app" },
+    { title: "1. INTRODUCTION AND CONTROLLER", content: "This Privacy Policy describes how FitGO collects, uses, and protects your personal information. Contact: fitgoenterprise@gmail.com" },
     { title: "3. DATA WE COLLECT", content: "We collect account data, health metrics, nutritional logs, activity, device data, and AI interactions." },
     { title: "5. PURPOSES OF PROCESSING", content: "Data is used to provide the service, calculate health metrics, manage social features, and improve the app." },
     { title: "6. THIRD-PARTY SERVICE PROVIDERS", content: "We use providers like Supabase (database), GROQ (AI), RevenueCat (subscriptions), and Edamam (nutrition)." },

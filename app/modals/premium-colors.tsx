@@ -5,17 +5,25 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { useSettingsStore, usePurchaseStore } from '../../store';
+import { useSettingsStore, usePurchaseStore, useAuthStore } from '../../store';
 import { Check, X, Crown, Lock, Sparkles } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
+import { supabase } from '../../services/supabase';
+
 const PREMIUM_COLORS = [
   { id: null,       nameKey: 'profile.colors.default', defaultName: 'Morado Clásico', hex: '#7C5CFC', isPro: false },
-  { id: '#FFD700',  nameKey: 'profile.colors.gold',    defaultName: 'Dorado Élite', hex: '#FFD700', isPro: true },
+  { id: '#FFB800',  nameKey: 'profile.colors.gold',    defaultName: 'Dorado Élite', hex: '#FFB800', isPro: true },
   { id: '#00F0FF',  nameKey: 'profile.colors.blue',    defaultName: 'Azul Eléctrico', hex: '#00F0FF', isPro: true },
   { id: '#00E676',  nameKey: 'profile.colors.green',   defaultName: 'Verde Neón', hex: '#00E676', isPro: true },
   { id: '#FF2A54',  nameKey: 'profile.colors.red',     defaultName: 'Rojo Rubí', hex: '#FF2A54', isPro: true },
+  { id: '#FF5722',  nameKey: 'profile.colors.orange',  defaultName: 'Naranja Fuego', hex: '#FF5722', isPro: true },
   { id: '#FF00FF',  nameKey: 'profile.colors.magenta', defaultName: 'Magenta Oscuro', hex: '#FF00FF', isPro: true },
+  { id: '#FF4081',  nameKey: 'profile.colors.pink',    defaultName: 'Rosa Atardecer', hex: '#FF4081', isPro: true },
+  { id: '#10B981',  nameKey: 'profile.colors.emerald', defaultName: 'Verde Esmeralda', hex: '#10B981', isPro: true },
+  { id: '#06B6D4',  nameKey: 'profile.colors.turquoise',defaultName: 'Turquesa Profundo', hex: '#06B6D4', isPro: true },
+  { id: '#4C1D95',  nameKey: 'profile.colors.purple',  defaultName: 'Púrpura Imperial', hex: '#4C1D95', isPro: true },
+  { id: '#94A3B8',  nameKey: 'profile.colors.silver',  defaultName: 'Plata Cromo', hex: '#94A3B8', isPro: true },
 ];
 
 export default function PremiumColorsModal() {
@@ -23,18 +31,29 @@ export default function PremiumColorsModal() {
   const { t } = useTranslation();
   const { premiumColor, setPremiumColor } = useSettingsStore();
   const { isPro, verifyProStatus } = usePurchaseStore();
-  const [loading, setLoading] = useState(true);
-  const [actualIsPro, setActualIsPro] = useState(isPro);
+  const { profile, setProfile } = useAuthStore();
+  
+  const hasProRole = !!(profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin' || profile?.isPro);
+
+  const [loading, setLoading] = useState(!hasProRole);
+  const [actualIsPro, setActualIsPro] = useState(isPro || hasProRole);
 
   useEffect(() => {
+    if (hasProRole) {
+      setActualIsPro(true);
+      setLoading(false);
+      return;
+    }
     verifyProStatus().then(status => {
       setActualIsPro(status);
       setLoading(false);
     });
-  }, []);
+  }, [hasProRole]);
 
-  const handleSelect = (color: typeof PREMIUM_COLORS[0]) => {
+  const handleSelect = async (color: typeof PREMIUM_COLORS[0]) => {
     Haptics.selectionAsync();
+    
+    if (loading) return;
     
     if (color.isPro && !actualIsPro) {
       router.push('/modals/paywall');
@@ -42,6 +61,15 @@ export default function PremiumColorsModal() {
     }
 
     setPremiumColor(color.id);
+
+    if (profile?.id) {
+      setProfile({ ...profile, nameColor: color.id || undefined });
+      try {
+        await supabase.from('users').update({ name_color: color.id }).eq('id', profile.id);
+      } catch (e) {
+        console.error('Error saving name_color:', e);
+      }
+    }
   };
 
   return (
@@ -50,8 +78,7 @@ export default function PremiumColorsModal() {
         colors={[premiumColor || colors.primary, 'transparent']}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 0.5 }}
-        style={StyleSheet.absoluteFill}
-        opacity={0.15}
+        style={[StyleSheet.absoluteFill, { opacity: 0.15 }]}
       />
       
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
@@ -68,8 +95,8 @@ export default function PremiumColorsModal() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         
         {!actualIsPro && !loading && (
-          <View style={[styles.proBanner, { backgroundColor: '#FFD70015', borderColor: '#FFD700' }]}>
-            <Crown size={24} color="#FFD700" />
+          <View style={[styles.proBanner, { backgroundColor: '#FFB80015', borderColor: '#FFB800' }]}>
+            <Crown size={24} color="#FFB800" />
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 16 }}>Exclusivo para Pro</Text>
               <Text style={{ color: colors.textSecondary, fontSize: 13, marginTop: 4 }}>
@@ -77,7 +104,7 @@ export default function PremiumColorsModal() {
               </Text>
             </View>
             <TouchableOpacity 
-              style={{ backgroundColor: '#FFD700', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 }}
+              style={{ backgroundColor: '#FFB800', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 }}
               onPress={() => router.push('/modals/paywall')}
             >
               <Text style={{ color: '#000', fontWeight: '800', fontSize: 13 }}>Mejorar</Text>
@@ -92,7 +119,7 @@ export default function PremiumColorsModal() {
         <View style={styles.colorGrid}>
           {PREMIUM_COLORS.map((c) => {
             const isSelected = premiumColor === c.id;
-            const isLocked = c.isPro && !actualIsPro;
+            const isLocked = c.isPro && !actualIsPro && !loading;
             
             return (
               <TouchableOpacity

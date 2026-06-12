@@ -55,7 +55,7 @@ function mapOFFProduct(p: any): FoodItem | null {
 export async function searchFoodOFF(query: string, _language: string = 'en', page = 1): Promise<FoodItem[]> {
   const { data } = await axios.get(`${OFF_BASE}/cgi/search.pl`, {
     headers: {
-      'User-Agent': 'FitGO - Android/iOS - 1.0.0 - support@fitgo.app',
+      'User-Agent': 'FitGO - Android/iOS - 1.0.0 - fitgoenterprise@gmail.com',
     },
     params: {
       search_terms: query,
@@ -80,7 +80,7 @@ export async function getFoodByBarcode(barcode: string, language: string = 'es')
   try {
     const { data } = await axios.get(`${OFF_BASE}/api/v0/product/${barcode}.json`, {
       headers: {
-        'User-Agent': 'FitGO - Android/iOS - 1.0.0 - support@fitgo.app',
+        'User-Agent': 'FitGO - Android/iOS - 1.0.0 - fitgoenterprise@gmail.com',
       },
       timeout: 8000,
     });

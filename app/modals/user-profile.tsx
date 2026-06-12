@@ -132,7 +132,7 @@ export default function UserProfileModal() {
   // For own profile: use premiumColor from local store (hex-validated).
   // For others: use their name_color from DB.
   const vitrineColor: string | null = isMe
-    ? ((isPro || myProfile?.isPro) && premiumColor && premiumColor.startsWith('#') ? premiumColor : null)
+    ? ((isPro || myProfile?.isPro || myProfile?.role === 'owner' || myProfile?.role === 'super_admin' || myProfile?.role === 'admin') && premiumColor && premiumColor.startsWith('#') ? premiumColor : null)
     : (displayUser.name_color && displayUser.name_color.startsWith('#') ? displayUser.name_color : null);
 
   const friendStatus = socialStore.friends.find(f =>
