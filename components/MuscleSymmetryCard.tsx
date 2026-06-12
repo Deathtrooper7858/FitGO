@@ -627,16 +627,20 @@ export function MuscleSymmetryCard() {
           >
             <Dumbbell size={18} color="#fff" />
           </LinearGradient>
-          <View>
-            <Text style={[styles.title, { color: colors.textPrimary }]}>
+          <View style={{ flex: 1, paddingRight: 8 }}>
+            <Text 
+              style={[styles.title, { color: colors.textPrimary }]} 
+              numberOfLines={1} 
+              adjustsFontSizeToFit
+            >
               Evolución Muscular
             </Text>
           </View>
         </View>
         {hasHistory && highestLevel && (
           <View style={[styles.activeLevelBadge, { borderColor: highestLevel.color + '60', backgroundColor: highestLevel.glowColor }]}>
-            <Text style={[styles.activeLevelText, { color: highestLevel.color }]}>
-              {highestLevel.icon} {highestLevel.name}
+            <Text style={[styles.activeLevelText, { color: highestLevel.color, fontSize: 18 }]}>
+              {highestLevel.icon}
             </Text>
           </View>
         )}
@@ -801,6 +805,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   headerLeft: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,

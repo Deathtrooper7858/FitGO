@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Switch, Modal, Animated, Platform, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Switch, Modal, Animated, Platform, TextInput, Vibration, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Spacing, Radius } from '../../../constants';
 import { useAuthStore, useNutritionStore, selectDailyTotals, useSettingsStore, usePurchaseStore, usePlannerStore, PlanItem, WorkoutRoutine } from '../../../store';
 import { useWorkoutHistoryStore } from '../../../store/workoutHistoryStore';
-import { generateMealPlan, generateWorkoutPlan, generateWeeklyAnalysis, generateShoppingList } from '../../../services/groq';
+import { generateMealPlan, generateWorkoutPlan, generateWeeklyAnalysis, generateShoppingList, generateMealSwap } from '../../../services/groq';
 import { supabase } from '../../../services/supabase';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../hooks/useTheme';
@@ -18,11 +18,12 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import { GlobalBackground } from '../../../components/GlobalBackground';
 import * as Haptics from 'expo-haptics';
-import { Download, Sparkles, Utensils, Dumbbell, Coffee, Apple, Pizza, CalendarDays, ChevronRight, ChevronDown, ChevronUp, Activity, Moon, ShoppingCart, AlertTriangle, Info, RefreshCw, ShieldAlert, CheckCircle } from 'lucide-react-native';
+import { Download, Sparkles, Utensils, Dumbbell, Coffee, Apple, Pizza, CalendarDays, ChevronRight, ChevronDown, ChevronUp, Activity, Moon, ShoppingCart, AlertTriangle, Info, RefreshCw, ShieldAlert, CheckCircle, Droplets, Plus, Play, X } from 'lucide-react-native';
 import { AnimatedCard } from '../../../components/AnimatedCard';
 import { getNameStyle } from '../../../utils/styles';
 import { GlassCard } from '../../../components/GlassCard';
 import { getLocalDateString } from '../../../utils/date';
+import { Confetti } from '../../../components/Confetti';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -276,6 +277,21 @@ export default function PlannerScreen() {
   const [activeDay, setActiveDay] = useState('Mon');
   const [loading, setLoading]     = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [restTimer, setRestTimer] = useState<number | null>(null);
+
+  useEffect(() => {
+    let interval: any;
+    if (restTimer !== null && restTimer > 0) {
+      interval = setInterval(() => {
+        setRestTimer(prev => prev! - 1);
+      }, 1000);
+    } else if (restTimer === 0) {
+      Vibration.vibrate([0, 500, 200, 500]);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setRestTimer(null);
+    }
+    return () => clearInterval(interval);
+  }, [restTimer]);
 
   const {
     mealPlans, workoutPlans, weeklyAnalysis: analysis, weekStart, warning,
@@ -297,6 +313,8 @@ export default function PlannerScreen() {
   // Modals
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showResetWarning, setShowResetWarning] = useState(false);
+  const [confettiTrigger, setConfettiTrigger] = useState(0);
+  const [exerciseMetrics, setExerciseMetrics] = useState<Record<number, { weight: string, rpe: string }>>({});
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resetWarningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -319,7 +337,7 @@ export default function PlannerScreen() {
     });
   };
 
-  const { streakDays }            = useNutritionStore();
+  const { streakDays, dailyWater, todayLogs, addWater } = useNutritionStore();
   const { isPro }                 = usePurchaseStore();
   const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
 
@@ -546,11 +564,18 @@ export default function PlannerScreen() {
       const filename = `rutina(${today}_${weekEnd}).pdf`;
       const htmlContent = mode === 'nutrition' ? generateNutritionHTML() : generateWorkoutHTML();
       const { uri } = await Print.printToFileAsync({ html: htmlContent, base64: false });
-      const fs = FileSystem as any;
-      const dir = fs.cacheDirectory || fs.documentDirectory || "";
-      const newUri = dir + filename;
-      await fs.moveAsync({ from: uri, to: newUri });
-      await Sharing.shareAsync(newUri);
+      
+      try {
+        const fs = FileSystem as any;
+        const dir = fs.documentDirectory || fs.cacheDirectory || "";
+        const slash = dir.endsWith('/') ? '' : '/';
+        const newUri = dir + slash + filename;
+        await fs.moveAsync({ from: uri, to: newUri });
+        await Sharing.shareAsync(newUri, { UTI: '.pdf', mimeType: 'application/pdf', dialogTitle: filename });
+      } catch (moveErr) {
+        console.warn('moveAsync failed, sharing original uri:', moveErr);
+        await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf', dialogTitle: filename });
+      }
     } catch (err) {
       console.error(err);
       showAlert('error', t('common.error'), 'Could not generate PDF');
@@ -620,17 +645,64 @@ export default function PlannerScreen() {
   const isActiveToday = activeDayDate === todayDate;
   const alreadyCompleted = hasCompletedWorkoutToday(activeDayDate);
 
+  const consumedMacros = React.useMemo(() => {
+    if (!isActiveToday) return { p: 0, c: 0, f: 0 };
+    return todayLogs.filter(l => l.loggedAt.startsWith(todayDate)).reduce((acc, l) => {
+      acc.p += l.protein || 0;
+      acc.c += l.carbs || 0;
+      acc.f += l.fat || 0;
+      return acc;
+    }, { p: 0, c: 0, f: 0 });
+  }, [isActiveToday, todayLogs, todayDate]);
+  
+  const plannedMacros = React.useMemo(() => {
+    return meals.reduce((acc, m) => {
+      acc.p += m.protein || 0;
+      acc.c += m.carbs || 0;
+      acc.f += m.fat || 0;
+      return acc;
+    }, { p: 0, c: 0, f: 0 });
+  }, [meals]);
+
+  const waterToday = dailyWater[todayDate] || 0;
+
+  const handleMoveExercise = async (index: number, direction: -1 | 1) => {
+    if (!workout || workout.exercises.length === 0) return;
+    const newExercises = [...workout.exercises];
+    if (index + direction < 0 || index + direction >= newExercises.length) return;
+    
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    const temp = newExercises[index];
+    newExercises[index] = newExercises[index + direction];
+    newExercises[index + direction] = temp;
+    
+    const updatedWorkout = { ...workout, exercises: newExercises };
+    const updatedPlans = { ...workoutPlans, [activeDay]: updatedWorkout };
+    setWorkoutPlans(updatedPlans, weekStart || getStartOfWeek(new Date()), warning || undefined);
+    
+    if (profile?.id) {
+      await supabase.from('workout_plan_items')
+        .update({ exercises: newExercises })
+        .eq('user_id', profile.id)
+        .eq('day_of_week', activeDay);
+    }
+  };
+
   const handleCompleteWorkout = () => {
     if (!workout || workout.exercises.length === 0 || alreadyCompleted) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setConfettiTrigger(prev => prev + 1);
     addWorkout({
       date: activeDayDate,
       routineName: workout.name,
-      exercises: workout.exercises.map((ex: any) => ({ 
+      exercises: workout.exercises.map((ex: any, i: number) => ({ 
         name: ex.name, 
         englishName: ex.englishName, 
         sets: ex.sets, 
-        reps: ex.reps 
+        reps: ex.reps,
+        weight: exerciseMetrics[i]?.weight,
+        rpe: exerciseMetrics[i]?.rpe
       })),
     });
   };
@@ -638,6 +710,7 @@ export default function PlannerScreen() {
   return (
     <View style={{ flex: 1 }}>
       <GlobalBackground />
+      <Confetti trigger={confettiTrigger} />
       <SafeAreaView style={[s.safe, { backgroundColor: 'transparent' }]}>
       <CustomAlert visible={alert.visible} type={alert.type} title={alert.title} message={alert.message} onConfirm={alert.onConfirm} />
 
@@ -664,6 +737,24 @@ export default function PlannerScreen() {
         onDismiss={() => setShowResetWarning(false)}
       />
 
+      {/* Floating Rest Timer */}
+      {restTimer !== null && (
+        <TouchableOpacity 
+          style={[s.floatingTimer, { backgroundColor: colors.surface }]}
+          activeOpacity={0.8}
+          onPress={() => setRestTimer(null)}
+        >
+          <Activity size={24} color={colors.primary} />
+          <View style={{ minWidth: 60 }}>
+            <Text style={[s.timerTitle, { color: colors.textPrimary }]}>Descanso</Text>
+            <Text style={[s.timerValue, { color: colors.primary }]}>
+              {Math.floor(restTimer / 60)}:{(restTimer % 60).toString().padStart(2, '0')}
+            </Text>
+          </View>
+          <X size={20} color={colors.textMuted} style={{ marginLeft: 10 }} />
+        </TouchableOpacity>
+      )}
+
       {/* Header Area */}
       <View style={s.header}>
         <View style={s.headerTextWrap}>
@@ -689,7 +780,7 @@ export default function PlannerScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 160 }}>
 
         {/* Mode Selector */}
         <View style={s.toggleContainer}>
@@ -883,6 +974,59 @@ export default function PlannerScreen() {
                 <Text style={[s.summaryLbl, { color: colors.textMuted }]}>{t('tracker.remaining')}</Text>
               </View>
             </View>
+
+            {/* Macro Progress Bars */}
+            {isActiveToday && plannedMacros.p > 0 && (
+              <View style={[s.macroBarsWrap, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                 <Text style={[s.macroTitle, { color: colors.textPrimary }]}>Progreso de Macros (Hoy)</Text>
+                 <View style={s.macroBarRow}>
+                   <Text style={[s.macroLabel, { color: colors.protein }]}>P</Text>
+                   <View style={[s.macroTrack, { backgroundColor: colors.protein + '20' }]}>
+                     <View style={[s.macroFill, { backgroundColor: colors.protein, width: `${Math.min((consumedMacros.p / plannedMacros.p) * 100, 100)}%` }]} />
+                   </View>
+                   <Text style={[s.macroVal, { color: colors.textSecondary }]}>{consumedMacros.p}/{plannedMacros.p}g</Text>
+                 </View>
+                 <View style={s.macroBarRow}>
+                   <Text style={[s.macroLabel, { color: colors.carbs }]}>C</Text>
+                   <View style={[s.macroTrack, { backgroundColor: colors.carbs + '20' }]}>
+                     <View style={[s.macroFill, { backgroundColor: colors.carbs, width: `${Math.min((consumedMacros.c / plannedMacros.c) * 100, 100)}%` }]} />
+                   </View>
+                   <Text style={[s.macroVal, { color: colors.textSecondary }]}>{consumedMacros.c}/{plannedMacros.c}g</Text>
+                 </View>
+                 <View style={s.macroBarRow}>
+                   <Text style={[s.macroLabel, { color: colors.fat }]}>F</Text>
+                   <View style={[s.macroTrack, { backgroundColor: colors.fat + '20' }]}>
+                     <View style={[s.macroFill, { backgroundColor: colors.fat, width: `${Math.min((consumedMacros.f / plannedMacros.f) * 100, 100)}%` }]} />
+                   </View>
+                   <Text style={[s.macroVal, { color: colors.textSecondary }]}>{consumedMacros.f}/{plannedMacros.f}g</Text>
+                 </View>
+              </View>
+            )}
+
+            {/* Hydration Tracker */}
+            {isActiveToday && (
+              <View style={[s.hydrationCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                 <View style={s.hydroLeft}>
+                    <View style={[s.hydroIcon, { backgroundColor: '#3b82f622' }]}>
+                      <Droplets size={24} color="#3b82f6" />
+                    </View>
+                    <View>
+                      <Text style={[s.hydroTitle, { color: colors.textPrimary }]}>Agua (Hoy)</Text>
+                      <Text style={[s.hydroVal, { color: '#3b82f6' }]}>{waterToday} ml</Text>
+                    </View>
+                 </View>
+                 <TouchableOpacity 
+                   style={[s.hydroBtn, { backgroundColor: '#3b82f6' }]} 
+                   onPress={() => {
+                     addWater(250);
+                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                   }}
+                 >
+                    <Plus size={16} color="#fff" />
+                    <Text style={s.hydroBtnText}>Vaso (250ml)</Text>
+                 </TouchableOpacity>
+              </View>
+            )}
           </View>
         )}
 
@@ -892,7 +1036,7 @@ export default function PlannerScreen() {
               {meals.length > 0 ? (
                 meals.map((m: PlanItem, i: number) => (
                   <AnimatedCard key={i} index={i} direction="up">
-                    <MemoizedMealCard name={m.name} meal={m.meal} cal={m.calories} protein={m.protein} carbs={m.carbs} fat={m.fat} />
+                    <MemoizedMealCard day={activeDay} index={i} name={m.name} meal={m.meal} cal={m.calories} protein={m.protein} carbs={m.carbs} fat={m.fat} />
                   </AnimatedCard>
                 ))
               ) : (
@@ -925,19 +1069,66 @@ export default function PlannerScreen() {
                         <View style={[s.exerciseCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                           <View style={s.exerciseHeader}>
                             <Text style={[s.exerciseName, { color: colors.textPrimary }]} numberOfLines={2}>{ex.name}</Text>
-                            <View style={[s.exerciseBadge, { backgroundColor: colors.primary + '15' }]}>
-                              <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '800' }}>{ex.sets} SETS</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                              {i > 0 && (
+                                <TouchableOpacity onPress={() => handleMoveExercise(i, -1)} style={{ padding: 4 }}>
+                                  <ChevronUp size={20} color={colors.textSecondary} />
+                                </TouchableOpacity>
+                              )}
+                              {i < workout.exercises.length - 1 && (
+                                <TouchableOpacity onPress={() => handleMoveExercise(i, 1)} style={{ padding: 4 }}>
+                                  <ChevronDown size={20} color={colors.textSecondary} />
+                                </TouchableOpacity>
+                              )}
+                              <View style={[s.exerciseBadge, { backgroundColor: colors.primary + '15', marginLeft: 4 }]}>
+                                <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '800' }}>{ex.sets} SETS</Text>
+                              </View>
                             </View>
                           </View>
-                          <View style={s.exerciseMeta}>
-                            <View style={[s.metaItem, { backgroundColor: colors.background }]}>
-                              <Text style={[s.metaLabel, { color: colors.textMuted }]}>{t('planner.reps', 'Reps')}</Text>
-                              <Text style={[s.metaValue, { color: colors.textPrimary }]}>{ex.reps}</Text>
+                          <View style={{ gap: 14, borderTopWidth: 1, borderTopColor: 'rgba(150,150,150,0.1)', paddingTop: 16 }}>
+                            <View style={{ flexDirection: 'row', gap: 14 }}>
+                              <View style={[s.metaItem, { backgroundColor: colors.background }]}>
+                                <Text style={[s.metaLabel, { color: colors.textMuted }]}>{t('planner.reps', 'Reps')}</Text>
+                                <Text style={[s.metaValue, { color: colors.textPrimary }]}>{ex.reps}</Text>
+                              </View>
+                              <TouchableOpacity 
+                                style={[s.metaItem, { backgroundColor: colors.background }]}
+                                activeOpacity={0.7}
+                                onPress={() => setRestTimer(parseInt(ex.rest) || 90)}
+                              >
+                                <Text style={[s.metaLabel, { color: colors.textMuted }]}>{t('planner.rest', 'Rest')} (Tap)</Text>
+                                <Text style={[s.metaValue, { color: colors.primary }]}>{ex.rest} ⏱️</Text>
+                              </TouchableOpacity>
                             </View>
-                            <View style={[s.metaItem, { backgroundColor: colors.background }]}>
-                              <Text style={[s.metaLabel, { color: colors.textMuted }]}>{t('planner.rest', 'Rest')}</Text>
-                              <Text style={[s.metaValue, { color: colors.textPrimary }]}>{ex.rest}</Text>
+                            <View style={{ flexDirection: 'row', gap: 14 }}>
+                              <View style={[s.metaItem, { backgroundColor: colors.background }]}>
+                                <Text style={[s.metaLabel, { color: colors.textMuted }]}>Carga (Kg)</Text>
+                                <TextInput
+                                  style={[s.metaInput, { color: colors.textPrimary }]}
+                                  placeholder="--"
+                                  placeholderTextColor={colors.textMuted}
+                                  keyboardType="numeric"
+                                  value={exerciseMetrics[i]?.weight || ''}
+                                  onChangeText={(text) => setExerciseMetrics(prev => ({ ...prev, [i]: { ...prev[i], weight: text } }))}
+                                  returnKeyType="done"
+                                />
+                              </View>
+                              <View style={[s.metaItem, { backgroundColor: colors.background }]}>
+                                <Text style={[s.metaLabel, { color: colors.textMuted }]}>RPE (1-10)</Text>
+                                <TextInput
+                                  style={[s.metaInput, { color: colors.textPrimary }]}
+                                  placeholder="--"
+                                  placeholderTextColor={colors.textMuted}
+                                  keyboardType="numeric"
+                                  value={exerciseMetrics[i]?.rpe || ''}
+                                  onChangeText={(text) => setExerciseMetrics(prev => ({ ...prev, [i]: { ...prev[i], rpe: text } }))}
+                                  returnKeyType="done"
+                                />
+                              </View>
                             </View>
+                            <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 8, fontStyle: 'italic' }}>
+                              * Estos valores se guardarán en tu progreso al completar el entrenamiento.
+                            </Text>
                           </View>
                           <TouchableOpacity
                             style={{ marginTop: 12, alignSelf: 'flex-start' }}
@@ -948,6 +1139,21 @@ export default function PlannerScreen() {
                         </View>
                       </AnimatedCard>
                     ))}
+                    {/* Focus Mode Button */}
+                    <TouchableOpacity
+                      onPress={() => router.push({ pathname: '/modals/focus-mode', params: { day: activeDay } })}
+                      style={[
+                        s.completeBtn,
+                        { backgroundColor: colors.primary, borderColor: colors.primary, marginTop: 20 }
+                      ]}
+                      activeOpacity={0.8}
+                    >
+                      <Play size={20} color="#fff" style={{ marginLeft: 4 }} />
+                      <Text style={[s.completeBtnText, { color: '#fff' }]}>
+                        {t('planner.startWorkout', 'Entrenar (Focus Mode)')}
+                      </Text>
+                    </TouchableOpacity>
+
                     {/* Complete Workout Button */}
                     <TouchableOpacity
                       onPress={handleCompleteWorkout}
@@ -965,6 +1171,21 @@ export default function PlannerScreen() {
                         {alreadyCompleted
                           ? t('planner.workoutDone', '¡Entrenamiento Completado! ✅')
                           : t('planner.markComplete', 'Marcar como Completado')}
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Muscle Directory Button */}
+                    <TouchableOpacity
+                      onPress={() => router.push('/modals/muscle-directory')}
+                      style={[
+                        s.completeBtn,
+                        { backgroundColor: colors.surfaceAlt, borderColor: colors.border, marginTop: 12 }
+                      ]}
+                      activeOpacity={0.75}
+                    >
+                      <Dumbbell size={20} color={colors.primary} />
+                      <Text style={[s.completeBtnText, { color: colors.primary }]}>
+                        {t('planner.viewMuscleDirectory', 'Directorio de Ejercicios y GIFs')}
                       </Text>
                     </TouchableOpacity>
 
@@ -1029,10 +1250,10 @@ export default function PlannerScreen() {
         {hasData && (
           <View style={{ gap: 12, marginHorizontal: Spacing.base, marginTop: 12 }}>
             {mode === 'nutrition' && (
-              <TouchableOpacity style={[s.exportBtn, { marginHorizontal: 0, marginTop: 0 }]} onPress={handleExportShoppingList} activeOpacity={0.8} disabled={generatingShoppingList}>
+              <TouchableOpacity style={[s.exportBtn, { marginHorizontal: 0, marginTop: 0 }]} onPress={() => router.push('/modals/shopping-list')} activeOpacity={0.8}>
                 <LinearGradient colors={['#F59E0B', '#D97706']} style={s.exportGrad} start={{x:0,y:0}} end={{x:1,y:1}}>
-                  {generatingShoppingList ? <ActivityIndicator color="#fff" /> : <ShoppingCart size={20} color="#fff" />}
-                  <Text style={s.exportText}>{t('planner.exportShoppingList', 'Shopping List PDF')}</Text>
+                  <ShoppingCart size={20} color="#fff" />
+                  <Text style={s.exportText}>Lista de Compras 🛒</Text>
                 </LinearGradient>
               </TouchableOpacity>
             )}
@@ -1096,11 +1317,19 @@ function DayPicker({ active, onSelect }: { active: string; onSelect: (d: string)
         return (
           <TouchableOpacity
             key={d}
-            style={[dp.day, { backgroundColor: colors.surface, borderColor: isActive ? colors.primary : colors.border }, isActive && { backgroundColor: colors.primary }]}
+            style={[dp.day, { backgroundColor: isActive ? 'transparent' : colors.surfaceAlt, borderColor: isActive ? colors.primary : colors.border }]}
             onPress={() => onSelect(d)}
             activeOpacity={0.8}
           >
-            <Text style={[dp.dayLabel, { color: isActive ? '#fff' : colors.textSecondary }]}>
+            {isActive && (
+              <LinearGradient
+                colors={colors.gradientPrimary || ['#7C5CFC', '#4338CA']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[StyleSheet.absoluteFillObject, { borderRadius: 22 }]}
+              />
+            )}
+            <Text style={[dp.dayLabel, { color: isActive ? '#fff' : colors.textSecondary, zIndex: 1 }]}>
               {t(`planner.${d.toLowerCase()}`)}
             </Text>
           </TouchableOpacity>
@@ -1112,9 +1341,47 @@ function DayPicker({ active, onSelect }: { active: string; onSelect: (d: string)
 
 // ─── Meal Card ─────────────────────────────────────────────────────────────────
 const MemoizedMealCard = React.memo(MealCard);
-function MealCard({ name, meal, cal, protein, carbs, fat }: { name: string; meal: string; cal: number; protein?: number; carbs?: number; fat?: number; }) {
+function MealCard({ day, index, name, meal, cal, protein, carbs, fat }: { day: string; index: number; name: string; meal: string; cal: number; protein?: number; carbs?: number; fat?: number; }) {
   const { t } = useTranslation();
   const colors = useTheme();
+  const [isSwapping, setIsSwapping] = useState(false);
+
+  const handleSwap = async () => {
+    try {
+      setIsSwapping(true);
+      const profile = useAuthStore.getState().profile;
+      const newMeal = await generateMealSwap(name, cal, protein || 0, carbs || 0, fat || 0, profile);
+      usePlannerStore.getState().swapMeal(day, index, {
+        meal,
+        name: newMeal.name,
+        calories: newMeal.calories,
+        protein: newMeal.protein,
+        carbs: newMeal.carbs,
+        fat: newMeal.fat
+      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (e) {
+      console.warn(e);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsSwapping(false);
+    }
+  };
+
+  const handleConsume = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    useNutritionStore.getState().addLog({
+      id: '',
+      foodItem: { id: '', name, calories: cal, protein: protein || 0, carbs: carbs || 0, fat: fat || 0, source: 'custom', sugar: 0, fiber: 0, sodium: 0, iron: 0, calcium: 0, saturatedFat: 0, transFat: 0 },
+      grams: 100,
+      meal,
+      loggedAt: new Date().toISOString(),
+      calories: cal,
+      protein: protein || 0,
+      carbs: carbs || 0,
+      fat: fat || 0
+    });
+  };
 
   const getMealIcon = () => {
     switch(meal) {
@@ -1148,12 +1415,21 @@ function MealCard({ name, meal, cal, protein, carbs, fat }: { name: string; meal
             <View style={[mc.macroPill, {backgroundColor: colors.fat + '15'}]}><Text style={[mc.macro, { color: colors.fat }]}>F {fat}g</Text></View>
           </View>
         )}
-        <TouchableOpacity
-          style={{ marginTop: 10, alignSelf: 'flex-start' }}
-          onPress={() => router.push({ pathname: '/(tabs)/coach', params: { initialTab: 'nutritionist', prompt: `¿Me puedes dar la receta o decirme cómo preparar: ${name}?` } })}
-        >
-          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '700' }}>{t('planner.askRecipe', '¿Cómo prepararlo?')} ›</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10, flexWrap: 'wrap', marginLeft: -4 }}>
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 4, paddingHorizontal: 4 }}
+            onPress={() => router.push({ pathname: '/(tabs)/coach', params: { initialTab: 'nutritionist', prompt: `¿Me puedes dar la receta o decirme cómo preparar: ${name}?` } })}
+          >
+            <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '800' }}>Receta ›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleSwap} style={{ padding: 6, opacity: isSwapping ? 0.5 : 1 }} disabled={isSwapping}>
+            {isSwapping ? <ActivityIndicator size="small" color={colors.primary} /> : <RefreshCw size={14} color={colors.primary} />}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleConsume} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.primary + '15', paddingHorizontal: 10, paddingVertical: 6, borderRadius: Radius.full }}>
+            <CheckCircle size={12} color={colors.primary} style={{ marginRight: 4 }} />
+            <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '800' }}>Consumir</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <View style={[mc.calWrap, {backgroundColor: colors.primary + '08'}]}>
         <Text style={[mc.cal, { color: colors.primary }]}>{cal}</Text>
@@ -1192,22 +1468,22 @@ const gcm = StyleSheet.create({
 const dp = StyleSheet.create({
   scroll:   { marginBottom: 24 },
   row:      { gap: 12, paddingHorizontal: Spacing.base, paddingBottom: 10, paddingTop: 4 },
-  day:      { width: 62, height: 70, borderRadius: 22, borderWidth: 1.5, justifyContent: 'center', alignItems: 'center' },
+  day:      { width: 64, height: 74, borderRadius: 24, borderWidth: 1, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 },
   dayLabel: { fontSize: 15, fontWeight: '800' },
 });
 
 const mc = StyleSheet.create({
-  card:      { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 24, padding: 16, marginBottom: 12, borderWidth: 1 },
-  iconWrap:  { width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center' },
+  card:      { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 28, padding: 18, marginBottom: 14, borderWidth: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
+  iconWrap:  { width: 54, height: 54, borderRadius: 27, justifyContent: 'center', alignItems: 'center', borderWidth: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
   info:      { flex: 1 },
-  mealLabel: { fontSize: 11, fontWeight: '800', marginBottom: 2, letterSpacing: 0.5 },
+  mealLabel: { fontSize: 12, fontWeight: '900', marginBottom: 2, letterSpacing: 0.5, textTransform: 'uppercase' },
   name:      { fontSize: 16, fontWeight: '700', marginBottom: 8, lineHeight: 22 },
   macroRow:  { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
-  macroPill: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
-  macro:     { fontSize: 11, fontWeight: '800' },
-  calWrap:   { alignItems: 'flex-end', justifyContent: 'center', paddingHorizontal: 12, paddingVertical: 10, borderRadius: 16 },
+  macroPill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  macro:     { fontSize: 11, fontWeight: '900' },
+  calWrap:   { alignItems: 'flex-end', justifyContent: 'center', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 20 },
   cal:       { fontSize: 18, fontWeight: '900' },
-  calUnit:   { fontSize: 11, fontWeight: '800', marginTop: -2 },
+  calUnit:   { fontSize: 11, fontWeight: '800', marginTop: -2, textTransform: 'uppercase' },
 });
 
 const s = StyleSheet.create({
@@ -1247,65 +1523,82 @@ const s = StyleSheet.create({
   aiDisclaimerText:   { fontSize: 12, lineHeight: 18, fontWeight: '500' },
 
   summaryContainer: { paddingHorizontal: Spacing.base, marginBottom: Spacing.lg },
-  summaryCard: { flexDirection: 'row', alignItems: 'center', borderRadius: 24, padding: 20, borderWidth: 1, shadowColor: '#000', shadowOffset: {width: 0, height: 2}, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
+  summaryCard: { flexDirection: 'row', alignItems: 'center', borderRadius: 28, padding: 24, borderWidth: 1, shadowColor: '#000', shadowOffset: {width: 0, height: 8}, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
   summaryLeft: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   summaryRight: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  summaryDivider: { width: 1, height: 40 },
-  summaryVal:  { fontSize: 24, fontWeight: '900' },
-  summaryLbl:  { fontSize: 13, fontWeight: '600', marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
+  summaryDivider: { width: 1, height: 50 },
+  summaryVal:  { fontSize: 28, fontWeight: '900' },
+  summaryLbl:  { fontSize: 12, fontWeight: '700', marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.8 },
+
+  macroBarsWrap: { marginTop: 14, borderRadius: 24, padding: 20, borderWidth: 1, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
+  macroTitle: { fontSize: 15, fontWeight: '800', marginBottom: 14 },
+  macroBarRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  macroLabel: { width: 14, fontSize: 13, fontWeight: '900' },
+  macroTrack: { flex: 1, height: 10, borderRadius: 5, marginHorizontal: 10, overflow: 'hidden' },
+  macroFill: { height: '100%', borderRadius: 5 },
+  macroVal: { width: 50, textAlign: 'right', fontSize: 12, fontWeight: '700' },
+
+  hydrationCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, borderRadius: 24, padding: 18, borderWidth: 1, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
+  hydroLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  hydroIcon: { width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center' },
+  hydroTitle: { fontSize: 14, fontWeight: '800', marginBottom: 2 },
+  hydroVal: { fontSize: 18, fontWeight: '900' },
+  hydroBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: Radius.full },
+  hydroBtnText: { color: '#fff', fontSize: 13, fontWeight: '800' },
 
   contentList: { paddingHorizontal: Spacing.base },
 
   emptyDay:    { alignItems: 'center', paddingVertical: 80, paddingHorizontal: 20 },
-  emptyIconWrap: { width: 90, height: 90, borderRadius: 45, justifyContent: 'center', alignItems: 'center', marginBottom: 24, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 },
-  emptyTitle:  { fontSize: 22, fontWeight: '900', marginBottom: 10, textAlign: 'center' },
+  emptyIconWrap: { width: 90, height: 90, borderRadius: 45, justifyContent: 'center', alignItems: 'center', marginBottom: 24, shadowColor: '#000', shadowOffset: {width: 0, height: 8}, shadowOpacity: 0.15, shadowRadius: 16, elevation: 5 },
+  emptyTitle:  { fontSize: 24, fontWeight: '900', marginBottom: 10, textAlign: 'center' },
   emptySub:    { fontSize: 16, textAlign: 'center', marginBottom: 30, lineHeight: 24 },
-  proBtn:      { borderRadius: Radius.full, overflow: 'hidden', elevation: 4, shadowColor: '#7C5CFC', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
-  proGrad:     { paddingHorizontal: 24, paddingVertical: 14, flexDirection: 'row', alignItems: 'center' },
+  proBtn:      { borderRadius: Radius.full, overflow: 'hidden', elevation: 6, shadowColor: '#7C5CFC', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12 },
+  proGrad:     { paddingHorizontal: 28, paddingVertical: 16, flexDirection: 'row', alignItems: 'center' },
   proText:     { color: '#fff', fontWeight: '800', fontSize: 16 },
 
-  analysisWrap: { marginHorizontal: Spacing.base, marginBottom: Spacing.lg, borderRadius: Radius.xl, padding: Spacing.base, borderWidth: 1 },
-  analysisHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  analysisTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  analysisTitle: { fontSize: 16, fontWeight: '800' },
-  analysisBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: Radius.full },
-  analysisBtnText: { fontSize: 12, fontWeight: '700' },
-  analysisContent: { borderRadius: Radius.lg, padding: 14 },
-  analysisText: { fontSize: 14, lineHeight: 22 },
-  analysisPlaceholder: { fontSize: 14, fontStyle: 'italic' },
+  analysisWrap: { marginHorizontal: Spacing.base, marginBottom: Spacing.lg, borderRadius: 28, padding: Spacing.base, borderWidth: 1, shadowColor: '#000', shadowOffset: {width: 0, height: 8}, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
+  analysisHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  analysisTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  analysisTitle: { fontSize: 17, fontWeight: '900', letterSpacing: -0.3 },
+  analysisBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: Radius.full },
+  analysisBtnText: { fontSize: 13, fontWeight: '800' },
+  analysisContent: { borderRadius: 20, padding: 16 },
+  analysisText: { fontSize: 15, lineHeight: 24 },
+  analysisPlaceholder: { fontSize: 15, fontStyle: 'italic', paddingVertical: 10 },
 
   workoutRoutine: { gap: 12 },
-  routineHeaderCompact: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  routineName: { fontSize: 20, fontWeight: '800' },
-  workoutBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: Radius.full },
-  workoutBadgeText: { fontSize: 11, fontWeight: '700' },
+  routineHeaderCompact: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  routineName: { fontSize: 22, fontWeight: '900', letterSpacing: -0.5 },
+  workoutBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: Radius.full },
+  workoutBadgeText: { fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
 
-  exerciseCard: { padding: 16, borderRadius: 24, borderWidth: 1, marginBottom: 12, shadowColor: '#000', shadowOffset: {width: 0, height: 2}, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
-  exerciseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  exerciseName: { fontSize: 17, fontWeight: '800', flex: 1, marginRight: 8, lineHeight: 22 },
-  exerciseBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
-  exerciseMeta: { flexDirection: 'row', gap: 12, borderTopWidth: 1, borderTopColor: 'rgba(150,150,150,0.1)', paddingTop: 14 },
-  metaItem: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 },
-  metaLabel: { fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
-  metaValue: { fontSize: 15, fontWeight: '800' },
+  exerciseCard: { padding: 20, borderRadius: 28, borderWidth: 1, marginBottom: 14, shadowColor: '#000', shadowOffset: {width: 0, height: 8}, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
+  exerciseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  exerciseName: { fontSize: 18, fontWeight: '800', flex: 1, marginRight: 8, lineHeight: 24 },
+  exerciseBadge: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 14 },
+  exerciseMeta: { flexDirection: 'row', gap: 14, borderTopWidth: 1, borderTopColor: 'rgba(150,150,150,0.1)', paddingTop: 16 },
+  metaItem: { flex: 1, flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 14, gap: 4 },
+  metaLabel: { fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.5 },
+  metaValue: { fontSize: 16, fontWeight: '900' },
+  metaInput: { fontSize: 16, fontWeight: '900', padding: 0, minHeight: 24, minWidth: 60, width: '100%' },
 
-  restDayCard: { padding: 30, alignItems: 'center', borderRadius: Radius.xl, borderWidth: 1, overflow: 'hidden', marginTop: 10 },
-  restIconWrap: { width: 70, height: 70, borderRadius: 35, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  restDayTitle: { fontSize: 22, fontWeight: '800', marginBottom: 8 },
-  restDayText: { textAlign: 'center', fontSize: 15, lineHeight: 24 },
+  restDayCard: { padding: 36, alignItems: 'center', borderRadius: 28, borderWidth: 1, overflow: 'hidden', marginTop: 10, shadowColor: '#000', shadowOffset: {width: 0, height: 8}, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
+  restIconWrap: { width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
+  restDayTitle: { fontSize: 24, fontWeight: '900', marginBottom: 10 },
+  restDayText: { textAlign: 'center', fontSize: 16, lineHeight: 26 },
 
-  exportBtn: { marginHorizontal: Spacing.base, marginTop: 20, borderRadius: Radius.full, overflow: 'hidden', elevation: 4, shadowColor: '#10B981', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
-  exportGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, gap: 8 },
-  exportText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  exportBtn: { marginHorizontal: Spacing.base, marginTop: 20, borderRadius: Radius.full, overflow: 'hidden', elevation: 6, shadowColor: '#10B981', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12 },
+  exportGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, gap: 10 },
+  exportText: { color: '#fff', fontSize: 17, fontWeight: '800' },
 
-  warningBox: { marginHorizontal: Spacing.base, marginBottom: Spacing.lg, padding: 16, borderRadius: Radius.xl, borderWidth: 1, borderLeftWidth: 4 },
-  warningHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  warningTitle: { fontSize: 16, fontWeight: '800' },
-  warningText: { fontSize: 14, lineHeight: 20, fontWeight: '500' },
+  warningBox: { marginHorizontal: Spacing.base, marginBottom: Spacing.lg, padding: 20, borderRadius: 24, borderWidth: 1, borderLeftWidth: 6, shadowColor: '#000', shadowOffset: {width: 0, height: 6}, shadowOpacity: 0.08, shadowRadius: 12 },
+  warningHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
+  warningTitle: { fontSize: 17, fontWeight: '900' },
+  warningText: { fontSize: 15, lineHeight: 22, fontWeight: '500' },
 
-  addMealBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 16, borderRadius: 24, borderWidth: 1, borderStyle: 'dashed', marginTop: 8, marginBottom: 20, gap: 10 },
-  addMealIcon: { fontSize: 24, fontWeight: '400', marginTop: -2 },
-  addMealText: { fontSize: 14, fontWeight: '600' },
+  addMealBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 18, borderRadius: 28, borderWidth: 1.5, borderStyle: 'dashed', marginTop: 10, marginBottom: 24, gap: 12 },
+  addMealIcon: { fontSize: 26, fontWeight: '400', marginTop: -3 },
+  addMealText: { fontSize: 15, fontWeight: '700' },
 
   // Full disclaimer footer
   fullDisclaimerBox:    { marginHorizontal: Spacing.base, marginTop: 20, marginBottom: 8, borderRadius: 18, borderWidth: 1, padding: 16 },
@@ -1316,4 +1609,7 @@ const s = StyleSheet.create({
   // Complete workout button
   completeBtn:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 8, marginBottom: 20, paddingVertical: 16, borderRadius: Radius.full, borderWidth: 1.5 },
   completeBtnText: { fontSize: 16, fontWeight: '800' },
+  floatingTimer: { position: 'absolute', bottom: 90, right: 20, zIndex: 999, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 12, borderRadius: Radius.full, borderWidth: 1, borderColor: 'rgba(124, 92, 252, 0.4)', shadowColor: '#7C5CFC', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.5, shadowRadius: 16, elevation: 100 },
+  timerTitle: { fontSize: 11, fontWeight: '800', textTransform: 'uppercase', opacity: 0.7 },
+  timerValue: { fontSize: 18, fontWeight: '900', fontVariant: ['tabular-nums'] },
 });

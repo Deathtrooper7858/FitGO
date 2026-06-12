@@ -17,6 +17,7 @@
  *  - generateShoppingList      — Generates an HTML shopping list from meal plan
  *  - generateSocialChallenge   — Generates a fun fitness challenge for social
  *  - analyzePhysiquePhoto      — Analyzes body physique photos for progress evaluation
+ *  - generateMealSwap          — Generates a replacement meal matching previous macros
  */
 
 import { supabase } from './supabase';
@@ -737,6 +738,76 @@ Important: Return ONLY the JSON.`;
 }
 
 // ─── Generate Shopping List ───────────────────────────────────────────────────
+export async function generateShoppingListJSON(mealPlans: Record<string, any[]>, language: string = 'en'): Promise<{category: string; items: string[]}[]> {
+  const targetLang = getLang(language);
+  
+  const prompt = `Based on the following weekly meal plan, create a categorized shopping list of ingredients needed.
+Return ONLY a valid JSON object matching this EXACT structure:
+{"categories": [{"category": "Produce", "items": ["Tomato", "Lettuce"]}, {"category": "Meat", "items": ["Chicken breast"]}]}
+Make sure all text, categories, and items are translated to ${targetLang}.
+Plan: ${JSON.stringify(mealPlans)}`;
+
+  try {
+    const data = await fetchGroq({
+      model: CHAT_MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 3000,
+      temperature: 0.2,
+      response_format: { type: 'json_object' },
+    });
+
+    let text = (data.choices[0]?.message?.content ?? '').trim();
+    const startIndex = text.indexOf('{');
+    const endIndex = text.lastIndexOf('}');
+    if (startIndex !== -1 && endIndex !== -1) {
+      text = text.slice(startIndex, endIndex + 1);
+    }
+    
+    const parsed = JSON.parse(text);
+    return parsed.categories || [];
+  } catch (error) {
+    console.error('Error generating JSON shopping list:', error);
+    return [];
+  }
+}
+
+// ─── Swap Meal ───────────────────────────────────────────────────────────────
+export async function generateMealSwap(name: string, cal: number, protein: number, carbs: number, fat: number, profile: any, language: string = 'en'): Promise<any> {
+  const targetLang = getLang(language);
+  const prompt = `You are an expert nutritionist. The user wants to replace their meal "${name}" which has ${cal} kcal, ${protein}g protein, ${carbs}g carbs, and ${fat}g fat.
+Provide a new alternative healthy recipe that has the EXACT SAME macros (+/- 5%).
+User's dietary preferences: ${profile?.dietary_preferences || 'None'}
+Return ONLY a valid JSON object matching this structure:
+{
+  "name": "New Meal Name",
+  "calories": ${cal},
+  "protein": ${protein},
+  "carbs": ${carbs},
+  "fat": ${fat}
+}
+Text MUST be in ${targetLang}.`;
+
+  try {
+    const data = await fetchGroq({
+      model: CHAT_MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 300,
+      temperature: 0.7,
+      response_format: { type: 'json_object' },
+    });
+    let text = (data.choices[0]?.message?.content ?? '').trim();
+    const startIndex = text.indexOf('{');
+    const endIndex = text.lastIndexOf('}');
+    if (startIndex !== -1 && endIndex !== -1) {
+      text = text.slice(startIndex, endIndex + 1);
+    }
+    return JSON.parse(text);
+  } catch (error) {
+    console.error('Error in generateMealSwap:', error);
+    throw error;
+  }
+}
+
 export async function generateShoppingList(mealPlans: Record<string, any[]>, language: string = 'en'): Promise<string> {
   const targetLang = getLang(language);
   
