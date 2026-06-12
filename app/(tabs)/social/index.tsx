@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Users, Trophy } from 'lucide-react-native';
 import { useTheme } from '../../../hooks/useTheme';
+import { GlobalBackground } from '../../../components/GlobalBackground';
 import FitGOSocial from '../../../components/social/FitGOSocial';
 import FitGOCompetitive from '../../../components/social/FitGOCompetitive';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
@@ -34,16 +35,16 @@ export default function SocialTabScreen() {
     });
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Background gradient */}
-      <LinearGradient
-        colors={
-          activeTab === 'competitive'
-            ? ['rgba(251, 191, 36, 0.20)', 'rgba(236, 72, 153, 0.08)', 'transparent']
-            : ['rgba(99, 102, 241, 0.15)', 'rgba(168, 85, 247, 0.06)', 'transparent']
-        }
-        style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 320 }}
-      />
+    <View style={{ flex: 1 }}>
+      {activeTab === 'competitive' ? (
+        <LinearGradient
+          colors={['rgba(251, 191, 36, 0.20)', 'rgba(236, 72, 153, 0.08)', 'transparent']}
+          style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 320 }}
+          pointerEvents="none"
+        />
+      ) : (
+        <GlobalBackground />
+      )}
 
       <SafeAreaView style={styles.safe} edges={['top']}>
         {/* Header */}

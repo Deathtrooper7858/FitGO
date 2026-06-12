@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Activi
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
-import { Sword, Bot, X } from 'lucide-react-native';
+import { Sword, Bot, X, Info, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { Radius } from '../../constants';
 import { GlassCard } from '../../components/GlassCard';
@@ -65,7 +65,14 @@ export default function FitGOChallenges() {
   const [aiChallengeIncludeSelf, setAiChallengeIncludeSelf] = useState(true);
   const [aiChallengeTitle, setAiChallengeTitle] = useState('');
 
+  // New UI states
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [isAccordionOpen, setIsAccordionOpen] = useState(true);
   
+  // Challenge details modal
+  const [selectedChallenge, setSelectedChallenge] = useState<any>(null);
+  const [selectedChallengeParticipants, setSelectedChallengeParticipants] = useState<any[]>([]);
+  const [isLoadingParticipants, setIsLoadingParticipants] = useState(false);
 const generateAIChallenge = async () => {
     setAiLoading(true);
     try {
@@ -83,7 +90,9 @@ const generateAIChallenge = async () => {
     const title = overrideTitle || challengeForm.title;
     if (!title) return;
     
-    const targetVal = challengeForm.type === 'physical' ? 1 : (parseFloat(challengeForm.target_value) || 0);
+    const isAi = !!overrideTitle;
+    const challengeType = isAi ? 'physical' : challengeForm.type;
+    const targetVal = challengeType === 'physical' ? 1 : (parseFloat(challengeForm.target_value) || 0);
     const days = parseInt(challengeForm.duration_days) || 7;
     
     const startDate = new Date();
@@ -93,10 +102,10 @@ const generateAIChallenge = async () => {
     const challenge = {
       creator_id: profile.id,
       title,
-      description: overrideTitle
+      description: isAi
         ? (aiRecommendation || '')
-        : (challengeForm.type === 'physical' ? challengeForm.custom_goal : challengeForm.description),
-      type: overrideTitle ? challengeForm.type : challengeForm.type,
+        : (challengeType === 'physical' ? challengeForm.custom_goal : challengeForm.description),
+      type: challengeType,
       target_value: targetVal,
       start_date: getLocalDateString(startDate),
       end_date: getLocalDateString(endDate),
@@ -122,6 +131,19 @@ const generateAIChallenge = async () => {
   
   
 
+  const openChallengeDetails = async (challenge: any) => {
+    setSelectedChallenge(challenge);
+    setIsLoadingParticipants(true);
+    try {
+      const parts = await socialStore.fetchChallengeParticipants(challenge.id);
+      setSelectedChallengeParticipants(parts);
+    } catch (e) {
+      console.warn(e);
+    } finally {
+      setIsLoadingParticipants(false);
+    }
+  };
+
   const acceptedFriends = socialStore.friends.filter(f => f.status === 'accepted');
 
   return (
@@ -130,47 +152,52 @@ const generateAIChallenge = async () => {
       
       <View style={s.tabContent}>
         {!isCreatingChallenge ? (
-          <GlassCard accentColor={colors.error} style={{ marginBottom: 20 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <Sword size={24} color={colors.error} />
-              <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>{t('social.challenges.fitgoChallenges', 'FitGo Challenges')}</Text>
-            </View>
-
-            <TouchableOpacity 
-              style={[s.aiBtn, { backgroundColor: colors.surfaceAlt }]}
-              onPress={generateAIChallenge}
-            >
-              <Bot size={20} color={colors.primary} />
-              <Text style={{ color: colors.textPrimary, fontWeight: '700', flex: 1 }}>{t('social.challenges.suggestAI', 'Fitz Suggestion (AI)')}</Text>
-            </TouchableOpacity>
-
-            {aiLoading && <ActivityIndicator color={colors.primary} style={{ marginVertical: 15 }} />}
-
-            {aiRecommendation && !aiLoading && (
-              <View style={[s.aiResult, { backgroundColor: colors.primary + '10', borderColor: colors.primary + '33' }]}>
-                <Text style={{ color: colors.textPrimary, fontSize: 14, fontStyle: 'italic', lineHeight: 20 }}>"{aiRecommendation}"</Text>
-                <TouchableOpacity 
-                  style={[s.actionBtn, { backgroundColor: colors.primary, marginTop: 12, alignSelf: 'flex-start' }]}
-                  onPress={() => {
-                    setAiChallengeTitle(`${t('social.challenges.aiChallengePrefix', 'Reto IA')}: ${new Date().toLocaleDateString()}`);
-                    setAiChallengeSelectedFriends([]);
-                    setAiChallengeParticipantModal(true);
-                  }}
-                >
-                  <Text style={s.actionBtnText}>{t('social.challenges.acceptChallenge', 'Aceptar Reto')}</Text>
-                </TouchableOpacity>
+          <GlassCard style={{ marginBottom: 20, padding: 0, overflow: 'hidden' }}>
+            <LinearGradient colors={[colors.error + '20', 'transparent']} style={{ padding: 20 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                <Sword size={24} color={colors.error} />
+                <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>{t('social.challenges.fitgoChallenges', 'FitGo Challenges')}</Text>
               </View>
-            )}
-            
-            <TouchableOpacity 
-              style={[s.mainBtn, { backgroundColor: colors.primary, marginTop: 15 }]}
-              onPress={() => {
-                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                setIsCreatingChallenge(true);
-              }}
-            >
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{t('social.challenges.newCustomChallenge', 'New Custom Challenge')}</Text>
-            </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[s.aiBtn, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.primary + '40', shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 }]}
+                onPress={generateAIChallenge}
+              >
+                <Bot size={22} color={colors.primary} />
+                <Text style={{ color: colors.textPrimary, fontWeight: '800', flex: 1 }}>{t('social.challenges.suggestAI', 'Sugerencia de Fitz (IA)')}</Text>
+              </TouchableOpacity>
+
+              {aiLoading && <ActivityIndicator color={colors.primary} style={{ marginVertical: 15 }} />}
+
+              {aiRecommendation && !aiLoading && (
+                <View style={[s.aiResult, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '50' }]}>
+                  <Text style={{ color: colors.textPrimary, fontSize: 15, fontStyle: 'italic', lineHeight: 22, fontWeight: '500' }}>"{aiRecommendation}"</Text>
+                  <TouchableOpacity 
+                    style={[s.actionBtn, { backgroundColor: colors.primary, marginTop: 16, alignSelf: 'flex-start', paddingHorizontal: 20, paddingVertical: 10 }]}
+                    onPress={() => {
+                      setAiChallengeTitle(`${t('social.challenges.aiChallengePrefix', 'Reto IA')}: ${new Date().toLocaleDateString()}`);
+                      setAiChallengeSelectedFriends([]);
+                      setAiChallengeParticipantModal(true);
+                    }}
+                  >
+                    <Sword size={16} color="#fff" />
+                    <Text style={[s.actionBtnText, { fontSize: 14 }]}>{t('social.challenges.acceptChallenge', 'Aceptar Reto')}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              
+              <TouchableOpacity 
+                style={{ marginTop: 15, borderRadius: Radius.xl, overflow: 'hidden' }}
+                onPress={() => {
+                  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                  setIsCreatingChallenge(true);
+                }}
+              >
+                <LinearGradient colors={[colors.primary, colors.secondary || '#A855F7']} start={{x:0, y:0}} end={{x:1, y:1}} style={s.mainBtn}>
+                  <Text style={{ color: '#fff', fontWeight: '900', fontSize: 16, letterSpacing: 0.5 }}>{t('social.challenges.newCustomChallenge', 'Nuevo Reto Personalizado')}</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </LinearGradient>
           </GlassCard>
         ) : (
           <GlassCard accentColor={colors.primary} style={{ marginBottom: 20 }}>
@@ -183,8 +210,8 @@ const generateAIChallenge = async () => {
             
             <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.challengeTitle', 'Título del Reto')}</Text>
             <TextInput
-              style={[s.inputField, { backgroundColor: colors.surfaceAlt, color: colors.textPrimary }]}
-              placeholder={t('social.challenges.titlePlaceholder')}
+              style={[s.inputField, { backgroundColor: colors.surface, color: colors.textPrimary, borderWidth: 1, borderColor: colors.border + '50', borderRadius: Radius.lg }]}
+              placeholder={t('social.challenges.titlePlaceholder', 'Ej. Rey de los Pasos')}
               placeholderTextColor={colors.textMuted}
               value={challengeForm.title}
               onChangeText={t => setChallengeForm({...challengeForm, title: t})}
@@ -192,8 +219,8 @@ const generateAIChallenge = async () => {
 
             <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.description', 'Descripción')}</Text>
             <TextInput
-              style={[s.inputField, { backgroundColor: colors.surfaceAlt, color: colors.textPrimary, height: 80 }]}
-              placeholder={t('social.challenges.descPlaceholder')}
+              style={[s.inputField, { backgroundColor: colors.surface, color: colors.textPrimary, height: 80, borderWidth: 1, borderColor: colors.border + '50', borderRadius: Radius.lg, textAlignVertical: 'top', paddingTop: 12 }]}
+              placeholder={t('social.challenges.descPlaceholder', 'Descripción del reto...')}
               placeholderTextColor={colors.textMuted}
               multiline
               value={challengeForm.description}
@@ -204,26 +231,32 @@ const generateAIChallenge = async () => {
               <View style={{ flex: 1 }}>
                 <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.type', 'Tipo')}</Text>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                  {(['steps', 'calories', 'physical'] as const).map(type => (
-                    <TouchableOpacity 
-                      key={type}
-                      style={[
-                        s.typeBtn, 
-                        { backgroundColor: challengeForm.type === type ? colors.primary : colors.surfaceAlt }
-                      ]}
-                      onPress={() => setChallengeForm({...challengeForm, type})}
-                    >
-                      <Text style={{ color: challengeForm.type === type ? '#fff' : colors.textPrimary, fontSize: 12, fontWeight: '700' }}>
-                        {type === 'steps' ? `🚶 ${t('activities.steps', 'Pasos')}` : type === 'calories' ? `🔥 ${t('activities.calories', 'Calorías')}` : `💪 ${t('social.challenges.physical', 'Físico')}`}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                  {(['steps', 'calories', 'physical'] as const).map(type => {
+                    const isSelected = challengeForm.type === type;
+                    return (
+                      <TouchableOpacity 
+                        key={type}
+                        style={{ overflow: 'hidden', borderRadius: Radius.full, borderWidth: isSelected ? 0 : 1, borderColor: colors.border + '40' }}
+                        onPress={() => setChallengeForm({...challengeForm, type})}
+                      >
+                        <LinearGradient
+                          colors={isSelected ? [colors.primary, colors.secondary || '#A855F7'] : [colors.surfaceAlt, colors.surfaceAlt]}
+                          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                          style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: Radius.full }}
+                        >
+                          <Text style={{ color: isSelected ? '#fff' : colors.textPrimary, fontSize: 12, fontWeight: '800' }}>
+                            {type === 'steps' ? `🚶 ${t('activities.steps', 'Pasos')}` : type === 'calories' ? `🔥 ${t('activities.calories', 'Calorías')}` : `💪 ${t('social.challenges.physical', 'Físico')}`}
+                          </Text>
+                        </LinearGradient>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.days', 'Días')}</Text>
                 <TextInput
-                  style={[s.inputField, { backgroundColor: colors.surfaceAlt, color: colors.textPrimary, marginBottom: 0 }]}
+                  style={[s.inputField, { backgroundColor: colors.surface, color: colors.textPrimary, marginBottom: 0, borderWidth: 1, borderColor: colors.border + '50', borderRadius: Radius.lg }]}
                   keyboardType="numeric"
                   value={challengeForm.duration_days}
                   onChangeText={t => setChallengeForm({...challengeForm, duration_days: t})}
@@ -235,7 +268,7 @@ const generateAIChallenge = async () => {
               <View>
                 <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.customGoal', 'Objetivo personalizado')}</Text>
                 <TextInput
-                  style={[s.inputField, { backgroundColor: colors.surfaceAlt, color: colors.textPrimary, height: 80 }]}
+                  style={[s.inputField, { backgroundColor: colors.surface, color: colors.textPrimary, height: 80, borderWidth: 1, borderColor: colors.border + '50', borderRadius: Radius.lg, textAlignVertical: 'top', paddingTop: 12 }]}
                   placeholder={t('social.challenges.customGoalPlaceholder', 'Ej. Hacer 100 flexiones en total, completar 5 km...')}
                   placeholderTextColor={colors.textMuted}
                   multiline
@@ -247,7 +280,7 @@ const generateAIChallenge = async () => {
               <View>
                 <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.goal', 'Objetivo')} ({challengeForm.type === 'steps' ? t('social.challenges.stepsPerDay', 'Pasos por día') : t('social.challenges.calsPerDay', 'Calorías por día')})</Text>
                 <TextInput
-                  style={[s.inputField, { backgroundColor: colors.surfaceAlt, color: colors.textPrimary }]}
+                  style={[s.inputField, { backgroundColor: colors.surface, color: colors.textPrimary, borderWidth: 1, borderColor: colors.border + '50', borderRadius: Radius.lg }]}
                   keyboardType="numeric"
                   value={challengeForm.target_value}
                   onChangeText={t => setChallengeForm({...challengeForm, target_value: t})}
@@ -349,43 +382,74 @@ const generateAIChallenge = async () => {
           </GlassCard>
         )}
 
-        <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>{t('social.challenges.activeChallenges', 'Active Challenges')}</Text>
-        {socialStore.challenges.length === 0 ? (
-          <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10 }}>{t('social.challenges.noActiveChallenges', 'No active challenges.')}</Text>
-        ) : (
-          socialStore.challenges.map(challenge => (
-            <GlassCard key={challenge.id} style={{ marginBottom: 12, borderLeftWidth: 4, borderLeftColor: challenge.status === 'completed' ? colors.success : colors.error }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={[s.userName, { color: colors.textPrimary, fontSize: 16 }]}>{challenge.title}</Text>
-                  <Text style={{ color: colors.textSecondary, fontSize: 13, marginTop: 4 }}>{challenge.description || `${t('social.challenges.challengeOf', 'Reto de')} ${challenge.type}`}</Text>
-                  
-                  <View style={{ flexDirection: 'row', gap: 12, marginTop: 12 }}>
-                    <View style={[s.chip, { backgroundColor: colors.surfaceAlt }]}>
-                      <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700' }}>
-                        {challenge.type === 'steps' ? t('activities.steps', 'Pasos') : t('activities.calories', 'Calorías')}
-                      </Text>
-                    </View>
-                    <View style={[s.chip, { backgroundColor: colors.surfaceAlt }]}>
-                      <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700' }}>
-                        {t('social.challenges.goal', 'Objetivo')}: {challenge.target_value}
-                      </Text>
-                    </View>
-                  </View>
+        <TouchableOpacity 
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginLeft: 8, marginBottom: 12, marginTop: 10 }}
+          onPress={() => {
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+            setIsAccordionOpen(!isAccordionOpen);
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>{t('social.challenges.activeChallenges', 'Retos Activos')}</Text>
+            <TouchableOpacity onPress={() => setShowInfoModal(true)} style={{ padding: 4 }}>
+              <Info size={18} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+          <View style={{ padding: 4 }}>
+            {isAccordionOpen ? <ChevronUp size={20} color={colors.textSecondary} /> : <ChevronDown size={20} color={colors.textSecondary} />}
+          </View>
+        </TouchableOpacity>
 
-                  {/* Progress mock since we don't have realtime progression tracked perfectly yet */}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16 }}>
-                    <View style={{ height: 6, flex: 1, backgroundColor: colors.border + '33', borderRadius: 3, overflow: 'hidden' }}>
-                      <View style={{ width: challenge.status === 'completed' ? '100%' : '35%', height: '100%', backgroundColor: challenge.status === 'completed' ? colors.success : colors.primary, borderRadius: 3 }} />
+        {isAccordionOpen && (
+          socialStore.challenges.length === 0 ? (
+            <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10, marginBottom: 20 }}>{t('social.challenges.noActiveChallenges', 'No hay retos activos.')}</Text>
+          ) : (
+            socialStore.challenges.map(challenge => (
+              <TouchableOpacity 
+                key={challenge.id} 
+                activeOpacity={0.8}
+                onPress={() => openChallengeDetails(challenge)}
+              >
+                <GlassCard style={{ marginBottom: 12, padding: 0, overflow: 'hidden', borderWidth: 1, borderColor: colors.border + '50' }}>
+                  <LinearGradient colors={[challenge.status === 'completed' ? colors.success + '15' : colors.primary + '10', 'transparent']} style={{ padding: 16, borderLeftWidth: 4, borderLeftColor: challenge.status === 'completed' ? colors.success : colors.primary }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[s.userName, { color: colors.textPrimary, fontSize: 17, fontWeight: '800' }]}>{challenge.title}</Text>
+                        <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 6, lineHeight: 20 }}>{challenge.description || `${t('social.challenges.challengeOf', 'Reto de')} ${challenge.type}`}</Text>
+                        
+                        <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
+                          <View style={[s.chip, { backgroundColor: colors.primary + '20', borderRadius: Radius.full }]}>
+                            <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '800' }}>
+                              {challenge.type === 'steps' ? `🚶 ${t('activities.steps', 'Pasos')}` : challenge.type === 'calories' ? `🔥 ${t('activities.calories', 'Calorías')}` : `💪 ${t('social.challenges.physical', 'Físico')}`}
+                            </Text>
+                          </View>
+                          <View style={[s.chip, { backgroundColor: colors.surfaceAlt, borderRadius: Radius.full, borderWidth: 1, borderColor: colors.border }]}>
+                            <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '700' }}>
+                              {t('social.challenges.goal', 'Objetivo')}: {challenge.target_value}
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* Progress mock since we don't have realtime progression tracked perfectly yet */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 18 }}>
+                          <View style={{ height: 8, flex: 1, backgroundColor: colors.border + '40', borderRadius: 4, overflow: 'hidden' }}>
+                            <LinearGradient
+                              colors={challenge.status === 'completed' ? [colors.success, '#10B981'] : [colors.primary, colors.secondary || '#A855F7']}
+                              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                              style={{ width: challenge.status === 'completed' ? '100%' : '35%', height: '100%', borderRadius: 4 }}
+                            />
+                          </View>
+                          <Text style={{ color: challenge.status === 'completed' ? colors.success : colors.primary, fontSize: 12, fontWeight: '900', marginLeft: 12 }}>
+                            {challenge.status === 'completed' ? '100%' : '35%'}
+                          </Text>
+                        </View>
+                      </View>
                     </View>
-                    <Text style={{ color: challenge.status === 'completed' ? colors.success : colors.primary, fontSize: 11, fontWeight: '800', marginLeft: 10 }}>
-                      {challenge.status === 'completed' ? '100%' : '35%'}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </GlassCard>
-          ))
+                  </LinearGradient>
+                </GlassCard>
+              </TouchableOpacity>
+            ))
+          )
         )}
       </View>
     
@@ -512,6 +576,136 @@ const generateAIChallenge = async () => {
           </View>
         </View>
       </Modal>
+
+      {/* Info Modal */}
+      <Modal
+        visible={showInfoModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowInfoModal(false)}
+      >
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 24, zIndex: 1000 }]}>
+          <View style={{ backgroundColor: colors.surface, borderRadius: 24, padding: 24, width: '100%', maxWidth: 400 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <Text style={{ color: colors.textPrimary, fontSize: 20, fontWeight: '900' }}>{t('social.challenges.howItWorks', '¿Cómo funcionan los retos?')}</Text>
+              <TouchableOpacity onPress={() => setShowInfoModal(false)}>
+                <X size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={{ maxHeight: 400 }}>
+              <Text style={{ color: colors.textSecondary, fontSize: 15, lineHeight: 22, marginBottom: 12 }}>
+                1. <Text style={{ fontWeight: 'bold', color: colors.textPrimary }}>Invita a amigos:</Text> Crea un reto y reta a tus amigos a superarlo.
+              </Text>
+              <Text style={{ color: colors.textSecondary, fontSize: 15, lineHeight: 22, marginBottom: 12 }}>
+                2. <Text style={{ fontWeight: 'bold', color: colors.textPrimary }}>El fondo de puntos:</Text> Cada reto tiene un bote de recompensas (p.ej. 500 puntos base).
+              </Text>
+              <Text style={{ color: colors.textSecondary, fontSize: 15, lineHeight: 22, marginBottom: 12 }}>
+                3. <Text style={{ fontWeight: 'bold', color: colors.textPrimary }}>Gana y divide:</Text> Los puntos se dividen en partes iguales entre los participantes que <Text style={{ fontWeight: 'bold', color: colors.success }}>completen</Text> el objetivo. ¡Si lo hacen ambos, la recompensa se comparte!
+              </Text>
+              <Text style={{ color: colors.textSecondary, fontSize: 15, lineHeight: 22, marginBottom: 12 }}>
+                4. <Text style={{ fontWeight: 'bold', color: colors.textPrimary }}>No te rindas:</Text> Si decides <Text style={{ fontWeight: 'bold', color: '#EF4444' }}>rendirte</Text>, no recibirás ninguna recompensa.
+              </Text>
+            </ScrollView>
+            <TouchableOpacity
+              style={[s.mainBtn, { backgroundColor: colors.primary, marginTop: 16 }]}
+              onPress={() => setShowInfoModal(false)}
+            >
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{t('common.understood', '¡Entendido!')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Challenge Details Modal */}
+      <Modal
+        visible={!!selectedChallenge}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSelectedChallenge(null)}
+      >
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end', zIndex: 1000 }]}>
+          <View style={{ backgroundColor: colors.surface, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 40, maxHeight: '80%' }}>
+            {/* Handle */}
+            <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: 'center', marginBottom: 20 }} />
+            
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <View style={{ flex: 1, paddingRight: 16 }}>
+                <Text style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '900', marginBottom: 4 }}>{selectedChallenge?.title}</Text>
+                <Text style={{ color: colors.textSecondary, fontSize: 15, lineHeight: 22 }}>{selectedChallenge?.description}</Text>
+              </View>
+              <TouchableOpacity onPress={() => setSelectedChallenge(null)}>
+                <X size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
+              <View style={[s.chip, { backgroundColor: colors.primary + '20' }]}>
+                <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '800' }}>
+                  {selectedChallenge?.type === 'steps' ? '🚶 Pasos' : selectedChallenge?.type === 'calories' ? '🔥 Calorías' : '💪 Físico'}
+                </Text>
+              </View>
+              <View style={[s.chip, { backgroundColor: colors.surfaceAlt }]}>
+                <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '700' }}>
+                  Objetivo: {selectedChallenge?.target_value}
+                </Text>
+              </View>
+            </View>
+
+            <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: '800', marginBottom: 12 }}>{t('social.challenges.participants', 'Participantes')}</Text>
+            
+            {isLoadingParticipants ? (
+              <ActivityIndicator color={colors.primary} style={{ marginVertical: 20 }} />
+            ) : (
+              <ScrollView style={{ maxHeight: 200 }} showsVerticalScrollIndicator={false}>
+                {selectedChallengeParticipants.map(p => (
+                  <View key={p.id} style={{ flexDirection: 'row', alignItems: 'center', padding: 12, backgroundColor: colors.surfaceAlt, borderRadius: 12, marginBottom: 8 }}>
+                    {p.user_profile?.avatar_url ? (
+                      <Image source={{ uri: p.user_profile.avatar_url }} style={{ width: 36, height: 36, borderRadius: 18 }} />
+                    ) : (
+                      <View style={[s.avatarPlaceholder, { width: 36, height: 36, backgroundColor: colors.primary }]}>
+                        <Text style={[s.avatarInitials, { fontSize: 14 }]}>{p.user_profile?.name?.[0]}</Text>
+                      </View>
+                    )}
+                    <View style={{ flex: 1, marginLeft: 12 }}>
+                      <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{p.user_profile?.name || 'Usuario'}</Text>
+                      <Text style={{ 
+                        color: p.status === 'completed' ? colors.success : p.status === 'surrendered' ? '#EF4444' : colors.textMuted,
+                        fontSize: 12, fontWeight: '600', marginTop: 2 
+                      }}>
+                        {p.status === 'completed' ? 'Completado' : p.status === 'surrendered' ? 'Rendido' : 'En progreso'}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+
+            {selectedChallenge?.status !== 'completed' && (
+              <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
+                <TouchableOpacity
+                  style={{ flex: 1, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: '#EF4444' + '20' }}
+                  onPress={() => {
+                    socialStore.surrenderChallenge(selectedChallenge.id, profile?.id || '');
+                    setSelectedChallenge(null);
+                  }}
+                >
+                  <Text style={{ color: '#EF4444', fontWeight: '700', fontSize: 15 }}>{t('social.challenges.surrender', 'Rendirse')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ flex: 1, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.success }}
+                  onPress={() => {
+                    socialStore.completeChallengeAndAwardPoints(selectedChallenge.id, profile?.id || '');
+                    setSelectedChallenge(null);
+                  }}
+                >
+                  <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>{t('social.challenges.complete', 'Completar')}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 }

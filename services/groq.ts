@@ -94,6 +94,7 @@ export function buildCoachSystemPrompt(userProfile: {
   medicalConditions?: string[];
   medicationsSupplements?: string[];
   preferences?: string[];
+  mealPlans?: Record<string, any>;
   workoutPlans?: Record<string, any>;
   sleepLogs?: Record<string, any>;
   workoutHistory?: any[];

@@ -17,7 +17,9 @@ import { getLocalDateString } from '../../../utils/date';
 import Animated, { FadeIn, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { AnimatedCard } from '../../../components/AnimatedCard';
+import { GlobalBackground } from '../../../components/GlobalBackground';
 import { MuscleSymmetryCard } from '../../../components/MuscleSymmetryCard';
+import { getNameStyle } from '../../../utils/styles';
 import { Trophy, Flame, Dumbbell, Heart, ChevronRight, Scale, Target } from 'lucide-react-native';
 import { useAchievements, Achievement } from '../../../hooks/useAchievements';
 import { GoalWizardModal, ACTIVITY_TO_EXERCISE } from '../../../components/GoalWizardModal';
@@ -676,19 +678,8 @@ export default function DashboardScreen() {
 
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Premium Full-Screen Competitive Background */}
-      <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        <LinearGradient
-          colors={['#4C1D95', '#BE123C', '#0F172A']} // Deep purple -> Crimson red -> Dark Slate
-          locations={[0, 0.4, 1]}
-          style={StyleSheet.absoluteFill}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-        />
-        {/* Subtle dark overlay to ensure text readability */}
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(15, 23, 42, 0.45)' }]} />
-      </View>
+    <View style={{ flex: 1 }}>
+      <GlobalBackground />
       <SafeAreaView style={[s.safe, { backgroundColor: 'transparent' }]}>
       <CustomAlert 
         visible={alert.visible}
@@ -708,7 +699,7 @@ export default function DashboardScreen() {
           <View style={{ gap: 4 }}>
             <Text style={[s.greeting, { color: colors.textPrimary }]}>
               {t('dashboard.hello', '¡Hola')}{' '}
-              <Text style={{ color: colors.primary }}>{name}!</Text>
+              <Text style={[{ color: colors.primary }, getNameStyle(profile?.nameColor)]}>{name}!</Text>
             </Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <View style={[s.datePill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '30' }]}>

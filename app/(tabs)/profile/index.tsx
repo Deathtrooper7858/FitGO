@@ -32,6 +32,7 @@ import {
   Camera, ExternalLink, Award, Thermometer, Droplets, Hammer, Building2, Mars, Venus, Plus, Minus, Bike,
   Utensils, Sparkles, Leaf, Clock, Trophy, Check, Briefcase, Coffee, PersonStanding, X
 } from 'lucide-react-native';
+import { getNameStyle } from '../../../utils/styles';
 import * as LucideIcons from 'lucide-react-native';
 import * as XLSX from 'xlsx';
 import { cacheDirectory, EncodingType, writeAsStringAsync } from 'expo-file-system/legacy';
@@ -44,6 +45,7 @@ import { WeightProgressPath } from '../../../components/WeightProgressPath';
 import { UnitSelectionModal } from '../../../components/UnitSelectionModal';
 import { PhotoSourceModal } from '../../../components/PhotoSourceModal';
 import { getLocalDateString } from '../../../utils/date';
+import { GlobalBackground } from '../../../components/GlobalBackground';
 // TEMPORARILY DISABLED FOR EXPO GO COMPATIBILITY
 // import LottieView from 'lottie-react-native';
 // import { LottieRegistry } from '../../../hooks/LottieRegistry';
@@ -1621,13 +1623,8 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <LinearGradient
-        colors={['rgba(251, 191, 36, 0.45)', 'rgba(234, 179, 8, 0.15)', 'transparent']}
-        style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 500 }}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-      />
+    <View style={{ flex: 1 }}>
+      <GlobalBackground />
       <SafeAreaView style={[s.safe, { backgroundColor: 'transparent' }]}>
       <EditModal
         visible={editModal.visible}
@@ -1725,9 +1722,8 @@ export default function ProfileScreen() {
             <TouchableOpacity onPress={() => openEdit('name', t('profile.editName'), t('profile.enterName'))}>
               <Text style={[
                 s.name, 
-                profile?.nameColor === 'admin_glow' 
-                  ? { color: '#00F0FF', textShadowColor: 'rgba(0, 240, 255, 0.8)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 8 }
-                  : { color: profile?.nameColor || colors.textPrimary }
+                { color: colors.textPrimary },
+                getNameStyle(profile?.nameColor, profile?.id, profile?.id, profile?.nameColor)
               ]}>{profile?.name ?? 'User'} <Text style={{ fontSize: 14, opacity: 0.5 }}>✎</Text></Text>
             </TouchableOpacity>
             <Text style={[s.email, { color: colors.textSecondary }]}>{profile?.email ?? ''}</Text>

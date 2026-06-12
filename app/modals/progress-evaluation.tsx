@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Image, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, TextInput } from 'react-native';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Camera, X, Upload, Brain, CheckCircle, ArrowUpCircle, History, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react-native';
@@ -305,7 +306,7 @@ export default function ProgressEvaluationModal() {
           </View>
         ) : (
           <View style={s.imageSection}>
-            <Image source={{ uri: imageUri }} style={s.previewImage} resizeMode="cover" />
+            <Image source={{ uri: imageUri }} style={s.previewImage} contentFit="cover" />
             
             {!result && !isAnalyzing && (
               <View style={{ width: '100%' }}>

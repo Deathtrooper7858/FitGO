@@ -3,8 +3,9 @@ import { Stack, router, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet, View, ActivityIndicator, Platform, LogBox, Image, Text } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, Platform, LogBox, Text } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 
 // Ignore specific warnings in the UI
@@ -184,7 +185,7 @@ export default function RootLayout() {
           <Image 
             source={require('../assets/icon.png')} 
             style={{ width: 120, height: 120, borderRadius: 24, marginBottom: 24 }} 
-            resizeMode="contain" 
+            contentFit="contain" 
           />
           <Text style={{ 
             color: '#fff', 
