@@ -337,7 +337,7 @@ export const useNutritionStore = create<NutritionState>()(
       },
       updateLog: async (id, updates) => {
         set((s) => ({
-          todayLogs: s.todayLogs.map((l) => (l.id === id ? { ...l, ...updates } : l)),
+          todayLogs: s.todayLogs.map((l) => (l.id === id ? { ...l, ...updates, foodItem: updates.foodItem ? { ...l.foodItem, ...updates.foodItem } : l.foodItem } : l)),
         }));
         try {
           const dbUpdates: any = {};
@@ -347,6 +347,7 @@ export const useNutritionStore = create<NutritionState>()(
           if (updates.protein !== undefined) dbUpdates.protein = updates.protein;
           if (updates.carbs !== undefined) dbUpdates.carbs = updates.carbs;
           if (updates.fat !== undefined) dbUpdates.fat = updates.fat;
+          if (updates.foodItem?.name) dbUpdates.food_name = updates.foodItem.name;
           
           if (Object.keys(dbUpdates).length > 0) {
             const { error } = await supabase.from('food_logs').update(dbUpdates).eq('id', id);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Image, ScrollView, TextInput, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, ScrollView, TextInput, Platform } from 'react-native';
+import { Image } from 'expo-image';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -446,6 +447,62 @@ export default function ScanModal() {
     });
   };
 
+  const nameDebounceRefs = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
+
+  const updateName = (index: number, newName: string) => {
+    setEditedFoods(prev => prev.map((f, i) => i !== index ? f : { ...f, name: newName }));
+    // Debounce AI recalculation while typing
+    if (nameDebounceRefs.current[index]) clearTimeout(nameDebounceRefs.current[index]);
+    nameDebounceRefs.current[index] = setTimeout(() => handleNameBlur(index, newName), 1000);
+  };
+
+  const handleNameBlur = async (index: number, newName: string) => {
+    if (!newName.trim()) return;
+    try {
+      setLoading(true);
+      const parsedItems = await parseVoiceLog(newName, language);
+      if (parsedItems && parsedItems.length > 0) {
+        const item = parsedItems[0];
+        setEditedFoods(prev => prev.map((f, i) => {
+          if (i !== index) return f;
+          const currentGrams = f.grams;
+          const ratio = currentGrams / item.grams;
+          return {
+            ...f,
+            name: item.name || f.name,
+            originalGrams: item.grams,
+            originalCal: item.calories,
+            originalProt: item.protein,
+            originalCarbs: item.carbs,
+            originalFat: item.fat,
+            originalSugar: item.sugar,
+            originalFiber: item.fiber,
+            originalSodium: item.sodium,
+            originalIron: item.iron,
+            originalCalcium: item.calcium,
+            originalSatFat: item.saturatedFat,
+            originalTransFat: item.transFat,
+            calories: Math.round(item.calories * ratio),
+            protein:  Math.round(item.protein  * ratio),
+            carbs:    Math.round(item.carbs    * ratio),
+            fat:      Math.round(item.fat      * ratio),
+            sugar:    item.sugar      ? Math.round(item.sugar      * ratio) : undefined,
+            fiber:    item.fiber      ? Math.round(item.fiber      * ratio) : undefined,
+            sodium:   item.sodium     ? Math.round(item.sodium     * ratio) : undefined,
+            iron:     item.iron       ? Math.round(item.iron       * ratio) : undefined,
+            calcium:  item.calcium    ? Math.round(item.calcium    * ratio) : undefined,
+            saturatedFat: item.saturatedFat ? Math.round(item.saturatedFat * ratio) : undefined,
+            transFat:     item.transFat     ? Math.round(item.transFat     * ratio) : undefined,
+          };
+        }));
+      }
+    } catch (err) {
+      console.warn('Error recalculating macros:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const updateGrams = (index: number, newGrams: string) => {
     const val = parseInt(newGrams) || 0;
     setEditedFoods(prev => prev.map((f, i) => {
@@ -556,42 +613,61 @@ export default function ScanModal() {
           <View style={{ width: 40 }} />
         </View>
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: Spacing.base, paddingBottom: 100 }}>
-          <Image source={{ uri: capturedUri }} style={s.capturedImage} resizeMode="cover" />
+          <Image source={{ uri: capturedUri }} style={s.capturedImage} contentFit="cover" />
           <View style={[s.confidenceBadge, { borderColor: confidenceColor }]}>
             <View style={[s.confidenceDot, { backgroundColor: confidenceColor }]} />
             <Text style={[s.confidenceText, { color: confidenceColor }]}>{photoResult.confidence.toUpperCase()} {t('scan.confidence')}</Text>
           </View>
           <Text style={[s.sectionTitle, { color: colors.primary }]}>{t('scan.detectedFoods')}</Text>
           {editedFoods.map((food, i) => (
-            <View key={i} style={[s.foodCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={s.foodCardLeft}>
-                <Text style={[s.foodName, { color: colors.primary }]}>{food.name}</Text>
-                <View style={s.gramInputRow}>
+            <LinearGradient
+              key={i}
+              colors={[colors.surface, colors.surfaceAlt + 'AA']}
+              style={[s.foodCard, { borderColor: colors.border }]}
+            >
+              {/* Food name – editable */}
+              <View style={[s.foodNameRow, { borderBottomColor: colors.border + '60' }]}>
+                <Text style={[s.foodNameIcon]}>🍽️</Text>
+                <TextInput
+                  style={[s.foodName, { color: colors.primary, flex: 1, padding: 0, margin: 0 }]}
+                  value={food.name}
+                  onChangeText={(v) => updateName(i, v)}
+                  multiline
+                  placeholder={t('scan.foodNamePlaceholder', 'Nombre del alimento')}
+                  placeholderTextColor={colors.textMuted}
+                />
+                {loading && <ActivityIndicator size="small" color={colors.primary} style={{ marginLeft: 6 }} />}
+              </View>
+
+              {/* Grams + calories row */}
+              <View style={s.foodMetaRow}>
+                <View style={[s.gramsBox, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '44' }]}>
                   <TextInput
-                    style={[s.gramInput, { color: colors.primary, borderColor: colors.border, backgroundColor: colors.surfaceAlt }]}
+                    style={[s.gramInput, { color: colors.primary, padding: 0, margin: 0, textAlign: 'center', fontSize: 18, fontWeight: '800' }]}
                     value={String(food.grams)}
                     onChangeText={(v) => updateGrams(i, v)}
                     keyboardType="numeric"
-                    maxLength={4}
+                    maxLength={5}
+                    selectTextOnFocus
                   />
-                  <Text style={[s.gramLabel, { color: colors.textMuted }]}>g</Text>
+                  <Text style={[s.gramLabel, { color: colors.primary, fontWeight: '700' }]}>g</Text>
+                </View>
+                <View style={[s.calBox, { backgroundColor: colors.accent + '18', borderColor: colors.accent + '44' }]}>
+                  <Text style={[s.foodCal, { color: colors.accent }]}>{food.calories}</Text>
+                  <Text style={[s.calUnit, { color: colors.accent + 'AA' }]}>kcal</Text>
                 </View>
               </View>
-              <View style={s.foodCardRight}>
-                <Text style={[s.foodCal, { color: colors.primary }]}>{food.calories} kcal</Text>
-                <View style={s.macroRow}>
-                  <View style={[s.macroTag, { backgroundColor: colors.protein + '15' }]}>
-                    <Text style={[s.macroTagText, { color: colors.protein }]}>P {food.protein}g</Text>
+
+              {/* Macro chips */}
+              <View style={s.macroRow}>
+                {[{ label: 'P', val: food.protein, color: colors.protein }, { label: 'C', val: food.carbs, color: colors.carbs }, { label: 'G', val: food.fat, color: colors.fat }].map(({ label, val, color }) => (
+                  <View key={label} style={[s.macroChipScan, { backgroundColor: color + '15', borderColor: color + '40' }]}>
+                    <Text style={[s.macroChipLabelScan, { color }]}>{label}</Text>
+                    <Text style={[s.macroChipValScan, { color }]}>{val}g</Text>
                   </View>
-                  <View style={[s.macroTag, { backgroundColor: colors.carbs + '15' }]}>
-                    <Text style={[s.macroTagText, { color: colors.carbs }]}>C {food.carbs}g</Text>
-                  </View>
-                  <View style={[s.macroTag, { backgroundColor: colors.fat + '15' }]}>
-                    <Text style={[s.macroTagText, { color: colors.fat }]}>F {food.fat}g</Text>
-                  </View>
-                </View>
+                ))}
               </View>
-            </View>
+            </LinearGradient>
           ))}
           <LinearGradient colors={colors.theme === 'dark' ? ['#7C5CFC15', '#22D3EE11'] : [colors.primary + '10', colors.secondary + '05']} style={[s.totalCard, { borderColor: colors.primary + '33' }]}>
             <Text style={[s.totalLabel, { color: colors.textSecondary }]}>{t('scan.totalCalories')}</Text>
@@ -1005,15 +1081,21 @@ const s = StyleSheet.create({
   confidenceDot:   { width: 8, height: 8, borderRadius: 4 },
   confidenceText:  { fontSize: 12, fontWeight: '700' },
   sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: Spacing.md },
-  foodCard:      { flexDirection: 'row', justifyContent: 'space-between', padding: 16, borderRadius: Radius.lg, marginBottom: 12, borderWidth: 1 },
-  foodCardLeft:  { flex: 1, gap: 10 },
-  foodName:      { fontSize: 17, fontWeight: '700' },
-  gramInputRow:  { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  gramInput:     { width: 75, height: 34, borderRadius: 8, textAlign: 'center', fontSize: 15, fontWeight: '800', borderWidth: 1.5, padding: 0 },
-  gramLabel:     { fontSize: 14, fontWeight: '600' },
-  foodCardRight: { alignItems: 'flex-end', gap: 6 },
-  foodCal:       { fontSize: 18, fontWeight: '800' },
-  macroRow:      { flexDirection: 'row', gap: 6 },
+  foodCard:      { borderRadius: 18, marginBottom: 12, borderWidth: 1, overflow: 'hidden' },
+  foodNameRow:   { flexDirection: 'row', alignItems: 'flex-start', paddingHorizontal: 14, paddingTop: 14, paddingBottom: 12, borderBottomWidth: 1, gap: 8 },
+  foodNameIcon:  { fontSize: 18, marginTop: 2 },
+  foodName:      { fontSize: 16, fontWeight: '700', lineHeight: 22 },
+  foodMetaRow:   { flexDirection: 'row', gap: 10, padding: 14, paddingBottom: 10 },
+  gramsBox:      { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10 },
+  calBox:        { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 4, borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10, justifyContent: 'center' },
+  foodCal:       { fontSize: 20, fontWeight: '900' },
+  calUnit:       { fontSize: 11, fontWeight: '700' },
+  gramInput:     { fontSize: 18, fontWeight: '800', minWidth: 40, textAlign: 'center', padding: 0, margin: 0 },
+  gramLabel:     { fontSize: 14, fontWeight: '700' },
+  macroRow:      { flexDirection: 'row', gap: 8, paddingHorizontal: 14, paddingBottom: 14 },
+  macroChipScan: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, borderRadius: 10, borderWidth: 1, paddingVertical: 8 },
+  macroChipLabelScan: { fontSize: 11, fontWeight: '800', textTransform: 'uppercase' },
+  macroChipValScan:   { fontSize: 13, fontWeight: '700' },
   macroTag:      { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
   macroTagText:  { fontSize: 11, fontWeight: '700' },
   totalCard:     { padding: 20, borderRadius: Radius.xl, borderWidth: 1.5, alignItems: 'center', marginVertical: 20 },

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, View, Image, TouchableOpacity, StyleSheet, Text, Dimensions, Platform } from 'react-native';
+import { Modal, View, TouchableOpacity, StyleSheet, Text, Dimensions, Platform } from 'react-native';
+import { Image } from 'expo-image';
 import { BlurView } from 'expo-blur';
 import { X } from 'lucide-react-native';
 
@@ -46,7 +47,7 @@ export function AvatarViewerModal({ visible, avatarUrl, name, onClose }: AvatarV
             <Image
               source={{ uri: avatarUrl }}
               style={styles.avatar}
-              resizeMode="cover"
+              contentFit="cover"
             />
           </View>
 

@@ -53,8 +53,11 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       }
       
       set({ isPro: true, isLoading: false });
-      // update local profile with new role
-      useAuthStore.getState().setProfile({ ...profile, isPro: true, role: 'pro_user' });
+      // update local profile with new role and premium color
+      useAuthStore.getState().setProfile({ ...profile, isPro: true, role: 'pro_user', nameColor: '#EAB308' });
+      
+      // Update in Supabase to sync globally
+      await supabase.auth.updateUser({ data: { name_color: '#EAB308' } });
     } catch (err) {
       console.error(err);
       set({ isLoading: false });

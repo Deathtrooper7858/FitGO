@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TextInput,
+  View, Text, StyleSheet, TextInput,
   TouchableOpacity, KeyboardAvoidingView, Platform,
   ActivityIndicator, Alert,
 } from 'react-native';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
+import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -273,7 +274,7 @@ export default function NutritionistScreen() {
   const isRecording   = recorderState.isRecording;
   const [imagePickerVisible, setImagePickerVisible] = useState(false);
   const [viewingImage, setViewingImage] = useState<string | null>(null);
-  const flatRef                         = useRef<FlatList<CoachMessage>>(null);
+  const flatRef                         = useRef<any>(null);
 
   const { t } = useTranslation();
   const colors = useTheme();
@@ -563,7 +564,7 @@ export default function NutritionistScreen() {
       }
 
       const { mealPlans, workoutPlans } = usePlannerStore.getState();
-      const { sleepLogs } = useBodyStore.getState();
+      const sleepLogs = undefined;
       const { workouts } = useWorkoutHistoryStore.getState();
 
       const systemPrompt = buildCoachSystemPrompt({
@@ -671,14 +672,10 @@ export default function NutritionistScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        <FlatList<CoachMessage>
+        <FlashList<CoachMessage>
           ref={flatRef}
           data={messages}
           style={{ flex: 1 }}
-          initialNumToRender={10}
-          maxToRenderPerBatch={10}
-          windowSize={5}
-          removeClippedSubviews={true}
           keyExtractor={(m) => m.id}
           renderItem={({ item, index }) => {
             const isLastUser = item.role === 'user' && (index === messages.length - 1 || (index === messages.length - 2 && messages[index+1].role === 'model'));

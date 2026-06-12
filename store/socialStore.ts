@@ -20,6 +20,7 @@ export interface Friend {
     email: string;
     avatar_url: string;
     name_color?: string;
+    is_pro?: boolean;
   };
 }
 
@@ -45,6 +46,7 @@ export interface Post {
     name: string;
     avatar_url: string;
     name_color?: string;
+    is_pro?: boolean;
   };
 }
 
@@ -53,6 +55,7 @@ export interface RankedUser {
   name: string;
   avatar_url: string;
   name_color?: string;
+  is_pro?: boolean;
   points: number;
 }
 
@@ -67,6 +70,7 @@ export interface PostComment {
     name: string;
     avatar_url: string;
     name_color?: string;
+    is_pro?: boolean;
   };
 }
 
@@ -111,6 +115,9 @@ interface SocialState {
   rejectFriend: (friendshipId: string) => Promise<void>;
   fetchChallenges: (userId: string) => Promise<void>;
   createChallenge: (challenge: Partial<Challenge>, participantIds: string[]) => Promise<void>;
+  fetchChallengeParticipants: (challengeId: string) => Promise<any[]>;
+  surrenderChallenge: (challengeId: string, userId: string) => Promise<void>;
+  completeChallengeAndAwardPoints: (challengeId: string, userId: string) => Promise<void>;
   fetchGlobalRanking: () => Promise<void>;
   fetchPosts: () => Promise<void>;
   createPost: (post: Partial<Post>) => Promise<void>;
@@ -345,7 +352,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('friends')
-        .select(`*, user1:user_id_1(id, name, email, avatar_url, name_color), user2:user_id_2(id, name, email, avatar_url, name_color)`)
+        .select(`*, user1:user_id_1(id, name, email, avatar_url, name_color, is_pro), user2:user_id_2(id, name, email, avatar_url, name_color, is_pro)`)
         .or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`);
         
       if (error) throw error;
@@ -452,6 +459,82 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     }
   },
 
+  fetchChallengeParticipants: async (challengeId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('challenge_participants')
+        .select(`*, user_profile:user_id(id, name, avatar_url)`)
+        .eq('challenge_id', challengeId);
+      if (error) throw error;
+      return data || [];
+    } catch (err) {
+      console.warn('[SocialStore] Error fetching challenge participants:', err);
+      return [];
+    }
+  },
+
+  surrenderChallenge: async (challengeId: string, userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('challenge_participants')
+        .update({ status: 'surrendered' })
+        .eq('challenge_id', challengeId)
+        .eq('user_id', userId);
+      if (error) throw error;
+      get().fetchChallenges(userId); // refresh
+    } catch (err) {
+      console.warn('[SocialStore] Error surrendering challenge:', err);
+    }
+  },
+
+  completeChallengeAndAwardPoints: async (challengeId: string, userId: string) => {
+    try {
+      // 1. Marcar al usuario como completed en participants
+      const { error: updateErr } = await supabase
+        .from('challenge_participants')
+        .update({ status: 'completed' })
+        .eq('challenge_id', challengeId)
+        .eq('user_id', userId);
+      if (updateErr) throw updateErr;
+
+      // 2. Traer a todos los participantes
+      const { data: parts, error: partsErr } = await supabase
+        .from('challenge_participants')
+        .select('*')
+        .eq('challenge_id', challengeId);
+      if (partsErr) throw partsErr;
+
+      // 3. Revisar si todos (excepto rendidos) completaron
+      const activeParts = parts.filter(p => p.status !== 'surrendered');
+      const allCompleted = activeParts.every(p => p.status === 'completed');
+
+      if (allCompleted) {
+        // Cerrar el reto
+        await supabase.from('challenges').update({ status: 'completed' }).eq('id', challengeId);
+        
+        // Repartir puntos. Supongamos 500 puntos base a dividir entre los que completaron
+        const basePoints = 500;
+        const rewardPoints = Math.floor(basePoints / (activeParts.length || 1));
+        
+        // Usar leagueStore.awardPoints para cada uno (en un entorno real el servidor lo haría, aquí es mock)
+        const { useLeagueStore } = require('./leagueStore');
+        for (const p of activeParts) {
+          if (p.user_id === userId) {
+            await useLeagueStore.getState().awardPoints(p.user_id, rewardPoints, 'Reto Completado');
+            useLeagueStore.getState().showReward(rewardPoints);
+          } else {
+            // El otro usuario recibirá los puntos cuando se sincronice, por simplicidad aquí llamamos awardPoints también
+            await useLeagueStore.getState().awardPoints(p.user_id, rewardPoints, 'Reto Completado');
+          }
+        }
+      }
+
+      get().fetchChallenges(userId); // refresh
+    } catch (err) {
+      console.warn('[SocialStore] Error completing challenge:', err);
+    }
+  },
+
   fetchGlobalRanking: async () => {
     set({ isRankingLoading: true });
     try {
@@ -475,7 +558,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         .from('posts')
         .select(`
           *,
-          user_profile:user_id(name, avatar_url, name_color),
+          user_profile:user_id(name, avatar_url, name_color, is_pro),
           likes:post_likes(user_id),
           comments:post_comments(id)
         `)
@@ -486,7 +569,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         console.warn('[SocialStore] Query failed, trying fallback:', error.message);
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('posts')
-          .select(`*, user_profile:user_id(name, avatar_url, name_color)`)
+          .select(`*, user_profile:user_id(name, avatar_url, name_color, is_pro)`)
           .order('created_at', { ascending: false })
           .limit(30);
         
@@ -519,7 +602,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data, error } = await supabase.from('posts').insert(post).select(`
         *,
-        user_profile:user_id(name, avatar_url, name_color)
+        user_profile:user_id(name, avatar_url, name_color, is_pro)
       `).single();
       if (error) throw error;
       // Optimistic prepend to avoid full list re-fetch
@@ -641,7 +724,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('post_comments')
-        .select('*, user_profile:user_id(name, avatar_url, name_color)')
+        .select('*, user_profile:user_id(name, avatar_url, name_color, is_pro)')
         .eq('post_id', postId)
         .order('created_at', { ascending: true });
       
@@ -768,7 +851,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
       // Old Spanish-only filter `.ilike('content', '%código de invitación:%')` was a bug.
       const { data, error } = await supabase
         .from('direct_messages')
-        .select('*, sender:sender_id(id, name, avatar_url, name_color)')
+        .select('*, sender:sender_id(id, name, avatar_url, name_color, is_pro)')
         .eq('receiver_id', userId)
         .or('content.ilike.%código de invitación:%,content.ilike.%invite code:%,content.ilike.%invitation code:%,content.ilike.%squad invite:%')
         .order('created_at', { ascending: false });

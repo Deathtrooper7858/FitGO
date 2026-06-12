@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Image } from 'expo-image';
 import { ArrowLeft, UserPlus, Check, Trophy, Heart, MessageSquare, Users, Trash2 } from 'lucide-react-native';
+import { getNameStyle } from '../../utils/styles';
 import * as LucideIcons from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../../services/supabase';
@@ -131,7 +132,7 @@ export default function UserProfileModal() {
   // For own profile: use premiumColor from local store (hex-validated).
   // For others: use their name_color from DB.
   const vitrineColor: string | null = isMe
-    ? (isPro && premiumColor && premiumColor.startsWith('#') ? premiumColor : null)
+    ? ((isPro || myProfile?.isPro) && premiumColor && premiumColor.startsWith('#') ? premiumColor : null)
     : (displayUser.name_color && displayUser.name_color.startsWith('#') ? displayUser.name_color : null);
 
   const friendStatus = socialStore.friends.find(f =>
@@ -197,7 +198,7 @@ export default function UserProfileModal() {
               )}
             </TouchableOpacity>
 
-            <Text style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '900', letterSpacing: -0.5 }}>{displayUser.name}</Text>
+            <Text style={[{ color: colors.textPrimary, fontSize: 22, fontWeight: '900', letterSpacing: -0.5 }, getNameStyle(displayUser.name_color, displayUser.id, myProfile?.id, myProfile?.nameColor)]}>{displayUser.name}</Text>
 
             <View style={[s.chip, { backgroundColor: currentBadge.colors[0] + '20', flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 }]}>
               <Text style={{ fontSize: 13 }}>{currentBadge.icon}</Text>
@@ -350,6 +351,7 @@ export default function UserProfileModal() {
                 })}
               </View>
             </View>
+            </View>
           )}
 
           {/* Achievements Trophy Button */}
@@ -359,25 +361,25 @@ export default function UserProfileModal() {
               flexDirection: 'row',
               alignItems: 'center',
               gap: 10,
-              backgroundColor: '#F59E0B18',
+              backgroundColor: vitrineColor ? vitrineColor + '18' : '#F59E0B18',
               borderWidth: 1.5,
-              borderColor: '#F59E0B40',
+              borderColor: vitrineColor ? vitrineColor + '40' : '#F59E0B40',
               borderRadius: 16,
               paddingHorizontal: 18,
               paddingVertical: 14,
               marginBottom: 16,
             }}
           >
-            <Trophy size={22} color="#F59E0B" />
+            <Trophy size={22} color={vitrineColor || "#F59E0B"} />
             <View style={{ flex: 1 }}>
-              <Text style={{ color: '#F59E0B', fontWeight: '800', fontSize: 15 }}>
+              <Text style={{ color: vitrineColor || '#F59E0B', fontWeight: '800', fontSize: 15 }}>
                 {isMe ? t('achievements.myAchievements', 'Mis Logros') : t('achievements.achievements', 'Logros')}
               </Text>
               <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 1 }}>
                 {showAchievements ? t('common.tapToHide', 'Toca para ocultar') : t('common.tapToView', 'Toca para ver los logros')}
               </Text>
             </View>
-            <View style={{ backgroundColor: '#F59E0B', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 }}>
+            <View style={{ backgroundColor: vitrineColor || '#F59E0B', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 }}>
               <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>
                 {theirUnlockedCount}/{totalAchievements}
               </Text>

@@ -13,7 +13,8 @@ SET search_path = public
 AS $$
 BEGIN
   RETURN QUERY
-  SELECT u.id, u.name, u.avatar_url, u.league_points, u.current_streak, u.name_color
+  SELECT u.id, u.name, u.avatar_url, u.league_points, u.current_streak, 
+         CASE WHEN u.is_pro AND (u.name_color IS NULL OR u.name_color = '') THEN '#EAB308' ELSE u.name_color END as name_color
   FROM public.users u
   INNER JOIN public.squad_members sm ON sm.user_id = u.id
   WHERE sm.squad_id = p_squad_id
@@ -47,7 +48,7 @@ BEGIN
       COALESCE(array_length(u.unlocked_achievements, 1), 0) * 100,
       0
     )::numeric as points,
-    u.name_color
+    CASE WHEN u.is_pro AND (u.name_color IS NULL OR u.name_color = '') THEN '#EAB308' ELSE u.name_color END as name_color
   FROM public.users u
   WHERE u.name IS NOT NULL
   ORDER BY points DESC

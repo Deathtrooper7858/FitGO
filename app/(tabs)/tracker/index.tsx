@@ -22,6 +22,7 @@ import { convertEnergy, convertVolume, formatValue } from '../../../utils/units'
 import { CustomAlert, AlertType } from '../../../components/CustomAlert';
 import { AnimatedCard } from '../../../components/AnimatedCard';
 import { GlassCard } from '../../../components/GlassCard';
+import { GlobalBackground } from '../../../components/GlobalBackground';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming, runOnJS } from 'react-native-reanimated';
@@ -467,13 +468,8 @@ export default function TrackerScreen() {
 
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <LinearGradient
-        colors={['rgba(124, 92, 252, 0.45)', 'rgba(236, 72, 153, 0.15)', 'transparent']}
-        style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 500 }}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-      />
+    <View style={{ flex: 1 }}>
+      <GlobalBackground />
       <SafeAreaView style={s.safe} edges={['top']}>
         <View style={{ flex: 1 }}>
       <CustomAlert 

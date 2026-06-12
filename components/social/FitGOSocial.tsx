@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Platform, Share, Modal, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Platform, Share, Modal } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -8,6 +9,7 @@ import { Search, Trophy, Users, Sword, Plus, Bot, Check, X, MessageSquare, Heart
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
+import { getNameStyle } from '../../utils/styles';
 import { useTheme } from '../../hooks/useTheme';
 import { Radius, Spacing } from '../../constants';
 import { GlassCard } from '../../components/GlassCard';
@@ -201,22 +203,7 @@ export default function FitGOSocial() {
     return { label: 'F', color: '#6B7280', bg: '#6B728020', glow: 'transparent' };
   };
 
-  // ── Admin Glow name helper ──────────────────────────────────────────────────
-  const getNameStyle = (nameColor?: string | null, userId?: string): object => {
-    // Always use live profile color for the current user (avoids stale cache)
-    const resolvedColor = userId && userId === profile?.id
-      ? (profile?.nameColor || nameColor)
-      : nameColor;
-    if (resolvedColor === 'admin_glow') {
-      return {
-        color: '#00F0FF',
-        textShadowColor: 'rgba(0, 240, 255, 0.9)',
-        textShadowOffset: { width: 0, height: 0 },
-        textShadowRadius: 10,
-      };
-    }
-    return { color: resolvedColor || colors.textPrimary };
-  };
+
 
   useEffect(() => {
     let unsubscribeEvents: (() => void) | null = null;
@@ -409,7 +396,7 @@ export default function FitGOSocial() {
               </View>
             )}
             <View style={{ flex: 1 }}>
-              <Text style={[{ fontSize: 20, fontWeight: 'bold' }, getNameStyle(profile?.nameColor, profile?.id)]}>{profile?.name}</Text>
+              <Text style={[{ fontSize: 20, fontWeight: 'bold' }, getNameStyle(profile?.nameColor, profile?.id, profile?.id, profile?.nameColor)]}>{profile?.name}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                 <View style={[s.chip, { backgroundColor: currentBadge.colors[0] + '20', flexDirection: 'row', alignItems: 'center', gap: 4 }]}>
                   <Text style={{ fontSize: 12 }}>{currentBadge.icon}</Text>
@@ -437,111 +424,115 @@ export default function FitGOSocial() {
           </View>
         </GlassCard>
 
-        {profile?.pinnedAchievements && profile.pinnedAchievements.length > 0 && (() => {
+        {(() => {
           const isValidHex = premiumColor?.startsWith('#');
-          const isPremiumCustom = isPro && isValidHex && premiumColor;
-          const accentColor = (isPro && premiumColor) ? premiumColor : colors.primary;
+          const isPremiumCustom = (isPro || profile?.isPro) && isValidHex && premiumColor;
+          const accentColor = ((isPro || profile?.isPro) && premiumColor) ? premiumColor : colors.primary;
           return (
-            <View
-              style={{
-                marginBottom: Spacing.md,
-                borderRadius: 20,
-                overflow: 'hidden',
-                borderWidth: isPremiumCustom ? 1.5 : 1,
-                borderColor: isPremiumCustom && premiumColor ? premiumColor + '80' : colors.border,
-              }}
-            >
-              {isPremiumCustom && premiumColor ? (
-                <LinearGradient
-                  colors={[premiumColor + '25', premiumColor + '10', 'transparent'] as [string, string, string]}
-                  style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                />
-              ) : (
-                <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface, borderRadius: 20 }]} />
-              )}
-              {isPremiumCustom && premiumColor && (
-                <LinearGradient
-                  colors={[premiumColor + 'DD', premiumColor + '00'] as [string, string]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2 }}
-                />
-              )}
-              <View style={{ padding: Spacing.md }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
-                  <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>{t('social.you.trophyShowcase', '🏆 Trophy Showcase')}</Text>
+            <>
+              {profile?.pinnedAchievements && profile.pinnedAchievements.length > 0 && (
+                <View
+                  style={{
+                    marginBottom: Spacing.md,
+                    borderRadius: 20,
+                    overflow: 'hidden',
+                    borderWidth: isPremiumCustom ? 1.5 : 1,
+                    borderColor: isPremiumCustom && premiumColor ? premiumColor + '80' : colors.border,
+                  }}
+                >
+                  {isPremiumCustom && premiumColor ? (
+                    <LinearGradient
+                      colors={[premiumColor + '25', premiumColor + '10', 'transparent'] as [string, string, string]}
+                      style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                    />
+                  ) : (
+                    <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface, borderRadius: 20 }]} />
+                  )}
+                  {isPremiumCustom && premiumColor && (
+                    <LinearGradient
+                      colors={[premiumColor + 'DD', premiumColor + '00'] as [string, string]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2 }}
+                    />
+                  )}
+                  <View style={{ padding: Spacing.md }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
+                      <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>{t('social.you.trophyShowcase', '🏆 Trophy Showcase')}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
+                      {profile.pinnedAchievements.map(id => {
+                        const ach = achievements.find((a: any) => a.id === id);
+                        if (!ach) return null;
+                        const isHolo = ach.tier === 'oro' || ach.tier === 'diamante';
+                        const tierColor = ach.tier === 'diamante' ? '#38BDF8' : 
+                                          ach.tier === 'oro' ? '#FBBF24' : 
+                                          ach.tier === 'plata' ? '#9CA3AF' : '#D97706';
+                        return (
+                          <View key={id} style={{
+                            flex: 1, backgroundColor: colors.surfaceAlt, padding: Spacing.sm, borderRadius: 16, alignItems: 'center',
+                            borderWidth: 1, borderColor: isHolo ? tierColor + '50' : colors.border,
+                            ...(isHolo ? { shadowColor: tierColor, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 } : {})
+                          }}>
+                            <LinearGradient
+                              colors={(isHolo ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5'] : ['transparent', 'transparent']) as [string, string, ...string[]]}
+                              style={{ width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: isHolo ? 'transparent' : colors.surfaceAlt, marginBottom: 8 }}
+                            >
+                              {ach.iconType === 'lucide' && ach.lucideIcon ? (
+                                // @ts-ignore
+                                React.createElement(require('lucide-react-native')[ach.lucideIcon] || require('lucide-react-native').Star, {
+                                  size: 24,
+                                  color: isHolo ? '#FFF' : tierColor,
+                                  strokeWidth: 2.5
+                                })
+                              ) : (
+                                <Text style={{ fontSize: 24 }}>{ach.icon}</Text>
+                              )}
+                            </LinearGradient>
+                            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' }} numberOfLines={1}>{ach.title}</Text>
+                            <Text style={{ fontSize: 9, color: tierColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>
+                              {String(t(`achievements.tiers.${ach.tier === 'bronce' ? 'bronze' : ach.tier === 'plata' ? 'silver' : ach.tier === 'oro' ? 'gold' : ach.tier === 'diamante' ? 'diamond' : ach.tier}`, ach.tier))}
+                            </Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  </View>
                 </View>
-                <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
-                  {profile.pinnedAchievements.map(id => {
-                    const ach = achievements.find((a: any) => a.id === id);
-                    if (!ach) return null;
-                    const isHolo = ach.tier === 'oro' || ach.tier === 'diamante';
-                    const tierColor = ach.tier === 'diamante' ? '#38BDF8' : 
-                                      ach.tier === 'oro' ? '#FBBF24' : 
-                                      ach.tier === 'plata' ? '#9CA3AF' : '#D97706';
-                    return (
-                      <View key={id} style={{
-                        flex: 1, backgroundColor: colors.surfaceAlt, padding: Spacing.sm, borderRadius: 16, alignItems: 'center',
-                        borderWidth: 1, borderColor: isHolo ? tierColor + '50' : colors.border,
-                        ...(isHolo ? { shadowColor: tierColor, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 } : {})
-                      }}>
-                        <LinearGradient
-                          colors={(isHolo ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5'] : ['transparent', 'transparent']) as [string, string, ...string[]]}
-                          style={{ width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: isHolo ? 'transparent' : colors.surfaceAlt, marginBottom: 8 }}
-                        >
-                          {ach.iconType === 'lucide' && ach.lucideIcon ? (
-                            // @ts-ignore
-                            React.createElement(require('lucide-react-native')[ach.lucideIcon] || require('lucide-react-native').Star, {
-                              size: 24,
-                              color: isHolo ? '#FFF' : tierColor,
-                              strokeWidth: 2.5
-                            })
-                          ) : (
-                            <Text style={{ fontSize: 24 }}>{ach.icon}</Text>
-                          )}
-                        </LinearGradient>
-                        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' }} numberOfLines={1}>{ach.title}</Text>
-                        <Text style={{ fontSize: 9, color: tierColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>
-                          {String(t(`achievements.tiers.${ach.tier === 'bronce' ? 'bronze' : ach.tier === 'plata' ? 'silver' : ach.tier === 'oro' ? 'gold' : ach.tier === 'diamante' ? 'diamond' : ach.tier}`, ach.tier))}
-                        </Text>
-                      </View>
-                    );
-                  })}
+              )}
+
+              <TouchableOpacity
+                onPress={() => router.navigate('/modals/achievements' as any)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 10,
+                  backgroundColor: isPremiumCustom ? premiumColor + '18' : '#F59E0B18',
+                  borderWidth: 1.5,
+                  borderColor: isPremiumCustom ? premiumColor + '40' : '#F59E0B40',
+                  borderRadius: 16,
+                  paddingHorizontal: 18,
+                  paddingVertical: 14,
+                  marginBottom: 20,
+                  marginTop: 8,
+                }}
+              >
+                <Trophy size={22} color={isPremiumCustom ? premiumColor : '#F59E0B'} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: isPremiumCustom ? premiumColor : '#F59E0B', fontWeight: '800', fontSize: 15 }}>{t('social.you.achievements')}</Text>
+                  <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 1 }}>{t('social.you.viewAllAchievements')}</Text>
                 </View>
-              </View>
-            </View>
+                <View style={{ backgroundColor: isPremiumCustom ? premiumColor : '#F59E0B', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 }}>
+                  <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>
+                    {achievements.filter((a: any) => a.unlocked).length}/{achievements.length}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </>
           );
         })()}
-
-        <TouchableOpacity
-          onPress={() => router.navigate('/modals/achievements' as any)}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 10,
-            backgroundColor: '#F59E0B18',
-            borderWidth: 1.5,
-            borderColor: '#F59E0B40',
-            borderRadius: 16,
-            paddingHorizontal: 18,
-            paddingVertical: 14,
-            marginBottom: 20,
-            marginTop: 8,
-          }}
-        >
-          <Trophy size={22} color="#F59E0B" />
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: '#F59E0B', fontWeight: '800', fontSize: 15 }}>{t('social.you.achievements')}</Text>
-            <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 1 }}>{t('social.you.viewAllAchievements')}</Text>
-          </View>
-          <View style={{ backgroundColor: '#F59E0B', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 }}>
-            <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>
-              {achievements.filter((a: any) => a.unlocked).length}/{achievements.length}
-            </Text>
-          </View>
-        </TouchableOpacity>
 
         <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>{t('social.you.yourPosts')}</Text>
         {myPosts.length === 0 ? (
@@ -560,7 +551,7 @@ export default function FitGOSocial() {
                       </View>
                     )}
                     <View>
-                      <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id)]}>{post.user_profile?.name}</Text>
+                      <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id, profile?.id, profile?.nameColor)]}>{post.user_profile?.name}</Text>
                       <Text style={{ color: colors.textMuted, fontSize: 11 }}>
                         {new Date(post.created_at).toLocaleDateString()} {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </Text>
@@ -649,13 +640,9 @@ export default function FitGOSocial() {
 
   const renderFeed = () => (
     <View style={s.tabContent}>
-      <FlatList
+      <FlashList
         data={socialStore.posts}
         keyExtractor={post => post.id}
-        initialNumToRender={5}
-        maxToRenderPerBatch={5}
-        windowSize={5}
-        removeClippedSubviews={true}
         contentContainerStyle={{ paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -684,7 +671,7 @@ export default function FitGOSocial() {
                     </View>
                   )}
                   <View>
-                    <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id)]}>{post.user_profile?.name}</Text>
+                    <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id, profile?.id, profile?.nameColor)]}>{post.user_profile?.name}</Text>
                     <Text style={{ color: colors.textMuted, fontSize: 11 }}>
                       {new Date(post.created_at).toLocaleDateString()} {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </Text>
@@ -736,7 +723,7 @@ export default function FitGOSocial() {
                     )}
                     <View style={[s.commentBubble, { backgroundColor: colors.surfaceAlt }]}>
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                        <Text style={[s.commentUser, getNameStyle(comment.user_profile?.name_color, comment.user_id), { marginBottom: 0 }]}>{comment.user_profile?.name}</Text>
+                        <Text style={[s.commentUser, getNameStyle(comment.user_profile?.name_color, comment.user_id, profile?.id, profile?.nameColor), { marginBottom: 0 }]}>{comment.user_profile?.name}</Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                           <Text style={{ color: colors.textMuted, fontSize: 9 }}>
                             {new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -881,7 +868,7 @@ export default function FitGOSocial() {
                     </View>
                   )}
                   <View>
-                    <Text style={[s.userName, getNameStyle(user.name_color, user.id)]} numberOfLines={1}>{user.name}</Text>
+                    <Text style={[s.userName, getNameStyle(user.name_color, user.id, profile?.id, profile?.nameColor)]} numberOfLines={1}>{user.name}</Text>
                     <Text style={{ color: colors.textMuted, fontSize: 12 }}>{user.email}</Text>
                   </View>
                 </TouchableOpacity>
@@ -1048,6 +1035,12 @@ export default function FitGOSocial() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 4 }}>
           {(['you', 'feed', 'friends'] as TabType[]).map((tab) => {
             const isActive = activeTab === tab;
+            let badgeCount = 0;
+            if (tab === 'friends') {
+              const totalUnreadMessages = Object.values(socialStore.unreadCounts || {}).reduce((sum: number, count: any) => sum + (count || 0), 0);
+              const pendingRequests = socialStore.friends.filter(f => f.status === 'pending' && f.user_id_2 === profile?.id).length;
+              badgeCount = totalUnreadMessages + pendingRequests;
+            }
             return (
               <TouchableOpacity 
                 key={tab} 
@@ -1066,12 +1059,21 @@ export default function FitGOSocial() {
                     { backgroundColor: isActive ? 'transparent' : colors.surfaceAlt }
                   ]}
                 >
-                  <Text style={[
-                    s.tabText, 
-                    { color: isActive ? '#fff' : colors.textSecondary },
-                  ]}>
-                    {t('social.tabs.' + tab)}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={[
+                      s.tabText, 
+                      { color: isActive ? '#fff' : colors.textSecondary },
+                    ]}>
+                      {t('social.tabs.' + tab)}
+                    </Text>
+                    {badgeCount > 0 && (
+                      <View style={{ backgroundColor: isActive ? '#fff' : colors.error, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10, minWidth: 20, alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={{ color: isActive ? colors.primary : '#fff', fontSize: 10, fontWeight: 'bold' }}>
+                          {badgeCount}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                 </LinearGradient>
               </TouchableOpacity>
             );
@@ -1128,7 +1130,7 @@ export default function FitGOSocial() {
                 )}
               </TouchableOpacity>
 
-              <Text style={[{ fontSize: 20, fontWeight: '900', letterSpacing: -0.4, marginBottom: 4, textAlign: 'center' }, getNameStyle(inspectingUser?.name_color)]}>{inspectingUser?.name}</Text>
+              <Text style={[{ fontSize: 20, fontWeight: '900', letterSpacing: -0.4, marginBottom: 4, textAlign: 'center' }, getNameStyle(inspectingUser?.name_color, inspectingUser?.id, profile?.id, profile?.nameColor)]}>{inspectingUser?.name}</Text>
 
               {/* Points row */}
               {(() => {

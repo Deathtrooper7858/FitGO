@@ -15,10 +15,13 @@ import { SuccessModal } from '../../../components/SuccessModal';
 import { CustomAlert, AlertType } from '../../../components/CustomAlert';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system/legacy';
+import * as FileSystem from 'expo-file-system';
+import { GlobalBackground } from '../../../components/GlobalBackground';
 import * as Haptics from 'expo-haptics';
 import { Download, Sparkles, Utensils, Dumbbell, Coffee, Apple, Pizza, CalendarDays, ChevronRight, Activity, Moon, ShoppingCart, AlertTriangle, Info, RefreshCw, ShieldAlert, CheckCircle } from 'lucide-react-native';
 import { AnimatedCard } from '../../../components/AnimatedCard';
+import { getNameStyle } from '../../../utils/styles';
+import { GlassCard } from '../../../components/GlassCard';
 import { getLocalDateString } from '../../../utils/date';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -626,13 +629,8 @@ export default function PlannerScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <LinearGradient
-        colors={['rgba(245, 158, 11, 0.1)', 'rgba(239, 68, 68, 0.05)', 'transparent']}
-        style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 350 }}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-      />
+    <View style={{ flex: 1 }}>
+      <GlobalBackground />
       <SafeAreaView style={[s.safe, { backgroundColor: 'transparent' }]}>
       <CustomAlert visible={alert.visible} type={alert.type} title={alert.title} message={alert.message} onConfirm={alert.onConfirm} />
 
@@ -664,7 +662,7 @@ export default function PlannerScreen() {
         <View style={s.headerTextWrap}>
           <Text style={[s.title, { color: colors.textPrimary }]}>{t('planner.title')}</Text>
           {profile?.name && (
-            <Text style={[s.subtitle, { color: colors.primary, fontWeight: '700', fontSize: 16, marginBottom: 2 }]}>
+            <Text style={[s.subtitle, { color: colors.primary, fontWeight: '700', fontSize: 16, marginBottom: 2 }, getNameStyle(profile?.nameColor)]}>
               {t('common.greeting', 'Hola')}, {profile.name}!
             </Text>
           )}
