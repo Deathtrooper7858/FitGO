@@ -680,8 +680,8 @@ export default function PlannerScreen() {
     DAYS.forEach(day => {
       const workout = workoutPlans[day];
       if (workout) {
-        html += `<h2>${t(`planner.${day.toLowerCase()}`)}: ${workout.exercises.length === 0 ? t('planner.restDay') : workout.name}</h2>`;
-        if (workout.exercises.length > 0) {
+        html += `<h2>${t(`planner.${day.toLowerCase()}`)}: ${(workout.exercises?.length || 0) === 0 ? t('planner.restDay') : workout.name}</h2>`;
+        if ((workout.exercises?.length || 0) > 0) {
           html += `<ul>`;
           workout.exercises.forEach((ex: any) => {
             html += `<li><strong>${ex.name}</strong><br/>${t('planner.sets', 'Sets')}: ${ex.sets} | ${t('planner.reps', 'Reps')}: ${ex.reps} | ${t('planner.rest', 'Rest')}: ${ex.rest}</li>`;
@@ -1311,15 +1311,15 @@ export default function PlannerScreen() {
           ) : (
             workout ? (
               <View style={s.workoutRoutine}>
-                {workout.exercises.length > 0 ? (
+                {(workout.exercises?.length || 0) > 0 ? (
                   <>
                     <View style={s.routineHeaderCompact}>
                       <Text style={[s.routineName, { color: colors.textPrimary }]}>{workout.name}</Text>
                       <View style={[s.workoutBadge, {backgroundColor: colors.primary + '15'}]}>
-                         <Text style={[s.workoutBadgeText, {color: colors.primary}]}>{workout.exercises.length} Exercises</Text>
+                         <Text style={[s.workoutBadgeText, {color: colors.primary}]}>{workout.exercises?.length || 0} Exercises</Text>
                       </View>
                     </View>
-                    {workout.exercises.map((ex: any, i: number) => (
+                    {(workout.exercises || []).map((ex: any, i: number) => (
                       <AnimatedCard key={i} index={i} direction="up">
                         <View style={[s.exerciseCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                           <View style={s.exerciseHeader}>

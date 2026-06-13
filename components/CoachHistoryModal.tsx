@@ -88,6 +88,7 @@ export default function CoachHistoryModal({ visible, onClose, coachType }: Histo
 
           <FlashList
             data={sessions}
+            estimatedItemSize={50}
             keyExtractor={item => item.id}
             contentContainerStyle={s.list}
             renderItem={({ item }) => (

@@ -692,6 +692,7 @@ export default function NutritionistScreen() {
         <FlashList<CoachMessage>
           ref={flatRef}
           data={messages}
+          estimatedItemSize={100}
           style={{ flex: 1 }}
           keyExtractor={(m) => m.id}
           renderItem={({ item, index }) => {
@@ -757,11 +758,6 @@ export default function NutritionistScreen() {
 
         {/* ── Input area ── */}
         <View style={[s.inputAreaContainer, { borderTopColor: colors.border, backgroundColor: colors.background }]}>
-            {messages.length <= 1 && (
-              <Text style={{ fontSize: 11, color: colors.textMuted, textAlign: 'center', marginTop: 8, fontStyle: 'italic', paddingHorizontal: 16 }}>
-                💡 {t('scan.textPrecisionHint', 'Para mayor precisión, menciona explícitamente las cantidades (ej. 200g) y qué comida es.')}
-              </Text>
-            )}
             {selectedImage && (
               <View style={s.imagePreviewContainer}>
                 <View style={[s.imagePreviewWrapper, { borderColor: colors.border }]}>
@@ -889,19 +885,19 @@ const s = StyleSheet.create({
   messages:             { paddingVertical: Spacing.base, paddingBottom: 16 },
   
   // Suggestions 2x2 Grid
-  suggestionsGrid:      { flexDirection: 'row', flexWrap: 'wrap', gap: 12, padding: Spacing.base, justifyContent: 'space-between' },
-  suggestionCard:       { width: '48%', borderRadius: Radius.lg, padding: 14, borderWidth: 1.5, minHeight: 115, justifyContent: 'space-between', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6, elevation: 1 },
-  suggestionIconContainer: { width: 32, height: 32, borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
-  suggestionCardText:   { fontSize: 13, fontWeight: '600', lineHeight: 18 },
+  suggestionsGrid:      { flexDirection: 'row', flexWrap: 'wrap', gap: 12, padding: Spacing.base, paddingVertical: 16, justifyContent: 'space-between' },
+  suggestionCard:       { width: '48%', borderRadius: Radius.lg, padding: 12, borderWidth: 1.5, minHeight: 90, justifyContent: 'space-between', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6, elevation: 1 },
+  suggestionIconContainer: { width: 28, height: 28, borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+  suggestionCardText:   { fontSize: 12, fontWeight: '600', lineHeight: 16 },
 
-  inputAreaContainer:   { borderTopWidth: 1.5 },
+  inputAreaContainer:   { borderTopWidth: 1.5, paddingTop: 8 },
   imagePreviewContainer:{ padding: Spacing.base, paddingBottom: 0, flexDirection: 'row' },
   imagePreviewWrapper:  { borderWidth: 1.5, borderRadius: Radius.md, padding: 2, position: 'relative' },
   imagePreview:         { width: 60, height: 60, borderRadius: Radius.sm },
   removeImageBtn:       { position: 'absolute', top: -6, right: -6, backgroundColor: '#EF4444', borderRadius: 10, width: 20, height: 20, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, borderColor: '#fff' },
   removeImageText:      { color: '#fff', fontSize: 10, fontWeight: '900' },
   
-  inputArea:            { flexDirection: 'row', gap: 8, padding: Spacing.base, alignItems: 'flex-end' },
+  inputArea:            { flexDirection: 'row', gap: 8, paddingHorizontal: Spacing.base, paddingBottom: Spacing.base, paddingTop: 4, alignItems: 'flex-end' },
   inputIconBtn:         { width: 42, height: 42, borderRadius: Radius.lg, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 4, elevation: 1 },
   lockBadge:            { position: 'absolute', top: 2, right: 2, backgroundColor: 'rgba(0,0,0,0.06)', borderRadius: 6, padding: 1 },
   
