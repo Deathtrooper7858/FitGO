@@ -29,6 +29,9 @@ import { useAdStore } from '../../../store/adStore';
 import { CustomAlert, AlertType } from '../../../components/CustomAlert';
 import { calculateProgressPct, handleGoalSave } from '../../../hooks/useDashboardLogic';
 import { renderDashboardWidget } from '../../../components/dashboard/WidgetRenderer';
+import { WelcomeModal } from '../../../components/WelcomeModal';
+import { FitzDailyTip } from '../../../components/FitzDailyTip';
+import { useProgressStore } from '../../../store/progressStore';
 
 const { width } = Dimensions.get('window');
 
@@ -182,6 +185,7 @@ export default function DashboardScreen() {
   const { calories } = totalsData;
   const target = profile?.targetCalories ?? 2000;
   const name = profile?.name?.split(' ')[0] ?? t('dashboard.fallbackName');
+  const streakDays = 5; // Placeholder
 
   const navigation = useNavigation();
 
@@ -348,7 +352,15 @@ export default function DashboardScreen() {
     Haptics.selectionAsync();
   };
 
-
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([
+      fetchLogs(profile?.id || '', selectedDate),
+      fetchMeasurements(profile?.id || '')
+    ]);
+    setRefreshing(false);
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -366,7 +378,7 @@ export default function DashboardScreen() {
       />
       <View style={{ flex: 1 }}>
 
-        <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scrollContent} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
         {/* Header */}
         <View style={s.header}>
           <View style={{ gap: 4 }}>
@@ -384,6 +396,9 @@ export default function DashboardScreen() {
           </View>
           <AchievementPreview achievements={achievements} onPress={() => router.push('/modals/achievements' as any)} />
         </View>
+
+        {/* Fitz Daily Tip Widget */}
+        <FitzDailyTip streakDays={streakDays} />
 
         {/* Nutritional Score Card */}
         <View style={s.sectionHeader}>

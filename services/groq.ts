@@ -78,9 +78,17 @@ async function fetchGroq(payload: any, retries = 2): Promise<any> {
           if (attempt < retries) {
             attempt++;
             const match = errorMsg.match(/try again in ([\d\.]+)s/);
-            const waitTime = match ? parseFloat(match[1]) * 1000 : 5000;
-            console.warn(`[Groq Rate Limit] Retry ${attempt}/${retries} in ${waitTime}ms`);
-            await new Promise(r => setTimeout(r, waitTime + 500));
+            const waitTimeMs = match ? parseFloat(match[1]) * 1000 : 5000;
+
+            // If the wait time is huge (like daily quota hit), fallback to the FAST_MODEL
+            if (waitTimeMs > 10000 && payload.model === CHAT_MODEL) {
+              console.warn(`[Groq Rate Limit] Wait time is too long. Falling back to ${FAST_MODEL}.`);
+              payload.model = FAST_MODEL;
+              continue; // Retry immediately
+            }
+
+            console.warn(`[Groq Rate Limit] Retry ${attempt}/${retries} in ${waitTimeMs}ms`);
+            await new Promise(r => setTimeout(r, waitTimeMs + 500));
             continue;
           }
         }
@@ -1071,3 +1079,49 @@ Original Instructions: ${JSON.stringify(instructions)}`;
     return { name, instructions };
   }
 }
+
+// ─── Generate Daily Tip ───────────────────────────────────────────────────────
+export async function generateDailyTip(
+  userProfile: any,
+  workouts: any[],
+  streakDays: number,
+  language: string = 'en'
+): Promise<string> {
+  const targetLang = getLang(language);
+  const currentHour = new Date().getHours();
+  
+  let timeContext = 'night';
+  if (currentHour >= 5 && currentHour < 12) timeContext = 'morning';
+  else if (currentHour >= 12 && currentHour < 18) timeContext = 'afternoon';
+  else if (currentHour >= 18 && currentHour < 22) timeContext = 'evening';
+
+  const recentWorkouts = workouts.slice(0, 3).map((w: any) => ({
+    date: w.date,
+    name: w.routineName,
+    exercises: w.exercises.length
+  }));
+
+  const prompt = `You are Fitz, the user's AI personal trainer. 
+User Name: ${userProfile.name || 'Athlete'}
+Current time context: ${timeContext}
+Current workout streak: ${streakDays} days
+Recent workouts: ${JSON.stringify(recentWorkouts)}
+
+Write a SINGLE, short, highly motivating sentence (max 15 words) to greet the user. It should sound like a quick push notification from a coach. 
+Use ${targetLang}. 
+Do NOT use quotes. Do NOT add hashtags. Use exactly one relevant emoji.
+Example: "¡Buenos días bestia! Llevas 3 días imparable, a romperla hoy. 🦍"`;
+
+  try {
+    const data = await fetchGroq({
+      model: FAST_MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 50,
+      temperature: 0.8,
+    });
+    return data.choices[0]?.message?.content?.trim() || `¡A darle con todo hoy! 🔥`;
+  } catch (err) {
+    return `¡A darle con todo hoy! 🔥`;
+  }
+}
+

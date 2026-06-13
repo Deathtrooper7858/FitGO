@@ -963,70 +963,39 @@ export default function PlannerScreen() {
         </TouchableOpacity>
       )}
 
-      {/* Header Area */}
-      <View style={s.header}>
-        <View style={s.headerTextWrap}>
-          <Text style={[s.title, { color: colors.textPrimary }]}>{t('planner.title')}</Text>
-          {profile?.name && (
-            <Text style={[s.subtitle, { color: colors.primary, fontWeight: '700', fontSize: 16, marginBottom: 2 }, getNameStyle(profile?.nameColor)]}>
-              {t('common.greeting', 'Hola')}, {profile.name}!
-            </Text>
-          )}
-          <Text style={[s.subtitle, { color: colors.textSecondary }]}>
-            {profile?.goal ? `${t('planner.planFor', 'Plan para:')} ${getGoalTranslation()}` : t('planner.weekPlan')}
-          </Text>
-        </View>
-
-        <TouchableOpacity style={s.genBtn} activeOpacity={0.8} onPress={() => handleGeneratePress()} disabled={loading}>
-          <LinearGradient 
-            colors={
-              mode === 'workouts' 
-                ? (energyMode === 'low' ? ['#06B6D4', '#0891B2'] : energyMode === 'beast' ? ['#EF4444', '#B91C1C'] : (isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : colors.gradientPrimary))
-                : (isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : colors.gradientPrimary)
-            } 
-            style={s.genGrad} start={{x:0,y:0}} end={{x:1,y:1}}
-          >
-            {loading ? <ActivityIndicator size="small" color="#fff" /> :
-             <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
-               <Sparkles size={16} color="#fff" />
-               <Text style={s.genText}>{t('planner.generate')}</Text>
-             </View>
-            }
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-
-      {/* Energy Meter UI (Moved outside the row header) */}
-      {mode === 'workouts' && (
-        <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
-           <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 8 }}>¿Cómo te sientes hoy?</Text>
-           <View style={{ flexDirection: 'row', gap: 8 }}>
-             <TouchableOpacity 
-               activeOpacity={0.8}
-               onPress={() => setEnergyMode('low')}
-               style={{ flex: 1, paddingVertical: 10, backgroundColor: energyMode === 'low' ? '#06B6D420' : colors.surfaceAlt, borderRadius: 16, borderWidth: 1, borderColor: energyMode === 'low' ? '#06B6D4' : colors.border, alignItems: 'center' }}>
-               <Text style={{ fontSize: 20 }}>🔋</Text>
-               <Text style={{ fontSize: 12, fontWeight: '800', color: energyMode === 'low' ? '#06B6D4' : colors.textMuted, marginTop: 4 }}>Agotado</Text>
-             </TouchableOpacity>
-             <TouchableOpacity 
-               activeOpacity={0.8}
-               onPress={() => setEnergyMode('normal')}
-               style={{ flex: 1, paddingVertical: 10, backgroundColor: energyMode === 'normal' ? colors.primary + '20' : colors.surfaceAlt, borderRadius: 16, borderWidth: 1, borderColor: energyMode === 'normal' ? colors.primary : colors.border, alignItems: 'center' }}>
-               <Text style={{ fontSize: 20 }}>⚡</Text>
-               <Text style={{ fontSize: 12, fontWeight: '800', color: energyMode === 'normal' ? colors.primary : colors.textMuted, marginTop: 4 }}>Normal</Text>
-             </TouchableOpacity>
-             <TouchableOpacity 
-               activeOpacity={0.8}
-               onPress={() => setEnergyMode('beast')}
-               style={{ flex: 1, paddingVertical: 10, backgroundColor: energyMode === 'beast' ? '#EF444420' : colors.surfaceAlt, borderRadius: 16, borderWidth: 1, borderColor: energyMode === 'beast' ? '#EF4444' : colors.border, alignItems: 'center' }}>
-               <Text style={{ fontSize: 20 }}>🦍</Text>
-               <Text style={{ fontSize: 12, fontWeight: '800', color: energyMode === 'beast' ? '#EF4444' : colors.textMuted, marginTop: 4 }}>Bestia</Text>
-             </TouchableOpacity>
-           </View>
-        </View>
-      )}
-
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 160 }}>
+        {/* Header Area */}
+        <View style={s.header}>
+          <View style={s.headerTextWrap}>
+            <Text style={[s.title, { color: colors.textPrimary }]}>{t('planner.title')}</Text>
+            {profile?.name && (
+              <Text style={[s.subtitle, { color: colors.primary, fontWeight: '700', fontSize: 16, marginBottom: 2 }, getNameStyle(profile?.nameColor)]}>
+                {t('common.greeting', 'Hola')}, {profile.name}!
+              </Text>
+            )}
+            <Text style={[s.subtitle, { color: colors.textSecondary }]}>
+              {profile?.goal ? `${t('planner.planFor', 'Plan para:')} ${getGoalTranslation()}` : t('planner.weekPlan')}
+            </Text>
+          </View>
+
+          <TouchableOpacity style={s.genBtn} activeOpacity={0.8} onPress={() => handleGeneratePress()} disabled={loading}>
+            <LinearGradient 
+              colors={
+                mode === 'workouts' 
+                  ? (energyMode === 'low' ? ['#06B6D4', '#0891B2'] : energyMode === 'beast' ? ['#EF4444', '#B91C1C'] : (isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : colors.gradientPrimary))
+                  : (isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : colors.gradientPrimary)
+              } 
+              style={s.genGrad} start={{x:0,y:0}} end={{x:1,y:1}}
+            >
+              {loading ? <ActivityIndicator size="small" color="#fff" /> :
+               <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
+                 <Sparkles size={16} color="#fff" />
+                 <Text style={s.genText}>{t('planner.generate')}</Text>
+               </View>
+              }
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
 
         {/* Mode Selector */}
         <View style={s.toggleContainer}>
@@ -1053,6 +1022,46 @@ export default function PlannerScreen() {
         </View>
 
         <DayPicker active={activeDay} onSelect={setActiveDay} isPremiumCustom={isPremiumCustom} premiumColor={premiumColor} />
+
+        {/* Energy Meter UI (Moved inside ScrollView) */}
+        {mode === 'workouts' && (
+          <View style={{ paddingHorizontal: 16, marginBottom: 20, marginTop: 12 }}>
+             <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 8 }}>¿Cómo te sientes hoy?</Text>
+             <View style={{ flexDirection: 'row', gap: 8 }}>
+               <TouchableOpacity 
+                 activeOpacity={0.8}
+                 onPress={() => {
+                   setEnergyMode('low');
+                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                 }}
+                 style={{ flex: 1, paddingVertical: 10, backgroundColor: energyMode === 'low' ? '#06B6D420' : colors.surfaceAlt, borderRadius: 16, borderWidth: 1, borderColor: energyMode === 'low' ? '#06B6D4' : colors.border, alignItems: 'center' }}>
+                 <Text style={{ fontSize: 20 }}>🔋</Text>
+                 <Text style={{ fontSize: 12, fontWeight: '800', color: energyMode === 'low' ? '#06B6D4' : colors.textMuted, marginTop: 4 }}>Agotado</Text>
+               </TouchableOpacity>
+               <TouchableOpacity 
+                 activeOpacity={0.8}
+                 onPress={() => {
+                   setEnergyMode('normal');
+                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                 }}
+                 style={{ flex: 1, paddingVertical: 10, backgroundColor: energyMode === 'normal' ? colors.primary + '20' : colors.surfaceAlt, borderRadius: 16, borderWidth: 1, borderColor: energyMode === 'normal' ? colors.primary : colors.border, alignItems: 'center' }}>
+                 <Text style={{ fontSize: 20 }}>⚡</Text>
+                 <Text style={{ fontSize: 12, fontWeight: '800', color: energyMode === 'normal' ? colors.primary : colors.textMuted, marginTop: 4 }}>Normal</Text>
+               </TouchableOpacity>
+               <TouchableOpacity 
+                 activeOpacity={0.8}
+                 onPress={() => {
+                   setEnergyMode('beast');
+                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+                   setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy), 100);
+                 }}
+                 style={{ flex: 1, paddingVertical: 10, backgroundColor: energyMode === 'beast' ? '#EF444420' : colors.surfaceAlt, borderRadius: 16, borderWidth: 1, borderColor: energyMode === 'beast' ? '#EF4444' : colors.border, alignItems: 'center' }}>
+                 <Text style={{ fontSize: 20 }}>🦍</Text>
+                 <Text style={{ fontSize: 12, fontWeight: '800', color: energyMode === 'beast' ? '#EF4444' : colors.textMuted, marginTop: 4 }}>Bestia</Text>
+               </TouchableOpacity>
+             </View>
+          </View>
+        )}
 
         {mode === 'workouts' && (
           <View style={{ marginBottom: Spacing.lg }}>
@@ -1678,7 +1687,7 @@ function MealCard({ day, index, name, meal, cal, protein, carbs, fat }: { day: s
   };
 
   const handleConsume = () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Haptics.selectionAsync();
     useNutritionStore.getState().addLog({
       id: '',
       foodItem: { id: '', name, calories: cal, protein: protein || 0, carbs: carbs || 0, fat: fat || 0, source: 'custom', sugar: 0, fiber: 0, sodium: 0, iron: 0, calcium: 0, saturatedFat: 0, transFat: 0 },
