@@ -120,7 +120,7 @@ export default function MuscleDirectoryModal() {
   const { isPro } = usePurchaseStore();
   const { hasPremiumAdAccess } = useAdStore();
 
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const featureId = 'directory';
   const hasAccess = isProActually || hasPremiumAdAccess(featureId);
 
@@ -574,3 +574,4 @@ const styles = StyleSheet.create({
   proGrad:          { padding: 16, alignItems: 'center' },
   proText:          { color: '#fff', fontWeight: '700', fontSize: 16 },
 });
+
