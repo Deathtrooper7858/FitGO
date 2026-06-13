@@ -5,6 +5,7 @@ import Body from 'react-native-body-highlighter';
 import { supabase } from '../../services/supabase';
 import { translateExerciseDetails } from '../../services/groq';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../hooks/useTheme';
@@ -52,12 +53,13 @@ const BODY_DATA = [
 ] as any;
 
 const getGroupIdBySlug = (slug: string) => {
-  if (['chest'].includes(slug)) return 'chest';
-  if (['upper-back', 'lower-back', 'trapezius'].includes(slug)) return 'back';
-  if (['quadriceps', 'hamstring', 'gluteal', 'calves', 'adductors'].includes(slug)) return 'legs';
-  if (['deltoids'].includes(slug)) return 'shoulders';
-  if (['biceps', 'triceps', 'forearm'].includes(slug)) return 'arms';
-  if (['abs', 'obliques'].includes(slug)) return 'core';
+  const s = slug.toLowerCase();
+  if (['chest'].includes(s)) return 'chest';
+  if (['upper-back', 'lower-back', 'trapezius', 'lats'].includes(s)) return 'back';
+  if (['quadriceps', 'hamstring', 'gluteal', 'calves', 'adductors', 'abductors', 'hamstrings', 'glutes'].includes(s)) return 'legs';
+  if (['deltoids', 'shoulders', 'front-deltoids', 'back-deltoids'].includes(s)) return 'shoulders';
+  if (['biceps', 'triceps', 'forearm', 'forearms'].includes(s)) return 'arms';
+  if (['abs', 'obliques'].includes(s)) return 'core';
   return null;
 };
 
@@ -150,10 +152,20 @@ export default function MuscleDirectoryModal() {
     }
     
     setIsTranslating(true);
+    const cacheKey = `ex_trans_${exercise.exerciseId || exercise.name}_${currentLang}`;
     try {
+      const cached = await AsyncStorage.getItem(cacheKey);
+      if (cached) {
+        setTranslatedData(JSON.parse(cached));
+        setIsTranslating(false);
+        return;
+      }
+      
       const res = await translateExerciseDetails(exercise.name, exercise.instructions || [], currentLang);
       setTranslatedData(res);
+      await AsyncStorage.setItem(cacheKey, JSON.stringify(res));
     } catch (err) {
+      console.warn('Translation error, falling back to English:', err);
       setTranslatedData({ name: exercise.name, instructions: exercise.instructions || [] });
     } finally {
       setIsTranslating(false);

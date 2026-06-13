@@ -16,6 +16,13 @@ import {
   MessageSquarePlus, Apple, Salad, Flame, 
   BarChart2, Edit2, ShieldAlert, Heart, Compass, Zap, Activity, Dumbbell
 } from 'lucide-react-native';
+import { ImagePickerModal } from './ImagePickerModal';
+import { ImageViewerModal } from './ImageViewerModal';
+import { useKeyboardNavBar } from '../hooks/useKeyboardNavBar';
+import { useKeyboardHeight } from '../hooks/useKeyboardHeight';
+import { useAICredits } from '../hooks/useAICredits';
+import { AICreditsBar } from './AICreditsBar';
+import Animated from 'react-native-reanimated';
 import { useAuthStore, useCoachStore, CoachMessage, useSettingsStore, usePurchaseStore, usePlannerStore, useBodyStore, useWorkoutHistoryStore } from '../store';
 import { sendCoachMessage, buildCoachSystemPrompt, transcribeAudio } from '../services/groq';
 import { supabase } from '../services/supabase';
@@ -24,13 +31,6 @@ import { useTheme } from '../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { safe } from '../utils/sanitize';
 import CoachHistoryModal from './CoachHistoryModal';
-import { ImagePickerModal } from './ImagePickerModal';
-import { ImageViewerModal } from './ImageViewerModal';
-import { useKeyboardNavBar } from '../hooks/useKeyboardNavBar';
-import { useKeyboardHeight } from '../hooks/useKeyboardHeight';
-import { useAICredits } from '../hooks/useAICredits';
-import { AICreditsBar } from './AICreditsBar';
-
 
 
 // Darkens a hex color by a given ratio (0–1)
@@ -648,12 +648,27 @@ export default function TrainerScreen() {
           colors={[colors.background, colors.surface]} 
           style={s.header}
         >
-          <View style={[s.headerAvatarContainer, { borderColor: colors.primary + '40' }]}>
-            <Image source={require('../assets/trainer_badge.jpg')} style={s.headerAvatar} contentFit="cover" />
-            <View style={[s.headerOnlineDot, { backgroundColor: colors.success }]} />
+          <View style={{ position: 'relative' }}>
+            {isTyping && (
+              <Animated.View 
+                style={[
+                  StyleSheet.absoluteFillObject,
+                  {
+                    backgroundColor: colors.primary,
+                    borderRadius: 24,
+                    transform: [{ scale: 1.2 }],
+                    opacity: 0.4
+                  }
+                ]}
+              />
+            )}
+            <View style={[s.headerAvatarContainer, { borderColor: isTyping ? colors.primary : colors.primary + '40' }]}>
+              <Image source={require('../assets/trainer_badge.jpg')} style={s.headerAvatar} contentFit="cover" />
+              <View style={[s.headerOnlineDot, { backgroundColor: isTyping ? colors.primary : colors.success }]} />
+            </View>
           </View>
           
-          <View style={{ flex: 1, paddingRight: 4 }}>
+          <View style={{ flex: 1, paddingRight: 4, marginLeft: 12 }}>
             <Text style={[s.headerName, { color: colors.textPrimary }]} numberOfLines={2} adjustsFontSizeToFit>
               {t('coach.trainer.label', 'Personal Trainer')}
             </Text>
