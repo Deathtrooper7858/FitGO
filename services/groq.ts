@@ -74,11 +74,22 @@ async function fetchGroq(payload: any, retries = 2): Promise<any> {
           errorMsg = errorMsg.message || JSON.stringify(errorMsg);
         }
         
-        if (error.response?.status === 429 || errorMsg.includes('Rate limit')) {
+        if (error.response?.status === 429 || errorMsg.includes('Rate limit') || errorMsg.includes('tokens per day')) {
           if (attempt < retries) {
             attempt++;
-            const match = errorMsg.match(/try again in ([\d\.]+)s/);
-            const waitTimeMs = match ? parseFloat(match[1]) * 1000 : 5000;
+            
+            let waitTimeMs = 5000;
+            const timeMatch = errorMsg.match(/try again in ([0-9hm\.s]+)/);
+            if (timeMatch) {
+              const timeStr = timeMatch[1];
+              if (timeStr.includes('h') || timeStr.includes('m')) {
+                waitTimeMs = 999999; // Fallback to FAST_MODEL
+              } else {
+                waitTimeMs = parseFloat(timeStr) * 1000;
+              }
+            } else if (errorMsg.includes('tokens per day')) {
+              waitTimeMs = 999999;
+            }
 
             // If the wait time is huge (like daily quota hit), fallback to the FAST_MODEL
             if (waitTimeMs > 10000 && payload.model === CHAT_MODEL) {
