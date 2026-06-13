@@ -111,16 +111,21 @@ const toast = StyleSheet.create({
 
 // ─── Inline edit modal (cross-platform, replaces Alert.prompt) ────────────────
 function EditModal({
-  visible, field, title, placeholder, keyboardType, initialValue, onSave, onClose, massUnit, lengthUnit, isPro, initialNameColor, role
+  visible, field, title, placeholder, keyboardType, initialValue, onSave, onClose, massUnit, lengthUnit, isPro, initialNameColor, role, premiumColor
 }: {
   visible: boolean; field: string; title: string; placeholder: string;
   keyboardType?: 'numeric' | 'default';
   initialValue?: string; onSave: (val: string, color?: string) => void; onClose: () => void;
   massUnit: string; lengthUnit: string;
   isPro?: boolean; initialNameColor?: string; role?: string;
+  premiumColor?: string | null;
 }) {
   const { t } = useTranslation();
   const colors = useTheme();
+  // Build gradient: use premiumColor when available, otherwise fall back to theme primary
+  const accentGradient: [string, string] = premiumColor
+    ? [premiumColor, premiumColor + 'AA']
+    : colors.gradientPrimary as [string, string];
   const [value, setValue] = useState(initialValue ?? '');
   const [selectedColor, setSelectedColor] = useState(initialNameColor ?? '');
   const [isFocused, setIsFocused] = useState(false);
@@ -173,7 +178,7 @@ function EditModal({
         <View style={[em.box, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           {/* Header Icon container */}
           <View style={em.headerContainer}>
-            <LinearGradient colors={colors.gradientPrimary} style={em.topIconGrad}>
+            <LinearGradient colors={accentGradient} style={em.topIconGrad}>
               <FieldIcon size={22} color="#fff" />
             </LinearGradient>
             <View style={em.headerTextContainer}>
@@ -192,10 +197,10 @@ function EditModal({
             em.inputContainer, 
             { 
               backgroundColor: colors.surfaceAlt, 
-              borderColor: isFocused ? colors.primary : colors.border,
+              borderColor: isFocused ? (premiumColor || colors.primary) : colors.border,
             }
           ]}>
-            <FieldIcon size={20} color={isFocused ? colors.primary : colors.textMuted} style={em.inputIcon} />
+            <FieldIcon size={20} color={isFocused ? (premiumColor || colors.primary) : colors.textMuted} style={em.inputIcon} />
             <TextInput
               style={[em.input, { color: colors.textPrimary }]}
               value={value}
@@ -213,7 +218,7 @@ function EditModal({
               </TouchableOpacity>
             )}
             {suffix !== '' && (
-              <Text style={[em.suffix, { color: isFocused ? colors.primary : colors.textSecondary }]}>
+              <Text style={[em.suffix, { color: isFocused ? (premiumColor || colors.primary) : colors.textSecondary }]}>
                 {suffix.toUpperCase()}
               </Text>
             )}
@@ -293,7 +298,7 @@ function EditModal({
               style={em.saveBtn} 
               onPress={() => { onSave(value, selectedColor); onClose(); }}
             >
-              <LinearGradient colors={colors.gradientPrimary} style={em.saveGrad}>
+              <LinearGradient colors={accentGradient} style={em.saveGrad}>
                 <Check size={18} color="#fff" strokeWidth={2.5} style={{ marginRight: 6 }} />
                 <Text style={em.saveText}>{t('common.save')}</Text>
               </LinearGradient>
@@ -1652,6 +1657,7 @@ export default function ProfileScreen() {
         isPro={profile?.isPro}
         initialNameColor={profile?.nameColor}
         role={profile?.role}
+        premiumColor={premiumColor}
       />
 
       {toastMsg && <CustomToast message={toastMsg.text} type={toastMsg.type} onHide={() => setToastMsg(null)} />}

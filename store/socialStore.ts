@@ -554,11 +554,29 @@ export const useSocialStore = create<SocialState>((set, get) => ({
   fetchGlobalRanking: async () => {
     set({ isRankingLoading: true });
     try {
-      const { data, error } = await supabase.rpc('get_global_ranking');
+      // Use direct table fetch instead of slow legacy RPC
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, name, avatar_url, name_color, is_pro, league_points')
+        .not('name', 'is', null)
+        .order('league_points', { ascending: false })
+        .limit(50);
+        
       if (error) throw error;
-      set({ globalRanking: data || [] });
-    } catch (err) {
-      console.warn('[SocialStore] Error fetching ranking:', err);
+      
+      const mappedData = (data || []).map((u: any) => ({
+        id: u.id,
+        name: u.name,
+        avatar_url: u.avatar_url,
+        points: u.league_points || 0,
+        name_color: u.is_pro && (!u.name_color || u.name_color === '') ? '#EAB308' : u.name_color
+      }));
+      
+      set({ globalRanking: mappedData });
+    } catch (err: any) {
+      if (err?.message !== 'AbortError: Aborted' && err?.name !== 'AbortError') {
+        console.warn('[SocialStore] Error fetching ranking:', err);
+      }
     } finally {
       set({ isRankingLoading: false });
     }

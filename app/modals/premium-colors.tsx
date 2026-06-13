@@ -9,8 +9,6 @@ import { useSettingsStore, usePurchaseStore, useAuthStore } from '../../store';
 import { Check, X, Crown, Lock, Sparkles } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
-import { supabase } from '../../services/supabase';
-
 const PREMIUM_COLORS = [
   { id: null,       nameKey: 'profile.colors.default', defaultName: 'Morado Clásico', hex: '#7C5CFC', isPro: false },
   { id: '#FFB800',  nameKey: 'profile.colors.gold',    defaultName: 'Dorado Élite', hex: '#FFB800', isPro: true },
@@ -31,7 +29,7 @@ export default function PremiumColorsModal() {
   const { t } = useTranslation();
   const { premiumColor, setPremiumColor } = useSettingsStore();
   const { isPro, verifyProStatus } = usePurchaseStore();
-  const { profile, setProfile } = useAuthStore();
+  const { profile } = useAuthStore();
   
   const hasProRole = !!(profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin' || profile?.isPro);
 
@@ -50,7 +48,7 @@ export default function PremiumColorsModal() {
     });
   }, [hasProRole]);
 
-  const handleSelect = async (color: typeof PREMIUM_COLORS[0]) => {
+  const handleSelect = (color: typeof PREMIUM_COLORS[0]) => {
     Haptics.selectionAsync();
     
     if (loading) return;
@@ -61,17 +59,6 @@ export default function PremiumColorsModal() {
     }
 
     setPremiumColor(color.id);
-
-    // Save to database so other users can see the premium color
-    if (profile?.id) {
-      try {
-        await supabase.auth.updateUser({ data: { name_color: color.id } });
-        await supabase.from('users').update({ name_color: color.id }).eq('id', profile.id);
-        setProfile({ ...profile, nameColor: color.id || undefined });
-      } catch (err) {
-        console.warn('Error saving premium color to DB:', err);
-      }
-    }
   };
 
   return (

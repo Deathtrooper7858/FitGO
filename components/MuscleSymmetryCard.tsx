@@ -24,7 +24,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { Dumbbell, Eye, RefreshCw, X, Activity, Zap } from 'lucide-react-native';
+import { Dumbbell, Eye, RefreshCw, X, Activity, Zap, Crown, Lock } from 'lucide-react-native';
+import { router } from 'expo-router';
 import { useWorkoutHistoryStore } from '../store/workoutHistoryStore';
 import { useAuthStore } from '../store/authStore';
 import { useSettingsStore } from '../store';
@@ -609,8 +610,9 @@ export function MuscleSymmetryCard() {
   const userId = profile?.id;
   const { premiumColor } = useSettingsStore();
   const isPro = !!profile?.isPro;
+  const hasProAccess = isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin';
   const isValidHex = premiumColor?.startsWith('#');
-  const isPremiumCustom = (isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin') && premiumColor && isValidHex;
+  const isPremiumCustom = hasProAccess && premiumColor && isValidHex;
   
   const workouts = useMemo(() => {
     return allWorkouts.filter(w => !w.userId || w.userId === userId);
@@ -677,6 +679,91 @@ export function MuscleSymmetryCard() {
 
   const tooltipLevel = tooltip.count > 0 ? getLevelForCount(tooltip.count, viewMode) : null;
   const tooltipMuscle = MUSCLE_LABELS[tooltip.slug] ?? tooltip.slug;
+
+  // ── Premium lock screen ────────────────────────────────────────────────────
+  if (!hasProAccess) {
+    return (
+      <View style={styles.outerWrapper}>
+        <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border + '40' }]}>
+          {/* Aurora background */}
+          <LinearGradient
+            colors={['rgba(139,92,246,0.12)', 'rgba(6,182,212,0.06)', 'transparent']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+            pointerEvents="none"
+          />
+
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <LinearGradient
+                colors={['#8B5CF6', '#06B6D4']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.headerIcon}
+              >
+                <Dumbbell size={18} color="#fff" />
+              </LinearGradient>
+              <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={1}>
+                Evolución Muscular
+              </Text>
+            </View>
+            <View style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: '#FFB80020', borderWidth: 1, borderColor: '#FFB80050' }}>
+              <Crown size={14} color="#FFB800" />
+            </View>
+          </View>
+
+          {/* Lock body */}
+          <View style={{ alignItems: 'center', paddingVertical: 32, paddingHorizontal: 16, gap: 16 }}>
+            {/* Blurred preview */}
+            <View style={{ width: '100%', alignItems: 'center', opacity: 0.18, pointerEvents: 'none' }}>
+              <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
+                {['#A8A8B3','#F97316','#38BDF8','#EAB308'].map((c, i) => (
+                  <View key={i} style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: c }} />
+                ))}
+              </View>
+              <View style={{ width: 120, height: 200, borderRadius: 16, backgroundColor: colors.border, opacity: 0.5 }} />
+            </View>
+
+            {/* Lock icon */}
+            <View style={{
+              width: 72, height: 72, borderRadius: 36,
+              backgroundColor: '#FFB80018',
+              borderWidth: 1.5, borderColor: '#FFB80050',
+              alignItems: 'center', justifyContent: 'center',
+              marginTop: -100,
+            }}>
+              <Lock size={32} color="#FFB800" />
+            </View>
+
+            <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: '900', textAlign: 'center' }}>
+              Función Premium
+            </Text>
+            <Text style={{ color: colors.textSecondary, fontSize: 13, textAlign: 'center', lineHeight: 20 }}>
+              Desbloquea la Evolución Muscular y la Fatiga para visualizar tus grupos musculares y su progreso en tiempo real.
+            </Text>
+
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => router.push('/modals/paywall' as any)}
+              style={{ borderRadius: 20, overflow: 'hidden', width: '100%', marginTop: 4 }}
+            >
+              <LinearGradient
+                colors={['#FFB800', '#FF8C00']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 20 }}
+              >
+                <Crown size={18} color="#000" />
+                <Text style={{ color: '#000', fontWeight: '900', fontSize: 15 }}>Desbloquear con Pro</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.outerWrapper}>

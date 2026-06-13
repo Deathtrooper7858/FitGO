@@ -131,7 +131,9 @@ export const useLeagueStore = create<LeagueStore>()(
 
       // Network error: keep cached state, don't wipe
       if (memberErr) {
-        console.warn('[League] fetchMySquad network error, keeping cache:', memberErr.message);
+        if (memberErr?.message !== 'AbortError: Aborted' && memberErr?.name !== 'AbortError') {
+          console.warn('[League] fetchMySquad network error, keeping cache:', memberErr.message);
+        }
         set({ loading: false });
         return;
       }
@@ -151,7 +153,9 @@ export const useLeagueStore = create<LeagueStore>()(
         .maybeSingle();
 
       if (squadErr) {
-        console.warn('[League] Squad fetch error, keeping cache:', squadErr.message);
+        if (squadErr?.message !== 'AbortError: Aborted' && squadErr?.name !== 'AbortError') {
+          console.warn('[League] Squad fetch error, keeping cache:', squadErr.message);
+        }
         set({ loading: false });
         return;
       }
@@ -160,7 +164,9 @@ export const useLeagueStore = create<LeagueStore>()(
       const { data: leaderboard, error: lbErr } = await supabase
         .rpc('get_squad_leaderboard', { p_squad_id: membership.squad_id });
 
-      if (lbErr) console.warn('[League] Leaderboard error:', lbErr.message);
+      if (lbErr && lbErr.message !== 'AbortError: Aborted' && lbErr.name !== 'AbortError') {
+        console.warn('[League] Leaderboard error:', lbErr.message);
+      }
 
       // Get my own stats
       const { data: myStats } = await supabase
@@ -179,7 +185,9 @@ export const useLeagueStore = create<LeagueStore>()(
       });
     } catch (err: any) {
       // Never wipe squad on unknown error - keep cache
-      console.warn('[League] fetchMySquad unexpected error, keeping cache:', err.message);
+      if (err?.message !== 'AbortError: Aborted' && err?.name !== 'AbortError') {
+        console.warn('[League] fetchMySquad unexpected error, keeping cache:', err.message);
+      }
       set({ loading: false });
     }
   },
@@ -192,7 +200,9 @@ export const useLeagueStore = create<LeagueStore>()(
 
       if (error) {
         // Fallback: direct table query with stored points
-        console.warn('[League] fetchTopSquads RPC failed, falling back:', error.message);
+        if (error?.message !== 'AbortError: Aborted' && error?.name !== 'AbortError') {
+          console.warn('[League] fetchTopSquads RPC failed, falling back:', error.message);
+        }
         const { data: fallback, error: fbErr } = await supabase
           .from('squads')
           .select('*')
@@ -203,8 +213,10 @@ export const useLeagueStore = create<LeagueStore>()(
       }
 
       set({ topSquads: (data ?? []) as Squad[] });
-    } catch (err) {
-      console.warn('[League] fetchTopSquads unexpected error:', err);
+    } catch (err: any) {
+      if (err?.message !== 'AbortError: Aborted' && err?.name !== 'AbortError') {
+        console.warn('[League] fetchTopSquads unexpected error:', err);
+      }
     }
   },
 
@@ -447,20 +459,17 @@ export const useLeagueStore = create<LeagueStore>()(
       set({ todayPointsEarned: 0, lastPointsDate: today });
     }
 
-    const { myStreak, squad } = get();
-    
-    // GUARD: Only award points if the user is in a squad
-    if (!squad) {
-      __DEV__ && console.log(`[LeagueStore] 🚫 Skipping award of ${points} pts (reason: ${reason}) - user is not in a squad.`);
-      return;
-    }
+    const { myStreak } = get();
 
+    // All users earn points regardless of squad membership.
+    // Streak multiplier still applies for consistent users.
     const multiplier = getStreakMultiplier(myStreak);
     const finalPoints = Math.round(points * multiplier);
 
     __DEV__ && console.log(`[LeagueStore] ⭐ Awarding ${finalPoints} pts (base: ${points}, streak: ${myStreak}, multiplier: ${multiplier}x, reason: ${reason})`);
 
     // Update local state immediately — UI reflects intent without waiting for network
+
     set(state => ({
       myPoints: state.myPoints + finalPoints,
       todayPointsEarned: state.todayPointsEarned + finalPoints,
@@ -484,9 +493,10 @@ export const useLeagueStore = create<LeagueStore>()(
       }
 
       // Tier recalculation — also background, non-blocking
-      if (squad?.id) {
+      const currentSquad = get().squad;
+      if (currentSquad?.id) {
         try {
-          await supabase.rpc('recalculate_league_tier', { p_squad_id: squad.id });
+          await supabase.rpc('recalculate_league_tier', { p_squad_id: currentSquad.id });
         } catch (err: any) {
           // Non-fatal: tier will be corrected on next fetchMySquad
         }
