@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Dimensions, Alert, Image, Platform
+  TouchableOpacity, Dimensions, Alert, Image, Platform, RefreshControl
 } from 'react-native';
 import { router, useNavigation } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -29,7 +29,7 @@ import { useAdStore } from '../../../store/adStore';
 import { CustomAlert, AlertType } from '../../../components/CustomAlert';
 import { calculateProgressPct, handleGoalSave } from '../../../hooks/useDashboardLogic';
 import { renderDashboardWidget } from '../../../components/dashboard/WidgetRenderer';
-import { WelcomeModal } from '../../../components/WelcomeModal';
+
 import { FitzDailyTip } from '../../../components/FitzDailyTip';
 import { useProgressStore } from '../../../store/progressStore';
 
@@ -378,7 +378,7 @@ export default function DashboardScreen() {
       />
       <View style={{ flex: 1 }}>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scrollContent} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
         {/* Header */}
         <View style={s.header}>
           <View style={{ gap: 4 }}>
