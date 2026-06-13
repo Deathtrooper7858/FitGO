@@ -31,7 +31,7 @@ import {
   ChevronRight,
   Info
 } from 'lucide-react-native';
-
+  
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = 12;
 
