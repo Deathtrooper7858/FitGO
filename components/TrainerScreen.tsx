@@ -706,6 +706,7 @@ export default function TrainerScreen() {
         <FlashList<CoachMessage>
           ref={flatRef}
           data={messages}
+          estimatedItemSize={100}
           style={{ flex: 1 }}
           keyExtractor={(m) => m.id}
           renderItem={({ item, index }) => {
