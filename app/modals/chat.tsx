@@ -347,7 +347,7 @@ export default function ChatModal() {
 
               return (
                 <View
-                  key={msg.id}
+                  key={`${msg.id}-${index}`}
                   style={[
                     styles.messageWrapper,
                     isMine ? styles.myMessageWrapper : styles.theirMessageWrapper,
