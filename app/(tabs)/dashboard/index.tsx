@@ -307,7 +307,7 @@ export default function DashboardScreen() {
 
   const [widgetsOrder, setWidgetsOrder] = useState(() => {
     if (profile?.widgetsOrder) {
-      const missing = DEFAULT_WIDGETS.filter(w => !profile.widgetsOrder.includes(w));
+      const missing = DEFAULT_WIDGETS.filter(w => !profile.widgetsOrder!.includes(w));
       return [...profile.widgetsOrder, ...missing];
     }
     return DEFAULT_WIDGETS;
@@ -315,7 +315,7 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     if (profile?.widgetsOrder) {
-      const missing = DEFAULT_WIDGETS.filter(w => !profile.widgetsOrder.includes(w));
+      const missing = DEFAULT_WIDGETS.filter(w => !profile.widgetsOrder!.includes(w));
       setWidgetsOrder([...profile.widgetsOrder, ...missing]);
     }
   }, [profile?.widgetsOrder]);
@@ -502,7 +502,7 @@ export default function DashboardScreen() {
             onMoveRight: () => moveWidget(index, 1),
             onLongPress: () => { setIsEditing(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); },
             currentWeight, sleepHours, calories, bodyFat, totalsData,
-            isPro: !!profile?.isPro, colors, t, router,
+            isPro: !!profile?.isPro, colors, t: t as any, router,
             hasPremiumAdAccess, handlePremiumFeaturePress
           }))}
         </View>
@@ -533,7 +533,7 @@ export default function DashboardScreen() {
           lifestyle: profile?.lifestyle || 'seated',
           exerciseLevel: profile?.activityLevel || 'none'
         }}
-        onSave={(newData) => handleGoalSave(newData, profile, setProfile, setGoalModalVisible, showAlert, t)}
+        onSave={(newData) => handleGoalSave(newData, profile, setProfile, setGoalModalVisible, showAlert as any, t as any)}
       />
     </SafeAreaView>
     </View>
