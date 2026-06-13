@@ -22,7 +22,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({ visible, title, mess
   const { premiumColor } = useSettingsStore();
   const { isPro } = usePurchaseStore();
   const { profile } = useAuthStore();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const isPremiumCustom = isProActually && premiumColor && premiumColor.startsWith('#');
 
   const mainColors = isPremiumCustom ? [premiumColor, premiumColor + 'CC'] : ['#7C5CFC', '#4338CA'];
@@ -157,3 +157,4 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+

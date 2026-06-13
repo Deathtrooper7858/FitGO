@@ -48,7 +48,7 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
   const { premiumColor } = useSettingsStore();
   const { isPro } = usePurchaseStore();
   const { profile } = useAuthStore();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const isPremiumCustom = isProActually && premiumColor && premiumColor.startsWith('#');
 
   useEffect(() => {
@@ -339,4 +339,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
 

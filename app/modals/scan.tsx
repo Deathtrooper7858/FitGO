@@ -67,7 +67,7 @@ export default function ScanModal() {
   const { addLog, fetchLogs, selectedDate } = useNutritionStore();
   const { profile } = useAuthStore();
   const { isPro } = usePurchaseStore();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const { aiPhotoEnergy, aiTextEnergy } = useAdStore();
 
   const isValidHex = premiumColor?.startsWith('#');
@@ -1170,3 +1170,4 @@ const s = StyleSheet.create({
   disclaimerText: { flex: 1, fontSize: 13, fontWeight: '500', lineHeight: 18 },
   timeSelector: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderRadius: Radius.lg, borderWidth: 1, marginBottom: 16 },
 });
+
