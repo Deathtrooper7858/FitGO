@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Dimensions, Alert, Image, Platform
+  TouchableOpacity, Dimensions, Alert, Image, Platform, RefreshControl
 } from 'react-native';
 import { router, useNavigation } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
