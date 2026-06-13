@@ -47,7 +47,8 @@ const AUDIO_MODEL  = 'whisper-large-v3';
  */
 
 // Helper to use Supabase Edge Function as a proxy
-async function fetchGroq(payload: any, retries = 2): Promise<any> {
+async function fetchGroq(payload: any, retries = 2, proxyName = 'groq-proxy', originalModel?: string): Promise<any> {
+  const origModel = originalModel || payload.model;
   const timeoutPromise = new Promise<never>((_, reject) => {
     setTimeout(() => reject(new Error('AI Service Error: Request timed out. Please try again.')), 45000);
   });
@@ -61,7 +62,7 @@ async function fetchGroq(payload: any, retries = 2): Promise<any> {
         const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
         const token = session?.access_token || supabaseAnonKey;
         
-        const res = await axios.post(`${supabaseUrl}/functions/v1/groq-proxy`, payload, {
+        const res = await axios.post(`${supabaseUrl}/functions/v1/${proxyName}`, payload, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -83,7 +84,7 @@ async function fetchGroq(payload: any, retries = 2): Promise<any> {
             if (timeMatch) {
               const timeStr = timeMatch[1];
               if (timeStr.includes('h') || timeStr.includes('m')) {
-                waitTimeMs = 999999; // Fallback to FAST_MODEL
+                waitTimeMs = 999999; // Fallback to FAST_MODEL or next API
               } else {
                 waitTimeMs = parseFloat(timeStr) * 1000;
               }
@@ -92,15 +93,47 @@ async function fetchGroq(payload: any, retries = 2): Promise<any> {
             }
 
             // If the wait time is huge (like daily quota hit), fallback to the FAST_MODEL
-            if (waitTimeMs > 10000 && payload.model === CHAT_MODEL) {
-              console.warn(`[Groq Rate Limit] Wait time is too long. Falling back to ${FAST_MODEL}.`);
-              payload.model = FAST_MODEL;
-              continue; // Retry immediately
+            if (waitTimeMs > 10000) {
+              if (payload.model === CHAT_MODEL && origModel === CHAT_MODEL) {
+                console.warn(`[Groq Rate Limit] Wait time is too long on ${proxyName}. Falling back to ${FAST_MODEL}.`);
+                payload.model = FAST_MODEL;
+                continue; // Retry immediately
+              } else {
+                // We're already on FAST_MODEL and it failed, OR we used a different model that failed
+                let nextProxy = null;
+                if (proxyName === 'groq-proxy') nextProxy = 'groq-proxy-2';
+                else if (proxyName === 'groq-proxy-2') nextProxy = 'groq-proxy-3';
+                else if (proxyName === 'groq-proxy-3') nextProxy = 'groq-proxy-4';
+                else if (proxyName === 'groq-proxy-4') nextProxy = 'groq-proxy-5';
+
+                if (nextProxy) {
+                  console.warn(`[Groq Rate Limit] Both models out of tokens on ${proxyName}. Passing directly to ${nextProxy}.`);
+                  // Reset back to the original requested model for the new proxy
+                  payload.model = origModel;
+                  return fetchGroq(payload, retries, nextProxy, origModel);
+                } else {
+                  console.error(`[Groq Rate Limit] ALL proxies are completely out of tokens!`);
+                  throw new Error(`AI Service Error: All APIs are out of tokens.`);
+                }
+              }
             }
 
             console.warn(`[Groq Rate Limit] Retry ${attempt}/${retries} in ${waitTimeMs}ms`);
             await new Promise(r => setTimeout(r, waitTimeMs + 500));
             continue;
+          } else {
+            // Out of retries
+            let nextProxy = null;
+            if (proxyName === 'groq-proxy') nextProxy = 'groq-proxy-2';
+            else if (proxyName === 'groq-proxy-2') nextProxy = 'groq-proxy-3';
+            else if (proxyName === 'groq-proxy-3') nextProxy = 'groq-proxy-4';
+            else if (proxyName === 'groq-proxy-4') nextProxy = 'groq-proxy-5';
+
+            if (nextProxy) {
+               console.warn(`[Groq Rate Limit] Out of retries on ${proxyName}. Passing directly to ${nextProxy}.`);
+               payload.model = origModel;
+               return fetchGroq(payload, retries, nextProxy, origModel);
+            }
           }
         }
 
@@ -676,7 +709,7 @@ Give 2-3 specific, actionable tips for next week. Be encouraging.`;
 }
 
 // ─── Transcribe Audio ─────────────────────────────────────────────────────────
-export async function transcribeAudio(uri: string): Promise<string> {
+export async function transcribeAudio(uri: string, proxyName = 'groq-proxy'): Promise<string> {
   const fileExt = uri.split('.').pop()?.split('?')[0] || 'm4a';
   const mimeType = fileExt === 'wav' ? 'audio/wav' : fileExt === 'mp3' ? 'audio/mpeg' : 'audio/m4a';
   
@@ -698,7 +731,7 @@ export async function transcribeAudio(uri: string): Promise<string> {
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token || supabaseAnonKey;
 
-    const response = await axios.post(`${supabaseUrl}/functions/v1/groq-proxy`, formData, {
+    const response = await axios.post(`${supabaseUrl}/functions/v1/${proxyName}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${token}`,
@@ -708,8 +741,26 @@ export async function transcribeAudio(uri: string): Promise<string> {
     if (__DEV__) console.log('[Groq] Transcription Success:', response.data?.text?.substring(0, 30));
     return response.data?.text ?? '';
   } catch (err: any) {
+    let errorMsg = err.response?.data?.error || err.message || 'Unknown error';
+    if (typeof errorMsg === 'object') {
+      errorMsg = errorMsg.message || JSON.stringify(errorMsg);
+    }
+    
+    if (err.response?.status === 429 || errorMsg.includes('Rate limit') || errorMsg.includes('tokens per day')) {
+        let nextProxy = null;
+        if (proxyName === 'groq-proxy') nextProxy = 'groq-proxy-2';
+        else if (proxyName === 'groq-proxy-2') nextProxy = 'groq-proxy-3';
+        else if (proxyName === 'groq-proxy-3') nextProxy = 'groq-proxy-4';
+        else if (proxyName === 'groq-proxy-4') nextProxy = 'groq-proxy-5';
+        
+        if (nextProxy) {
+            console.warn(`[Groq Rate Limit] Audio out of tokens on ${proxyName}. Passing directly to ${nextProxy}.`);
+            return transcribeAudio(uri, nextProxy);
+        }
+    }
+    
     console.warn('[Groq] Transcription Fetch Error:', err);
-    throw new Error(`AI Transcription failed: ${err.response?.data?.error || err.message}`);
+    throw new Error(`AI Transcription failed: ${errorMsg}`);
   }
 }
 

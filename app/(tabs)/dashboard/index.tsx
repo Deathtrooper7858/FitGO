@@ -43,7 +43,7 @@ const RADIUS        = (RING_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 // ─── Calorie/Score Ring (Premium) ────────────────────────────────────────────
-function ScoreRing({ consumed, target, dateLabel }: { consumed: number; target: number; dateLabel: string }) {
+function ScoreRing({ consumed, target, dateLabel, customColor }: { consumed: number; target: number; dateLabel: string; customColor?: string | null }) {
   const { t } = useTranslation();
   const colors = useTheme();
   const safeConsumed = Number(consumed) || 0;
@@ -57,8 +57,8 @@ function ScoreRing({ consumed, target, dateLabel }: { consumed: number; target: 
   const isOver = consumed > target;
   const isWarning = consumed >= target * 0.9 && consumed <= target;
   
-  const ringColorA = isOver ? colors.error : (isWarning ? '#FFB800' : '#00F0FF');
-  const ringColorB = isOver ? '#FF4B4B' : (isWarning ? '#F59E0B' : '#7C5CFC');
+  const ringColorA = isOver ? colors.error : (isWarning ? '#FFB800' : (customColor || '#00F0FF'));
+  const ringColorB = isOver ? '#FF4B4B' : (isWarning ? '#F59E0B' : (customColor || '#7C5CFC'));
 
   return (
     <View style={ring.container}>
@@ -87,7 +87,7 @@ function ScoreRing({ consumed, target, dateLabel }: { consumed: number; target: 
         {/* Inner glow ring (blurred softness) */}
         <Circle
           cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={RADIUS}
-          stroke={isOver ? colors.error + '30' : (isWarning ? '#FFB80030' : '#7C5CFC30')}
+          stroke={isOver ? colors.error + '30' : (isWarning ? '#FFB80030' : (customColor ? customColor + '30' : '#7C5CFC30'))}
           strokeWidth={STROKE_WIDTH + 8}
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={strokeDashoffset}
@@ -111,10 +111,10 @@ function ScoreRing({ consumed, target, dateLabel }: { consumed: number; target: 
         <Text style={[ring.consumed, { color: colors.textPrimary }]}>{consumed}</Text>
         <Text style={[ring.unitLabel, { color: colors.textMuted }]}>kcal consumidas</Text>
         <View style={[ring.statusPill, { 
-          backgroundColor: isOver ? colors.error + '20' : (isWarning ? '#FFB80020' : colors.primary + '15'), 
-          borderColor: isOver ? colors.error + '40' : (isWarning ? '#FFB80040' : colors.primary + '30') 
+          backgroundColor: isOver ? colors.error + '20' : (isWarning ? '#FFB80020' : (customColor ? customColor + '15' : colors.primary + '15')), 
+          borderColor: isOver ? colors.error + '40' : (isWarning ? '#FFB80040' : (customColor ? customColor + '30' : colors.primary + '30')) 
         }]}>
-          <Text style={[ring.label, { color: isOver ? colors.error : (isWarning ? '#F59E0B' : colors.primary) }]}>
+          <Text style={[ring.label, { color: isOver ? colors.error : (isWarning ? '#F59E0B' : (customColor || colors.primary)) }]}>
             {isOver
               ? `+${Math.round(consumed - target)} sobre meta`
               : remaining > 0
@@ -403,7 +403,7 @@ export default function DashboardScreen() {
         {/* Nutritional Score Card */}
         <View style={s.sectionHeader}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <View style={[s.sectionIconWrap, { backgroundColor: colors.primary + '20' }]}>
+            <View style={[s.sectionIconWrap, { backgroundColor: (isPremiumCustom && premiumColor ? premiumColor : colors.primary) + '20' }]}>
               <Text style={{ fontSize: 14 }}>⚡</Text>
             </View>
             <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>{t('dashboard.scoreTitle', 'Score Nutricional')}</Text>
