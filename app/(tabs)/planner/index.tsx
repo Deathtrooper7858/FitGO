@@ -453,7 +453,7 @@ export default function PlannerScreen() {
 
   const { streakDays, dailyWater, todayLogs, addWater } = useNutritionStore();
   const { isPro }                 = usePurchaseStore();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const isValidHex = premiumColor?.startsWith('#');
   const isPremiumCustom = !!(isProActually && premiumColor && isValidHex);
 
@@ -1935,3 +1935,4 @@ const s = StyleSheet.create({
   timerTitle: { fontSize: 11, fontWeight: '800', textTransform: 'uppercase', opacity: 0.7 },
   timerValue: { fontSize: 18, fontWeight: '900', fontVariant: ['tabular-nums'] },
 });
+

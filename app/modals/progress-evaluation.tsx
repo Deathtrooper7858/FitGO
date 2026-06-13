@@ -70,7 +70,7 @@ export default function ProgressEvaluationModal() {
   const { isPro } = usePurchaseStore();
   const { hasPremiumAdAccess } = useAdStore();
 
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const featureId = 'evaluation';
   const hasAccess = isProActually || hasPremiumAdAccess(featureId);
 
@@ -455,3 +455,4 @@ const s = StyleSheet.create({
   areaBtnText:      { fontSize: 14, fontWeight: '600' },
   contextInput:     { borderWidth: 1, borderRadius: Radius.lg, padding: 12, fontSize: 15 },
 });
+

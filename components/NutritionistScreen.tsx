@@ -301,7 +301,7 @@ export default function NutritionistScreen() {
   const { profile } = useAuthStore();
 
   const { isPro } = usePurchaseStore();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
 
   const { tryUseAI } = useAICredits();
 
@@ -913,3 +913,4 @@ const s = StyleSheet.create({
   upgradeText:          { color: '#fff', fontWeight: '800', fontSize: 15 },
   headerIconBtn:        { width: 38, height: 38, borderRadius: 10, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 4, elevation: 1 },
 });
+

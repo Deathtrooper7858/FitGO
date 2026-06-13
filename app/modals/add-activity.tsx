@@ -73,7 +73,7 @@ export default function AddActivityModal() {
   const { profile } = useAuthStore();
   const { isPro } = usePurchaseStore();
   
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
 
   // If an `id` param was passed, we are editing an existing log entry
   const editingAct = id ? activityLogs.find(a => a.id === id) : null;
@@ -1380,3 +1380,4 @@ const s = StyleSheet.create({
     fontWeight: '600'
   }
 });
+
