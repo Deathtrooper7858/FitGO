@@ -1050,7 +1050,7 @@ export default function FitGOCompetitive() {
                       rank={i + 1} 
                       isMe={m.user_id === profile?.id}
                       streakOverride={m.user_id === profile?.id ? streakDays : undefined}
-                      onInspect={() => { Haptics.selectionAsync(); setInspectingUser({ id: m.user_id, name: m.name, avatar_url: m.avatar_url, points: m.league_points, current_streak: m.current_streak }); }}
+                      onInspect={() => { Haptics.selectionAsync(); setInspectingUser({ id: m.user_id, name: m.name, avatar_url: m.avatar_url, points: m.total_league_points ?? m.league_points, current_streak: m.current_streak, name_color: m.name_color }); }}
                       onMakeLeader={squad.created_by === profile?.id ? () => {
                         setAlert({
                           visible: true,
@@ -1293,7 +1293,7 @@ export default function FitGOCompetitive() {
                           rank={i + 1} 
                           isMe={m.user_id === profile?.id}
                           streakOverride={m.user_id === profile?.id ? streakDays : undefined}
-                          onInspect={() => { Haptics.selectionAsync(); setInspectingUser({ id: m.user_id, name: m.name, avatar_url: m.avatar_url, points: m.league_points, current_streak: m.current_streak }); }} 
+                          onInspect={() => { Haptics.selectionAsync(); setInspectingUser({ id: m.user_id, name: m.name, avatar_url: m.avatar_url, points: m.total_league_points ?? m.league_points, current_streak: m.current_streak, name_color: m.name_color }); }} 
                         />
                       )) : (
                         <Text style={{ color: colors.textSecondary, textAlign: 'center' }}>{t('competitive.squads.noMembers', 'No hay integrantes visibles.')}</Text>

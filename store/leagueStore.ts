@@ -20,6 +20,7 @@ export interface SquadMember {
   league_points: number;
   current_streak: number;
   name_color?: string;
+  total_league_points?: number;
 }
 
 export interface Squad {
