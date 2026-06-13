@@ -56,7 +56,7 @@ export default function TabsLayout() {
   const { profile } = useAuthStore();
   const { isPro } = usePurchaseStore();
   const pathname = usePathname();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
 
   // Social notifications badge
   const { totalUnreadCount, friends } = useSocialStore();
@@ -274,3 +274,4 @@ const styles = StyleSheet.create({
     lineHeight: 12,
   },
 });
+

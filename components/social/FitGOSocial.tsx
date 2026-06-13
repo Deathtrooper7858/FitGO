@@ -658,6 +658,7 @@ export default function FitGOSocial() {
     <View style={s.tabContent}>
       <FlashList
         data={socialStore.posts}
+        estimatedItemSize={200}
         keyExtractor={post => post.id}
         contentContainerStyle={{ paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
