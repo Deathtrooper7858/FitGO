@@ -417,7 +417,7 @@ export default function DashboardScreen() {
             end={{ x: 1, y: 1 }}
             pointerEvents="none"
           />
-          <ScoreRing consumed={calories} target={target} dateLabel={dateLabel} />
+          <ScoreRing consumed={calories} target={target} dateLabel={dateLabel} customColor={isPremiumCustom ? premiumColor : null} />
         </View>
 
 
@@ -557,7 +557,7 @@ export default function DashboardScreen() {
 
 const s = StyleSheet.create({
   safe: { flex: 1 },
-  scroll: { flex: 1, paddingHorizontal: Spacing.base },
+  scroll: { flexGrow: 1, paddingHorizontal: Spacing.base },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: Spacing.lg },
   greeting: { fontSize: 26, fontWeight: '900', letterSpacing: -0.5 },
   // date pill
