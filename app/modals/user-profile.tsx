@@ -308,10 +308,9 @@ export default function UserProfileModal() {
                       marginBottom: 16,
                       borderRadius: 20,
                       shadowColor: vitrineColor,
-                      shadowOffset: { width: 0, height: 4 },
+                      shadowOffset: { width: 0, height: 0 },
                       shadowOpacity: 0.6,
                       shadowRadius: 12,
-                      elevation: 8,
                     }
                   : { marginBottom: 16 }
               }
