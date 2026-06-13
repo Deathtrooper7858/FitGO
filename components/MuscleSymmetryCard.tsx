@@ -129,15 +129,23 @@ const LEVELS = [
   { min: 41, max: 999, color: '#06B6D4', glowColor: 'rgba(6,182,212,0.65)',   gradStart: '#67E8F9', gradEnd: '#6D28D9', name: 'Tit\u00e1n',     icon: '\uD83C\uDF0C' },
 ];
 
-function getColorForCount(count: number): string {
-  for (const lvl of LEVELS) {
+const FATIGUE_LEVELS = [
+  { min: 1, max: 3, color: '#10B981', glowColor: 'rgba(16,185,129,0.4)', gradStart: '#34D399', gradEnd: '#065F46', name: 'Recuperado', icon: '✅' },
+  { min: 4, max: 6, color: '#F59E0B', glowColor: 'rgba(245,158,11,0.4)', gradStart: '#FBBF24', gradEnd: '#B45309', name: 'Cansado', icon: '⚠️' },
+  { min: 7, max: 999, color: '#EF4444', glowColor: 'rgba(239,68,68,0.4)', gradStart: '#F87171', gradEnd: '#7F1D1D', name: 'Exhausto', icon: '🔥' },
+];
+
+function getColorForCount(count: number, mode: 'evolution' | 'fatigue'): string {
+  const levels = mode === 'evolution' ? LEVELS : FATIGUE_LEVELS;
+  for (const lvl of levels) {
     if (count >= lvl.min && count <= lvl.max) return lvl.color;
   }
   return '#2D3250';
 }
 
-function getLevelForCount(count: number) {
-  for (const lvl of LEVELS) {
+function getLevelForCount(count: number, mode: 'evolution' | 'fatigue') {
+  const levels = mode === 'evolution' ? LEVELS : FATIGUE_LEVELS;
+  for (const lvl of levels) {
     if (count >= lvl.min && count <= lvl.max) return lvl;
   }
   return null;
@@ -185,8 +193,8 @@ function findExercise(ex: any) {
   return found || null;
 }
 
-function buildMuscleCounts(workouts: any[]): Record<string, number> {
-  const cutoff = getDaysAgo(30);
+function buildMuscleCounts(workouts: any[], mode: 'evolution' | 'fatigue'): Record<string, number> {
+  const cutoff = getDaysAgo(mode === 'evolution' ? 30 : 3);
   const recent = workouts.filter(w => w.date >= cutoff);
   const counts: Record<string, number> = {};
 
@@ -215,12 +223,12 @@ function buildMuscleCounts(workouts: any[]): Record<string, number> {
   return counts;
 }
 
-function buildBodyData(muscleCounts: Record<string, number>) {
+function buildBodyData(muscleCounts: Record<string, number>, mode: 'evolution' | 'fatigue') {
   return Object.entries(muscleCounts)
     .filter(([, count]) => count > 0)
     .map(([slug, count]) => ({
       slug,
-      color: getColorForCount(count),
+      color: getColorForCount(count, mode),
       intensity: 1,
     }));
 }
@@ -354,12 +362,14 @@ function MuscleTooltip({
   muscleName,
   sessionCount,
   level,
+  mode,
   onClose,
 }: {
   visible: boolean;
   muscleName: string;
   sessionCount: number;
   level: typeof LEVELS[0] | null;
+  mode: 'evolution' | 'fatigue';
   onClose: () => void;
 }) {
   const colors = useTheme();
@@ -430,7 +440,7 @@ function MuscleTooltip({
                   {muscleName}
                 </Text>
                 <Text style={[tipSt.sessionLabel, { color: colors.textSecondary }]}>
-                  {sessionCount} {sessionCount === 1 ? 'sesión' : 'sesiones'} este mes
+                  {sessionCount} {sessionCount === 1 ? 'impacto' : 'impactos'} {mode === 'evolution' ? 'este mes' : 'recientes'}
                 </Text>
               </View>
               <Pressable
@@ -464,7 +474,7 @@ function MuscleTooltip({
                   />
                 </View>
                 <Text style={[tipSt.progressLabel, { color: colors.textMuted }]}>
-                  {sessionCount}/{level.max} sesiones para siguiente rango
+                  {mode === 'evolution' ? `${sessionCount}/${level.max} para siguiente rango` : `Nivel de fatiga actual`}
                 </Text>
               </View>
             )}
@@ -586,6 +596,7 @@ export function MuscleSymmetryCard() {
   const colors = useTheme();
   const { width } = useWindowDimensions();
   const [activeSide, setActiveSide] = useState<'front' | 'back'>('front');
+  const [viewMode, setViewMode] = useState<'evolution' | 'fatigue'>('evolution');
   const [tooltip, setTooltip] = useState<{
     visible: boolean;
     slug: string;
@@ -605,19 +616,20 @@ export function MuscleSymmetryCard() {
     return allWorkouts.filter(w => !w.userId || w.userId === userId);
   }, [allWorkouts, userId]);
 
-  const muscleCounts = useMemo(() => buildMuscleCounts(workouts), [workouts]);
-  const bodyData = useMemo(() => buildBodyData(muscleCounts), [muscleCounts]);
+  const muscleCounts = useMemo(() => buildMuscleCounts(workouts, viewMode), [workouts, viewMode]);
+  const bodyData = useMemo(() => buildBodyData(muscleCounts, viewMode), [muscleCounts, viewMode]);
   const hasHistory = bodyData.length > 0;
 
   // Determine highest active medal level
   const highestLevel = useMemo(() => {
+    if (viewMode === 'fatigue') return null;
     const maxCount = Object.values(muscleCounts).reduce((a, b) => Math.max(a, b), 0);
     let highest = null;
     for (const lvl of LEVELS) {
       if (maxCount >= lvl.min) highest = lvl;
     }
     return highest;
-  }, [muscleCounts]);
+  }, [muscleCounts, viewMode]);
 
   // Body scale
   const cardInner = width - 64;
@@ -663,7 +675,7 @@ export function MuscleSymmetryCard() {
     setTooltip({ visible: true, slug: data.slug, count: count > 0 ? count : 1 });
   }, [muscleCounts, bodyData]);
 
-  const tooltipLevel = tooltip.count > 0 ? getLevelForCount(tooltip.count) : null;
+  const tooltipLevel = tooltip.count > 0 ? getLevelForCount(tooltip.count, viewMode) : null;
   const tooltipMuscle = MUSCLE_LABELS[tooltip.slug] ?? tooltip.slug;
 
   return (
@@ -695,20 +707,27 @@ export function MuscleSymmetryCard() {
               numberOfLines={1} 
               adjustsFontSizeToFit
             >
-              Evolución Muscular
+              {viewMode === 'evolution' ? 'Evolución Muscular' : 'Fatiga y Recuperación'}
             </Text>
           </View>
         </View>
-        {hasHistory && highestLevel && (
-          <View style={[styles.activeLevelBadge, { borderColor: highestLevel.color + '60', backgroundColor: highestLevel.glowColor }]}>
-            <Text style={[styles.activeLevelText, { color: highestLevel.color, fontSize: 18 }]}>
-              {highestLevel.icon}
-            </Text>
-          </View>
-        )}
+        
+        {/* Mode Toggle Button */}
+        <TouchableOpacity 
+          onPress={() => {
+            Haptics.selectionAsync();
+            setViewMode(v => v === 'evolution' ? 'fatigue' : 'evolution');
+          }}
+          style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: viewMode === 'evolution' ? colors.primary + '20' : '#EF444420', borderWidth: 1, borderColor: viewMode === 'evolution' ? colors.primary + '40' : '#EF444440' }}
+        >
+          <Text style={{ fontSize: 12, fontWeight: '800', color: viewMode === 'evolution' ? colors.primary : '#EF4444' }}>
+            {viewMode === 'evolution' ? 'Ver Fatiga' : 'Ver Evolución'}
+          </Text>
+        </TouchableOpacity>
+        
       </View>
 
-      {/* ── Medal Legend (premium) ── */}
+      {/* ── Medal Legend ── */}
       <View style={styles.medalsContainer}>
         <ScrollView 
           horizontal 
@@ -716,11 +735,11 @@ export function MuscleSymmetryCard() {
           contentContainerStyle={styles.medalsRowScroll}
           overScrollMode="never"
         >
-          {LEVELS.map((lvl, i) => (
+          {(viewMode === 'evolution' ? LEVELS : FATIGUE_LEVELS).map((lvl, i) => (
             <MedalBadge
               key={lvl.name}
               level={lvl}
-              isActive={highestLevel?.name === lvl.name}
+              isActive={viewMode === 'evolution' ? highestLevel?.name === lvl.name : false}
               index={i}
             />
           ))}
@@ -842,6 +861,7 @@ export function MuscleSymmetryCard() {
         muscleName={tooltipMuscle}
         sessionCount={tooltip.count}
         level={tooltipLevel}
+        mode={viewMode}
         onClose={() => setTooltip(t => ({ ...t, visible: false }))}
       />
     </View>

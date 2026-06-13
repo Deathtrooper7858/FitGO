@@ -12,13 +12,13 @@ import { useAuthStore, useNutritionStore, selectDailyTotals, useSettingsStore, u
 import { useTheme } from '../../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../../services/supabase';
+import { MuscleSymmetryCard } from '../../../components/MuscleSymmetryCard';
 import { calculateTDEE, calculateMacros, resolveActivityLevel } from '../../../services/foodDatabase';
 import { getLocalDateString } from '../../../utils/date';
 import Animated, { FadeIn, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { AnimatedCard } from '../../../components/AnimatedCard';
 import { GlobalBackground } from '../../../components/GlobalBackground';
-import { MuscleSymmetryCard } from '../../../components/MuscleSymmetryCard';
 import { getNameStyle } from '../../../utils/styles';
 import { Trophy, Flame, Dumbbell, Heart, ChevronRight, Scale, Target } from 'lucide-react-native';
 import { useAchievements, Achievement } from '../../../hooks/useAchievements';

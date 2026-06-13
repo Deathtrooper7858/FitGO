@@ -25,8 +25,78 @@ import { GlassCard } from '../../../components/GlassCard';
 import { GlobalBackground } from '../../../components/GlobalBackground';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming, runOnJS } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming, runOnJS, withRepeat, withSequence } from 'react-native-reanimated';
+import { interpolate, Extrapolation } from 'react-native-reanimated';
 import { Users } from 'lucide-react-native';
+
+// ─── Fire Streak Badge ────────────────────────────────────────────────────────
+function FireStreakBadge({ streakDays }: { streakDays: number }) {
+  const colors = useTheme();
+  const isOnFire = streakDays >= 3;
+  
+  const pulseOpacity = useSharedValue(0.4);
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    if (isOnFire) {
+      pulseOpacity.value = withRepeat(
+        withSequence(
+          withTiming(0.8, { duration: 600 }),
+          withTiming(0.4, { duration: 600 })
+        ),
+        -1,
+        true
+      );
+      scale.value = withRepeat(
+        withSequence(
+          withTiming(1.08, { duration: 600 }),
+          withTiming(1, { duration: 600 })
+        ),
+        -1,
+        true
+      );
+    } else {
+      pulseOpacity.value = 0;
+      scale.value = 1;
+    }
+  }, [isOnFire]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: pulseOpacity.value,
+    transform: [{ scale: scale.value }]
+  }));
+
+  return (
+    <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12, paddingVertical: 4 }}>
+      {isOnFire && (
+        <Animated.View style={[
+          {
+            position: 'absolute',
+            top: 0, bottom: 0, left: 0, right: 0,
+            backgroundColor: '#FF6B00',
+            borderRadius: 16,
+            shadowColor: '#FF6B00',
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.9,
+            shadowRadius: 12,
+            elevation: 10,
+          },
+          animatedStyle
+        ]} />
+      )}
+      <Text style={[s.streakText, { 
+        color: isOnFire ? '#FFF' : colors.textPrimary, 
+        fontWeight: isOnFire ? '900' : '600',
+        textShadowColor: isOnFire ? 'rgba(255,255,255,0.8)' : 'transparent',
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: isOnFire ? 4 : 0
+      }]}>
+        🔥 {streakDays}
+      </Text>
+    </View>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 const RING_SIZE     = 220;
 const STROKE_WIDTH  = 12;
@@ -505,7 +575,9 @@ export default function TrackerScreen() {
 
         {/* Date / Streak Center */}
         <View style={s.headerCenter}>
-          <Text style={[s.streakText, { color: colors.textPrimary }]}>🔥 {streakDays}</Text>
+          <TouchableOpacity onPress={() => router.push('/modals/calendar' as any)}>
+            <FireStreakBadge streakDays={streakDays} />
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/modals/calendar' as any)}>
             <Text style={[s.dateText, { color: colors.textPrimary }]}>
               🗓️ {selectedDate === getLocalDateString() ? t('tracker.today') : new Date(selectedDate + 'T12:00:00').toLocaleDateString(t('common.locale'), { month: 'short', day: 'numeric' })} ▾
@@ -718,7 +790,6 @@ export default function TrackerScreen() {
             />
           ))}
         </View>
-
 
         {/* Loading state - shown ABOVE meals to prevent stale data confusion */}
         {isFetching && (

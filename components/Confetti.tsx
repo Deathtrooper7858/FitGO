@@ -3,7 +3,7 @@ import { View, StyleSheet, Animated, Dimensions, Easing } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
-const CONFETTI_COUNT = 40;
+const CONFETTI_COUNT = 80;
 const CONFETTI_EMOJIS = ['🎉', '✨', '🔥', '💪', '🏆'];
 
 export function Confetti({ trigger }: { trigger: number }) {
@@ -66,7 +66,7 @@ export function Confetti({ trigger }: { trigger: number }) {
   if (particles.length === 0) return null;
 
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+    <View style={[StyleSheet.absoluteFill, { zIndex: 9999, elevation: 9999 }]} pointerEvents="none">
       {particles.map((p) => {
         const spin = p.animRot.interpolate({
           inputRange: [0, 1],
@@ -78,7 +78,7 @@ export function Confetti({ trigger }: { trigger: number }) {
             style={{
               position: 'absolute',
               left: p.x,
-              fontSize: 24 + Math.random() * 16,
+              fontSize: 28 + Math.random() * 20,
               transform: [
                 { translateY: p.animY },
                 { translateX: p.animX },

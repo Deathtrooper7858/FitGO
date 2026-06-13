@@ -59,7 +59,7 @@ function msUntilSundayReset(): number {
 // ─── Pre-Generation Confirmation Modal ────────────────────────────────────────
 interface GenerateConfirmModalProps {
   visible: boolean;
-  onConfirm: () => void;
+  onConfirm: (options?: { intensityMode: 'standard' | 'express' | 'heavy' | 'recovery', focusSymmetry: boolean }) => void;
   onChangeFoods: () => void;
   onCancel: () => void;
   mode: PlannerMode;
@@ -74,6 +74,9 @@ function GenerateConfirmModal({ visible, onConfirm, onChangeFoods, onCancel, mod
   const { t } = useTranslation();
   const colors = useTheme();
   
+  const [intensityMode, setIntensityMode] = useState<'standard' | 'express' | 'heavy' | 'recovery'>('standard');
+  const [focusSymmetry, setFocusSymmetry] = useState(false);
+
   const goalText = profile?.goal === 'gain' ? t('onboarding.gainTitle', 'Ganar Músculo') 
                  : profile?.goal === 'lose' ? t('onboarding.loseTitle', 'Perder Grasa') 
                  : t('onboarding.stayTitle', 'Mantener Peso');
@@ -85,6 +88,8 @@ function GenerateConfirmModal({ visible, onConfirm, onChangeFoods, onCancel, mod
 
   useEffect(() => {
     if (visible) {
+      setIntensityMode('standard');
+      setFocusSymmetry(false);
       Animated.parallel([
         Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, damping: 18, stiffness: 200 }),
         Animated.timing(opacityAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
@@ -189,19 +194,47 @@ function GenerateConfirmModal({ visible, onConfirm, onChangeFoods, onCancel, mod
                   )}
                 </View>
               )}
+
+              {/* Modos de Intensidad */}
+              <View style={[gcm.foodsBox, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, marginTop: 12 }]}>
+                <Text style={[gcm.foodsTitle, { color: colors.textPrimary, marginBottom: 8 }]}>Modo de Entrenamiento</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  {(['standard', 'express', 'heavy', 'recovery'] as const).map(m => (
+                    <TouchableOpacity 
+                      key={m} 
+                      style={[gcm.modeBtn, intensityMode === m && { backgroundColor: colors.primary, borderColor: colors.primary }]}
+                      onPress={() => setIntensityMode(m)}
+                    >
+                      <Text style={[gcm.modeBtnText, intensityMode === m ? { color: '#fff' } : { color: colors.textSecondary }]}>
+                        {m === 'standard' ? '🏋️ Normal' : m === 'express' ? '⚡ Rápido (25m)' : m === 'heavy' ? '🚀 Fuerza/Pesado' : '🧘 Recuperación'}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Modo Simetría */}
+              <TouchableOpacity 
+                style={[gcm.infoRow, { backgroundColor: focusSymmetry ? colors.primary + '22' : colors.surfaceAlt, borderColor: focusSymmetry ? colors.primary : colors.border, marginTop: 8, marginBottom: 16 }]}
+                onPress={() => setFocusSymmetry(!focusSymmetry)}
+                activeOpacity={0.7}
+              >
+                <Activity size={16} color={focusSymmetry ? colors.primary : colors.textMuted} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[gcm.infoText, { color: focusSymmetry ? colors.primary : colors.textPrimary, fontWeight: '700' }]}>
+                    Enfoque de Simetría
+                  </Text>
+                  <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
+                    La IA priorizará tus músculos más débiles
+                  </Text>
+                </View>
+                <Switch value={focusSymmetry} onValueChange={setFocusSymmetry} />
+              </TouchableOpacity>
             </>
           )}
 
-          {/* Disclaimer box */}
-          <View style={[gcm.disclaimerBox, { backgroundColor: colors.warning + '12', borderColor: colors.warning + '40' }]}>
-            <ShieldAlert size={15} color={colors.warning} />
-            <Text style={[gcm.disclaimerText, { color: colors.textSecondary }]}>
-              {t('planner.confirmDisclaimer', 'Este plan es generado por IA y no reemplaza el consejo de un profesional de la salud. Consulta a un dietista o médico antes de seguirlo.')}
-            </Text>
-          </View>
-
           {/* Action buttons */}
-          <TouchableOpacity style={[gcm.btnPrimary]} activeOpacity={0.85} onPress={onConfirm}>
+          <TouchableOpacity style={[gcm.btnPrimary]} activeOpacity={0.85} onPress={() => onConfirm({ intensityMode, focusSymmetry })}>
             <LinearGradient colors={['#7C5CFC', '#4338CA']} style={gcm.btnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
               <Sparkles size={16} color="#fff" />
               <Text style={gcm.btnPrimaryText}>{t('planner.confirmGenerate', 'Generar Plan Ahora')}</Text>
@@ -268,6 +301,73 @@ function ResetWarningModal({ visible, onDismiss }: ResetWarningModalProps) {
   );
 }
 
+// ─── AILoadingOverlay ────────────────────────────────────────────────────────
+const AI_MESSAGES = {
+  workouts: [
+    "Analizando tu historial muscular...",
+    "Calculando simetría y fatiga...",
+    "Ajustando volumen e intensidad...",
+    "Buscando ejercicios de reemplazo...",
+    "Optimizando para sobrecarga progresiva...",
+    "Finalizando tu plan perfecto..."
+  ],
+  nutrition: [
+    "Analizando tus requerimientos calóricos...",
+    "Equilibrando macros y micronutrientes...",
+    "Seleccionando alimentos de tu preferencia...",
+    "Evitando alergias y restricciones...",
+    "Generando recetas fáciles y rápidas...",
+    "Finalizando tu menú semanal..."
+  ],
+  analysis: [
+    "Nutricionista leyendo tus macros...",
+    "Revisando tus metas de calorías...",
+    "Redactando consejos personalizados...",
+    "Generando plan de acción..."
+  ],
+  bodyweight: [
+    "Traduciendo a peso corporal...",
+    "Buscando alternativas de calistenia...",
+    "Ajustando la dificultad sin pesas...",
+    "Casi listo..."
+  ]
+};
+
+function AILoadingOverlay({ visible, mode }: { visible: boolean; mode: 'workouts' | 'nutrition' | 'analysis' | 'bodyweight' }) {
+  const colors = useTheme();
+  const [msgIndex, setMsgIndex] = useState(0);
+
+  useEffect(() => {
+    if (!visible) {
+      setMsgIndex(0);
+      return;
+    }
+    const msgs = AI_MESSAGES[mode];
+    const interval = setInterval(() => {
+      setMsgIndex(prev => (prev + 1) % msgs.length);
+    }, 2000); // changes every 2 seconds
+    return () => clearInterval(interval);
+  }, [visible, mode]);
+
+  if (!visible) return null;
+
+  const msgs = AI_MESSAGES[mode];
+
+  return (
+    <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 9999, justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={{ backgroundColor: colors.surface, padding: 30, borderRadius: 28, alignItems: 'center', width: '85%', maxWidth: 340, shadowColor: colors.primary, shadowOffset: {width: 0, height: 10}, shadowOpacity: 0.3, shadowRadius: 20, elevation: 10, borderWidth: 1, borderColor: colors.primary + '55' }}>
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginBottom: 20, transform: [{ scale: 1.5 }] }} />
+        <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '900', marginBottom: 12, textAlign: 'center' }}>
+          La IA está trabajando...
+        </Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 14, textAlign: 'center', minHeight: 40, fontWeight: '500' }}>
+          {msgs[msgIndex]}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 // ─── Main Planner Screen ───────────────────────────────────────────────────────
 export default function PlannerScreen() {
   const { t } = useTranslation();
@@ -278,6 +378,7 @@ export default function PlannerScreen() {
   const jsDay = new Date().getDay();
   const todayAbbr = jsDay === 0 ? 'Sun' : DAYS[jsDay - 1];
   const [activeDay, setActiveDay] = useState(todayAbbr);
+  const [energyMode, setEnergyMode] = useState<'low' | 'normal' | 'beast'>('normal');
   
   useFocusEffect(
     useCallback(() => {
@@ -289,6 +390,7 @@ export default function PlannerScreen() {
 
   const [loading, setLoading]     = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [isAdjustingBW, setIsAdjustingBW] = useState(false);
   const [restTimer, setRestTimer] = useState<number | null>(null);
 
   useEffect(() => {
@@ -464,7 +566,7 @@ export default function PlannerScreen() {
   };
 
   // ─── Actual Generation ─────────────────────────────────────────────────────
-  const handleGenerate = async () => {
+  const handleGenerate = async (options?: { intensityMode: 'standard' | 'express' | 'heavy' | 'recovery', focusSymmetry: boolean }) => {
     if (!profile) return;
     setShowConfirmModal(false);
     setLoading(true);
@@ -497,10 +599,37 @@ export default function PlannerScreen() {
         }
       } else {
         clearWorkoutPlans();
+        
+        let focusMuscles: string[] = [];
+        if (options?.focusSymmetry) {
+          const workouts = useWorkoutHistoryStore.getState().getWorkoutsForUser(profile.id);
+          const cutoff = new Date();
+          cutoff.setDate(cutoff.getDate() - 30);
+          const cutoffStr = cutoff.toISOString().split('T')[0];
+          
+          const counts: Record<string, number> = { chest: 0, back: 0, legs: 0, shoulders: 0, arms: 0, core: 0 };
+          workouts.filter(w => w.date >= cutoffStr).forEach(w => {
+            w.exercises.forEach(ex => {
+              const name = (ex.englishName || ex.name || '').toLowerCase();
+              if (name.includes('press') && !name.includes('leg') && !name.includes('shoulder')) counts.chest++;
+              if (name.includes('row') || name.includes('pull')) counts.back++;
+              if (name.includes('squat') || name.includes('leg')) counts.legs++;
+              if (name.includes('shoulder') || name.includes('lateral')) counts.shoulders++;
+              if (name.includes('curl') || name.includes('tricep') || name.includes('extension')) counts.arms++;
+              if (name.includes('crunch') || name.includes('plank') || name.includes('abs')) counts.core++;
+            });
+          });
+          const sorted = Object.entries(counts).sort((a, b) => a[1] - b[1]);
+          focusMuscles = sorted.slice(0, 2).map(x => x[0]);
+        }
+
         const parsedPlan = await generateWorkoutPlan({
           goal: profile.goal, activityLevel: profile.activityLevel, age: profile.age,
           weight: profile.weight, height: profile.height, sex: profile.sex, medicalConditions: profile.medicalConditions,
           medicationsSupplements: profile.medicationsSupplements, homeWorkout: isHomeWorkout, homeEquipment,
+          intensityMode: options?.intensityMode || 'standard',
+          focusMuscles,
+          energyMode,
         }, language);
 
         const { warning: planWarning, ...plansOnly } = parsedPlan as any;
@@ -721,6 +850,66 @@ export default function PlannerScreen() {
     });
   };
 
+  const getPreviousRPE = (exerciseName: string) => {
+    const workouts = useWorkoutHistoryStore.getState().getWorkoutsForUser(profile?.id);
+    const sorted = [...workouts].sort((a, b) => b.completedAt - a.completedAt);
+    for (const w of sorted) {
+      for (const ex of w.exercises) {
+        if ((ex.englishName || ex.name) === exerciseName && ex.rpe) {
+          return parseInt(ex.rpe);
+        }
+      }
+    }
+    return null;
+  };
+
+  const handleAdjustWorkout = async (type: 'up' | 'down' | 'bodyweight') => {
+    if (!workout || workout.exercises.length === 0) return;
+    
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    if (type === 'up' || type === 'down') {
+      const newExercises = workout.exercises.map((ex: any) => {
+        let sets = ex.sets;
+        if (type === 'up') sets += 1;
+        if (type === 'down' && sets > 1) sets -= 1;
+        return { ...ex, sets };
+      });
+      const updatedWorkout = { ...workout, exercises: newExercises };
+      const updatedPlans = { ...workoutPlans, [activeDay]: updatedWorkout };
+      setWorkoutPlans(updatedPlans, weekStart || getStartOfWeek(new Date()), warning || undefined);
+      if (profile?.id) {
+        supabase.from('workout_plan_items')
+          .update({ exercises: newExercises })
+          .eq('user_id', profile.id)
+          .eq('day_of_week', activeDay).then();
+      }
+      return;
+    }
+
+    if (type === 'bodyweight') {
+      setIsAdjustingBW(true);
+      try {
+        const { adjustWorkoutToBodyweight } = require('../../../services/groq');
+        const adjusted = await adjustWorkoutToBodyweight(workout.name, workout.exercises, language);
+        
+        const updatedWorkout = { ...workout, exercises: adjusted.exercises, name: adjusted.name };
+        const updatedPlans = { ...workoutPlans, [activeDay]: updatedWorkout };
+        setWorkoutPlans(updatedPlans, weekStart || getStartOfWeek(new Date()), warning || undefined);
+        if (profile?.id) {
+          supabase.from('workout_plan_items')
+            .update({ exercises: adjusted.exercises, routine_name: adjusted.name })
+            .eq('user_id', profile.id)
+            .eq('day_of_week', activeDay).then();
+        }
+      } catch (err) {
+        showAlert('error', t('common.error'), 'No se pudo ajustar el entrenamiento.');
+      } finally {
+        setIsAdjustingBW(false);
+      }
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <GlobalBackground />
@@ -729,6 +918,11 @@ export default function PlannerScreen() {
       <CustomAlert visible={alert.visible} type={alert.type} title={alert.title} message={alert.message} onConfirm={alert.onConfirm} />
 
       {/* Pre-generation confirmation modal */}
+      <AILoadingOverlay 
+        visible={loading || analyzing || isAdjustingBW} 
+        mode={loading ? mode : analyzing ? 'analysis' : 'bodyweight'} 
+      />
+
       <GenerateConfirmModal
         visible={showConfirmModal}
         onConfirm={handleGenerate}
@@ -782,8 +976,16 @@ export default function PlannerScreen() {
             {profile?.goal ? `${t('planner.planFor', 'Plan para:')} ${getGoalTranslation()}` : t('planner.weekPlan')}
           </Text>
         </View>
-        <TouchableOpacity style={s.genBtn} activeOpacity={0.8} onPress={handleGeneratePress} disabled={loading}>
-          <LinearGradient colors={isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : colors.gradientPrimary} style={s.genGrad} start={{x:0,y:0}} end={{x:1,y:1}}>
+
+        <TouchableOpacity style={s.genBtn} activeOpacity={0.8} onPress={() => handleGeneratePress()} disabled={loading}>
+          <LinearGradient 
+            colors={
+              mode === 'workouts' 
+                ? (energyMode === 'low' ? ['#06B6D4', '#0891B2'] : energyMode === 'beast' ? ['#EF4444', '#B91C1C'] : (isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : colors.gradientPrimary))
+                : (isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : colors.gradientPrimary)
+            } 
+            style={s.genGrad} start={{x:0,y:0}} end={{x:1,y:1}}
+          >
             {loading ? <ActivityIndicator size="small" color="#fff" /> :
              <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
                <Sparkles size={16} color="#fff" />
@@ -793,6 +995,36 @@ export default function PlannerScreen() {
           </LinearGradient>
         </TouchableOpacity>
       </View>
+
+      {/* Energy Meter UI (Moved outside the row header) */}
+      {mode === 'workouts' && (
+        <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
+           <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 8 }}>¿Cómo te sientes hoy?</Text>
+           <View style={{ flexDirection: 'row', gap: 8 }}>
+             <TouchableOpacity 
+               activeOpacity={0.8}
+               onPress={() => setEnergyMode('low')}
+               style={{ flex: 1, paddingVertical: 10, backgroundColor: energyMode === 'low' ? '#06B6D420' : colors.surfaceAlt, borderRadius: 16, borderWidth: 1, borderColor: energyMode === 'low' ? '#06B6D4' : colors.border, alignItems: 'center' }}>
+               <Text style={{ fontSize: 20 }}>🔋</Text>
+               <Text style={{ fontSize: 12, fontWeight: '800', color: energyMode === 'low' ? '#06B6D4' : colors.textMuted, marginTop: 4 }}>Agotado</Text>
+             </TouchableOpacity>
+             <TouchableOpacity 
+               activeOpacity={0.8}
+               onPress={() => setEnergyMode('normal')}
+               style={{ flex: 1, paddingVertical: 10, backgroundColor: energyMode === 'normal' ? colors.primary + '20' : colors.surfaceAlt, borderRadius: 16, borderWidth: 1, borderColor: energyMode === 'normal' ? colors.primary : colors.border, alignItems: 'center' }}>
+               <Text style={{ fontSize: 20 }}>⚡</Text>
+               <Text style={{ fontSize: 12, fontWeight: '800', color: energyMode === 'normal' ? colors.primary : colors.textMuted, marginTop: 4 }}>Normal</Text>
+             </TouchableOpacity>
+             <TouchableOpacity 
+               activeOpacity={0.8}
+               onPress={() => setEnergyMode('beast')}
+               style={{ flex: 1, paddingVertical: 10, backgroundColor: energyMode === 'beast' ? '#EF444420' : colors.surfaceAlt, borderRadius: 16, borderWidth: 1, borderColor: energyMode === 'beast' ? '#EF4444' : colors.border, alignItems: 'center' }}>
+               <Text style={{ fontSize: 20 }}>🦍</Text>
+               <Text style={{ fontSize: 12, fontWeight: '800', color: energyMode === 'beast' ? '#EF4444' : colors.textMuted, marginTop: 4 }}>Bestia</Text>
+             </TouchableOpacity>
+           </View>
+        </View>
+      )}
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 160 }}>
 
@@ -1082,7 +1314,20 @@ export default function PlannerScreen() {
                       <AnimatedCard key={i} index={i} direction="up">
                         <View style={[s.exerciseCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                           <View style={s.exerciseHeader}>
-                            <Text style={[s.exerciseName, { color: colors.textPrimary }]} numberOfLines={2}>{ex.name}</Text>
+                            <View style={{ flex: 1, marginRight: 8 }}>
+                              <Text style={[s.exerciseName, { color: colors.textPrimary }]} numberOfLines={2}>{ex.name}</Text>
+                              {(() => {
+                                const prevRPE = getPreviousRPE(ex.englishName || ex.name);
+                                if (prevRPE !== null && prevRPE < 7) {
+                                  return (
+                                    <View style={{ backgroundColor: '#F59E0B22', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, marginTop: 4, alignSelf: 'flex-start' }}>
+                                      <Text style={{ fontSize: 11, fontWeight: '800', color: '#D97706' }}>🚀 ¡Subiste de nivel! +5% peso o +2 reps</Text>
+                                    </View>
+                                  );
+                                }
+                                return null;
+                              })()}
+                            </View>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                               {i > 0 && (
                                 <TouchableOpacity onPress={() => handleMoveExercise(i, -1)} style={{ padding: 4 }}>
@@ -1153,6 +1398,38 @@ export default function PlannerScreen() {
                         </View>
                       </AnimatedCard>
                     ))}
+
+                    {/* Botones de Ajuste Diario */}
+                    {!alreadyCompleted && (
+                      <View style={{ gap: 8, marginTop: 12, marginBottom: 8 }}>
+                        <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textSecondary, marginLeft: 4 }}>Ajuste Rápido de Dificultad</Text>
+                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                          <TouchableOpacity 
+                            style={{ flex: 1, backgroundColor: colors.surfaceAlt, padding: 12, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
+                            onPress={() => handleAdjustWorkout('down')}
+                          >
+                            <Text style={{ fontSize: 18 }}>🔽</Text>
+                            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, marginTop: 4, textAlign: 'center' }}>-20% Inten.</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity 
+                            style={{ flex: 1, backgroundColor: colors.surfaceAlt, padding: 12, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
+                            onPress={() => handleAdjustWorkout('up')}
+                          >
+                            <Text style={{ fontSize: 18 }}>🔼</Text>
+                            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, marginTop: 4, textAlign: 'center' }}>+20% Inten.</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity 
+                            style={{ flex: 1, backgroundColor: colors.surfaceAlt, padding: 12, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
+                            onPress={() => handleAdjustWorkout('bodyweight')}
+                            disabled={isAdjustingBW}
+                          >
+                            {isAdjustingBW ? <ActivityIndicator size="small" color={colors.primary} /> : <Text style={{ fontSize: 18 }}>🏠</Text>}
+                            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, marginTop: 4, textAlign: 'center' }}>Sin Equipo</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    )}
+
                     {/* Focus Mode Button */}
                     <TouchableOpacity
                       onPress={() => router.push({ pathname: '/modals/focus-mode', params: { day: activeDay } })}
@@ -1232,7 +1509,13 @@ export default function PlannerScreen() {
                 )}
               </View>
             ) : (
-              <EmptyState title={t('planner.noWorkouts')} loading={loading} isPro={isProActually} onUnlock={() => router.push('/modals/paywall')} />
+              <EmptyState 
+                title={t('planner.noWorkouts')} 
+                subtitle="Toca 'Generar' para crear un plan de entrenamiento con IA"
+                loading={loading} 
+                isPro={isProActually} 
+                onUnlock={() => router.push('/modals/paywall')} 
+              />
             )
           )}
         </View>
@@ -1296,7 +1579,7 @@ export default function PlannerScreen() {
 }
 
 // ─── Empty State ───────────────────────────────────────────────────────────────
-function EmptyState({ title, loading, isPro, onUnlock }: { title: string; loading: boolean; isPro: boolean; onUnlock: () => void }) {
+function EmptyState({ title, subtitle, loading, isPro, onUnlock }: { title: string; subtitle?: string; loading: boolean; isPro: boolean; onUnlock: () => void }) {
   const { t } = useTranslation();
   const colors = useTheme();
   return (
@@ -1306,7 +1589,7 @@ function EmptyState({ title, loading, isPro, onUnlock }: { title: string; loadin
       </View>
       <Text style={[s.emptyTitle, { color: colors.textPrimary }]}>{title}</Text>
       <Text style={[s.emptySub, { color: colors.textSecondary }]}>
-        {loading ? t('common.loading') : isPro ? t('planner.emptySubPro') : t('planner.emptySubFree')}
+        {loading ? t('common.loading') : (subtitle ? subtitle : (isPro ? t('planner.emptySubPro') : t('planner.emptySubFree')))}
       </Text>
       {!isPro && !loading && (
         <TouchableOpacity style={s.proBtn} activeOpacity={0.8} onPress={onUnlock}>
@@ -1491,6 +1774,8 @@ const gcm = StyleSheet.create({
   btnCancel:      { alignItems: 'center', paddingVertical: 10 },
   btnCancelText:  { fontSize: 14, fontWeight: '600' },
   resetDesc:      { fontSize: 15, textAlign: 'center', lineHeight: 23, marginBottom: 20, fontWeight: '500' },
+  modeBtn:        { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, borderWidth: 1, borderColor: 'transparent' },
+  modeBtnText:    { fontSize: 13, fontWeight: '800' },
 });
 
 const dp = StyleSheet.create({
