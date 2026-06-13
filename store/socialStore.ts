@@ -58,6 +58,7 @@ export interface RankedUser {
   name_color?: string;
   is_pro?: boolean;
   points: number;
+  current_streak?: number;
 }
 
 export interface PostComment {
@@ -557,7 +558,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
       // Use direct table fetch instead of slow legacy RPC
       const { data, error } = await supabase
         .from('users')
-        .select('id, name, avatar_url, name_color, is_pro, league_points')
+        .select('id, name, avatar_url, name_color, is_pro, league_points, current_streak')
         .not('name', 'is', null)
         .order('league_points', { ascending: false })
         .limit(50);
@@ -569,6 +570,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         name: u.name,
         avatar_url: u.avatar_url,
         points: u.league_points || 0,
+        current_streak: u.current_streak || 0,
         name_color: u.is_pro && (!u.name_color || u.name_color === '') ? '#EAB308' : u.name_color
       }));
       

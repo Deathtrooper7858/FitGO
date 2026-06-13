@@ -229,6 +229,20 @@ export const useNutritionStore = create<NutritionState>()(
         const streak = recalculateStreak(newActiveDays);
 
         set({ activeDays: newActiveDays, plannedDays: newPlannedDays, streakDays: streak });
+
+        // Sync streak to DB so squad members can see it and league multipliers work
+        const { profile } = useAuthStore.getState();
+        if (profile?.id) {
+          void supabase
+            .from('users')
+            .update({ current_streak: streak })
+            .eq('id', profile.id)
+            .then(({ error }) => {
+              if (error) console.warn('[NutritionStore] streak sync error:', error.message);
+            });
+          // Also update leagueStore so the multiplier is fresh immediately
+          useLeagueStore.setState({ myStreak: streak });
+        }
       },
 
       addLog: async (log) => {
@@ -297,13 +311,26 @@ export const useNutritionStore = create<NutritionState>()(
               }
             }
 
-            // Gamification: fire-and-forget so it never blocks the addLog response
+            // Gamification: fire-and-forget so it never blocks the addLog response.
+            // NOTE: The DB trigger trg_food_log_points already updates
+            // users.league_points AND users.squad_points when a food_log is inserted.
+            // DO NOT call awardPoints(MEAL_LOG) here — it would double-count!
+            // We only update local UI state optimistically and refresh the leaderboard.
             void (async () => {
               try {
                 const ls = useLeagueStore.getState();
-                await ls.awardPoints(profile.id, LEAGUE_POINTS.MEAL_LOG, 'meal_log');
-                
-                // Check if this log perfected the macros for the day
+                const multiplier = ls.myStreak >= 15 ? 2.0 : ls.myStreak >= 8 ? 1.5 : ls.myStreak >= 3 ? 1.2 : 1.0;
+                const finalPts = Math.round(10 * multiplier);
+
+                // Update local state only — DB trigger already persisted to DB
+                useLeagueStore.setState(state => ({
+                  myPoints: state.myPoints + finalPts,
+                  mySquadPoints: state.mySquadPoints + finalPts,
+                  todayPointsEarned: state.todayPointsEarned + finalPts,
+                }));
+
+                // Check if this log perfected the macros for the day (this one still uses awardPoints
+                // because macro_perfect points are NOT handled by a DB trigger)
                 const totals = selectDailyTotals(get());
                 if (profile.targetCalories && profile.macros) {
                   await ls.checkAndAwardMacroPoints(
@@ -312,8 +339,11 @@ export const useNutritionStore = create<NutritionState>()(
                     { calories: profile.targetCalories, protein: profile.macros.protein, carbs: profile.macros.carbs, fat: profile.macros.fat }
                   );
                 }
+
+                // Refresh leaderboard so squad totals stay fresh
+                await ls.fetchMySquad(profile.id);
               } catch (e) {
-                __DEV__ && console.warn('[NutritionStore] Failed to award gamification points:', e);
+                __DEV__ && console.warn('[NutritionStore] Failed to update gamification state:', e);
               }
             })();
           } catch (err) {
@@ -679,7 +709,21 @@ export const useNutritionStore = create<NutritionState>()(
           // Force recalculate streak to avoid stale UI
           const { activeDays } = get();
           const streak = recalculateStreak(activeDays);
-          if (get().streakDays !== streak) set({ streakDays: streak });
+          if (get().streakDays !== streak) {
+            set({ streakDays: streak });
+            // Sync streak to DB whenever it changes
+            const { profile } = useAuthStore.getState();
+            if (profile?.id) {
+              void supabase
+                .from('users')
+                .update({ current_streak: streak })
+                .eq('id', profile.id)
+                .then(({ error }) => {
+                  if (error) console.warn('[NutritionStore] streak sync error:', error.message);
+                });
+              useLeagueStore.setState({ myStreak: streak });
+            }
+          }
 
         } catch (err: any) {
           if (err?.name === 'AbortError' || err?.message?.includes('AbortError')) {
