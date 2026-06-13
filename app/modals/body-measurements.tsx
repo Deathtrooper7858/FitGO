@@ -184,7 +184,11 @@ export default function BodyMeasurementsModal() {
         }
       }
       showAlert('success', t('common.success'), t('profile.updateSuccess'), () => {
-        router.back();
+        if (router.canGoBack()) {
+          router.back();
+        } else {
+          router.dismissAll();
+        }
       });
     } catch (err) {
       showAlert('error', t('common.error'), t('profile.saveMeasurementsFailed'));
@@ -279,7 +283,7 @@ export default function BodyMeasurementsModal() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {/* Header */}
         <View style={s.header}>
-          <TouchableOpacity onPress={() => router.back()} style={[s.closeBtn, { backgroundColor: colors.surfaceAlt }]}>
+          <TouchableOpacity onPress={() => { if (router.canGoBack()) { router.back(); } else { router.dismissAll(); } }} style={[s.closeBtn, { backgroundColor: colors.surfaceAlt }]}>
             <X size={20} color={colors.textPrimary} />
           </TouchableOpacity>
           <Text style={[s.title, { color: colors.textPrimary }]}>{t('profile.bodyMeasurements')}</Text>
