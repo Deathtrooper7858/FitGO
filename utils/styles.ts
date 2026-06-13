@@ -11,8 +11,7 @@ export const getNameStyle = (
   const baseColor = isMe ? (currentUserColor || nameColor) : nameColor;
 
   // Never override admin_glow with a local store premium color. 
-  // We use storePremiumColor only as a fallback if baseColor is missing.
-  const resolvedColor = baseColor || (isMe ? storePremiumColor : null);
+  const resolvedColor = baseColor;
 
   if (resolvedColor === 'admin_glow') {
     return {

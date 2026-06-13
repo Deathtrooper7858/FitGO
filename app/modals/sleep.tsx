@@ -63,6 +63,12 @@ export default function SleepModal() {
 
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
+      <LinearGradient
+        colors={[`${colors.primary}15`, colors.background]}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 0.6 }}
+      />
       {/* Header */}
       <View style={s.header}>
         <Text style={[s.title, { color: colors.textPrimary }]}>
@@ -75,7 +81,15 @@ export default function SleepModal() {
 
       <View style={s.content}>
         {/* Hero */}
-        <View style={[s.heroCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={[s.heroCard, { 
+          backgroundColor: colors.surface, 
+          borderColor: `${colors.primary}20`,
+          shadowColor: colors.primary,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 10,
+          elevation: 3 
+        }]}>
           <Text style={s.heroEmoji}>{sleepQuality}</Text>
           <Text style={[s.hoursText, { color: qualityColor }]}>
             {hours > 0 ? `${hours}h` : '--'}
@@ -87,7 +101,15 @@ export default function SleepModal() {
 
         {/* Time inputs */}
         <View style={s.row}>
-          <View style={[s.inputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[s.inputContainer, { 
+            backgroundColor: colors.surface, 
+            borderColor: `${colors.primary}20`,
+            shadowColor: colors.primary,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 10,
+            elevation: 3 
+          }]}>
             <Text style={s.inputEmoji}>🌙</Text>
             <Text style={[s.label, { color: colors.textSecondary }]}>
               {t('sleep.bedtime', 'Hora de dormir')}
@@ -101,7 +123,15 @@ export default function SleepModal() {
               placeholderTextColor={colors.textMuted}
             />
           </View>
-          <View style={[s.inputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[s.inputContainer, { 
+            backgroundColor: colors.surface, 
+            borderColor: `${colors.primary}20`,
+            shadowColor: colors.primary,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 10,
+            elevation: 3 
+          }]}>
             <Text style={s.inputEmoji}>☀️</Text>
             <Text style={[s.label, { color: colors.textSecondary }]}>
               {t('sleep.waketime', 'Hora de despertar')}
@@ -118,7 +148,7 @@ export default function SleepModal() {
         </View>
 
         {/* Tip */}
-        <View style={[s.tipBox, { backgroundColor: 'rgba(124,92,252,0.08)', borderColor: 'rgba(124,92,252,0.2)' }]}>
+        <View style={[s.tipBox, { backgroundColor: `${colors.primary}10`, borderColor: `${colors.primary}20` }]}>
           <Text style={{ fontSize: 14, color: colors.textSecondary, lineHeight: 20 }}>
             💡 {t('sleep.tip', 'Los adultos necesitan entre 7 y 9 horas de sueño para una recuperación óptima.')}
           </Text>
@@ -130,7 +160,7 @@ export default function SleepModal() {
           onPress={handleSave} 
           activeOpacity={0.85}
         >
-          <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.saveGrad}>
+          <LinearGradient colors={[colors.primary, colors.primary + 'C0']} style={s.saveGrad}>
             <Text style={s.saveText}>{t('common.save', 'Guardar')}</Text>
           </LinearGradient>
         </TouchableOpacity>

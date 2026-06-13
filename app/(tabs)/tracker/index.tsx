@@ -488,15 +488,22 @@ export default function TrackerScreen() {
       />
       {/* Header */}
       <View style={s.header}>
-        <TouchableOpacity style={s.avatarWrap} onPress={() => router.push('/(tabs)/profile' as any)}>
+        {/* Profile Avatar */}
+        <TouchableOpacity 
+          style={[s.avatarWrap, { borderColor: colors.border, backgroundColor: colors.surface, shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 4 }]} 
+          onPress={() => router.push('/(tabs)/profile' as any)}
+          activeOpacity={0.7}
+        >
           {profile?.avatarUrl ? (
             <Image source={{ uri: profile.avatarUrl }} style={s.avatarImage} />
           ) : (
-            <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary }]}>
-              <Text style={s.avatarText}>{profile?.name?.[0]?.toUpperCase()}</Text>
+            <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary + '20' }]}>
+              <Text style={[s.avatarText, { color: colors.primary }]}>{profile?.name?.[0]?.toUpperCase()}</Text>
             </View>
           )}
         </TouchableOpacity>
+
+        {/* Date / Streak Center */}
         <View style={s.headerCenter}>
           <Text style={[s.streakText, { color: colors.textPrimary }]}>🔥 {streakDays}</Text>
           <TouchableOpacity onPress={() => router.push('/modals/calendar' as any)}>
@@ -505,8 +512,10 @@ export default function TrackerScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Social Button */}
         <TouchableOpacity 
-          style={s.socialBtn} 
+          style={[s.socialBtn, { backgroundColor: colors.surface, borderColor: colors.border, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 }]} 
           activeOpacity={0.7}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -521,14 +530,16 @@ export default function TrackerScreen() {
               style={s.socialGradient}
             >
               <Users size={20} color="#fff" />
-              <View style={s.badge}>
+              <View style={[s.badge, { borderColor: colors.background }]}>
                 <Text style={s.badgeText}>
                   {socialNotificationCount > 9 ? '+9' : `+${socialNotificationCount}`}
                 </Text>
               </View>
             </LinearGradient>
           ) : (
-            <Users size={20} color={colors.primary} />
+            <View style={s.socialIconWrap}>
+              <Users size={22} color={colors.textPrimary} />
+            </View>
           )}
         </TouchableOpacity>
       </View>
@@ -923,7 +934,7 @@ export default function TrackerScreen() {
             <Text style={[s.activityTotal, { color: colors.textPrimary }]}>{totalBurned} {energyLabel}</Text>
           </View>
           
-          <TouchableOpacity style={[s.nutrientRow, { borderBottomColor: colors.border }]} onPress={() => router.push('/modals/select-activity-level' as any)}>
+          <TouchableOpacity style={[s.nutrientRow, { borderBottomColor: colors.primary + '40' }]} onPress={() => router.push('/modals/select-activity-level' as any)}>
             <View style={[s.nutrientRowLeft, { flex: 1, paddingRight: 8 }]}>
               <Text style={{ fontSize: 24 }}>🔥</Text>
               <View style={{ flex: 1 }}>
@@ -943,7 +954,7 @@ export default function TrackerScreen() {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[s.nutrientRow, { borderBottomColor: colors.border }]} onPress={() => router.push('/modals/select-neat' as any)}>
+          <TouchableOpacity style={[s.nutrientRow, { borderBottomColor: colors.primary + '40' }]} onPress={() => router.push('/modals/select-neat' as any)}>
             <View style={[s.nutrientRowLeft, { flex: 1, paddingRight: 8 }]}>
               <Text style={{ fontSize: 24 }}>🏃</Text>
               <View style={{ flex: 1 }}>
@@ -955,7 +966,7 @@ export default function TrackerScreen() {
           </TouchableOpacity>
 
           {dayActivities.map(act => (
-            <TouchableOpacity key={act.id} style={[s.nutrientRow, { borderBottomColor: colors.border }]} onPress={() => handleActivityPress(act)}>
+            <TouchableOpacity key={act.id} style={[s.nutrientRow, { borderBottomColor: colors.primary + '40' }]} onPress={() => handleActivityPress(act)}>
               <View style={[s.nutrientRowLeft, { flex: 1, paddingRight: 8 }]}>
                 <Text style={{ fontSize: 24 }}>{act.icon}</Text>
                 <View style={{ flex: 1 }}>
@@ -1294,7 +1305,7 @@ export default function TrackerScreen() {
 const s = StyleSheet.create({
   safe:          { flex: 1 },
   header:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 10 },
-  avatarWrap:    { width: 36, height: 36, borderRadius: 18, overflow: 'hidden' },
+  avatarWrap:    { width: 44, height: 44, borderRadius: 22, overflow: 'hidden', borderWidth: 2 },
   avatarImage:   { width: '100%', height: '100%' },
   avatarPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   avatarText:    { color: '#000', fontWeight: 'bold' },
@@ -1382,6 +1393,13 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.05)',
   },
   socialGradient: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  socialIconWrap: {
     width: 44,
     height: 44,
     borderRadius: 22,

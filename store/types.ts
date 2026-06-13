@@ -172,8 +172,9 @@ export interface AppNotification {
   title: string;
   description: string;
   icon?: string;
-  iconType: 'emoji' | 'lucide';
+  iconType: 'emoji' | 'lucide' | 'lottie';
   lucideIcon?: string;
+  lottieFile?: string;
   tier: 'bronce' | 'plata' | 'oro' | 'diamante' | 'success' | 'info' | 'warning';
   isAchievement?: boolean;
 }

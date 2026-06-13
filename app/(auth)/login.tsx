@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
   KeyboardAvoidingView, Platform, ScrollView, Alert, Image, Pressable, Dimensions
@@ -41,8 +41,10 @@ export default function LoginScreen() {
     path: 'auth/callback',
   });
 
-  // Log the redirect URI so you can verify it matches what's in Google Console + Supabase
-  if (__DEV__) console.log('[OAuth] redirectTo:', redirectTo);
+  // Log the redirect URI once on mount (not on every re-render)
+  useEffect(() => {
+    if (__DEV__) console.log('[OAuth] redirectTo:', redirectTo);
+  }, []);
 
   const createSessionFromUrl = async (url: string) => {
     const { params, errorCode } = QueryParams.getQueryParams(url);

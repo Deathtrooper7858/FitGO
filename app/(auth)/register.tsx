@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
   ScrollView, Alert, KeyboardAvoidingView, Platform, Pressable, Dimensions
@@ -36,7 +36,10 @@ export default function RegisterScreen() {
     scheme: 'fitgo',
     path: 'auth/callback',
   });
-  if (__DEV__) console.log('[OAuth] redirectTo:', redirectTo);
+  // Log the redirect URI once on mount (not on every re-render)
+  useEffect(() => {
+    if (__DEV__) console.log('[OAuth] redirectTo:', redirectTo);
+  }, []);
 
   const showAlert = (title: string, message: string, type: AlertType = 'error') => {
     setAlertConfig({ title, message, type });

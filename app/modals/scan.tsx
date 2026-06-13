@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Scr
 import { Image } from 'expo-image';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Spacing, Radius } from '../../constants';
@@ -28,6 +29,7 @@ type Meal = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
 export default function ScanModal() {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const { initialMeal, date, initialMode } = useLocalSearchParams<{ initialMeal?: Meal, date?: string, initialMode?: ScanMode }>();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned]           = useState(false);
@@ -61,12 +63,15 @@ export default function ScanModal() {
   const [capturedUri, setCapturedUri]    = useState<string | null>(null);
   const cameraRef = useRef<any>(null);
   const colors = useTheme();
-  const { language } = useSettingsStore();
+  const { language, premiumColor } = useSettingsStore();
   const { addLog, fetchLogs, selectedDate } = useNutritionStore();
   const { profile } = useAuthStore();
   const { isPro } = usePurchaseStore();
   const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const { aiPhotoEnergy, aiTextEnergy } = useAdStore();
+
+  const isValidHex = premiumColor?.startsWith('#');
+  const isPremiumCustom = isProActually && premiumColor && isValidHex;
   const [showSuccess, setShowSuccess] = useState(false);
   const [flash, setFlash] = useState<'off' | 'on' | 'auto'>('off');
   const [facing, setFacing] = useState<'back' | 'front'>('back');
@@ -612,7 +617,7 @@ export default function ScanModal() {
           <Text style={s.title}>{t('scan.analysisTitle')}</Text>
           <View style={{ width: 40 }} />
         </View>
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: Spacing.base, paddingBottom: 100 }}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: Spacing.base, paddingBottom: 160 }}>
           <Image source={{ uri: capturedUri }} style={s.capturedImage} contentFit="cover" />
           <View style={[s.confidenceBadge, { borderColor: confidenceColor }]}>
             <View style={[s.confidenceDot, { backgroundColor: confidenceColor }]} />
@@ -706,29 +711,34 @@ export default function ScanModal() {
 
           {photoResult.notes && <Text style={[s.notesText, { color: colors.textSecondary }]}>💡 {photoResult.notes}</Text>}
         </ScrollView>
-        <View style={[s.resultFooter, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
-          <TouchableOpacity style={[s.retryBtn, { borderColor: colors.border }]} onPress={resetPhoto}>
-            <Text style={[s.retryText, { color: colors.textSecondary }]}>📷 {t('scan.retake')}</Text>
-          </TouchableOpacity>
-          {/* Add missing food — lets user add what the AI didn't detect */}
-          <TouchableOpacity
-            style={[s.retryBtn, { borderColor: colors.primary + '66', backgroundColor: colors.primary + '12' }]}
-            onPress={() => {
-              // Save current results first, then push scan in search mode
-              handleAddAllFoods().then(() => {
-                router.replace({
-                  pathname: '/modals/scan',
-                  params: { initialMeal: initialMeal || getAutoMeal(), date: date || getLocalDateString(), initialMode: 'search' },
-                } as any);
-              });
-            }}
-          >
-            <Text style={[s.retryText, { color: colors.primary, fontWeight: '700' }]}>
-              ➕ {language === 'es' ? 'Añadir faltante' : 'Add missing'}
-            </Text>
-          </TouchableOpacity>
+          <View style={[s.resultFooter, { backgroundColor: colors.background, borderTopColor: colors.border, paddingBottom: Math.max(insets.bottom, 24) + 12 }]}>
+          <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+            <TouchableOpacity style={[s.actionBtn, { borderColor: colors.border, backgroundColor: colors.surface }]} onPress={resetPhoto}>
+              <Text style={{ fontSize: 18 }}>📷</Text>
+              <Text style={[s.actionBtnText, { color: colors.textSecondary }]}>{t('scan.retake', 'Repetir')}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[s.actionBtn, { borderColor: colors.primary + '40', backgroundColor: colors.primary + '12' }]}
+              onPress={() => {
+                handleAddAllFoods().then(() => {
+                  router.replace({
+                    pathname: '/modals/scan',
+                    params: { initialMeal: initialMeal || getAutoMeal(), date: date || getLocalDateString(), initialMode: 'search' },
+                  } as any);
+                });
+              }}
+            >
+              <Text style={{ fontSize: 18 }}>➕</Text>
+              <Text style={[s.actionBtnText, { color: colors.primary }]}>
+                {language === 'es' ? 'Faltante' : 'Missing'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           <TouchableOpacity style={s.addAllBtn} onPress={handleAddAllFoods} activeOpacity={0.85}>
-            <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.addAllGrad}>
+            <LinearGradient colors={isPremiumCustom ? [premiumColor, premiumColor + 'CC'] : ['#7C5CFC', '#4338CA']} style={s.addAllGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+              <Text style={{ fontSize: 18, color: '#fff' }}>✅</Text>
               <Text style={s.addAllText}>
                 {language === 'es' 
                   ? `Registrar en ${t(`tracker.${initialMeal || getAutoMeal()}`)}` 
@@ -1122,7 +1132,7 @@ const s = StyleSheet.create({
   totalLabel:    { fontSize: 14, fontWeight: '600', marginBottom: 4 },
   totalValue:    { fontSize: 28, fontWeight: '800' },
   notesText:     { fontSize: 14, fontStyle: 'italic', paddingHorizontal: 10, lineHeight: 22 },
-  resultFooter:  { flexDirection: 'row', gap: 10, padding: Spacing.base, borderTopWidth: 1, paddingBottom: 36 },
+  resultFooter:  { padding: Spacing.base, borderTopWidth: 1, paddingTop: 20 },
   searchWrap: { padding: Spacing.md },
   searchInputContainer: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: Radius.lg, borderWidth: 1, marginBottom: Spacing.md },
   searchTextInput: { flex: 1, fontSize: 16 },
@@ -1135,11 +1145,11 @@ const s = StyleSheet.create({
   macroBadgeText: { fontSize: 10, fontWeight: '700' },
   searchResultAddBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
   customAddBtn:  { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: Radius.lg, borderWidth: 1, marginBottom: 12 },
-  retryBtn:      { flex: 1, paddingVertical: 14, borderRadius: Radius.md, borderWidth: 1.5, alignItems: 'center' },
-  retryText:     { fontWeight: '600', fontSize: 15 },
-  addAllBtn:     { flex: 2, borderRadius: Radius.md, overflow: 'hidden' },
-  addAllGrad:    { paddingVertical: 14, alignItems: 'center' },
-  addAllText:    { color: '#fff', fontWeight: '700', fontSize: 15 },
+  actionBtn:     { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 14, borderRadius: Radius.lg, borderWidth: 1, gap: 8 },
+  actionBtnText: { fontWeight: '700', fontSize: 15 },
+  addAllBtn:     { borderRadius: Radius.xl, overflow: 'hidden', shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 6, elevation: 5 },
+  addAllGrad:    { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 18, gap: 10 },
+  addAllText:    { color: '#fff', fontWeight: '800', fontSize: 17, letterSpacing: 0.5 },
   photoControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 48, width: '100%', marginBottom: 12 },
   galleryBtn:    { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.1)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
   textInputWrap: { width: '100%', padding: Spacing.base, gap: 16, paddingTop: 12 },

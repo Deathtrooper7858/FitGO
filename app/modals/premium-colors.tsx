@@ -62,12 +62,14 @@ export default function PremiumColorsModal() {
 
     setPremiumColor(color.id);
 
+    // Save to database so other users can see the premium color
     if (profile?.id) {
-      setProfile({ ...profile, nameColor: color.id || undefined });
       try {
+        await supabase.auth.updateUser({ data: { name_color: color.id } });
         await supabase.from('users').update({ name_color: color.id }).eq('id', profile.id);
-      } catch (e) {
-        console.error('Error saving name_color:', e);
+        setProfile({ ...profile, nameColor: color.id || undefined });
+      } catch (err) {
+        console.warn('Error saving premium color to DB:', err);
       }
     }
   };

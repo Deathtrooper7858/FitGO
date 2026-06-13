@@ -13,7 +13,7 @@ import { getNameStyle } from '../../utils/styles';
 import { useTheme } from '../../hooks/useTheme';
 import { Radius, Spacing } from '../../constants';
 import { GlassCard } from '../../components/GlassCard';
-import { useSocialStore, useAuthStore, useSettingsStore } from '../../store';
+import { useSocialStore, useAuthStore, useSettingsStore, useNutritionStore } from '../../store';
 import { generateSocialChallenge } from '../../services/groq';
 import { ImagePickerModal } from '../../components/ImagePickerModal';
 import { supabase } from '../../services/supabase';
@@ -137,6 +137,7 @@ export default function SocialModal() {
   const { profile } = useAuthStore();
   const { language } = useSettingsStore();
   const socialStore = useSocialStore();
+  const nutritionStore = useNutritionStore();
   
   const TABS: TabType[] = ['you', 'feed', 'friends', 'ranking', 'challenges'];
   
@@ -1316,15 +1317,60 @@ export default function SocialModal() {
                     </View>
                   </View>
 
-                  {/* Progress mock since we don't have realtime progression tracked perfectly yet */}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16 }}>
-                    <View style={{ height: 6, flex: 1, backgroundColor: colors.border + '33', borderRadius: 3, overflow: 'hidden' }}>
-                      <View style={{ width: challenge.status === 'completed' ? '100%' : '35%', height: '100%', backgroundColor: challenge.status === 'completed' ? colors.success : colors.primary, borderRadius: 3 }} />
-                    </View>
-                    <Text style={{ color: challenge.status === 'completed' ? colors.success : colors.primary, fontSize: 11, fontWeight: '800', marginLeft: 10 }}>
-                      {challenge.status === 'completed' ? '100%' : '35%'}
-                    </Text>
-                  </View>
+                  {(() => {
+                    const todayStr = getLocalDateString(new Date());
+                    let currentProgress = 0;
+                    
+                    if (challenge.type === 'steps') {
+                      currentProgress = nutritionStore.dailySteps?.[todayStr] || 0;
+                    } else if (challenge.type === 'calories') {
+                      // Fallback since calories might not be directly in nutritionStore, could use an aggregate
+                      currentProgress = 0; 
+                    }
+                    
+                    const target = challenge.target_value || 1;
+                    const percentage = challenge.status === 'completed' ? 100 : Math.min(100, Math.round((currentProgress / target) * 100));
+                    const isFullyCompleted = challenge.status === 'completed' || percentage >= 100;
+
+                    return (
+                      <>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16 }}>
+                          <View style={{ height: 6, flex: 1, backgroundColor: colors.border + '33', borderRadius: 3, overflow: 'hidden' }}>
+                            <View style={{ width: `${percentage}%`, height: '100%', backgroundColor: isFullyCompleted ? colors.success : colors.primary, borderRadius: 3 }} />
+                          </View>
+                          <Text style={{ color: isFullyCompleted ? colors.success : colors.primary, fontSize: 11, fontWeight: '800', marginLeft: 10 }}>
+                            {percentage}%
+                          </Text>
+                        </View>
+                        
+                        {challenge.status !== 'completed' && (
+                          <TouchableOpacity 
+                            style={{ 
+                              marginTop: 16, 
+                              paddingVertical: 10, 
+                              backgroundColor: isFullyCompleted || challenge.type === 'physical' ? colors.primary : colors.surfaceAlt, 
+                              borderRadius: Radius.md, 
+                              alignItems: 'center', 
+                              flexDirection: 'row', 
+                              justifyContent: 'center', 
+                              gap: 6,
+                              opacity: isFullyCompleted || challenge.type === 'physical' ? 1 : 0.6
+                            }}
+                            onPress={() => {
+                              if (profile?.id) {
+                                socialStore.completeChallengeAndAwardPoints(challenge.id, profile.id);
+                              }
+                            }}
+                          >
+                            <Check size={18} color={isFullyCompleted || challenge.type === 'physical' ? '#fff' : colors.textPrimary} />
+                            <Text style={{ color: isFullyCompleted || challenge.type === 'physical' ? '#fff' : colors.textPrimary, fontSize: 14, fontWeight: '700' }}>
+                              {t('social.challenges.markAsCompleted', 'Marcar como completado')}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </>
+                    );
+                  })()}
                 </View>
               </View>
             </GlassCard>

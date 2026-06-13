@@ -777,18 +777,18 @@ Plan: ${JSON.stringify(mealPlans)}`;
 // ─── Swap Meal ───────────────────────────────────────────────────────────────
 export async function generateMealSwap(name: string, cal: number, protein: number, carbs: number, fat: number, profile: any, language: string = 'en'): Promise<any> {
   const targetLang = getLang(language);
-  const prompt = `You are an expert nutritionist. The user wants to replace their meal "${name}" which has ${cal} kcal, ${protein}g protein, ${carbs}g carbs, and ${fat}g fat.
-Provide a new alternative healthy recipe that has the EXACT SAME macros (+/- 5%).
-User's dietary preferences: ${profile?.dietary_preferences || 'None'}
-Return ONLY a valid JSON object matching this structure:
+  const prompt = `You are an expert nutritionist. The user wants to replace their meal "${name}" (${cal} kcal, ${protein}g protein, ${carbs}g carbs, ${fat}g fat).
+Provide a DIFFERENT healthy meal alternative with the EXACT same macros (+/- 5%).
+Dietary restrictions: ${profile?.dietaryRestrictions?.join(', ') || 'None'}
+IMPORTANT: The "name" field MUST be a non-empty string written in ${targetLang}.
+Return ONLY a valid JSON object:
 {
-  "name": "New Meal Name",
+  "name": "Descriptive meal name in ${targetLang} (required, must not be empty)",
   "calories": ${cal},
   "protein": ${protein},
   "carbs": ${carbs},
   "fat": ${fat}
-}
-Text MUST be in ${targetLang}.`;
+}`;
 
   try {
     const data = await fetchGroq({

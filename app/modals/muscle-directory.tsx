@@ -180,6 +180,12 @@ export default function MuscleDirectoryModal() {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
+      <LinearGradient
+        colors={[`${colors.primary}35`, colors.background]}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 0.8 }}
+      />
       <View style={styles.header}>
         <TouchableOpacity style={[styles.closeBtn, { backgroundColor: colors.surfaceAlt }]} onPress={() => router.back()}>
           <X size={24} color={colors.textPrimary} />
@@ -221,15 +227,28 @@ export default function MuscleDirectoryModal() {
                 key={group.id} 
                 style={[
                   styles.accordionItem, 
-                  { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
-                  isExpanded && { borderColor: group.color, borderWidth: 2 }
+                  { backgroundColor: colors.surfaceAlt, borderColor: `${colors.primary}40`, borderWidth: 1 },
+                  isExpanded && { 
+                    borderColor: group.color, 
+                    borderWidth: 2,
+                    shadowColor: group.color,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 12,
+                    elevation: 5
+                  }
                 ]}
               >
                 <TouchableOpacity 
-                  style={styles.accordionHeader} 
                   onPress={() => toggleAccordion(group.id)}
                   activeOpacity={0.7}
                 >
+                  <LinearGradient
+                    colors={isExpanded ? [colors.surfaceAlt, `${group.color}25`] : [colors.surfaceAlt, `${colors.primary}15`]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.accordionHeader}
+                  >
                   <View style={styles.groupInfo}>
                     <View style={[styles.iconWrap, { backgroundColor: group.color + '20' }]}>
                       <IconComponent size={20} color={group.color} />
@@ -250,6 +269,7 @@ export default function MuscleDirectoryModal() {
                       <ChevronDown size={16} color={colors.textSecondary} />
                     )}
                   </View>
+                  </LinearGradient>
                 </TouchableOpacity>
 
                 {isExpanded && (
@@ -263,7 +283,14 @@ export default function MuscleDirectoryModal() {
                           {eqGroup.exercises.map((exercise) => (
                             <TouchableOpacity 
                               key={exercise.exerciseId} 
-                              style={[styles.exercisePill, { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border + '40' }]}
+                              style={[
+                                styles.exercisePill, 
+                                { 
+                                  backgroundColor: colors.surfaceAlt, 
+                                  borderWidth: 1, 
+                                  borderColor: isExpanded ? `${group.color}30` : colors.border + '40'
+                                }
+                              ]}
                               onPress={() => handleSelectExercise(exercise)}
                             >
                               <Text style={[styles.exerciseDot, { color: group.color }]}>•</Text>

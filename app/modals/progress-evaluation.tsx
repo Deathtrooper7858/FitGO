@@ -77,12 +77,18 @@ export default function ProgressEvaluationModal() {
   if (!hasAccess) {
     return (
       <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
+        <LinearGradient
+          colors={[`${colors.primary}15`, colors.background]}
+          style={StyleSheet.absoluteFillObject}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 0.6 }}
+        />
         <View style={s.paywallContainer}>
           <Text style={s.paywallEmoji}>📸</Text>
           <Text style={[s.paywallTitle, { color: colors.textPrimary }]}>{t('evaluation.proTitle', 'Evaluación Física IA')}</Text>
           <Text style={[s.paywallSub, { color: colors.textSecondary }]}>{t('evaluation.proSub', 'Desbloquea el análisis detallado de tu progreso físico y porcentaje de grasa con FitGO Pro.')}</Text>
           <TouchableOpacity style={s.proBtn} onPress={() => router.push('/modals/paywall')}>
-            <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.proGrad}>
+            <LinearGradient colors={[colors.primary, colors.primary + 'C0']} style={s.proGrad}>
               <Text style={s.proText}>{t('recipes.unlockNow', 'Desbloquear Ahora')}</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -227,6 +233,12 @@ export default function ProgressEvaluationModal() {
 
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
+      <LinearGradient
+        colors={[`${colors.primary}30`, colors.background]}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 0.8 }}
+      />
       <View style={[s.header, { borderBottomColor: colors.border }]}>
         <Text style={[s.title, { color: colors.textPrimary }]}>
           {t('dashboard.evaluatePhysique', 'Evaluación Físca IA')}
@@ -264,8 +276,13 @@ export default function ProgressEvaluationModal() {
             <Text style={[s.instruction, { color: colors.textSecondary }]}>
               {t('evaluation.instruction', 'Sube o toma una foto de tu físico actual para recibir un análisis detallado de la IA sobre tus puntos fuertes y áreas a mejorar.')}
             </Text>
-            
-            <Text style={[s.sectionSubtitle, { color: colors.textPrimary }]}>{t('evaluation.selectArea', '¿Qué zona deseas evaluar?')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 12 }}>
+              <Text style={[s.sectionSubtitle, { color: colors.textPrimary, marginBottom: 0 }]}>{t('evaluation.selectArea', '¿Qué zona deseas evaluar?')}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '600', marginRight: 2 }}>{t('common.swipe', 'Desliza')}</Text>
+                <ChevronRight size={16} color={colors.textSecondary} />
+              </View>
+            </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.areaScroll} contentContainerStyle={s.areaScrollContent}>
               {[
                 { id: 'full', label: '🧍‍♂️ Cuerpo Completo' },
@@ -277,7 +294,7 @@ export default function ProgressEvaluationModal() {
               ].map(area => (
                 <TouchableOpacity 
                   key={area.id} 
-                  style={[s.areaBtn, targetArea === area.id ? { backgroundColor: colors.primary, borderColor: colors.primary } : { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  style={[s.areaBtn, targetArea === area.id ? { backgroundColor: colors.primary, borderColor: colors.primary, shadowColor: colors.primary, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3 } : { backgroundColor: colors.surface, borderColor: `${colors.primary}20` }]}
                   onPress={() => setTargetArea(area.id as TargetArea)}
                 >
                   <Text style={[s.areaBtnText, targetArea === area.id ? { color: '#FFF' } : { color: colors.textPrimary }]}>{area.label}</Text>
@@ -286,19 +303,44 @@ export default function ProgressEvaluationModal() {
             </ScrollView>
 
             <View style={s.buttonRow}>
-              <TouchableOpacity style={[s.actionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => pickImage(true)}>
+              <TouchableOpacity style={[s.actionBtn, { 
+                backgroundColor: colors.surface, 
+                borderColor: `${colors.primary}20`,
+                shadowColor: colors.primary,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+                elevation: 2 
+              }]} onPress={() => pickImage(true)}>
                 <Camera size={24} color={colors.primary} />
                 <Text style={[s.actionBtnText, { color: colors.textPrimary }]}>{t('common.camera', 'Cámara')}</Text>
               </TouchableOpacity>
               
-              <TouchableOpacity style={[s.actionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => pickImage(false)}>
+              <TouchableOpacity style={[s.actionBtn, { 
+                backgroundColor: colors.surface, 
+                borderColor: `${colors.primary}20`,
+                shadowColor: colors.primary,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+                elevation: 2 
+              }]} onPress={() => pickImage(false)}>
                 <Upload size={24} color={colors.primary} />
                 <Text style={[s.actionBtnText, { color: colors.textPrimary }]}>{t('common.gallery', 'Galería')}</Text>
               </TouchableOpacity>
             </View>
 
             {evaluations.length > 0 && (
-              <TouchableOpacity style={[s.historyBtn, { backgroundColor: colors.surface }]} onPress={() => setShowHistory(true)}>
+              <TouchableOpacity style={[s.historyBtn, { 
+                backgroundColor: colors.surface,
+                borderColor: `${colors.primary}20`,
+                borderWidth: 1,
+                shadowColor: colors.primary,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+                elevation: 2
+              }]} onPress={() => setShowHistory(true)}>
                 <History size={20} color={colors.textPrimary} />
                 <Text style={[s.historyBtnText, { color: colors.textPrimary }]}>{t('evaluation.viewHistory', 'Ver Historial')}</Text>
               </TouchableOpacity>

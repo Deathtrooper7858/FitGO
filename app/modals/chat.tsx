@@ -7,14 +7,16 @@ import {
 import { Image } from 'expo-image';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, Send, Image as ImageIcon, Mic, Play, Pause, X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
 import { useKeyboardNavBar } from '../../hooks/useKeyboardNavBar';
 import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
 import { Radius } from '../../constants';
-import { useAuthStore, useSocialStore } from '../../store';
+import { useAuthStore, useSocialStore, useSettingsStore } from '../../store';
 import { DirectMessage } from '../../store/socialStore';
+import { getNameStyle } from '../../utils/styles';
 import { supabase } from '../../services/supabase';
 import * as ImagePicker from 'expo-image-picker';
 import {
@@ -23,6 +25,17 @@ import {
 } from 'expo-audio';
 import { AvatarViewerModal } from '../../components/AvatarViewerModal';
 import { PhotoSourceModal } from '../../components/PhotoSourceModal';
+
+// Darkens a hex color by a given ratio (0–1)
+const darkenHex = (hex: string, amount = 0.22): string => {
+  const clean = hex.replace('#', '');
+  if (clean.length !== 6) return hex;
+  const num = parseInt(clean, 16);
+  const r = Math.max(0, (num >> 16) - Math.round(255 * amount));
+  const g = Math.max(0, ((num >> 8) & 0xff) - Math.round(255 * amount));
+  const b = Math.max(0, (num & 0xff) - Math.round(255 * amount));
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+};
 
 // ── Voice Note Player ─────────────────────────────────────────────────────────
 function VoiceNotePlayer({ audioUrl, isMine, colors }: { audioUrl: string; isMine: boolean; colors: any }) {
@@ -85,9 +98,12 @@ export default function ChatModal() {
   const { t } = useTranslation();
   const { profile } = useAuthStore();
   const socialStore = useSocialStore();
+  const { premiumColor } = useSettingsStore();
   const insets = useSafeAreaInsets();
   useKeyboardNavBar();
   const keyboardHeight = useKeyboardHeight();
+
+  const friendProfile = socialStore.friends.find(f => f.friend_profile?.id === friendId)?.friend_profile;
 
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -280,7 +296,12 @@ export default function ChatModal() {
   const hasText = newMessage.trim().length > 0;
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
+    <LinearGradient
+      colors={[colors.primary + '18', colors.background, colors.background] as const}
+      locations={[0, 0.28, 1]}
+      style={styles.safe}
+    >
+      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       <KeyboardAvoidingView
         style={[styles.keyboardView, { paddingBottom: Platform.OS === 'android' ? keyboardHeight : 0 }]}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -301,7 +322,7 @@ export default function ChatModal() {
                 </View>
               )}
             </TouchableOpacity>
-            <Text style={[styles.headerName, { color: colors.textPrimary }]}>{friendName}</Text>
+            <Text style={[styles.headerName, { color: colors.textPrimary }, getNameStyle(friendProfile?.name_color, friendId, profile?.id, profile?.nameColor, premiumColor)]}>{friendName}</Text>
           </View>
           <View style={{ width: 40 }} />
         </View>
@@ -345,19 +366,27 @@ export default function ChatModal() {
                       </Text>
                     </TouchableOpacity>
                   ) : msg.audio_url ? (
-                    <View style={[styles.messageBubble, isMine ? [styles.myBubble, { backgroundColor: bubbleBg }] : [styles.theirBubble, { backgroundColor: bubbleBg }]]}>
+                    <LinearGradient
+                      colors={isMine ? [colors.primary, darkenHex(colors.primary)] : [bubbleBg, bubbleBg]}
+                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                      style={[styles.messageBubble, isMine ? styles.myBubble : styles.theirBubble]}
+                    >
                       <VoiceNotePlayer audioUrl={msg.audio_url} isMine={isMine} colors={colors} />
                       <Text style={[styles.messageTime, { color: isMine ? 'rgba(255,255,255,0.7)' : colors.textMuted, alignSelf: 'flex-end', marginTop: 4 }]}>
                         {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </Text>
-                    </View>
+                    </LinearGradient>
                   ) : (
-                    <View style={[styles.messageBubble, isMine ? [styles.myBubble, { backgroundColor: bubbleBg }] : [styles.theirBubble, { backgroundColor: bubbleBg }]]}>
+                    <LinearGradient
+                      colors={isMine ? [colors.primary, darkenHex(colors.primary)] : [bubbleBg, bubbleBg]}
+                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                      style={[styles.messageBubble, isMine ? styles.myBubble : styles.theirBubble]}
+                    >
                       <Text style={[styles.messageText, { color: isMine ? '#fff' : colors.textPrimary }]}>{msg.content}</Text>
                       <Text style={[styles.messageTime, { color: isMine ? 'rgba(255,255,255,0.7)' : colors.textMuted }]}>
                         {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </Text>
-                    </View>
+                    </LinearGradient>
                   )}
                 </View>
               );
@@ -473,6 +502,7 @@ export default function ChatModal() {
         </Pressable>
       </Modal>
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
