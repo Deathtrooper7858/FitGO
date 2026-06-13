@@ -218,7 +218,31 @@ SET league_points = GREATEST(
 WHERE u.name IS NOT NULL;
 
 
--- ── STEP 4: Trigger — food log insert → +10 pts ──────────────────────────────
+-- ── STREAK MULTIPLIER HELPER ────────────────────────────────────────────────
+-- Mirrors exactly the getStreakMultiplier() function in leagueStore.ts:
+--   streak >= 15 → ×2.0
+--   streak >= 8  → ×1.5
+--   streak >= 3  → ×1.2
+--   otherwise    → ×1.0
+
+CREATE OR REPLACE FUNCTION get_streak_multiplier(p_streak integer)
+RETURNS numeric
+LANGUAGE plpgsql
+IMMUTABLE
+AS $$
+BEGIN
+  IF p_streak >= 15 THEN RETURN 2.0;
+  ELSIF p_streak >= 8 THEN RETURN 1.5;
+  ELSIF p_streak >= 3 THEN RETURN 1.2;
+  ELSE RETURN 1.0;
+  END IF;
+END;
+$$;
+
+
+-- ── STEP 4: Trigger — food log insert → +10 × streak multiplier ──────────────
+-- NOTE: leagueStore.ts must NOT call award_league_points RPC for meal_log events
+-- once this trigger is active, to avoid double-counting.
 
 CREATE OR REPLACE FUNCTION trg_award_points_on_food_log()
 RETURNS trigger
@@ -226,9 +250,19 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  v_streak    integer;
+  v_mult      numeric;
+  v_pts       integer;
 BEGIN
+  SELECT COALESCE(current_streak, 0) INTO v_streak
+  FROM public.users WHERE id = NEW.user_id;
+
+  v_mult := get_streak_multiplier(v_streak);
+  v_pts  := GREATEST(ROUND(10 * v_mult), 1);
+
   UPDATE public.users
-  SET league_points = COALESCE(league_points, 0) + 10
+  SET league_points = COALESCE(league_points, 0) + v_pts
   WHERE id = NEW.user_id;
   RETURN NEW;
 END;
@@ -241,7 +275,7 @@ CREATE TRIGGER trg_food_log_points
   EXECUTE FUNCTION trg_award_points_on_food_log();
 
 
--- ── STEP 5: Trigger — activity log insert → +50 pts ──────────────────────────
+-- ── STEP 5: Trigger — activity log insert → +50 × streak multiplier ──────────
 
 CREATE OR REPLACE FUNCTION trg_award_points_on_activity_log()
 RETURNS trigger
@@ -249,9 +283,19 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  v_streak    integer;
+  v_mult      numeric;
+  v_pts       integer;
 BEGIN
+  SELECT COALESCE(current_streak, 0) INTO v_streak
+  FROM public.users WHERE id = NEW.user_id;
+
+  v_mult := get_streak_multiplier(v_streak);
+  v_pts  := GREATEST(ROUND(50 * v_mult), 1);
+
   UPDATE public.users
-  SET league_points = COALESCE(league_points, 0) + 50
+  SET league_points = COALESCE(league_points, 0) + v_pts
   WHERE id = NEW.user_id;
   RETURN NEW;
 END;
@@ -264,7 +308,7 @@ CREATE TRIGGER trg_activity_log_points
   EXECUTE FUNCTION trg_award_points_on_activity_log();
 
 
--- ── STEP 6: Trigger — challenge completed → +100 pts ─────────────────────────
+-- ── STEP 6: Trigger — challenge completed → +100 × streak multiplier ─────────
 
 CREATE OR REPLACE FUNCTION trg_award_points_on_challenge_complete()
 RETURNS trigger
@@ -272,10 +316,20 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  v_streak    integer;
+  v_mult      numeric;
+  v_pts       integer;
 BEGIN
   IF NEW.status = 'completed' AND (OLD.status IS NULL OR OLD.status <> 'completed') THEN
+    SELECT COALESCE(current_streak, 0) INTO v_streak
+    FROM public.users WHERE id = NEW.user_id;
+
+    v_mult := get_streak_multiplier(v_streak);
+    v_pts  := GREATEST(ROUND(100 * v_mult), 1);
+
     UPDATE public.users
-    SET league_points = COALESCE(league_points, 0) + 100
+    SET league_points = COALESCE(league_points, 0) + v_pts
     WHERE id = NEW.user_id;
   END IF;
   RETURN NEW;
@@ -289,9 +343,8 @@ CREATE TRIGGER trg_challenge_complete_points
   EXECUTE FUNCTION trg_award_points_on_challenge_complete();
 
 
--- ── STEP 7: Trigger — achievement unlocked → exact tier pts ──────────────────
--- Compares old vs new arrays, awards points for each new achievement using
--- its exact tier value (Bronce=10, Plata=25, Oro=50, Diamante=100).
+-- ── STEP 7: Trigger — achievement unlocked → exact tier pts × streak mult ─────
+-- Compares old vs new arrays, awards points for each new achievement.
 
 CREATE OR REPLACE FUNCTION trg_award_points_on_achievement_unlock()
 RETURNS trigger
@@ -300,11 +353,13 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  ach_id        text;
-  new_pts       integer := 0;
+  ach_id           text;
+  base_pts         integer;
+  v_streak         integer;
+  v_mult           numeric;
+  total_new_pts    integer := 0;
   new_achievements text[];
 BEGIN
-  -- Find achievements that are in NEW but not in OLD
   IF NEW.unlocked_achievements IS NOT NULL THEN
     IF OLD.unlocked_achievements IS NULL THEN
       new_achievements := NEW.unlocked_achievements;
@@ -315,17 +370,21 @@ BEGIN
     END IF;
   END IF;
 
-  IF new_achievements IS NOT NULL THEN
+  IF new_achievements IS NOT NULL AND array_length(new_achievements, 1) > 0 THEN
+    v_streak := COALESCE(NEW.current_streak, 0);
+    v_mult   := get_streak_multiplier(v_streak);
+
     FOREACH ach_id IN ARRAY new_achievements
     LOOP
-      new_pts := new_pts + get_achievement_points(ach_id);
+      base_pts      := get_achievement_points(ach_id);
+      total_new_pts := total_new_pts + GREATEST(ROUND(base_pts * v_mult), 1);
     END LOOP;
-  END IF;
 
-  IF new_pts > 0 THEN
-    UPDATE public.users
-    SET league_points = COALESCE(league_points, 0) + new_pts
-    WHERE id = NEW.id;
+    IF total_new_pts > 0 THEN
+      UPDATE public.users
+      SET league_points = COALESCE(league_points, 0) + total_new_pts
+      WHERE id = NEW.id;
+    END IF;
   END IF;
 
   RETURN NEW;
