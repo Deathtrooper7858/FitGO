@@ -12,7 +12,12 @@ import { useTranslation } from 'react-i18next';
 LogBox.ignoreLogs([
   'setLayoutAnimationEnabledExperimental is currently a no-op',
   'is not supported with edge-to-edge enabled',
-  'Prop "resizeMode" is deprecated'
+  'Prop "resizeMode" is deprecated',
+  'AbortError',
+  'AbortError: Aborted',
+  'DOMException',
+  'DOMException: Aborted',
+  'AuthRetryableFetchError: Aborted'
 ]);
 // NOTA: 'AuthApiError: Invalid Refresh Token' fue eliminado de la lista de warnings
 // ignorados intencionalmente: este error indica sesión inválida y debe ser visible.
@@ -143,30 +148,34 @@ export default function RootLayout() {
 
     const handleAuthStateChange = async (newSession: any) => {
       const thisCall = ++authCallVersion;
-      setLoading(true); // <--- PAUSE NAVIGATION WHILE FETCHING PROFILE
+      
+      // OPTIMIZACIÓN: Si ya tenemos un perfil en caché, evitamos bloquear el render inicial.
+      const currentProfile = useAuthStore.getState().profile;
+      const isInitialLoading = !currentProfile || !newSession;
+      
+      if (isInitialLoading) {
+        setLoading(true); // Bloquear solo si no hay caché o no hay sesión
+      } else {
+        setLoading(false); // Liberar Inmediatamente para entrar a la app sin demoras
+      }
+
       try {
         setSession(newSession);
         if (newSession?.user) {
-          await fetchProfile(newSession.user.id);
-          // Initialize RevenueCat with user ID
-          await initPurchases(newSession.user.id);
-
-          // Lógica de push notifications (Corregida, pero desactivada temporalmente en dev sin google-services.json)
-          /*
-          registerForPushNotificationsAsync().then(token => {
-            if (token) {
-              const currentProfile = useAuthStore.getState().profile;
-              if (currentProfile && currentProfile.expoPushToken !== token) {
-                supabase.from('users')
-                  .update({ expo_push_token: token })
-                  .eq('id', newSession.user.id)
-                  .then(({ error }) => {
-                    if (error) console.error('Error updating push token:', error);
-                  });
-              }
-            }
-          }).catch(err => console.error('Error registering push token:', err));
-          */
+          // Si estamos bloqueando (isInitialLoading), esperamos a que se resuelva
+          if (isInitialLoading) {
+            await Promise.all([
+              fetchProfile(newSession.user.id),
+              initPurchases(newSession.user.id)
+            ]);
+          } else {
+            // Si no estamos bloqueando (tenemos caché), hidratamos datos en segundo plano
+            // para que la UI cargue instantáneamente
+            Promise.all([
+              fetchProfile(newSession.user.id),
+              initPurchases(newSession.user.id)
+            ]).catch(err => console.error('Background fetch error:', err));
+          }
         } else {
           // Sign out: clear both session and profile atomically
           clearAuth();
@@ -177,9 +186,8 @@ export default function RootLayout() {
       } catch (err) {
         console.error('Error in auth state change:', err);
       } finally {
-        // Solo setLoading(false) si esta llamada sigue siendo la más reciente.
-        // Esto previene que una llamada antigua pisone a una más nueva.
-        if (thisCall === authCallVersion) {
+        // Si bloqueamos, liberamos al final de la carga.
+        if (thisCall === authCallVersion && isInitialLoading) {
           setLoading(false);
         }
       }

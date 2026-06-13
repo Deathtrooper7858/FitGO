@@ -75,7 +75,17 @@
     "all": "All",
     "cardio": "Cardio",
     "strength": "Strength",
-    "sports": "Sports"
+    "sports": "Sports",
+    "elliptical": "Elliptical",
+    "rowing": "Rowing",
+    "jump_rope": "Jump rope",
+    "stairs": "Stairs",
+    "zumba": "Zumba",
+    "powerlifting": "Powerlifting",
+    "stretching": "Stretching",
+    "gymnastics": "Gymnastics",
+    "baseball": "Baseball",
+    "surfing": "Surfing"
   },
   "common": {
     "save": "Save",

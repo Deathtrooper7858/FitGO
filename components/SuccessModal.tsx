@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Check } from 'lucide-react-native';
 import { useTheme } from '../hooks/useTheme';
 import { Radius, Spacing } from '../constants';
+import { useSettingsStore, usePurchaseStore, useAuthStore } from '../store';
 
 interface SuccessModalProps {
   visible: boolean;
@@ -17,6 +18,15 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({ visible, title, mess
 
   const colors = useTheme();
   const [scale] = React.useState(new Animated.Value(0));
+
+  const { premiumColor } = useSettingsStore();
+  const { isPro } = usePurchaseStore();
+  const { profile } = useAuthStore();
+  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isPremiumCustom = isProActually && premiumColor && premiumColor.startsWith('#');
+
+  const mainColors = isPremiumCustom ? [premiumColor, premiumColor + 'CC'] : ['#7C5CFC', '#4338CA'];
+  const baseColor = isPremiumCustom ? premiumColor : '#7C5CFC';
 
   React.useEffect(() => {
     if (visible) {
@@ -46,12 +56,12 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({ visible, title, mess
         ]}>
           <View style={styles.iconContainer}>
             <LinearGradient
-              colors={['#7C5CFC', '#4338CA']}
+              colors={mainColors as [string, string]}
               style={styles.iconCircle}
             >
               <Check size={32} color="#fff" strokeWidth={3} />
             </LinearGradient>
-            <View style={[styles.iconPulse, { borderColor: '#7C5CFC' }]} />
+            <View style={[styles.iconPulse, { borderColor: baseColor }]} />
           </View>
           
           <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
@@ -59,11 +69,10 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({ visible, title, mess
           
           <TouchableOpacity style={styles.button} onPress={onClose} activeOpacity={0.8}>
             <LinearGradient
-              colors={['#7C5CFC', '#4338CA']}
+              colors={mainColors as [string, string]}
               style={styles.buttonGradient}
             >
               <Text style={styles.buttonText}>{buttonText}</Text>
-
             </LinearGradient>
           </TouchableOpacity>
         </Animated.View>
@@ -106,7 +115,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 2,
-    shadowColor: '#7C5CFC',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
     shadowRadius: 10,

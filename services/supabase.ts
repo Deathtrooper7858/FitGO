@@ -23,6 +23,34 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error(msg);
 }
 
+// ── Custom fetch with timeout and retries ───────────────────────────────────
+// Prevents requests from hanging indefinitely and retries once on network failure.
+const fetchWithTimeout: typeof fetch = async (input, init) => {
+  const attemptFetch = async (retries: number): Promise<Response> => {
+    const controller = new AbortController();
+    const timeout = 10_000; // 10s per attempt to fail fast and retry
+    const timer = setTimeout(() => controller.abort(), timeout);
+    
+    try {
+      const response = await fetch(input, { ...init, signal: controller.signal });
+      clearTimeout(timer);
+      return response;
+    } catch (err: any) {
+      clearTimeout(timer);
+      // Retries on network or abort errors if we have attempts left
+      const isNetworkOrAbortError = err.name === 'AbortError' || err.message?.includes('Network');
+      if (retries > 0 && isNetworkOrAbortError) {
+        // Simple backoff pause before retrying
+        await new Promise(res => setTimeout(res, 500));
+        return attemptFetch(retries - 1);
+      }
+      throw err;
+    }
+  };
+
+  return attemptFetch(1); // 1 retry total (2 attempts)
+};
+
 export const supabase = createClient(
   supabaseUrl,
   supabaseAnonKey,
@@ -35,17 +63,52 @@ export const supabase = createClient(
       flowType:           'pkce',
     },
     realtime: {
-      // Prevent aggressive reconnects on slow/weak networks (default is 10s).
+      // Prevent aggressive reconnects on slow/weak networks.
       // 30s gives the OS time to restore connectivity before attempting a new WS.
       timeout: 30000,
+      params: {
+        // Reduce heartbeat frequency to save battery/bandwidth on mobile.
+        heartbeatIntervalMs: 25000,
+      },
     },
     global: {
+      fetch: fetchWithTimeout,
       headers: {
         // Encourage HTTP/1.1 connection reuse — each Supabase query opens to the
         // same host so keep-alive eliminates repeated TCP handshakes.
         'Connection': 'keep-alive',
+        // Hint CDN/proxy layers to cache read-only responses briefly.
+        'Cache-Control': 'max-age=10',
       },
     },
   }
 );
 
+// ── Lightweight in-memory query cache ─────────────────────────────────────────
+// Avoids duplicate round-trips for data that doesn't change often (e.g. user
+// profile, body measurements). TTL is configurable per call-site.
+type CacheEntry = { data: any; expiresAt: number };
+const _cache = new Map<string, CacheEntry>();
+
+export async function cachedQuery<T>(
+  key: string,
+  fetcher: () => Promise<T>,
+  ttlMs = 60_000   // default: 1 minute TTL
+): Promise<T> {
+  const now = Date.now();
+  const hit = _cache.get(key);
+  if (hit && hit.expiresAt > now) return hit.data as T;
+
+  const data = await fetcher();
+  _cache.set(key, { data, expiresAt: now + ttlMs });
+  return data;
+}
+
+/** Invalidate one or all cache entries (call after mutations). */
+export function invalidateCache(key?: string) {
+  if (key) {
+    _cache.delete(key);
+  } else {
+    _cache.clear();
+  }
+}

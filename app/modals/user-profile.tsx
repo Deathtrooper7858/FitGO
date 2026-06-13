@@ -129,11 +129,12 @@ export default function UserProfileModal() {
 
   const displayUser = userProfile || { name: fallbackName, avatar_url: fallbackAvatar, unlockedAchievements: [], role: 'verified' };
 
-  // For own profile: use premiumColor from local store (hex-validated).
-  // For others: use their name_color from DB.
+  // For own profile: use premiumColor from local store.
+  // For others: use their name_color from DB (visible to ALL users inspecting the profile).
+  const isValidColor = (c: string | null | undefined) => !!c && (c.startsWith('#') || c.startsWith('rgb'));
   const vitrineColor: string | null = isMe
-    ? ((isPro || myProfile?.isPro || myProfile?.role === 'owner' || myProfile?.role === 'super_admin' || myProfile?.role === 'admin') && premiumColor && premiumColor.startsWith('#') ? premiumColor : null)
-    : (displayUser.name_color && displayUser.name_color.startsWith('#') ? displayUser.name_color : null);
+    ? ((isPro || myProfile?.isPro || myProfile?.role === 'owner' || myProfile?.role === 'super_admin' || myProfile?.role === 'admin') && isValidColor(premiumColor) ? premiumColor! : null)
+    : (isValidColor(displayUser.name_color) ? displayUser.name_color : null);
 
   const friendStatus = socialStore.friends.find(f =>
     (f.user_id_1 === myProfile?.id && f.user_id_2 === userId) ||
@@ -281,76 +282,94 @@ export default function UserProfileModal() {
           {/* ── Vitrina de Trofeos (Showcase) ── */}
           {displayUser.pinned_achievements && displayUser.pinned_achievements.length > 0 && (
             <View
-              style={[
-                {
-                  marginBottom: 16,
+              style={
+                vitrineColor
+                  ? {
+                      marginBottom: 16,
+                      borderRadius: 20,
+                      shadowColor: vitrineColor,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.6,
+                      shadowRadius: 12,
+                      elevation: 8,
+                    }
+                  : { marginBottom: 16 }
+              }
+            >
+              <View
+                style={{
                   borderRadius: 20,
                   overflow: 'hidden',
                   borderWidth: vitrineColor ? 1.5 : 1,
                   borderColor: vitrineColor ? vitrineColor + '80' : colors.border,
-                },
-              ]}
-            >
-              {/* Premium background gradient */}
-              {vitrineColor ? (
-                <LinearGradient
-                  colors={[vitrineColor + '25', vitrineColor + '10', 'transparent'] as [string, string, string]}
-                  style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                />
-              ) : (
-                <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface, borderRadius: 20 }]} />
-              )}
-              {/* Top accent stripe */}
-              {vitrineColor && (
-                <LinearGradient
-                  colors={[vitrineColor + 'DD', vitrineColor + '00'] as [string, string]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2 }}
-                />
-              )}
-              <View style={{ padding: 16 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 {t('achievements.trophyShowcase', 'Vitrina de Trofeos')}</Text>
+                }}
+              >
+                {/* Premium background gradient */}
+                {vitrineColor ? (
+                  <LinearGradient
+                    colors={[vitrineColor + '25', vitrineColor + '10', 'transparent'] as [string, string, string]}
+                    style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  />
+                ) : (
+                  <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface, borderRadius: 20 }]} />
+                )}
+                {/* Top accent stripe */}
+                {vitrineColor && (
+                  <LinearGradient
+                    colors={[vitrineColor + 'DD', vitrineColor + '00'] as [string, string]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2 }}
+                  />
+                )}
+                <View style={{ padding: 16 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 {t('achievements.trophyShowcase', 'Vitrina de Trofeos')}</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', gap: 12 }}>
+                    {displayUser.pinned_achievements.map((id: string) => {
+                    const ach = myAchievements.find((a: any) => a.id === id);
+                    if (!ach) return null;
+                    const isHolo = ach.tier === 'oro' || ach.tier === 'diamante';
+                    const tierColor = ach.tier === 'diamante' ? '#38BDF8' : 
+                                      ach.tier === 'oro' ? '#FBBF24' : 
+                                      ach.tier === 'plata' ? '#9CA3AF' : '#D97706';
+                    const activeColor = vitrineColor ? vitrineColor : tierColor;
+                    
+                    return (
+                      <View key={id} style={{
+                        flex: 1,
+                        backgroundColor: vitrineColor
+                          ? vitrineColor + '15'
+                          : isHolo ? activeColor + '12' : 'transparent',
+                        padding: 8, borderRadius: 16, alignItems: 'center',
+                        borderWidth: 1, borderColor: isHolo ? activeColor + '50' : (vitrineColor ? vitrineColor + '40' : colors.border + '60')
+                      }}>
+                        <LinearGradient
+                          colors={(isHolo ? [activeColor, vitrineColor ? vitrineColor + '80' : (activeColor === '#FBBF24' ? '#EA580C' : '#4F46E5')] : ['transparent', 'transparent']) as [string, string, ...string[]]}
+                          style={{ width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: isHolo ? 'transparent' : (vitrineColor ? vitrineColor + '20' : colors.surfaceAlt), marginBottom: 8 }}
+                        >
+                          {ach.iconType === 'lucide' && ach.lucideIcon ? (
+                            // @ts-ignore
+                            React.createElement(LucideIcons[ach.lucideIcon] || LucideIcons.Star, {
+                              size: 24,
+                              color: isHolo ? '#FFF' : activeColor,
+                              strokeWidth: 2.5
+                            })
+                          ) : (
+                            <Text style={{ fontSize: 24 }}>{ach.icon}</Text>
+                          )}
+                        </LinearGradient>
+                        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' }} numberOfLines={1}>{ach.title}</Text>
+                        <Text style={{ fontSize: 9, color: activeColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>{ach.tier}</Text>
+                      </View>
+                    );
+                  })}
+                  </View>
                 </View>
-                <View style={{ flexDirection: 'row', gap: 12 }}>
-                  {displayUser.pinned_achievements.map((id: string) => {
-                  const ach = myAchievements.find((a: any) => a.id === id);
-                  if (!ach) return null;
-                  const isHolo = ach.tier === 'oro' || ach.tier === 'diamante';
-                  const tierColor = ach.tier === 'diamante' ? '#38BDF8' : 
-                                    ach.tier === 'oro' ? '#FBBF24' : 
-                                    ach.tier === 'plata' ? '#9CA3AF' : '#D97706';
-                  return (
-                    <View key={id} style={{
-                      flex: 1, backgroundColor: colors.surfaceAlt, padding: 8, borderRadius: 16, alignItems: 'center',
-                      borderWidth: 1, borderColor: isHolo ? tierColor + '50' : colors.border,
-                      ...(isHolo ? { shadowColor: tierColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 } : {})
-                    }}>
-                      <LinearGradient
-                        colors={(isHolo ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5'] : ['transparent', 'transparent']) as [string, string, ...string[]]}
-                        style={{ width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: isHolo ? 'transparent' : colors.surfaceAlt, marginBottom: 8 }}
-                      >
-                        {ach.iconType === 'lucide' && ach.lucideIcon ? (
-                          // @ts-ignore
-                          React.createElement(LucideIcons[ach.lucideIcon] || LucideIcons.Star, {
-                            size: 24,
-                            color: isHolo ? '#FFF' : tierColor,
-                            strokeWidth: 2.5
-                          })
-                        ) : (
-                          <Text style={{ fontSize: 24 }}>{ach.icon}</Text>
-                        )}
-                      </LinearGradient>
-                      <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' }} numberOfLines={1}>{ach.title}</Text>
-                      <Text style={{ fontSize: 9, color: tierColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>{ach.tier}</Text>
-                    </View>
-                  );
-                })}
               </View>
-            </View>
             </View>
           )}
 
@@ -361,25 +380,25 @@ export default function UserProfileModal() {
               flexDirection: 'row',
               alignItems: 'center',
               gap: 10,
-              backgroundColor: vitrineColor ? vitrineColor + '18' : '#F59E0B18',
+              backgroundColor: '#F59E0B18',
               borderWidth: 1.5,
-              borderColor: vitrineColor ? vitrineColor + '40' : '#F59E0B40',
+              borderColor: '#F59E0B40',
               borderRadius: 16,
               paddingHorizontal: 18,
               paddingVertical: 14,
               marginBottom: 16,
             }}
           >
-            <Trophy size={22} color={vitrineColor || "#F59E0B"} />
+            <Trophy size={22} color="#F59E0B" />
             <View style={{ flex: 1 }}>
-              <Text style={{ color: vitrineColor || '#F59E0B', fontWeight: '800', fontSize: 15 }}>
+              <Text style={{ color: '#F59E0B', fontWeight: '800', fontSize: 15 }}>
                 {isMe ? t('achievements.myAchievements', 'Mis Logros') : t('achievements.achievements', 'Logros')}
               </Text>
               <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 1 }}>
                 {showAchievements ? t('common.tapToHide', 'Toca para ocultar') : t('common.tapToView', 'Toca para ver los logros')}
               </Text>
             </View>
-            <View style={{ backgroundColor: vitrineColor || '#F59E0B', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 }}>
+            <View style={{ backgroundColor: '#F59E0B', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 }}>
               <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>
                 {theirUnlockedCount}/{totalAchievements}
               </Text>

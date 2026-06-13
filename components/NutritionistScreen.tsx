@@ -33,6 +33,17 @@ import { AICreditsBar } from './AICreditsBar';
 
 
 
+// Darkens a hex color by a given ratio (0–1)
+const darkenHex = (hex: string, amount = 0.22): string => {
+  const clean = hex.replace('#', '');
+  if (clean.length !== 6) return hex;
+  const num = parseInt(clean, 16);
+  const r = Math.max(0, (num >> 16) - Math.round(255 * amount));
+  const g = Math.max(0, ((num >> 8) & 0xff) - Math.round(255 * amount));
+  const b = Math.max(0, (num & 0xff) - Math.round(255 * amount));
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+};
+
 // Helper to resolve card icons & colors dynamically
 const getSuggestionDetails = (coachType: string, index: number, colors: any) => {
   switch (coachType) {
@@ -126,14 +137,16 @@ function MessageBubble({ msg, isLastUser, onEdit, onImagePress }: { msg: CoachMe
     if (isUser) {
       return (
         <LinearGradient
-          colors={['#7C5CFC', '#5B36D6']}
+          colors={[colors.primary, darkenHex(colors.primary)]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
           style={[
             bubble.box, 
             { 
               borderBottomRightRadius: 4, 
-              shadowColor: '#7C5CFC', 
+              shadowColor: colors.primary, 
               shadowOffset: { width: 0, height: 4 }, 
-              shadowOpacity: 0.3, 
+              shadowOpacity: 0.35, 
               shadowRadius: 8, 
               elevation: 4 
             }
@@ -625,7 +638,11 @@ export default function NutritionistScreen() {
   const showSuggestions = messages.length <= 1 && !isTyping;
 
   return (
-    <View style={[s.safe, { backgroundColor: colors.background }]}>
+    <LinearGradient
+      colors={[colors.primary + '18', colors.background, colors.background] as const}
+      locations={[0, 0.28, 1]}
+      style={s.safe}
+    >
       {/* Header */}
       <View style={[s.headerContainer, { borderBottomColor: colors.border }]}>
         <LinearGradient 
@@ -816,11 +833,11 @@ export default function NutritionistScreen() {
                 activeOpacity={0.8}
               >
                 <LinearGradient 
-                  colors={['#7C5CFC', '#4B35C1']} 
+                  colors={[colors.primary, colors.primary + 'E6']} 
                   style={[
                     s.sendGrad, 
                     canSend && {
-                      shadowColor: '#7C5CFC', 
+                      shadowColor: colors.primary, 
                       shadowOffset: { width: 0, height: 4 }, 
                       shadowOpacity: 0.3, 
                       shadowRadius: 6, 
@@ -852,7 +869,7 @@ export default function NutritionistScreen() {
         imageUri={viewingImage}
         onClose={() => setViewingImage(null)}
       />
-    </View>
+    </LinearGradient>
   );
 }
 

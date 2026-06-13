@@ -65,7 +65,17 @@
     "all": "Todos",
     "cardio": "Cardio",
     "strength": "Fuerza",
-    "sports": "Deportes"
+    "sports": "Deportes",
+    "elliptical": "Elíptica",
+    "rowing": "Remo",
+    "jump_rope": "Saltar la cuerda",
+    "stairs": "Escaladoras",
+    "zumba": "Zumba",
+    "powerlifting": "Powerlifting",
+    "stretching": "Estiramientos",
+    "gymnastics": "Gimnasia",
+    "baseball": "Béisbol",
+    "surfing": "Surf"
   },
   "common": {
     "save": "Guardar",

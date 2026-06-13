@@ -63,7 +63,10 @@ export const useBodyStore = create<BodyState>()(
           }));
 
           set({ measurements: parsed });
-        } catch (error) {
+        } catch (error: any) {
+          if (error?.name === 'AbortError' || error?.message?.includes('AbortError')) {
+            return; // Ignore normal request cancellations
+          }
           console.error('[BodyStore] Fetch error:', error);
         } finally {
           set({ isLoading: false });

@@ -172,7 +172,7 @@ const ap = StyleSheet.create({
 export default function DashboardScreen() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const { language } = useSettingsStore();
+  const { language, premiumColor } = useSettingsStore();
   const { profile, setProfile } = useAuthStore();
   const { todayLogs, dailySleep, selectedDate, fetchLogs, setDate } = useNutritionStore();
   const { latest, fetchMeasurements, getForDate, measurements } = useBodyStore();
@@ -230,6 +230,8 @@ export default function DashboardScreen() {
   }
 
   const isPro = !!profile?.isPro;
+  const isValidHex = premiumColor?.startsWith('#');
+  const isPremiumCustom = (isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin') && premiumColor && isValidHex;
   const { hasPremiumAdAccess } = useAdStore();
   const [premiumGate, setPremiumGate] = useState<{
     visible: boolean;
@@ -460,7 +462,7 @@ export default function DashboardScreen() {
               onPress={() => setGoalModalVisible(true)}
             >
               <LinearGradient
-                colors={['#7C5CFC', '#6344E0']}
+                colors={isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : ['#7C5CFC', '#6344E0']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={s.updateBtnSmall}

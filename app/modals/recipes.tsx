@@ -147,24 +147,30 @@ export default function RecipesModal() {
 
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
+      <LinearGradient
+        colors={[`${colors.primary}35`, colors.background]}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 0.8 }}
+      />
       <View style={s.header}>
         <Text style={[s.title, { color: colors.textPrimary }]}>{t('recipes.title')}</Text>
       </View>
 
       <View style={s.tabs}>
         <TouchableOpacity 
-          style={[s.tab, activeTab === 'search' && { borderBottomColor: '#7C5CFC', borderBottomWidth: 3 }]} 
+          style={[s.tab, activeTab === 'search' && { borderBottomColor: colors.primary, borderBottomWidth: 3 }]} 
           onPress={() => setActiveTab('search')}
         >
-          <Text style={[s.tabText, { color: activeTab === 'search' ? '#7C5CFC' : colors.textSecondary }]}>
+          <Text style={[s.tabText, { color: activeTab === 'search' ? colors.primary : colors.textSecondary }]}>
             {t('recipes.searchTab', 'Buscar')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[s.tab, activeTab === 'pinned' && { borderBottomColor: '#7C5CFC', borderBottomWidth: 3 }]} 
+          style={[s.tab, activeTab === 'pinned' && { borderBottomColor: colors.primary, borderBottomWidth: 3 }]} 
           onPress={() => setActiveTab('pinned')}
         >
-          <Text style={[s.tabText, { color: activeTab === 'pinned' ? '#7C5CFC' : colors.textSecondary }]}>
+          <Text style={[s.tabText, { color: activeTab === 'pinned' ? colors.primary : colors.textSecondary }]}>
             {t('recipes.pinnedTab', 'Fijadas')}
           </Text>
         </TouchableOpacity>
@@ -183,7 +189,7 @@ export default function RecipesModal() {
             returnKeyType="search"
           />
           <TouchableOpacity onPress={() => loadRecipes(searchQuery)}>
-            <LinearGradient colors={['#7C5CFC', '#5141D3']} style={s.searchBtn}>
+            <LinearGradient colors={[colors.primary, colors.primary + 'C0']} style={s.searchBtn}>
               <Text style={s.searchBtnText}>{t('recipes.search', 'Buscar')}</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -203,20 +209,32 @@ function RecipeCard({ recipe, isFav, onFav, index }: { recipe: Recipe; isFav: bo
   const { t } = useTranslation();
   const colors = useTheme();
   
-  // Alternating slight gradients for visual richness
+  // Alternating slight gradients for visual richness with premium color
   const gradientColors = index % 2 === 0 
-    ? [colors.surface, colors.background] as const
-    : [colors.background, colors.surface] as const;
+    ? [colors.surface, `${colors.primary}10`] as const
+    : [`${colors.primary}10`, colors.surface] as const;
 
   return (
-    <View style={[rc.cardContainer, Shadow.md]}>
+    <View style={[
+      rc.cardContainer, 
+      Shadow.md,
+      {
+        borderColor: `${colors.primary}30`,
+        borderWidth: 1,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 5
+      }
+    ]}>
       <LinearGradient colors={gradientColors} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={rc.card}>
         <View style={rc.info}>
           <View style={rc.headerRow}>
             <View style={{ flex: 1, paddingRight: 8 }}>
               <Text style={[rc.name, { color: colors.textPrimary }]} numberOfLines={2}>{recipe.name}</Text>
             </View>
-            <TouchableOpacity onPress={onFav} style={[rc.favBtn, { backgroundColor: isFav ? '#7C5CFC22' : colors.surface }]}>
+            <TouchableOpacity onPress={onFav} style={[rc.favBtn, { backgroundColor: isFav ? `${colors.primary}22` : colors.surface }]}>
               <Text style={rc.favEmoji}>{isFav ? '📌' : '📍'}</Text>
             </TouchableOpacity>
           </View>
@@ -251,7 +269,7 @@ function RecipeCard({ recipe, isFav, onFav, index }: { recipe: Recipe; isFav: bo
           </View>
           
           <TouchableOpacity 
-            style={[rc.askCoachBtn, { backgroundColor: '#7C5CFC' }]}
+            style={[rc.askCoachBtn, { backgroundColor: colors.primary }]}
             onPress={() => {
               const prompt = t('recipes.promptHowToPrepare', {
                 defaultValue: `Hola Coach, ¿me puedes dar las instrucciones paso a paso para preparar esta receta: "{{name}}"? Descripción y detalles: {{desc}} (P: {{p}}g, C: {{c}}g, F: {{f}}g, {{kcal}} kcal).`,

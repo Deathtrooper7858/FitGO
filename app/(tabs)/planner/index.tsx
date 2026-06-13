@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Switch, Modal, Animated, Platform, TextInput, Vibration, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Spacing, Radius } from '../../../constants';
 import { useAuthStore, useNutritionStore, selectDailyTotals, useSettingsStore, usePurchaseStore, usePlannerStore, PlanItem, WorkoutRoutine } from '../../../store';
@@ -272,9 +272,21 @@ function ResetWarningModal({ visible, onDismiss }: ResetWarningModalProps) {
 export default function PlannerScreen() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const { language } = useSettingsStore();
+  const { language, premiumColor } = useSettingsStore();
   const [mode, setMode]           = useState<PlannerMode>('nutrition');
-  const [activeDay, setActiveDay] = useState('Mon');
+  
+  const jsDay = new Date().getDay();
+  const todayAbbr = jsDay === 0 ? 'Sun' : DAYS[jsDay - 1];
+  const [activeDay, setActiveDay] = useState(todayAbbr);
+  
+  useFocusEffect(
+    useCallback(() => {
+      const currentJsDay = new Date().getDay();
+      const currentAbbr = currentJsDay === 0 ? 'Sun' : DAYS[currentJsDay - 1];
+      setActiveDay(currentAbbr);
+    }, [])
+  );
+
   const [loading, setLoading]     = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [restTimer, setRestTimer] = useState<number | null>(null);
@@ -340,6 +352,8 @@ export default function PlannerScreen() {
   const { streakDays, dailyWater, todayLogs, addWater } = useNutritionStore();
   const { isPro }                 = usePurchaseStore();
   const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isValidHex = premiumColor?.startsWith('#');
+  const isPremiumCustom = !!(isProActually && premiumColor && isValidHex);
 
   // ─── Load stored plans ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -769,7 +783,7 @@ export default function PlannerScreen() {
           </Text>
         </View>
         <TouchableOpacity style={s.genBtn} activeOpacity={0.8} onPress={handleGeneratePress} disabled={loading}>
-          <LinearGradient colors={colors.gradientPrimary} style={s.genGrad} start={{x:0,y:0}} end={{x:1,y:1}}>
+          <LinearGradient colors={isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : colors.gradientPrimary} style={s.genGrad} start={{x:0,y:0}} end={{x:1,y:1}}>
             {loading ? <ActivityIndicator size="small" color="#fff" /> :
              <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
                <Sparkles size={16} color="#fff" />
@@ -795,8 +809,8 @@ export default function PlannerScreen() {
                   activeOpacity={0.8}
                 >
                   <View style={s.tabContent}>
-                    {m === 'nutrition' ? <Utensils size={16} color={isActive ? colors.primary : colors.textMuted} /> : <Dumbbell size={16} color={isActive ? colors.primary : colors.textMuted} />}
-                    <Text style={[s.tabText, { color: isActive ? colors.primary : colors.textSecondary }]}>
+                    {m === 'nutrition' ? <Utensils size={16} color={isActive ? (isPremiumCustom && premiumColor ? premiumColor : colors.primary) : colors.textMuted} /> : <Dumbbell size={16} color={isActive ? (isPremiumCustom && premiumColor ? premiumColor : colors.primary) : colors.textMuted} />}
+                    <Text style={[s.tabText, { color: isActive ? (isPremiumCustom && premiumColor ? premiumColor : colors.primary) : colors.textSecondary }]}>
                       {m === 'nutrition' ? t('planner.nutritionTab') : t('planner.workoutsTab')}
                     </Text>
                   </View>
@@ -806,7 +820,7 @@ export default function PlannerScreen() {
           </View>
         </View>
 
-        <DayPicker active={activeDay} onSelect={setActiveDay} />
+        <DayPicker active={activeDay} onSelect={setActiveDay} isPremiumCustom={isPremiumCustom} premiumColor={premiumColor} />
 
         {mode === 'workouts' && (
           <View style={{ marginBottom: Spacing.lg }}>
@@ -1035,7 +1049,7 @@ export default function PlannerScreen() {
             <>
               {meals.length > 0 ? (
                 meals.map((m: PlanItem, i: number) => (
-                  <AnimatedCard key={i} index={i} direction="up">
+                  <AnimatedCard key={`${i}-${m.name}`} index={i} direction="up">
                     <MemoizedMealCard day={activeDay} index={i} name={m.name} meal={m.meal} cal={m.calories} protein={m.protein} carbs={m.carbs} fat={m.fat} />
                   </AnimatedCard>
                 ))
@@ -1307,7 +1321,7 @@ function EmptyState({ title, loading, isPro, onUnlock }: { title: string; loadin
 }
 
 // ─── Day Picker ────────────────────────────────────────────────────────────────
-function DayPicker({ active, onSelect }: { active: string; onSelect: (d: string) => void }) {
+function DayPicker({ active, onSelect, isPremiumCustom, premiumColor }: { active: string; onSelect: (d: string) => void; isPremiumCustom?: boolean | null; premiumColor?: string | null }) {
   const { t } = useTranslation();
   const colors = useTheme();
   return (
@@ -1323,7 +1337,7 @@ function DayPicker({ active, onSelect }: { active: string; onSelect: (d: string)
           >
             {isActive && (
               <LinearGradient
-                colors={colors.gradientPrimary || ['#7C5CFC', '#4338CA']}
+                colors={isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : (colors.gradientPrimary || ['#7C5CFC', '#4338CA'])}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={[StyleSheet.absoluteFillObject, { borderRadius: 22 }]}
@@ -1344,24 +1358,36 @@ const MemoizedMealCard = React.memo(MealCard);
 function MealCard({ day, index, name, meal, cal, protein, carbs, fat }: { day: string; index: number; name: string; meal: string; cal: number; protein?: number; carbs?: number; fat?: number; }) {
   const { t } = useTranslation();
   const colors = useTheme();
+  const { language } = useSettingsStore();
   const [isSwapping, setIsSwapping] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleSwap = async () => {
     try {
       setIsSwapping(true);
       const profile = useAuthStore.getState().profile;
-      const newMeal = await generateMealSwap(name, cal, protein || 0, carbs || 0, fat || 0, profile);
+      console.log(`[Swap] Requesting swap for meal: "${name}", cal: ${cal}`);
+      const newMeal = await generateMealSwap(name, cal, protein || 0, carbs || 0, fat || 0, profile, language);
+      console.log(`[Swap] API Response:`, JSON.stringify(newMeal));
+      
+      // Guard: only update if the API returned a valid non-empty name
+      if (!newMeal?.name || typeof newMeal.name !== 'string' || newMeal.name.trim() === '') {
+        console.warn('[Swap] API returned empty name, keeping original meal.');
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        return;
+      }
       usePlannerStore.getState().swapMeal(day, index, {
         meal,
-        name: newMeal.name,
-        calories: newMeal.calories,
-        protein: newMeal.protein,
-        carbs: newMeal.carbs,
-        fat: newMeal.fat
+        name: newMeal.name.trim(),
+        calories: newMeal.calories || cal,
+        protein: newMeal.protein ?? protein,
+        carbs: newMeal.carbs ?? carbs,
+        fat: newMeal.fat ?? fat
       });
+      console.log(`[Swap] Successfully swapped to: "${newMeal.name}"`);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (e) {
-      console.warn(e);
+      console.warn('[Swap] Error:', e);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setIsSwapping(false);
@@ -1407,7 +1433,9 @@ function MealCard({ day, index, name, meal, cal, protein, carbs, fat }: { day: s
           else if (normalizedMeal.includes('merienda') || normalizedMeal.includes('snack')) key = 'snack';
           return <Text style={[mc.mealLabel, { color: colors.textMuted }]}>{t(`tracker.${key}`)}</Text>;
         })()}
-        <Text style={[mc.name, { color: colors.textPrimary }]} numberOfLines={2}>{name}</Text>
+        <TouchableOpacity activeOpacity={0.8} onPress={() => setIsExpanded(!isExpanded)}>
+          <Text style={[mc.name, { color: colors.textPrimary }]} numberOfLines={isExpanded ? undefined : 2}>{name}</Text>
+        </TouchableOpacity>
         {(protein !== undefined) && (
           <View style={mc.macroRow}>
             <View style={[mc.macroPill, {backgroundColor: colors.protein + '15'}]}><Text style={[mc.macro, { color: colors.protein }]}>P {protein}g</Text></View>

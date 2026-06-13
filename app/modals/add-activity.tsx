@@ -44,6 +44,16 @@ const EXERCISES = [
   { id: '18',     name: 'activities.volleyball',    icon: '🏐', kcalPer30m: 155, category: 'sports' },
   { id: '19',     name: 'activities.golf',          icon: '🏌️', kcalPer30m: 130, category: 'sports' },
   { id: '20',     name: 'activities.martial_arts',  icon: '🥋', kcalPer30m: 280, category: 'sports' },
+  { id: '21',     name: 'activities.elliptical',    icon: '⛷️', kcalPer30m: 270, category: 'cardio' },
+  { id: '22',     name: 'activities.rowing',        icon: '🚣', kcalPer30m: 260, category: 'cardio' },
+  { id: '23',     name: 'activities.jump_rope',     icon: '🪢', kcalPer30m: 375, category: 'cardio' },
+  { id: '24',     name: 'activities.stairs',        icon: '🪜', kcalPer30m: 220, category: 'cardio' },
+  { id: '25',     name: 'activities.zumba',         icon: '💃', kcalPer30m: 250, category: 'cardio' },
+  { id: '26',     name: 'activities.powerlifting',  icon: '🦍', kcalPer30m: 210, category: 'strength' },
+  { id: '27',     name: 'activities.stretching',    icon: '🧘‍♂️', kcalPer30m: 75,  category: 'strength' },
+  { id: '28',     name: 'activities.gymnastics',    icon: '🤸‍♀️', kcalPer30m: 160, category: 'strength' },
+  { id: '29',     name: 'activities.baseball',      icon: '⚾', kcalPer30m: 150, category: 'sports' },
+  { id: '30',     name: 'activities.surfing',       icon: '🏄', kcalPer30m: 150, category: 'sports' },
   { id: 'custom', name: 'activities.custom',        icon: '✨', kcalPer30m: 0,   category: 'custom' },
 ];
 
@@ -298,7 +308,12 @@ export default function AddActivityModal() {
     const isCustom = selected.id === 'custom';
 
     return (
-      <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <LinearGradient
+          colors={[colors.primary + '15', colors.background, colors.background]}
+          style={StyleSheet.absoluteFill}
+        />
+        <SafeAreaView style={s.safe}>
         {/* Detail Header */}
         <View style={s.detailHeader}>
           <TouchableOpacity
@@ -322,7 +337,11 @@ export default function AddActivityModal() {
 
         <ScrollView contentContainerStyle={s.detailScroll} showsVerticalScrollIndicator={false}>
           {/* Main Hero Icon Card */}
-          <View style={[s.detailHeroCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[s.detailHeroCard, { backgroundColor: colors.surface, borderColor: colors.border, overflow: 'hidden' }]}>
+            <LinearGradient
+              colors={[colors.primary + '15', colors.surface, colors.surface]}
+              style={StyleSheet.absoluteFill}
+            />
             <View style={[s.detailHeroIconBadge, { backgroundColor: badgeBg }]}>
               <Text style={{ fontSize: 36 }}>{selected.icon}</Text>
             </View>
@@ -339,7 +358,11 @@ export default function AddActivityModal() {
           </View>
 
           {/* Duration Card */}
-          <View style={[s.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[s.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border, overflow: 'hidden' }]}>
+            <LinearGradient
+              colors={[colors.primary + '08', colors.surface, colors.surface]}
+              style={StyleSheet.absoluteFill}
+            />
             <View style={s.sectionHeader}>
               <Clock size={16} color={colors.primary} />
               <Text style={[s.sectionLabel, { color: colors.textSecondary }]}>
@@ -458,7 +481,11 @@ export default function AddActivityModal() {
 
           {/* AI Custom Activity Card Content */}
           {isCustom && (
-            <View style={[s.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[s.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border, overflow: 'hidden' }]}>
+              <LinearGradient
+                colors={[colors.primary + '08', colors.surface, colors.surface]}
+                style={StyleSheet.absoluteFill}
+              />
               <View style={s.sectionHeader}>
                 <Sparkles size={16} color={colors.primary} />
                 <Text style={[s.sectionLabel, { color: colors.textSecondary }]}>
@@ -588,7 +615,7 @@ export default function AddActivityModal() {
                 style={s.estimateBtnWrapper}
               >
                 <LinearGradient
-                  colors={(!customName.trim() || isEstimating) ? ['#475569', '#334155'] : ['#8B5CF6', '#6D28D9']}
+                  colors={(!customName.trim() || isEstimating) ? ['#475569', '#334155'] : [colors.primary, colors.primary + 'CC']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={[s.estimateBtnGrad, { opacity: (!customName.trim() || isEstimating) ? 0.6 : 1 }]}
@@ -611,11 +638,11 @@ export default function AddActivityModal() {
           {/* Calorie Output metric box */}
           <View style={[s.kcalCardWrapper]}>
             <LinearGradient
-              colors={['rgba(244, 63, 94, 0.08)', 'rgba(139, 92, 246, 0.05)']}
-              style={[s.kcalCard, { borderColor: colors.accent + '22' }]}
+              colors={[colors.primary + '15', colors.primary + '05']}
+              style={[s.kcalCard, { borderColor: colors.primary + '22' }]}
             >
-              <View style={[s.kcalCardIconBadge, { backgroundColor: colors.accent + '15' }]}>
-                <Flame size={24} color={colors.accent} fill={colors.accent + '33'} />
+              <View style={[s.kcalCardIconBadge, { backgroundColor: colors.primary + '15' }]}>
+                <Flame size={24} color={colors.primary} fill={colors.primary + '33'} />
               </View>
               <View style={s.kcalCardInfo}>
                 <Text style={[s.kcalCardLabel, { color: colors.textSecondary }]}>
@@ -660,7 +687,7 @@ export default function AddActivityModal() {
               style={s.saveBtnWrapper}
             >
               <LinearGradient
-                colors={colors.gradientPrimary}
+                colors={[colors.primary, colors.primary + 'CC']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={s.saveBtnGrad}
@@ -684,12 +711,18 @@ export default function AddActivityModal() {
           </View>
         </ScrollView>
       </SafeAreaView>
+      </View>
     );
   }
 
   // ─── GENERAL LIST VIEW (Active activity select) ─────────────────────────────
   return (
-    <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <LinearGradient
+        colors={[colors.primary + '15', colors.background, colors.background]}
+        style={StyleSheet.absoluteFill}
+      />
+      <SafeAreaView style={s.safe}>
       <CustomAlert
         visible={premiumAlert}
         type="confirm"
@@ -754,7 +787,7 @@ export default function AddActivityModal() {
               >
                 {isActive ? (
                   <LinearGradient
-                    colors={colors.gradientPrimary}
+                    colors={[colors.primary, colors.primary + 'CC']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={s.activeTabGrad}
@@ -788,11 +821,11 @@ export default function AddActivityModal() {
             style={s.heroCardWrapper}
           >
             <LinearGradient
-              colors={['rgba(139, 92, 246, 0.15)', 'rgba(99, 102, 241, 0.05)']}
+              colors={[colors.primary + '20', colors.primary + '05']}
               style={[s.heroCard, { borderColor: colors.primary + '40' }]}
             >
               <View style={s.heroContent}>
-                <View style={[s.heroIconBadge, { backgroundColor: 'rgba(139, 92, 246, 0.2)' }]}>
+                <View style={[s.heroIconBadge, { backgroundColor: colors.primary + '25' }]}>
                   <Sparkles size={22} color={colors.primary} fill={colors.primary + '33'} />
                 </View>
                 <View style={s.heroInfo}>
@@ -826,9 +859,24 @@ export default function AddActivityModal() {
               <TouchableOpacity
                 key={ex.id}
                 activeOpacity={0.85}
-                style={[s.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                style={[
+                  s.card, 
+                  { 
+                    backgroundColor: colors.surface, 
+                    borderColor: colors.border,
+                    shadowColor: colors.primary,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 12,
+                    elevation: 4
+                  }
+                ]}
                 onPress={() => setSelected(ex)}
               >
+                <LinearGradient
+                  colors={[colors.surface, colors.primary + '05']}
+                  style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
+                />
                 <View style={[s.cardBadge, { backgroundColor: badgeBg }]}>
                   <Text style={{ fontSize: 22 }}>{ex.icon}</Text>
                 </View>
@@ -865,6 +913,7 @@ export default function AddActivityModal() {
         )}
       </ScrollView>
     </SafeAreaView>
+    </View>
   );
 }
 

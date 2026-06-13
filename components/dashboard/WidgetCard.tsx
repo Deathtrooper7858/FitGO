@@ -8,7 +8,9 @@ import { useTheme } from '../../hooks/useTheme';
 import { AnimatedCard } from '../AnimatedCard';
 
 // Extracted from dashboard/index.tsx
-const WIDGET_WIDTH = 160;
+import { Dimensions } from 'react-native';
+const { width } = Dimensions.get('window');
+const WIDGET_WIDTH = (width - Spacing.base * 2 - Spacing.md) / 2;
 
 export function WidgetAdTimer({ featureId }: { featureId: string }) {
   const { profile } = useAuthStore();
@@ -16,6 +18,7 @@ export function WidgetAdTimer({ featureId }: { featureId: string }) {
   const [timeLeft, setTimeLeft] = useState(premiumAdRemainingSeconds(featureId));
 
   const isPro = !!profile?.isPro;
+  const colors = useTheme();
 
   useEffect(() => {
     if (isPro) return;
@@ -33,7 +36,7 @@ export function WidgetAdTimer({ featureId }: { featureId: string }) {
 
   return (
     <View style={[StyleSheet.absoluteFill, {
-      backgroundColor: 'rgba(124, 92, 252, 0.75)',
+      backgroundColor: colors.primary + 'C0', // 75% opacity
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: 50,
@@ -72,8 +75,9 @@ export function WidgetCard({ title, icon, value, subValue, onPress, customConten
       <TouchableOpacity 
         style={[
           w.card, 
-          { backgroundColor: colors.surface, borderColor: isEditing ? '#7C5CFC' : 'transparent' },
-          isEditing && { borderWidth: 2 }
+          { backgroundColor: colors.surface, borderColor: isEditing ? colors.primary : colors.surfaceAlt },
+          isEditing && { borderWidth: 2, shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
+          !isEditing && { shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 4 }
         ]} 
         onPress={isEditing ? undefined : onPress} 
         activeOpacity={0.8} 
@@ -81,13 +85,13 @@ export function WidgetCard({ title, icon, value, subValue, onPress, customConten
         onLongPress={onLongPress}
       >
         <LinearGradient
-          colors={['rgba(124, 92, 252, 0.08)', 'transparent']}
+          colors={[colors.primary + '14', 'transparent']} // 0.08 opacity hex is roughly 14
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[StyleSheet.absoluteFill, { borderRadius: Radius.xl }]}
         />
         <View style={w.header}>
-          <View style={[w.iconWrap, { backgroundColor: 'rgba(124, 92, 252, 0.15)' }]}>
+          <View style={[w.iconWrap, { backgroundColor: colors.primary + '26' }]}>
             <Text style={w.icon}>{icon}</Text>
           </View>
           <Text style={[w.title, { color: colors.textPrimary }]} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
@@ -102,14 +106,14 @@ export function WidgetCard({ title, icon, value, subValue, onPress, customConten
         {isEditing && (
           <View style={[StyleSheet.absoluteFill, w.editOverlay]}>
             <TouchableOpacity 
-              style={[w.moveBtn, !canMoveLeft && { opacity: 0.3 }]} 
+              style={[w.moveBtn, { backgroundColor: colors.primary }, !canMoveLeft && { opacity: 0.3 }]} 
               onPress={onMoveLeft} 
               disabled={!canMoveLeft}
             >
               <Text style={w.moveIcon}>←</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={[w.moveBtn, !canMoveRight && { opacity: 0.3 }]} 
+              style={[w.moveBtn, { backgroundColor: colors.primary }, !canMoveRight && { opacity: 0.3 }]} 
               onPress={onMoveRight} 
               disabled={!canMoveRight}
             >

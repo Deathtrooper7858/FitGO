@@ -235,10 +235,15 @@ export const useSocialStore = create<SocialState>((set, get) => ({
               .eq('id', senderId)
               .single()
               .then(({ data }) => {
-                const senderName = data?.name || 'Someone';
+                const senderName = data?.name || 'Alguien';
+                const preview = content?.length > 60
+                  ? content.substring(0, 60) + '…'
+                  : (content || 'Nuevo mensaje');
                 triggerInstantNotification(
-                  `💬 New message from ${senderName}`,
-                  content
+                  `💬 Mensaje de ${senderName}`,
+                  `"${preview}"`,
+                  { senderId, type: 'direct_message' },
+                  'messages'
                 );
               });
           }
@@ -294,10 +299,12 @@ export const useSocialStore = create<SocialState>((set, get) => ({
               .eq('id', senderId)
               .single()
               .then(({ data }) => {
-                const senderName = data?.name || 'Someone';
+                const senderName = data?.name || 'Alguien';
                 triggerInstantNotification(
-                  `👥 Friend Request`,
-                  `${senderName} sent you a friend request.`
+                  `👥 Solicitud de amistad`,
+                  `${senderName} quiere conectar contigo en FitGO.`,
+                  { senderId, type: 'friend_request' },
+                  'social'
                 );
               });
           }
@@ -311,10 +318,12 @@ export const useSocialStore = create<SocialState>((set, get) => ({
                 .eq('id', friendId)
                 .single()
                 .then(({ data }) => {
-                  const friendName = data?.name || 'Your friend';
+                  const friendName = data?.name || 'Tu amigo';
                   triggerInstantNotification(
-                    `🤝 Friend request accepted!`,
-                    `${friendName} accepted your friend request. You can now chat!`
+                    `🤝 ¡Solicitud aceptada!`,
+                    `${friendName} aceptó tu solicitud. ¡Ya pueden chatear!`,
+                    { friendId, type: 'friend_accepted' },
+                    'social'
                   );
                 });
             }
@@ -415,21 +424,29 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data: partData, error: partErr } = await supabase
         .from('challenge_participants')
-        .select('challenge_id')
+        .select('challenge_id, status')
         .eq('user_id', userId);
       
       if (partErr) throw partErr;
 
       const challengeIds = (partData || []).map(p => p.challenge_id);
       
-      let allChallenges: Challenge[] = [];
+      let allChallenges: any[] = [];
       if (challengeIds.length > 0) {
         const { data, error } = await supabase
           .from('challenges')
           .select('*')
           .in('id', challengeIds);
         if (error) throw error;
-        allChallenges = data || [];
+        
+        // Attach user's participant status to the challenge object
+        allChallenges = (data || []).map(challenge => {
+          const participantInfo = partData?.find(p => p.challenge_id === challenge.id);
+          return {
+            ...challenge,
+            my_status: participantInfo?.status || 'pending'
+          };
+        });
       }
 
       set({ challenges: allChallenges });

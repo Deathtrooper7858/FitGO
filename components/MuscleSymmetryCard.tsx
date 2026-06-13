@@ -5,9 +5,9 @@ import {
   StyleSheet,
   useWindowDimensions,
   TouchableOpacity,
-  Modal,
   Pressable,
   ScrollView,
+  Modal,
 } from 'react-native';
 import Body from 'react-native-body-highlighter';
 import Animated, {
@@ -17,10 +17,8 @@ import Animated, {
   withSequence,
   withTiming,
   withSpring,
+  runOnJS,
   FadeIn,
-  FadeOut,
-  SlideInDown,
-  SlideOutDown,
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
@@ -29,6 +27,7 @@ import * as Haptics from 'expo-haptics';
 import { Dumbbell, Eye, RefreshCw, X, Activity, Zap } from 'lucide-react-native';
 import { useWorkoutHistoryStore } from '../store/workoutHistoryStore';
 import { useAuthStore } from '../store/authStore';
+import { useSettingsStore } from '../store';
 import { useTheme } from '../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import exercisesData from '../excercise/exercises.json';
@@ -364,89 +363,141 @@ function MuscleTooltip({
   onClose: () => void;
 }) {
   const colors = useTheme();
-  if (!visible) return null;
+  // isMounted tracks whether the overlay should remain in the component tree.
+  // We only unmount AFTER the exit animation finishes to avoid abrupt removal.
+  const [isMounted, setIsMounted] = useState(false);
+  const backdropOpacity = useSharedValue(0);
+  const cardTranslateY = useSharedValue(300);
+
+  // Effect 1: when visible → mount the overlay immediately
+  useEffect(() => {
+    if (visible) {
+      setIsMounted(true);
+    }
+  }, [visible]);
+
+  // Effect 2: after mount, animate in; when closing, animate out then unmount
+  useEffect(() => {
+    if (!isMounted) return;
+    if (visible) {
+      // Animate in
+      backdropOpacity.value = withTiming(1, { duration: 200 });
+      cardTranslateY.value = withSpring(0, { damping: 18, stiffness: 220 });
+    } else {
+      // Animate out then unmount
+      backdropOpacity.value = withTiming(0, { duration: 180 });
+      cardTranslateY.value = withTiming(300, { duration: 200 }, (finished) => {
+        if (finished) runOnJS(setIsMounted)(false);
+      });
+    }
+  }, [visible, isMounted]);
+
+  const backdropStyle = useAnimatedStyle(() => ({
+    opacity: backdropOpacity.value,
+  }));
+
+  const cardStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: cardTranslateY.value }],
+  }));
+
+  if (!isMounted) return null;
 
   const pct = level
     ? Math.min(((sessionCount - level.min) / (level.max - level.min + 1)) * 100, 100)
     : 0;
 
   return (
-    <Modal transparent animationType="none" onRequestClose={onClose}>
-      <Pressable style={tipSt.backdrop} onPress={onClose}>
-        <Animated.View
-          entering={SlideInDown.springify().damping(18).stiffness(220)}
-          exiting={SlideOutDown.springify().damping(18).stiffness(220)}
-          style={[tipSt.card, { backgroundColor: colors.surface, borderColor: colors.border + '80' }]}
-        >
-          {/* Handle bar */}
-          <View style={[tipSt.handle, { backgroundColor: colors.border }]} />
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <View style={StyleSheet.absoluteFill} pointerEvents="auto">
+        {/* Backdrop */}
+        <Animated.View style={[tipSt.backdrop, backdropStyle]}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        </Animated.View>
 
-          {/* Muscle name + close */}
-          <View style={tipSt.row}>
-            <View style={[tipSt.iconCircle, { backgroundColor: level?.glowColor ?? colors.primary + '20' }]}>
-              <Activity size={18} color={level?.color ?? colors.primary} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[tipSt.muscleName, { color: colors.textPrimary }]}>
-                {muscleName}
-              </Text>
-              <Text style={[tipSt.sessionLabel, { color: colors.textSecondary }]}>
-                {sessionCount} {sessionCount === 1 ? 'sesión' : 'sesiones'} este mes
-              </Text>
-            </View>
-            <TouchableOpacity onPress={onClose} style={tipSt.closeBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <X size={16} color={colors.textMuted} />
-            </TouchableOpacity>
-          </View>
+        {/* Card */}
+        <Animated.View style={[tipSt.cardContainer, cardStyle]}>
+          <View style={[tipSt.card, { backgroundColor: colors.surface, borderColor: colors.border + '80' }]}>
+            {/* Handle bar */}
+            <View style={[tipSt.handle, { backgroundColor: colors.border }]} />
 
-          {/* Level badge */}
-          {level && (
-            <View style={tipSt.levelRow}>
-              <LinearGradient
-                colors={[level.gradStart, level.gradEnd]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={tipSt.levelBadge}
+            {/* Muscle name + close */}
+            <View style={tipSt.row}>
+              <View style={[tipSt.iconCircle, { backgroundColor: level?.glowColor ?? colors.primary + '20' }]}>
+                <Activity size={18} color={level?.color ?? colors.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[tipSt.muscleName, { color: colors.textPrimary }]}>
+                  {muscleName}
+                </Text>
+                <Text style={[tipSt.sessionLabel, { color: colors.textSecondary }]}>
+                  {sessionCount} {sessionCount === 1 ? 'sesión' : 'sesiones'} este mes
+                </Text>
+              </View>
+              <Pressable
+                onPress={onClose}
+                style={tipSt.closeBtn}
+                hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
               >
-                <Text style={tipSt.levelBadgeText}>{level.icon} {level.name}</Text>
-              </LinearGradient>
+                <X size={20} color={colors.textMuted} />
+              </Pressable>
+            </View>
 
-              {/* Progress bar */}
-              <View style={[tipSt.progressTrack, { backgroundColor: colors.border + '55' }]}>
+            {/* Level badge */}
+            {level && (
+              <View style={tipSt.levelRow}>
                 <LinearGradient
                   colors={[level.gradStart, level.gradEnd]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
-                  style={[tipSt.progressFill, { width: `${pct}%` }]}
-                />
+                  style={tipSt.levelBadge}
+                >
+                  <Text style={tipSt.levelBadgeText}>{level.icon} {level.name}</Text>
+                </LinearGradient>
+
+                {/* Progress bar */}
+                <View style={[tipSt.progressTrack, { backgroundColor: colors.border + '55' }]}>
+                  <LinearGradient
+                    colors={[level.gradStart, level.gradEnd]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[tipSt.progressFill, { width: `${pct}%` }]}
+                  />
+                </View>
+                <Text style={[tipSt.progressLabel, { color: colors.textMuted }]}>
+                  {sessionCount}/{level.max} sesiones para siguiente rango
+                </Text>
               </View>
-              <Text style={[tipSt.progressLabel, { color: colors.textMuted }]}>
-                {sessionCount}/{level.max} sesiones para siguiente rango
+            )}
+
+            {/* Divider */}
+            <View style={[tipSt.divider, { backgroundColor: colors.border + '40' }]} />
+
+            {/* Hint */}
+            <View style={tipSt.hintRow}>
+              <Zap size={13} color={colors.primary} />
+              <Text style={[tipSt.hint, { color: colors.textMuted }]}>
+                Sigue entrenando para subir de nivel
               </Text>
             </View>
-          )}
-
-          {/* Divider */}
-          <View style={[tipSt.divider, { backgroundColor: colors.border + '40' }]} />
-
-          {/* Hint */}
-          <View style={tipSt.hintRow}>
-            <Zap size={13} color={colors.primary} />
-            <Text style={[tipSt.hint, { color: colors.textMuted }]}>
-              Sigue entrenando para subir de nivel
-            </Text>
           </View>
         </Animated.View>
-      </Pressable>
+      </View>
     </Modal>
   );
 }
 
 const tipSt = StyleSheet.create({
   backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    zIndex: 50,
+  },
+  cardContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 51,
   },
   card: {
     borderRadius: 28,
@@ -456,6 +507,11 @@ const tipSt = StyleSheet.create({
     paddingTop: 12,
     borderWidth: 1,
     gap: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 20,
   },
   handle: {
     width: 40,
@@ -487,9 +543,9 @@ const tipSt = StyleSheet.create({
     marginTop: 2,
   },
   closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -538,7 +594,12 @@ export function MuscleSymmetryCard() {
 
   // Reactive subscription
   const allWorkouts = useWorkoutHistoryStore(state => state.workouts);
-  const userId = useAuthStore(state => state.profile?.id);
+  const profile = useAuthStore(state => state.profile);
+  const userId = profile?.id;
+  const { premiumColor } = useSettingsStore();
+  const isPro = !!profile?.isPro;
+  const isValidHex = premiumColor?.startsWith('#');
+  const isPremiumCustom = (isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin') && premiumColor && isValidHex;
   
   const workouts = useMemo(() => {
     return allWorkouts.filter(w => !w.userId || w.userId === userId);
@@ -606,7 +667,8 @@ export function MuscleSymmetryCard() {
   const tooltipMuscle = MUSCLE_LABELS[tooltip.slug] ?? tooltip.slug;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border + '40' }]}>
+    <View style={styles.outerWrapper}>
+      <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border + '40' }]}>
       {/* Aurora background gradient */}
       <LinearGradient
         colors={['rgba(139,92,246,0.12)', 'rgba(6,182,212,0.06)', 'transparent']}
@@ -684,7 +746,7 @@ export function MuscleSymmetryCard() {
             >
               {isActive ? (
                 <LinearGradient
-                  colors={['#8B5CF6', '#6D28D9']}
+                  colors={isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : ['#8B5CF6', '#6D28D9']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.toggleTabActive}
@@ -729,19 +791,19 @@ export function MuscleSymmetryCard() {
             style={[
               StyleSheet.absoluteFill,
               styles.pulseOverlay,
-              { backgroundColor: colors.musclePulse },
+              { backgroundColor: isPremiumCustom && premiumColor ? premiumColor : colors.musclePulse },
               pulseStyle,
             ]}
             pointerEvents="none"
           />
           <Body
             key={activeSide}
-            data={bodyData}
+            data={bodyData as any}
             side={activeSide}
             scale={bodyScale}
             gender="male"
             defaultFill={colors.surfaceAlt}
-            onBodyPartPress={(part) => {
+            onBodyPartPress={(part: any) => {
               if (part?.slug) handleMusclePress(part);
             }}
           />
@@ -774,6 +836,7 @@ export function MuscleSymmetryCard() {
       )}
 
       {/* ── Muscle Tooltip ── */}
+      </View>
       <MuscleTooltip
         visible={tooltip.visible}
         muscleName={tooltipMuscle}
@@ -786,17 +849,20 @@ export function MuscleSymmetryCard() {
 }
 
 const styles = StyleSheet.create({
+  outerWrapper: {
+    position: 'relative',
+    marginTop: 16,
+  },
   container: {
     borderRadius: 24,
     padding: 20,
-    marginTop: 16,
-    overflow: 'hidden',
     borderWidth: 1,
     shadowColor: '#8B5CF6',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.12,
     shadowRadius: 20,
     elevation: 10,
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',

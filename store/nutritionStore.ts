@@ -681,7 +681,10 @@ export const useNutritionStore = create<NutritionState>()(
           const streak = recalculateStreak(activeDays);
           if (get().streakDays !== streak) set({ streakDays: streak });
 
-        } catch (err) {
+        } catch (err: any) {
+          if (err?.name === 'AbortError' || err?.message?.includes('AbortError')) {
+            return; // Ignore normal request cancellations
+          }
           console.error('[NutritionStore] fetchLogs error:', err);
           // Do NOT clear local logs on error to prevent data loss
           throw err; // Re-throw so UI can handle it

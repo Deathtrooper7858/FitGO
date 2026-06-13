@@ -3,11 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Activi
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
-import { Sword, Bot, X, Info, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { Sword, Bot, X, Info, ChevronDown, ChevronUp, Settings, Check } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { Radius } from '../../constants';
 import { GlassCard } from '../../components/GlassCard';
-import { useSocialStore, useAuthStore, useSettingsStore } from '../../store';
+import { useSocialStore, useAuthStore, useSettingsStore, useNutritionStore } from '../../store';
 import { generateSocialChallenge } from '../../services/groq';
 import { getLocalDateString } from '../../utils/date';
 import { getNameStyle } from '../../utils/styles';
@@ -37,6 +37,7 @@ export default function FitGOChallenges() {
   const { profile } = useAuthStore();
   const { language, premiumColor } = useSettingsStore();
   const socialStore = useSocialStore();
+  const nutritionStore = useNutritionStore();
 
   const [aiLoading, setAiLoading] = useState(false);
   const [aiRecommendation, setAiRecommendation] = useState<string | null>(null);
@@ -405,17 +406,43 @@ const generateAIChallenge = async () => {
           socialStore.challenges.length === 0 ? (
             <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10, marginBottom: 20 }}>{t('social.challenges.noActiveChallenges', 'No hay retos activos.')}</Text>
           ) : (
-            socialStore.challenges.map(challenge => (
+            socialStore.challenges.map(challenge => {
+              const todayStr = getLocalDateString(new Date());
+              let currentProgress = 0;
+              
+              if (challenge.type === 'steps') {
+                currentProgress = nutritionStore.dailySteps?.[todayStr] || 0;
+              } else if (challenge.type === 'calories') {
+                currentProgress = 0; // Mock fallback for calories
+              }
+              
+              const target = challenge.target_value || 1;
+              const globalCompleted = challenge.status === 'completed';
+              const myCompleted = challenge.my_status === 'completed';
+              const isFullyCompleted = globalCompleted || myCompleted || (currentProgress >= target);
+              
+              const percentage = isFullyCompleted ? 100 : Math.min(100, Math.round((currentProgress / target) * 100));
+
+              return (
               <TouchableOpacity 
                 key={challenge.id} 
                 activeOpacity={0.8}
                 onPress={() => openChallengeDetails(challenge)}
               >
                 <GlassCard style={{ marginBottom: 12, padding: 0, overflow: 'hidden', borderWidth: 1, borderColor: colors.border + '50' }}>
-                  <LinearGradient colors={[challenge.status === 'completed' ? colors.success + '15' : colors.primary + '10', 'transparent']} style={{ padding: 16, borderLeftWidth: 4, borderLeftColor: challenge.status === 'completed' ? colors.success : colors.primary }}>
+                  <LinearGradient colors={[globalCompleted || myCompleted ? colors.success + '15' : colors.primary + '10', 'transparent']} style={{ padding: 16, borderLeftWidth: 4, borderLeftColor: globalCompleted || myCompleted ? colors.success : colors.primary }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                       <View style={{ flex: 1 }}>
-                        <Text style={[s.userName, { color: colors.textPrimary, fontSize: 17, fontWeight: '800' }]}>{challenge.title}</Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <Text style={[s.userName, { color: colors.textPrimary, fontSize: 17, fontWeight: '800', flex: 1 }]} numberOfLines={2}>{challenge.title}</Text>
+                          <TouchableOpacity 
+                            style={{ padding: 6, backgroundColor: colors.surfaceAlt, borderRadius: 14, marginLeft: 10 }}
+                            onPress={() => openChallengeDetails(challenge)}
+                          >
+                            <Settings size={20} color={colors.textSecondary} />
+                          </TouchableOpacity>
+                        </View>
+                        
                         <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 6, lineHeight: 20 }}>{challenge.description || `${t('social.challenges.challengeOf', 'Reto de')} ${challenge.type}`}</Text>
                         
                         <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
@@ -431,25 +458,71 @@ const generateAIChallenge = async () => {
                           </View>
                         </View>
 
-                        {/* Progress mock since we don't have realtime progression tracked perfectly yet */}
+                        {/* Real-time progression tracking */}
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 18 }}>
                           <View style={{ height: 8, flex: 1, backgroundColor: colors.border + '40', borderRadius: 4, overflow: 'hidden' }}>
                             <LinearGradient
-                              colors={challenge.status === 'completed' ? [colors.success, '#10B981'] : [colors.primary, colors.secondary || '#A855F7']}
+                              colors={isFullyCompleted ? [colors.success, '#10B981'] : [colors.primary, colors.secondary || '#A855F7']}
                               start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                              style={{ width: challenge.status === 'completed' ? '100%' : '35%', height: '100%', borderRadius: 4 }}
+                              style={{ width: `${percentage}%`, height: '100%', borderRadius: 4 }}
                             />
                           </View>
-                          <Text style={{ color: challenge.status === 'completed' ? colors.success : colors.primary, fontSize: 12, fontWeight: '900', marginLeft: 12 }}>
-                            {challenge.status === 'completed' ? '100%' : '35%'}
+                          <Text style={{ color: isFullyCompleted ? colors.success : colors.primary, fontSize: 12, fontWeight: '900', marginLeft: 12 }}>
+                            {percentage}%
                           </Text>
                         </View>
+                        
+                        {/* Action button if not completed by user yet */}
+                        {!myCompleted && !globalCompleted && (
+                          <TouchableOpacity 
+                            style={{ 
+                              marginTop: 16, 
+                              paddingVertical: 10, 
+                              backgroundColor: isFullyCompleted || challenge.type === 'physical' ? colors.primary : colors.surfaceAlt, 
+                              borderRadius: Radius.md, 
+                              alignItems: 'center', 
+                              flexDirection: 'row', 
+                              justifyContent: 'center', 
+                              gap: 6,
+                              opacity: isFullyCompleted || challenge.type === 'physical' ? 1 : 0.6
+                            }}
+                            onPress={() => {
+                              if (profile?.id) {
+                                socialStore.completeChallengeAndAwardPoints(challenge.id, profile.id);
+                              }
+                            }}
+                            disabled={!isFullyCompleted && challenge.type !== 'physical'}
+                          >
+                            <Check size={18} color={isFullyCompleted || challenge.type === 'physical' ? '#fff' : colors.textPrimary} />
+                            <Text style={{ color: isFullyCompleted || challenge.type === 'physical' ? '#fff' : colors.textPrimary, fontSize: 14, fontWeight: '700' }}>
+                              {t('social.challenges.markAsCompleted', 'Marcar como completado')}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+
+                        {myCompleted && !globalCompleted && (
+                          <View style={{ marginTop: 16, paddingVertical: 10, backgroundColor: colors.success + '20', borderRadius: Radius.md, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}>
+                            <Check size={18} color={colors.success} />
+                            <Text style={{ color: colors.success, fontSize: 14, fontWeight: '800' }}>
+                              {t('social.challenges.waitingForOthers', 'Completado - Esperando a los demás')}
+                            </Text>
+                          </View>
+                        )}
+                        
+                        {globalCompleted && (
+                          <View style={{ marginTop: 16, paddingVertical: 10, backgroundColor: colors.success + '20', borderRadius: Radius.md, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}>
+                            <Check size={18} color={colors.success} />
+                            <Text style={{ color: colors.success, fontSize: 14, fontWeight: '800' }}>
+                              {t('social.challenges.fullyCompleted', '¡Reto finalizado!')}
+                            </Text>
+                          </View>
+                        )}
                       </View>
                     </View>
                   </LinearGradient>
                 </GlassCard>
               </TouchableOpacity>
-            ))
+            )})
           )
         )}
       </View>

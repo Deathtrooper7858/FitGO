@@ -8,6 +8,69 @@ import * as Device from 'expo-device';
 let NotificationsModule: any = null;
 let notificationHandlerSet = false;
 
+// ── Canal definitions ─────────────────────────────────────────────────────────
+// Each category gets its own Android channel with distinct importance/color/vibration
+export const CHANNELS = {
+  messages: {
+    id: 'messages',
+    name: '💬 Mensajes',
+    description: 'Mensajes directos de amigos',
+    importance: 5, // IMPORTANCE_HIGH
+    lightColor: '#7C5CFC',
+    vibrationPattern: [0, 100, 50, 100],
+  },
+  social: {
+    id: 'social',
+    name: '👥 Social',
+    description: 'Solicitudes de amistad y actividad social',
+    importance: 4, // IMPORTANCE_DEFAULT
+    lightColor: '#4FC3F7',
+    vibrationPattern: [0, 200, 100, 200],
+  },
+  nutrition: {
+    id: 'nutrition',
+    name: '🥗 Nutrición',
+    description: 'Recordatorios de comidas, calorías e hidratación',
+    importance: 3, // IMPORTANCE_LOW
+    lightColor: '#81C784',
+    vibrationPattern: [0, 150],
+  },
+  fitness: {
+    id: 'fitness',
+    name: '🏋️ Fitness',
+    description: 'Entrenamientos, rachas y pasos',
+    importance: 4,
+    lightColor: '#FFB74D',
+    vibrationPattern: [0, 200, 100, 200],
+  },
+  achievements: {
+    id: 'achievements',
+    name: '🏆 Logros',
+    description: 'Logros desbloqueados y recompensas',
+    importance: 5,
+    lightColor: '#FFD700',
+    vibrationPattern: [0, 100, 80, 100, 80, 300],
+  },
+  reminders: {
+    id: 'reminders',
+    name: '⏰ Recordatorios',
+    description: 'Recordatorios programados',
+    importance: 3,
+    lightColor: '#CE93D8',
+    vibrationPattern: [0, 250, 250, 250],
+  },
+  default: {
+    id: 'default',
+    name: 'FitGO',
+    description: 'Notificaciones generales de FitGO',
+    importance: 4,
+    lightColor: '#7C5CFC',
+    vibrationPattern: [0, 250, 250, 250],
+  },
+} as const;
+
+export type ChannelKey = keyof typeof CHANNELS;
+
 function getNotifications() {
   if (NotificationsModule === null) {
     try {
@@ -40,11 +103,32 @@ function getNotifications() {
         cancelScheduledNotificationAsync: async () => {},
         cancelAllScheduledNotificationsAsync: async () => {},
         getExpoPushTokenAsync: async () => ({ data: 'mock-token' }),
-        AndroidImportance: { MAX: 4 }
+        AndroidImportance: { MAX: 5, HIGH: 4, DEFAULT: 3, LOW: 2, MIN: 1 }
       };
     }
   }
   return NotificationsModule;
+}
+
+// ── Setup all channels at once ────────────────────────────────────────────────
+async function ensureChannels(notif: any) {
+  if (Platform.OS !== 'android') return;
+  for (const channel of Object.values(CHANNELS)) {
+    try {
+      await notif.setNotificationChannelAsync(channel.id, {
+        name: channel.name,
+        description: channel.description,
+        importance: channel.importance,
+        vibrationPattern: channel.vibrationPattern,
+        lightColor: channel.lightColor,
+        enableVibrate: true,
+        enableLights: true,
+        showBadge: true,
+      });
+    } catch (e) {
+      // Non-fatal
+    }
+  }
 }
 
 export async function requestNotificationPermissions() {
@@ -53,12 +137,7 @@ export async function requestNotificationPermissions() {
 
   try {
     if (Platform.OS === 'android') {
-      await notif.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: notif.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#7C5CFC',
-      });
+      await ensureChannels(notif);
     }
 
     const { status: existingStatus } = await notif.getPermissionsAsync();
@@ -82,19 +161,23 @@ export async function scheduleReminder(reminder: Reminder): Promise<string | und
 
   try {
     const [hour, minute] = reminder.time.split(':').map(Number);
+    const channelId = (reminder.type === 'meal' || reminder.type === 'water')
+      ? CHANNELS.nutrition.id
+      : CHANNELS.reminders.id;
 
     const id = await notif.scheduleNotificationAsync({
       content: {
         title: reminder.title,
         body: reminder.body,
         sound: true,
-        channelId: 'default',
+        channelId,
+        color: '#7C5CFC',
       },
       trigger: {
         type: 'daily',
         hour,
         minute,
-        channelId: 'default',
+        channelId,
       },
     });
 
@@ -137,9 +220,11 @@ export async function sendTestNotification() {
   try {
     await notif.scheduleNotificationAsync({
       content: {
-        title: "FitGO Test 🔔",
-        body: "If you're reading this, notifications are working perfectly!",
+        title: '🔔 FitGO Notificaciones',
+        body: '¡Las notificaciones están funcionando perfectamente!',
         sound: true,
+        channelId: CHANNELS.default.id,
+        color: '#7C5CFC',
       },
       trigger: null,
     });
@@ -148,15 +233,23 @@ export async function sendTestNotification() {
   }
 }
 
-export async function triggerInstantNotification(title: string, body: string, data?: any) {
+export async function triggerInstantNotification(
+  title: string,
+  body: string,
+  data?: any,
+  channelKey: ChannelKey = 'default'
+) {
   const notif = getNotifications();
   if (notif._isMock) return;
+  const channel = CHANNELS[channelKey];
   try {
     await notif.scheduleNotificationAsync({
       content: {
         title,
         body,
         sound: true,
+        channelId: channel.id,
+        color: channel.lightColor,
         data,
       },
       trigger: null,
@@ -173,12 +266,7 @@ export async function registerForPushNotificationsAsync(): Promise<string | unde
   let token;
 
   if (Platform.OS === 'android') {
-    await notif.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: notif.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#7C5CFC',
-    });
+    await ensureChannels(notif);
   }
 
   if (Device.isDevice) {
@@ -225,6 +313,8 @@ export async function sendRemotePushNotification(expoPushToken: string, title: s
     title,
     body,
     data,
+    channelId: CHANNELS.social.id,
+    color: CHANNELS.social.lightColor,
   };
 
   try {
@@ -241,4 +331,3 @@ export async function sendRemotePushNotification(expoPushToken: string, title: s
     console.error('Error sending remote push notification:', e);
   }
 }
-

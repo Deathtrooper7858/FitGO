@@ -110,7 +110,7 @@ export function renderDashboardWidget(props: WidgetRendererProps) {
               <View style={{ position: 'relative' }}>
                 <Text style={{ fontSize: 32, color: colors.textSecondary }}>📷</Text>
                 {!isPro && !hasPremiumAdAccess('evaluation') && (
-                  <View style={w.lockOverlay}>
+                  <View style={[w.lockOverlay, { borderColor: colors.primary }]}>
                     <Text style={w.lockIcon}>🔒</Text>
                   </View>
                 )}
@@ -118,8 +118,8 @@ export function renderDashboardWidget(props: WidgetRendererProps) {
               <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginTop: 8 }}>{t('dashboard.evaluatePhysique', 'Evaluar Físico')}</Text>
               <Text style={[w.subValue, { color: colors.textSecondary }]}>{t('dashboard.getAIFeedback', 'Recibe feedback IA')}</Text>
               {!isPro && !hasPremiumAdAccess('evaluation') && (
-                <View style={w.premiumTag}>
-                  <Text style={w.premiumTagText}>👑 Premium</Text>
+                <View style={[w.premiumTag, { backgroundColor: colors.primary + '2E', borderColor: colors.primary + '66' }]}>
+                  <Text style={[w.premiumTagText, { color: colors.primary }]}>👑 Premium</Text>
                 </View>
               )}
             </View>
@@ -143,7 +143,7 @@ export function renderDashboardWidget(props: WidgetRendererProps) {
               <View style={{ position: 'relative' }}>
                 <Text style={{ fontSize: 32, color: colors.textSecondary }}>🥗</Text>
                 {!isPro && !hasPremiumAdAccess('recipes') && (
-                  <View style={w.lockOverlay}>
+                  <View style={[w.lockOverlay, { borderColor: colors.primary }]}>
                     <Text style={w.lockIcon}>🔒</Text>
                   </View>
                 )}
@@ -151,8 +151,8 @@ export function renderDashboardWidget(props: WidgetRendererProps) {
               <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginTop: 8 }}>{t('dashboard.recipeSearchWidget', 'Buscar Recetas')}</Text>
               <Text style={[w.subValue, { color: colors.textSecondary }]}>{t('dashboard.withAI', 'Con IA')}</Text>
               {!isPro && !hasPremiumAdAccess('recipes') && (
-                <View style={w.premiumTag}>
-                  <Text style={w.premiumTagText}>👑 Premium</Text>
+                <View style={[w.premiumTag, { backgroundColor: colors.primary + '2E', borderColor: colors.primary + '66' }]}>
+                  <Text style={[w.premiumTagText, { color: colors.primary }]}>👑 Premium</Text>
                 </View>
               )}
             </View>
@@ -174,7 +174,7 @@ export function renderDashboardWidget(props: WidgetRendererProps) {
               <View style={{ position: 'relative' }}>
                 <Text style={{ fontSize: 32, color: colors.textSecondary }}>📖</Text>
                 {!isPro && !hasPremiumAdAccess('directory') && (
-                  <View style={w.lockOverlay}>
+                  <View style={[w.lockOverlay, { borderColor: colors.primary }]}>
                     <Text style={w.lockIcon}>🔒</Text>
                   </View>
                 )}
