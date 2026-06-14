@@ -68,9 +68,11 @@ interface GenerateConfirmModalProps {
   isHomeWorkout?: boolean;
   homeEquipment?: string;
   profile?: any;
+  premiumColor?: string;
+  isPremiumCustom?: boolean;
 }
 
-function GenerateConfirmModal({ visible, onConfirm, onChangeFoods, onCancel, mode, availableFoods, targetCalories, isHomeWorkout, homeEquipment, profile }: GenerateConfirmModalProps) {
+function GenerateConfirmModal({ visible, onConfirm, onChangeFoods, onCancel, mode, availableFoods, targetCalories, isHomeWorkout, homeEquipment, profile, premiumColor, isPremiumCustom }: GenerateConfirmModalProps) {
   const { t } = useTranslation();
   const colors = useTheme();
   
@@ -107,9 +109,13 @@ function GenerateConfirmModal({ visible, onConfirm, onChangeFoods, onCancel, mod
       <Animated.View style={[gcm.overlay, { opacity: opacityAnim }]}>
         <Animated.View style={[gcm.card, { backgroundColor: colors.surface, transform: [{ scale: scaleAnim }] }]}>
           {/* Icon header */}
-          <LinearGradient colors={['#7C5CFC22', '#4338CA11']} style={gcm.iconHeader}>
-            <View style={[gcm.iconCircle, { backgroundColor: colors.primary + '22' }]}>
-              <Sparkles size={32} color={colors.primary} />
+          {/* Icon header */}
+          <LinearGradient
+            colors={isPremiumCustom && premiumColor ? [premiumColor + '33', premiumColor + '11'] : ['#7C5CFC22', '#4338CA11']}
+            style={gcm.iconHeader}
+          >
+            <View style={[gcm.iconCircle, { backgroundColor: isPremiumCustom && premiumColor ? premiumColor + '33' : colors.primary + '22' }]}>
+              <Sparkles size={32} color={isPremiumCustom && premiumColor ? premiumColor : colors.primary} />
             </View>
           </LinearGradient>
 
@@ -235,7 +241,10 @@ function GenerateConfirmModal({ visible, onConfirm, onChangeFoods, onCancel, mod
 
           {/* Action buttons */}
           <TouchableOpacity style={[gcm.btnPrimary]} activeOpacity={0.85} onPress={() => onConfirm({ intensityMode, focusSymmetry })}>
-            <LinearGradient colors={['#7C5CFC', '#4338CA']} style={gcm.btnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+            <LinearGradient
+              colors={isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : ['#7C5CFC', '#4338CA']}
+              style={gcm.btnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            >
               <Sparkles size={16} color="#fff" />
               <Text style={gcm.btnPrimaryText}>{t('planner.confirmGenerate', 'Generar Plan Ahora')}</Text>
             </LinearGradient>
@@ -454,8 +463,9 @@ export default function PlannerScreen() {
   const { streakDays, dailyWater, todayLogs, addWater } = useNutritionStore();
   const { isPro }                 = usePurchaseStore();
   const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
-  const isValidHex = premiumColor?.startsWith('#');
-  const isPremiumCustom = !!(isProActually && premiumColor && isValidHex);
+  const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
+  const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
+  const isPremiumCustom = !!(isProActually && isValidHex);
 
   // ─── Load stored plans ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -937,6 +947,8 @@ export default function PlannerScreen() {
         isHomeWorkout={isHomeWorkout}
         homeEquipment={homeEquipment}
         profile={profile}
+        premiumColor={safePremiumColor}
+        isPremiumCustom={isPremiumCustom}
       />
 
       {/* Sunday reset warning */}
@@ -978,12 +990,12 @@ export default function PlannerScreen() {
             </Text>
           </View>
 
-          <TouchableOpacity style={s.genBtn} activeOpacity={0.8} onPress={() => handleGeneratePress()} disabled={loading}>
+          <TouchableOpacity style={[s.genBtn, { shadowColor: safePremiumColor }]} activeOpacity={0.8} onPress={() => handleGeneratePress()} disabled={loading}>
             <LinearGradient 
               colors={
                 mode === 'workouts' 
-                  ? (energyMode === 'low' ? ['#06B6D4', '#0891B2'] : energyMode === 'beast' ? ['#EF4444', '#B91C1C'] : (isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : colors.gradientPrimary))
-                  : (isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : colors.gradientPrimary)
+                  ? (energyMode === 'low' ? ['#06B6D4', '#0891B2'] : energyMode === 'beast' ? ['#EF4444', '#B91C1C'] : (isPremiumCustom ? [safePremiumColor, safePremiumColor + 'CC'] : colors.gradientPrimary))
+                  : (isPremiumCustom ? [safePremiumColor, safePremiumColor + 'CC'] : colors.gradientPrimary)
               } 
               style={s.genGrad} start={{x:0,y:0}} end={{x:1,y:1}}
             >
@@ -1010,8 +1022,8 @@ export default function PlannerScreen() {
                   activeOpacity={0.8}
                 >
                   <View style={s.tabContent}>
-                    {m === 'nutrition' ? <Utensils size={16} color={isActive ? (isPremiumCustom && premiumColor ? premiumColor : colors.primary) : colors.textMuted} /> : <Dumbbell size={16} color={isActive ? (isPremiumCustom && premiumColor ? premiumColor : colors.primary) : colors.textMuted} />}
-                    <Text style={[s.tabText, { color: isActive ? (isPremiumCustom && premiumColor ? premiumColor : colors.primary) : colors.textSecondary }]}>
+                    {m === 'nutrition' ? <Utensils size={16} color={isActive ? (isPremiumCustom ? safePremiumColor : colors.primary) : colors.textMuted} /> : <Dumbbell size={16} color={isActive ? (isPremiumCustom ? safePremiumColor : colors.primary) : colors.textMuted} />}
+                    <Text style={[s.tabText, { color: isActive ? (isPremiumCustom ? safePremiumColor : colors.primary) : colors.textSecondary }]}>
                       {m === 'nutrition' ? t('planner.nutritionTab') : t('planner.workoutsTab')}
                     </Text>
                   </View>
@@ -1021,7 +1033,7 @@ export default function PlannerScreen() {
           </View>
         </View>
 
-        <DayPicker active={activeDay} onSelect={setActiveDay} isPremiumCustom={isPremiumCustom} premiumColor={premiumColor} />
+        <DayPicker active={activeDay} onSelect={setActiveDay} isPremiumCustom={isPremiumCustom} premiumColor={safePremiumColor} />
 
         {/* Energy Meter UI (Moved inside ScrollView) */}
         {mode === 'workouts' && (
@@ -1602,7 +1614,7 @@ function EmptyState({ title, subtitle, loading, isPro, onUnlock }: { title: stri
       </Text>
       {!isPro && !loading && (
         <TouchableOpacity style={s.proBtn} activeOpacity={0.8} onPress={onUnlock}>
-          <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.proGrad} start={{x:0,y:0}} end={{x:1,y:1}}>
+          <LinearGradient colors={[colors.primary, colors.primary + 'CC']} style={s.proGrad} start={{x:0,y:0}} end={{x:1,y:1}}>
             <Sparkles size={18} color="#fff" style={{marginRight: 8}} />
             <Text style={s.proText}>{t('planner.unlockPro')}</Text>
           </LinearGradient>
@@ -1613,11 +1625,27 @@ function EmptyState({ title, subtitle, loading, isPro, onUnlock }: { title: stri
 }
 
 // ─── Day Picker ────────────────────────────────────────────────────────────────
+const DAY_WIDTH = 64;
+const DAY_GAP = 12;
+const DAY_PADDING_H = 16; 
+
 function DayPicker({ active, onSelect, isPremiumCustom, premiumColor }: { active: string; onSelect: (d: string) => void; isPremiumCustom?: boolean | null; premiumColor?: string | null }) {
   const { t } = useTranslation();
   const colors = useTheme();
+  const scrollRef = useRef<any>(null);
+
+  useEffect(() => {
+    const dayIndex = DAYS.indexOf(active);
+    if (dayIndex === -1 || !scrollRef.current) return;
+    const { width: screenWidth } = Dimensions.get('window');
+    const offset = DAY_PADDING_H + dayIndex * (DAY_WIDTH + DAY_GAP) - screenWidth / 2 + DAY_WIDTH / 2;
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({ x: Math.max(0, offset), animated: true });
+    }, 100);
+  }, [active]);
+
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={dp.scroll} contentContainerStyle={dp.row}>
+    <ScrollView ref={scrollRef} horizontal showsHorizontalScrollIndicator={false} style={dp.scroll} contentContainerStyle={dp.row}>
       {DAYS.map((d) => {
         const isActive = active === d;
         return (
@@ -1629,7 +1657,7 @@ function DayPicker({ active, onSelect, isPremiumCustom, premiumColor }: { active
           >
             {isActive && (
               <LinearGradient
-                colors={isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : (colors.gradientPrimary || ['#7C5CFC', '#4338CA'])}
+                colors={isPremiumCustom && premiumColor ? [premiumColor === 'admin_glow' ? '#00F0FF' : premiumColor, (premiumColor === 'admin_glow' ? '#00F0FF' : premiumColor) + 'CC'] : (colors.gradientPrimary || ['#7C5CFC', '#4338CA'])}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={[StyleSheet.absoluteFillObject, { borderRadius: 22 }]}
@@ -1814,7 +1842,7 @@ const s = StyleSheet.create({
   headerTextWrap: { flex: 1 },
   title:       { fontSize: 28, fontWeight: '900', letterSpacing: -0.5 },
   subtitle:    { fontSize: 14, marginTop: 2, fontWeight: '500' },
-  genBtn:      { borderRadius: Radius.full, overflow: 'hidden', elevation: 4, shadowColor: '#7C5CFC', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
+  genBtn:      { borderRadius: Radius.full, overflow: 'hidden', elevation: 4, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
   genGrad:     { paddingHorizontal: 18, paddingVertical: 12 },
   genText:     { color: '#fff', fontWeight: '800', fontSize: 14 },
 

@@ -122,9 +122,10 @@ function EditModal({
 }) {
   const { t } = useTranslation();
   const colors = useTheme();
-  // Build gradient: use premiumColor when available, otherwise fall back to theme primary
-  const accentGradient: [string, string] = premiumColor
-    ? [premiumColor, premiumColor + 'AA']
+  // Build gradient: use safeColor when available, otherwise fall back to theme primary
+  const safeColor = premiumColor === 'admin_glow' ? '#00F0FF' : premiumColor;
+  const accentGradient: [string, string] = (safeColor && safeColor.startsWith('#'))
+    ? [safeColor, safeColor + 'AA']
     : colors.gradientPrimary as [string, string];
   const [value, setValue] = useState(initialValue ?? '');
   const [selectedColor, setSelectedColor] = useState(initialNameColor ?? '');
@@ -197,10 +198,10 @@ function EditModal({
             em.inputContainer, 
             { 
               backgroundColor: colors.surfaceAlt, 
-              borderColor: isFocused ? (premiumColor || colors.primary) : colors.border,
+              borderColor: isFocused ? (safeColor || colors.primary) : colors.border,
             }
           ]}>
-            <FieldIcon size={20} color={isFocused ? (premiumColor || colors.primary) : colors.textMuted} style={em.inputIcon} />
+            <FieldIcon size={20} color={isFocused ? (safeColor || colors.primary) : colors.textMuted} style={em.inputIcon} />
             <TextInput
               style={[em.input, { color: colors.textPrimary }]}
               value={value}
@@ -218,7 +219,7 @@ function EditModal({
               </TouchableOpacity>
             )}
             {suffix !== '' && (
-              <Text style={[em.suffix, { color: isFocused ? (premiumColor || colors.primary) : colors.textSecondary }]}>
+              <Text style={[em.suffix, { color: isFocused ? (safeColor || colors.primary) : colors.textSecondary }]}>
                 {suffix.toUpperCase()}
               </Text>
             )}
@@ -636,8 +637,8 @@ const stat = StyleSheet.create({
   editHint: { fontSize: 8, marginTop: 4, textTransform: 'uppercase' },
 });
 
-function MenuRow({ icon, label, value, onPress, onLongPress, isDestructive, rightIcon, indent, showGradient, iconColor }: {
-  icon: any; label: string; value?: string; onPress?: () => void; onLongPress?: () => void; isDestructive?: boolean; rightIcon?: string; indent?: boolean; showGradient?: boolean; iconColor?: string;
+function MenuRow({ icon, label, value, valueStyle, onPress, onLongPress, isDestructive, rightIcon, indent, showGradient, iconColor }: {
+  icon: any; label: string; value?: string; valueStyle?: any; onPress?: () => void; onLongPress?: () => void; isDestructive?: boolean; rightIcon?: string; indent?: boolean; showGradient?: boolean; iconColor?: string;
 }) {
   const colors = useTheme();
   const Icon = typeof icon === 'string' ? null : icon;
@@ -653,7 +654,7 @@ function MenuRow({ icon, label, value, onPress, onLongPress, isDestructive, righ
         )}
       </View>
       <Text style={[mr.label, { color: isDestructive ? colors.error : colors.textPrimary }]}>{label}</Text>
-      {value && <Text style={[mr.value, { color: colors.textSecondary }]} numberOfLines={1}>{value}</Text>}
+      {value && <Text style={[mr.value, { color: colors.textSecondary }, valueStyle]} numberOfLines={1}>{value}</Text>}
       <View style={mr.arrowWrapper}>
         {rightIcon === '▼' ? (
           <ChevronDown size={16} color={colors.textMuted} />
@@ -755,20 +756,20 @@ const VitrinaTrofeos = React.memo(function VitrinaTrofeos({
 }) {
   if (!pinnedAchievements || pinnedAchievements.length === 0) return null;
   
-  const isValidHex = premiumColor?.startsWith('#');
-  const isPremiumCustom = isPro && premiumColor && isValidHex;
-  const accentColor = (isPro && premiumColor) ? premiumColor : colors.primary;
+  const safeColor = premiumColor === 'admin_glow' ? '#00F0FF' : (premiumColor && premiumColor.startsWith('#') ? premiumColor : null);
+  const isPremiumCustom = isPro && safeColor;
+  const accentColor = (isPremiumCustom && safeColor) ? safeColor : colors.primary;
 
   return (
     <View
       style={
-        isPremiumCustom && premiumColor
+        isPremiumCustom
           ? {
               marginHorizontal: Spacing.base,
               marginTop: Spacing.md,
               marginBottom: Spacing.sm,
               borderRadius: 20,
-              shadowColor: premiumColor,
+              shadowColor: safeColor,
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 0.6,
               shadowRadius: 12,
@@ -781,13 +782,13 @@ const VitrinaTrofeos = React.memo(function VitrinaTrofeos({
           borderRadius: 20,
           overflow: 'hidden',
           borderWidth: isPremiumCustom ? 1.5 : 1,
-          borderColor: isPremiumCustom && premiumColor ? premiumColor + '80' : colors.border,
+          borderColor: isPremiumCustom ? safeColor + '80' : colors.border,
         }}
       >
         {/* Premium background gradient */}
-        {isPremiumCustom && premiumColor ? (
+        {isPremiumCustom ? (
           <LinearGradient
-            colors={[premiumColor + '25', premiumColor + '10', 'transparent'] as [string, string, string]}
+            colors={[safeColor + '25', safeColor + '10', 'transparent'] as [string, string, string]}
             style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -796,9 +797,9 @@ const VitrinaTrofeos = React.memo(function VitrinaTrofeos({
           <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface, borderRadius: 20 }]} />
         )}
         {/* Top accent stripe */}
-        {isPremiumCustom && premiumColor && (
+        {isPremiumCustom && (
           <LinearGradient
-            colors={[premiumColor + 'DD', premiumColor + '00'] as [string, string]}
+            colors={[safeColor + 'DD', safeColor + '00'] as [string, string]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2 }}
@@ -1628,8 +1629,8 @@ export default function ProfileScreen() {
     ? '⬆️ ' + t('profile.gainMuscle', 'Ganar Músculo')
     : '⚖️ ' + t('profile.maintain', 'Mantener');
 
-  const isValidHex = premiumColor?.startsWith('#');
-  const isPremiumCustom = (isPro || profile?.isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin') && premiumColor && isValidHex;
+  const safePremiumColor = premiumColor === 'admin_glow' ? '#00F0FF' : (premiumColor && premiumColor.startsWith('#') ? premiumColor : null);
+  const isPremiumCustom = (isPro || profile?.isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin') && safePremiumColor;
 
   const handleLanguageSelect = async (lang: string) => {
     setLanguage(lang as any);
@@ -1724,12 +1725,12 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         <LinearGradient 
-          colors={isPremiumCustom && premiumColor ? [premiumColor + '30', 'transparent'] : colors.gradientCard} 
+          colors={isPremiumCustom ? [safePremiumColor + '30', 'transparent'] : colors.gradientCard} 
           style={s.header}
         >
           <TouchableOpacity onPress={() => setPhotoModalVisible(true)} activeOpacity={0.8} style={s.avatarContainer}>
             <LinearGradient 
-              colors={isPremiumCustom && premiumColor ? [premiumColor, premiumColor + '80'] : ['#7C5CFC', '#4338CA']} 
+              colors={isPremiumCustom ? [safePremiumColor, safePremiumColor + '80'] : ['#7C5CFC', '#4338CA']} 
               style={s.avatar}
             >
               {profile?.avatarUrl ? (
@@ -1739,7 +1740,7 @@ export default function ProfileScreen() {
               )}
             </LinearGradient>
             <View style={[s.editBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Camera size={12} color={isPremiumCustom && premiumColor ? premiumColor : colors.primary} strokeWidth={2.5} />
+              <Camera size={12} color={isPremiumCustom ? safePremiumColor : colors.primary} strokeWidth={2.5} />
             </View>
           </TouchableOpacity>
           <View style={{ alignItems: 'center' }}>
@@ -1761,7 +1762,7 @@ export default function ProfileScreen() {
               <Text style={s.proBadgeText}>{currentBadge.icon} {currentBadge.label}</Text>
             </LinearGradient>
             <View style={[s.badgeAddIcon, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Plus size={10} color={isPremiumCustom && premiumColor ? premiumColor : colors.primary} strokeWidth={3} />
+              <Plus size={10} color={isPremiumCustom ? safePremiumColor : colors.primary} strokeWidth={3} />
             </View>
           </TouchableOpacity>
         </LinearGradient>
@@ -1781,12 +1782,12 @@ export default function ProfileScreen() {
         <GlassCard
           noPadding
           showStripe
-          accentColor={isPremiumCustom && premiumColor ? premiumColor : colors.primary}
+          accentColor={isPremiumCustom ? safePremiumColor : colors.primary}
           style={{ margin: Spacing.base, marginTop: 0 }}
         >
-        {isPremiumCustom && premiumColor && (
+        {isPremiumCustom && (
           <LinearGradient
-            colors={[premiumColor + '25', premiumColor + '10', 'transparent'] as [string, string, string]}
+            colors={[safePremiumColor + '25', safePremiumColor + '10', 'transparent'] as [string, string, string]}
             style={[StyleSheet.absoluteFill, { borderRadius: Radius.lg }]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -1931,6 +1932,7 @@ export default function ProfileScreen() {
                 icon={Palette} 
                 label={t('profile.premiumColor', 'Color Premium (Pro)')}
                 value={premiumColor ? '●' : t('common.default', 'Predeterminado')}
+                valueStyle={premiumColor ? { color: safePremiumColor, fontSize: 18 } : {}}
                 indent 
                 onPress={() => router.push('/modals/premium-colors' as any)} 
                 iconColor={premiumColor || '#FFD700'}

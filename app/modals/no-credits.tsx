@@ -11,7 +11,8 @@ import { MAX_AI_PHOTO_ENERGY, MAX_AI_TEXT_ENERGY } from '../../store/adStore';
 
 export default function NoCreditsModal() {
   const colors = useTheme();
-  const { watchAdForCredits } = useAICredits();
+  const { watchAdForCredits, totalAdsWatched } = useAICredits();
+  const limitReached = totalAdsWatched >= 3;
   const [loading, setLoading] = useState(false);
   const [earned, setEarned] = useState(false);
 
@@ -84,25 +85,29 @@ export default function NoCreditsModal() {
         <View style={s.options}>
           {/* Option A: Watch ad */}
           <TouchableOpacity
-            style={[s.optionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            style={[
+              s.optionCard,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+              limitReached && { opacity: 0.5 }
+            ]}
             onPress={handleWatchAd}
-            disabled={loading}
+            disabled={loading || limitReached}
             activeOpacity={0.85}
           >
-            <View style={[s.optionIcon, { backgroundColor: '#10B981' + '20' }]}>
-              <PlayCircle size={28} color="#10B981" />
+            <View style={[s.optionIcon, { backgroundColor: limitReached ? colors.border : '#10B981' + '20' }]}>
+              <PlayCircle size={28} color={limitReached ? colors.textMuted : "#10B981"} />
             </View>
             <View style={s.optionText}>
-              <Text style={[s.optionTitle, { color: colors.textPrimary }]}>
-                Ver video corto
+              <Text style={[s.optionTitle, { color: limitReached ? colors.textMuted : colors.textPrimary }]}>
+                {limitReached ? 'Límite de videos alcanzado' : 'Ver video corto'}
               </Text>
-              <Text style={[s.optionDesc, { color: colors.textSecondary }]}>
-                Gana +1 crédito IA ⚡ gratis
+              <Text style={[s.optionDesc, { color: limitReached ? colors.textMuted : colors.textSecondary }]}>
+                {limitReached ? 'Vuelve mañana para más créditos' : 'Gana +1 crédito IA ⚡ gratis'}
               </Text>
             </View>
             {loading ? (
               <ActivityIndicator color="#10B981" />
-            ) : (
+            ) : !limitReached && (
               <View style={[s.freeTag, { backgroundColor: '#10B981' + '20' }]}>
                 <Text style={{ color: '#10B981', fontSize: 11, fontWeight: '800' }}>GRATIS</Text>
               </View>

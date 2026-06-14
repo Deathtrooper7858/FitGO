@@ -40,6 +40,7 @@ console.warn = (...args) => {
 import { supabase } from '../services/supabase';
 import { useAuthStore, useSettingsStore, usePurchaseStore } from '../store';
 import { useSocialStore } from '../store/socialStore';
+import { useAICreditsStore } from '../store/aiCreditsStore';
 import { registerForPushNotificationsAsync } from '../services/notifications';
 import { Colors } from '../constants';
 import i18n from '../i18n';
@@ -80,6 +81,12 @@ function NavigationGuard() {
     // ── Slow-path: wait for the network fetch to complete before deciding
     if (isLoading) return;
 
+    // ── Guard: if there's a session but no profile yet (and not loading),
+    //    this is a transient state during OAuth (e.g. Google login fires
+    //    onAuthStateChange multiple times). Wait — do NOT redirect to onboarding
+    //    because a profile fetch may still be resolving in the background.
+    if (session && !profile) return;
+
     if (!session) {
       if (!inAuthGroup) {
         router.replace('/(auth)/welcome');
@@ -105,7 +112,7 @@ function NavigationGuard() {
 export default function RootLayout() {
   const { setSession, setLoading, setProfile, fetchProfile, clearAuth, isLoading } = useAuthStore();
   const { initialize: initPurchases } = usePurchaseStore();
-  const { language, theme } = useSettingsStore();
+  const { language, theme, setPremiumColor } = useSettingsStore();
   const colors = useTheme();
   const { t } = useTranslation();
   useAdMob(); // Initialize AdMob
@@ -145,16 +152,22 @@ export default function RootLayout() {
     // user update). El guard de versión garantiza que solo la llamada más reciente
     // llame a setLoading(false), evitando pantallas de loading infinito.
     let authCallVersion = 0;
+    let previousUserId: string | null = null;
 
     const handleAuthStateChange = async (newSession: any) => {
       const thisCall = ++authCallVersion;
       
-      // OPTIMIZACIÓN: Si ya tenemos un perfil en caché, evitamos bloquear el render inicial.
+      // OPTIMIZACIÓN: Si ya tenemos un perfil en caché y completó el onboarding, evitamos bloquear el render inicial.
       const currentProfile = useAuthStore.getState().profile;
-      const isInitialLoading = !currentProfile || !newSession;
+      // isInitialLoading = true cuando no hay caché, no hay sesión, el userId cambió, o el onboarding no está hecho.
+      // IMPORTANTE: si el userId cambió (nuevo login / OAuth), siempre bloquear para evitar
+      // el flash del onboarding que ocurre cuando onAuthStateChange se dispara múltiples veces
+      // (ej. SIGNED_IN + TOKEN_REFRESHED durante Google OAuth).
+      const userIdChanged = newSession?.user?.id && currentProfile?.id !== newSession.user.id;
+      const isInitialLoading = !currentProfile || !newSession || userIdChanged || !currentProfile.onboardingDone;
       
       if (isInitialLoading) {
-        setLoading(true); // Bloquear solo si no hay caché o no hay sesión
+        setLoading(true); // Bloquear hasta tener perfil completo
       } else {
         setLoading(false); // Liberar Inmediatamente para entrar a la app sin demoras
       }
@@ -162,6 +175,14 @@ export default function RootLayout() {
       try {
         setSession(newSession);
         if (newSession?.user) {
+          const newUserId = newSession.user.id;
+          // Si cambió el usuario (cambio de cuenta sin cerrar sesión explícitamente),
+          // limpiar el color premium del anterior para que no se herede.
+          if (previousUserId && previousUserId !== newUserId) {
+            useSettingsStore.getState().setPremiumColor(null);
+          }
+          previousUserId = newUserId;
+
           // Si estamos bloqueando (isInitialLoading), esperamos a que se resuelva
           if (isInitialLoading) {
             await Promise.all([
@@ -176,12 +197,21 @@ export default function RootLayout() {
               initPurchases(newSession.user.id)
             ]).catch(err => console.error('Background fetch error:', err));
           }
+          // Resetear créditos de IA si es un nuevo día (se llama siempre al login)
+          useAICreditsStore.getState().resetIfNewDay();
         } else {
           // Sign out: clear both session and profile atomically
           clearAuth();
+          // Reset premium color so the next user/onboarding always starts with
+          // the classic default. Each account's color is stored in their profile
+          // and restored when they log in.
+          setPremiumColor(null);
+          previousUserId = null;
           // Limpiar canales Realtime del usuario anterior para evitar fugas de
           // memoria y que mensajes de un usuario lleguen a otro tras cambio de sesión.
           useSocialStore.getState().reset();
+          // Resetear estado Pro de créditos IA para evitar que se herede entre sesiones
+          useAICreditsStore.getState().setIsProUser(false);
         }
       } catch (err) {
         console.error('Error in auth state change:', err);

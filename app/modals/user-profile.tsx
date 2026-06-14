@@ -166,14 +166,15 @@ export default function UserProfileModal() {
   const totalAchievements = myAchievements.length;
 
   const hasProAccess = isPro || myProfile?.role === 'owner' || myProfile?.role === 'super_admin' || myProfile?.role === 'admin';
-  const isValidHex = premiumColor?.startsWith('#');
-  const isPremiumCustom = hasProAccess && premiumColor && isValidHex;
+  const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
+  const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
+  const isPremiumCustom = hasProAccess && isValidHex;
 
   return (
-    <SafeAreaView style={[s.container, { backgroundColor: isPremiumCustom ? premiumColor + '0A' : colors.background }]}>
+    <SafeAreaView style={[s.container, { backgroundColor: isPremiumCustom ? safePremiumColor + '0A' : colors.background }]}>
       {isPremiumCustom && (
         <LinearGradient
-          colors={[premiumColor + '1A', 'transparent']}
+          colors={[safePremiumColor + '1A', 'transparent']}
           style={StyleSheet.absoluteFill}
           pointerEvents="none"
         />
@@ -188,10 +189,10 @@ export default function UserProfileModal() {
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 50 }} showsVerticalScrollIndicator={false}>
         {/* Profile Card */}
-        <GlassCard style={{ margin: 16, padding: 0, overflow: 'hidden', backgroundColor: isPremiumCustom ? premiumColor + '10' : colors.surface }}>
+        <GlassCard style={{ margin: 16, padding: 0, overflow: 'hidden', backgroundColor: isPremiumCustom ? safePremiumColor + '10' : colors.surface }}>
           {isPremiumCustom && (
             <LinearGradient
-              colors={[premiumColor + '20', 'transparent']}
+              colors={[safePremiumColor + '20', 'transparent']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}

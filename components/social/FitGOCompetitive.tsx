@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, TextInput, Alert, RefreshControl, Image, Modal,
+  ActivityIndicator, TextInput, Alert, RefreshControl, Modal,
   Platform, Share,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -16,7 +17,7 @@ import { useLeagueStore, LeagueTier, SquadMember, Squad } from '../../store/leag
 import { FireStreakBadge } from '../FireStreakBadge';
 import MacroRewardAnimation from '../MacroRewardAnimation';
 import * as Clipboard from 'expo-clipboard';
-import { getNameStyle } from '../../utils/styles';
+import { getNameStyle, getSafeColor } from '../../utils/styles';
 import { router } from 'expo-router';
 import { CustomAlert, AlertType } from '../CustomAlert';
 import { useTranslation } from 'react-i18next';
@@ -1443,7 +1444,7 @@ export default function FitGOCompetitive() {
                 </View>
 
                 {/* Username */}
-                <Text style={[{ fontSize: 24, fontWeight: '900', textAlign: 'center', marginBottom: 28, textShadowColor: userColor + '40', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8 }, getNameStyle(inspectingUser.name_color, inspectingUser.id, profile?.id, profile?.nameColor, premiumColor)]}>
+                <Text style={[{ fontSize: 24, fontWeight: '900', textAlign: 'center', marginBottom: 28, textShadowColor: getSafeColor(userColor) + '40', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8 }, getNameStyle(inspectingUser.name_color, inspectingUser.id, profile?.id, profile?.nameColor, premiumColor)]}>
                   {inspectingUser.name}
                 </Text>
 

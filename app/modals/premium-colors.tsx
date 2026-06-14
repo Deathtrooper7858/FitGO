@@ -6,6 +6,7 @@ import { BlurView } from 'expo-blur';
 import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useSettingsStore, usePurchaseStore, useAuthStore } from '../../store';
+import { supabase } from '../../services/supabase';
 import { Check, X, Crown, Lock, Sparkles } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
@@ -29,7 +30,7 @@ export default function PremiumColorsModal() {
   const { t } = useTranslation();
   const { premiumColor, setPremiumColor } = useSettingsStore();
   const { isPro, verifyProStatus } = usePurchaseStore();
-  const { profile } = useAuthStore();
+  const { profile, setProfile } = useAuthStore();
   
   const hasProRole = !!(profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin' || profile?.isPro);
 
@@ -48,7 +49,7 @@ export default function PremiumColorsModal() {
     });
   }, [hasProRole]);
 
-  const handleSelect = (color: typeof PREMIUM_COLORS[0]) => {
+  const handleSelect = async (color: typeof PREMIUM_COLORS[0]) => {
     Haptics.selectionAsync();
     
     if (loading) return;
@@ -59,12 +60,29 @@ export default function PremiumColorsModal() {
     }
 
     setPremiumColor(color.id);
+    
+    // Save to database if user is logged in
+    if (profile?.id) {
+      // Update local profile state
+      setProfile({ ...profile, premiumColor: color.id || undefined });
+      
+      // Update database silently in background
+      supabase
+        .from('users')
+        .update({ premium_color: color.id })
+        .eq('id', profile.id)
+        .then(({ error }) => {
+          if (error) console.error('[PremiumColors] Failed to save to DB:', error);
+        });
+    }
   };
+
+  const safePremiumColor = premiumColor === 'admin_glow' ? '#00F0FF' : premiumColor;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <LinearGradient
-        colors={[premiumColor || colors.primary, 'transparent']}
+        colors={[safePremiumColor || colors.primary, 'transparent']}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 0.5 }}
         style={[StyleSheet.absoluteFill, { opacity: 0.15 }]}

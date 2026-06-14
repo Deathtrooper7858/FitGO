@@ -15,12 +15,14 @@ import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import * as WebBrowser from 'expo-web-browser';
 import { CustomAlert, AlertType } from '../../components/CustomAlert';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const { t } = useTranslation();
   const colors = useTheme();
+  const insets = useSafeAreaInsets();
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -144,7 +146,7 @@ export default function LoginScreen() {
         locations={[0, 0.5, 1]}
         style={StyleSheet.absoluteFill}
       />
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 24, paddingBottom: Math.max(insets.bottom + 24, 40) }]} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Image 
             source={require('../../assets/fitgo.jpeg')} 
@@ -258,7 +260,7 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container:   { flex: 1 },
   scroll:      { flexGrow: 1, padding: 24 },
-  header:      { alignItems: 'center', paddingTop: 60, paddingBottom: 40 },
+  header:      { alignItems: 'center', paddingTop: 20, paddingBottom: 40 },
   logoImage:   { width: 90, height: 90, borderRadius: 28, marginBottom: 20, shadowColor: '#7C5CFC', shadowOpacity: 0.3, shadowRadius: 15 },
   title:       { fontSize: 32, fontWeight: '800', marginBottom: 8, letterSpacing: -0.5 },
   subtitle:    { fontSize: 16 },

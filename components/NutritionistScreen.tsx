@@ -75,8 +75,19 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
   const lines = content.split('\n');
   
   return lines.map((line, lineIdx) => {
+    if (line.trim() === '') {
+      return <View key={lineIdx} style={{ height: 8 }} />;
+    }
+
     const isBullet = line.trim().startsWith('* ') || line.trim().startsWith('- ');
     const isNumberList = /^\d+\.\s/.test(line.trim());
+    const isDisclaimer = !isUser && (
+      line.toLowerCase().includes('recuerda que') || 
+      line.toLowerCase().includes('profesional certificado') ||
+      line.toLowerCase().includes('disclaimer') ||
+      line.toLowerCase().includes('not a certified professional') ||
+      line.toLowerCase().includes('consult a real professional')
+    );
     
     let cleanLine = line;
     let prefix = '';
@@ -90,6 +101,8 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
       prefix = line.trim().match(/^(\d+\.)/)?.[0] + ' ' || '';
     }
     
+    const isOnlyEmoji = cleanLine.trim().length <= 4 && /\p{Emoji}/u.test(cleanLine);
+    
     // Split bold tags
     const parts = cleanLine.split(/\*\*/g);
     const inlineContent = parts.map((part, partIdx) => {
@@ -98,8 +111,9 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
         <Text
           key={partIdx}
           style={{
-            fontWeight: isBold ? '800' : '400',
-            color: isBold ? boldColor : textColor,
+            fontWeight: isBold ? '800' : (isDisclaimer ? '400' : '500'),
+            color: isBold ? boldColor : (isDisclaimer ? colors.textMuted : textColor),
+            fontStyle: isDisclaimer && !isBold ? 'italic' : 'normal',
           }}
         >
           {part}
@@ -108,22 +122,30 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
     });
 
     return (
-      <Text 
-        key={lineIdx} 
-        style={{ 
-          fontSize: 15, 
-          lineHeight: 22, 
-          color: textColor,
-          marginVertical: line.trim() === '' ? 3 : 1.5,
-        }}
-      >
+      <View key={lineIdx} style={{ flexDirection: 'row', alignItems: 'flex-start', marginVertical: 2 }}>
         {prefix ? (
-          <Text style={{ color: isUser ? '#FFF' : colors.primary, fontWeight: '800' }}>
+          <Text style={{ 
+            color: isUser ? '#FFF' : colors.primary, 
+            fontWeight: '900', 
+            fontSize: isDisclaimer ? 13 : 15, 
+            lineHeight: isDisclaimer ? 20 : 24,
+            marginRight: 6
+          }}>
             {prefix}
           </Text>
         ) : null}
-        {inlineContent}
-      </Text>
+        <Text 
+          style={{ 
+            fontSize: isOnlyEmoji ? 26 : (isDisclaimer ? 13 : 15), 
+            lineHeight: isOnlyEmoji ? 32 : (isDisclaimer ? 20 : 24), 
+            color: isDisclaimer ? colors.textMuted : textColor,
+            flexShrink: 1,
+            letterSpacing: 0.15
+          }}
+        >
+          {inlineContent}
+        </Text>
+      </View>
     );
   });
 };
@@ -578,7 +600,7 @@ export default function NutritionistScreen() {
 
       const { mealPlans, workoutPlans } = usePlannerStore.getState();
       const sleepLogs = undefined;
-      const { workouts } = useWorkoutHistoryStore.getState();
+      const workouts = useWorkoutHistoryStore.getState().getWorkoutsForUser(profile.id);
 
       const systemPrompt = buildCoachSystemPrompt({
         name:           profile.name           ?? 'User',
@@ -596,10 +618,11 @@ export default function NutritionistScreen() {
         medicalConditions: profile.medicalConditions,
         medicationsSupplements: profile.medicationsSupplements,
         preferences:    profile.preferences,
-        mealPlans,
-        workoutPlans,
+        mealPlans:      isProActually ? mealPlans : undefined,
+        workoutPlans:   isProActually ? workoutPlans : undefined,
         sleepLogs,
         workoutHistory: workouts,
+        isPremium:      isProActually,
       }, language, coachType);
 
       const reply = await sendCoachMessage(history, text, systemPrompt, currentImg ?? undefined);
@@ -654,8 +677,8 @@ export default function NutritionistScreen() {
             <View style={[s.headerOnlineDot, { backgroundColor: colors.success }]} />
           </View>
           
-          <View style={{ flex: 1, paddingRight: 4 }}>
-            <Text style={[s.headerName, { color: colors.textPrimary }]} numberOfLines={2} adjustsFontSizeToFit>
+          <View style={{ flex: 1, paddingRight: 4, marginLeft: 12 }}>
+            <Text style={[s.headerName, { color: colors.textPrimary }]} numberOfLines={2}>
               {t('coach.nutritionist.label', 'Nutritionist')}
             </Text>
           </View>
@@ -692,6 +715,7 @@ export default function NutritionistScreen() {
         <FlashList<CoachMessage>
           ref={flatRef}
           data={messages}
+          // @ts-ignore
           estimatedItemSize={100}
           style={{ flex: 1 }}
           keyExtractor={(m) => m.id}
@@ -877,7 +901,7 @@ const s = StyleSheet.create({
   headerAvatarContainer:{ width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, padding: 1, backgroundColor: '#fff', position: 'relative' },
   headerAvatar:         { width: '100%', height: '100%', borderRadius: 21 },
   headerOnlineDot:      { width: 10, height: 10, borderRadius: 5, position: 'absolute', bottom: -1, right: -1, borderWidth: 2, borderColor: '#fff' },
-  headerName:           { fontSize: 14, fontWeight: '800', lineHeight: 18 },
+  headerName:           { fontSize: 16, fontWeight: '800' },
   taglineBadge:         { flexDirection: 'row', alignItems: 'center', marginTop: 3 },
   taglineText:          { fontSize: 11, fontWeight: '600' },
   countBadge:           { borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1.5 },

@@ -25,3 +25,9 @@ export const getNameStyle = (
   // Return the custom color if set, otherwise strictly enforce white (#FFFFFF)
   return { color: resolvedColor || '#FFFFFF' };
 };
+
+export const getSafeColor = (color?: string | null, fallback?: string): string => {
+  if (!color) return fallback || '#7C5CFC';
+  if (color === 'admin_glow') return '#00F0FF';
+  return (color.startsWith('#') || color.startsWith('rgb')) ? color : (fallback || '#7C5CFC');
+};

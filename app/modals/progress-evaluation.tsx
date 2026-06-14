@@ -145,14 +145,15 @@ export default function ProgressEvaluationModal() {
     try {
       const response = await analyzePhysiquePhoto(base64Image, language, targetArea, userContext);
       
-      // Save image to filesystem for persistence instead of keeping base64 in AsyncStorage
+      // Save image to filesystem for persistence
       const fileName = `eval_${Date.now()}.jpg`;
       const localUri = `${FileSystem.documentDirectory}${fileName}`;
       await FileSystem.copyAsync({ from: imageUri, to: localUri });
 
       const newEvaluation = {
         id: Math.random().toString(36).substring(7),
-        uri: localUri, // Save the persistent local URI
+        uri: localUri,
+        fileName: fileName, // Guaranteed persistence across app sessions without AsyncStorage bloat
         date: getLocalDateString(),
         ...response
       };
@@ -165,6 +166,7 @@ export default function ProgressEvaluationModal() {
       setIsAnalyzing(false);
     }
   };
+
 
   const renderResult = (res: typeof result, hideNewBtn = false) => {
     if (!res) return null;
@@ -224,8 +226,8 @@ export default function ProgressEvaluationModal() {
   };
 
   const viewHistoryItem = (item: typeof evaluations[0]) => {
-    // Use base64 data URI if available (persists across app sessions), otherwise fall back to uri
-    const displayUri = item.base64ImageData || item.uri;
+    // Dynamically reconstruct the URI in case the absolute path to the app's document directory changed
+    const displayUri = item.fileName ? `${FileSystem.documentDirectory}${item.fileName}` : item.uri;
     setImageUri(displayUri);
     setResult(item);
     setShowHistory(false);
@@ -261,7 +263,7 @@ export default function ProgressEvaluationModal() {
              ) : (
                evaluations.map(e => (
                  <TouchableOpacity key={e.id} style={[s.historyItem, { backgroundColor: colors.surface, borderBottomColor: colors.border }]} onPress={() => viewHistoryItem(e)}>
-                   <Image source={{ uri: e.base64ImageData || e.uri }} style={s.historyThumb} />
+                   <Image source={{ uri: e.fileName ? `${FileSystem.documentDirectory}${e.fileName}` : e.uri }} style={s.historyThumb} />
                    <View style={s.historyInfo}>
                      <Text style={[s.historyDate, { color: colors.textPrimary }]}>{e.date}</Text>
                      <Text style={[s.historyFat, { color: colors.textSecondary }]}>{t('evaluation.fatLabel', 'Grasa')}: {e.estimatedFatPercentage}</Text>

@@ -104,11 +104,11 @@ function FitGoMainWidget({ data }: { data: WidgetData }) {
         borderRadius: 20,
         padding: 14,
         flexDirection: 'column',
-        justifyContent: 'space_between',
+        justifyContent: 'space-between',
       }}
     >
       {/* Header */}
-      <FlexWidget style={{ flexDirection: 'row', justifyContent: 'space_between', alignItems: 'center' }}>
+      <FlexWidget style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <TextWidget
           text="FitGO"
           style={{ fontSize: 15, color: '#7C5CFC', fontWeight: 'bold' }}
@@ -139,7 +139,7 @@ function FitGoMainWidget({ data }: { data: WidgetData }) {
       </FlexWidget>
 
       {/* Protein */}
-      <FlexWidget style={{ flexDirection: 'row', justifyContent: 'space_between', alignItems: 'flex_end' }}>
+      <FlexWidget style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <FlexWidget style={{ flexDirection: 'column' }}>
           <TextWidget
             text="PROTEÍNA"
@@ -210,10 +210,10 @@ function FitGoWaterWidget({ waterMl, waterTarget }: { waterMl: number; waterTarg
         borderRadius: 16,
         padding: 14,
         flexDirection: 'column',
-        justifyContent: 'space_between',
+        justifyContent: 'space-between',
       }}
     >
-      <FlexWidget style={{ flexDirection: 'row', justifyContent: 'space_between', alignItems: 'center' }}>
+      <FlexWidget style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <TextWidget text="💧" style={{ fontSize: 20 }} />
         <TextWidget
           text={`${percent}%`}

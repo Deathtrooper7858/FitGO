@@ -611,8 +611,9 @@ export function MuscleSymmetryCard() {
   const { premiumColor } = useSettingsStore();
   const isPro = !!profile?.isPro;
   const hasProAccess = isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin';
-  const isValidHex = premiumColor?.startsWith('#');
-  const isPremiumCustom = hasProAccess && premiumColor && isValidHex;
+  const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
+  const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
+  const isPremiumCustom = hasProAccess && isValidHex;
   
   const workouts = useMemo(() => {
     return allWorkouts.filter(w => !w.userId || w.userId === userId);
@@ -852,7 +853,7 @@ export function MuscleSymmetryCard() {
             >
               {isActive ? (
                 <LinearGradient
-                  colors={isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : ['#8B5CF6', '#6D28D9']}
+                  colors={isPremiumCustom ? [safePremiumColor, safePremiumColor + 'CC'] : ['#8B5CF6', '#6D28D9']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.toggleTabActive}
@@ -897,7 +898,7 @@ export function MuscleSymmetryCard() {
             style={[
               StyleSheet.absoluteFill,
               styles.pulseOverlay,
-              { backgroundColor: isPremiumCustom && premiumColor ? premiumColor : colors.musclePulse },
+              { backgroundColor: isPremiumCustom ? safePremiumColor : colors.musclePulse },
               pulseStyle,
             ]}
             pointerEvents="none"

@@ -425,9 +425,10 @@ export default function FitGOSocial() {
         </GlassCard>
 
         {(() => {
-          const isValidHex = premiumColor?.startsWith('#');
-          const isPremiumCustom = (isPro || profile?.isPro) && isValidHex && premiumColor;
-          const accentColor = ((isPro || profile?.isPro) && premiumColor) ? premiumColor : colors.primary;
+          const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
+          const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
+          const isPremiumCustom = (isPro || profile?.isPro) && isValidHex;
+          const accentColor = isPremiumCustom ? safePremiumColor : colors.primary;
           return (
             <>
               {profile?.pinnedAchievements && profile.pinnedAchievements.length > 0 && (
@@ -450,12 +451,12 @@ export default function FitGOSocial() {
                       borderRadius: 20,
                       overflow: 'hidden',
                       borderWidth: isPremiumCustom ? 1.5 : 1,
-                      borderColor: isPremiumCustom && premiumColor ? premiumColor + '80' : colors.border,
+                      borderColor: isPremiumCustom ? safePremiumColor + '80' : colors.border,
                     }}
                   >
                     {isPremiumCustom && premiumColor ? (
                       <LinearGradient
-                        colors={[premiumColor + '25', premiumColor + '10', 'transparent'] as [string, string, string]}
+                        colors={[safePremiumColor + '25', safePremiumColor + '10', 'transparent'] as [string, string, string]}
                         style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
@@ -465,7 +466,7 @@ export default function FitGOSocial() {
                     )}
                     {isPremiumCustom && premiumColor && (
                       <LinearGradient
-                        colors={[premiumColor + 'DD', premiumColor + '00'] as [string, string]}
+                        colors={[safePremiumColor + 'DD', safePremiumColor + '00'] as [string, string]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2 }}
@@ -488,8 +489,8 @@ export default function FitGOSocial() {
                                             ach.tier === 'plata' ? '#9CA3AF' : '#D97706';
                           return (
                             <View key={id} style={{
-                              flex: 1, backgroundColor: isPremiumCustom ? (premiumColor! + '12') : (isHolo ? tierColor + '10' : 'transparent'), padding: Spacing.sm, borderRadius: 16, alignItems: 'center',
-                              borderWidth: 1, borderColor: isHolo ? tierColor + '50' : (isPremiumCustom ? premiumColor! + '30' : 'transparent')
+                              flex: 1, backgroundColor: isPremiumCustom ? (safePremiumColor + '12') : (isHolo ? tierColor + '10' : 'transparent'), padding: Spacing.sm, borderRadius: 16, alignItems: 'center',
+                              borderWidth: 1, borderColor: isHolo ? tierColor + '50' : (isPremiumCustom ? safePremiumColor + '30' : 'transparent')
                             }}>
                               <LinearGradient
                                 colors={(isHolo ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5'] : ['transparent', 'transparent']) as [string, string, ...string[]]}
@@ -658,6 +659,7 @@ export default function FitGOSocial() {
     <View style={s.tabContent}>
       <FlashList
         data={socialStore.posts}
+        // @ts-ignore
         estimatedItemSize={200}
         keyExtractor={post => post.id}
         contentContainerStyle={{ paddingBottom: 20 }}

@@ -173,6 +173,7 @@ export function buildCoachSystemPrompt(userProfile: {
   workoutPlans?: Record<string, any>;
   sleepLogs?: Record<string, any>;
   workoutHistory?: any[];
+  isPremium?: boolean;
 }, language: string = 'en', coachType: 'nutritionist' | 'trainer' | 'doctor' = 'nutritionist') {
   const targetLang = getLang(language);
 
@@ -182,6 +183,7 @@ User profile:
 - Age: ${userProfile.age ?? 'Unknown'}, Sex: ${userProfile.sex ?? 'Unknown'}, Weight: ${userProfile.weight ?? 'Unknown'}kg, Height: ${userProfile.height ?? 'Unknown'}cm
 - Activity Level: ${userProfile.activityLevel ?? 'Unknown'}
 - Goal: ${userProfile.goal}
+- Premium User: ${userProfile.isPremium ? 'Yes (Has access to all premium features, give them VIP treatment)' : 'No'}
 
 Nutrition Profile:
 - TDEE: ${userProfile.tdee} kcal/day

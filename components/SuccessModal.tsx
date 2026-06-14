@@ -24,9 +24,9 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({ visible, title, mess
   const { profile } = useAuthStore();
   const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const isPremiumCustom = isProActually && premiumColor && premiumColor.startsWith('#');
-
-  const mainColors = isPremiumCustom ? [premiumColor, premiumColor + 'CC'] : ['#7C5CFC', '#4338CA'];
-  const baseColor = isPremiumCustom ? premiumColor : '#7C5CFC';
+  const safePremiumColor = (isPremiumCustom && premiumColor) ? premiumColor : '#7C5CFC';
+  const mainColors = isPremiumCustom ? [safePremiumColor, safePremiumColor + 'CC'] : ['#7C5CFC', '#4338CA'];
+  const baseColor = isPremiumCustom ? safePremiumColor : '#7C5CFC';
 
   React.useEffect(() => {
     if (visible) {

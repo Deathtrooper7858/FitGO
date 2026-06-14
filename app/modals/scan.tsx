@@ -70,8 +70,9 @@ export default function ScanModal() {
   const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const { aiPhotoEnergy, aiTextEnergy } = useAdStore();
 
-  const isValidHex = premiumColor?.startsWith('#');
-  const isPremiumCustom = isProActually && premiumColor && isValidHex;
+  const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
+  const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
+  const isPremiumCustom = isProActually && isValidHex;
   const [showSuccess, setShowSuccess] = useState(false);
   const [flash, setFlash] = useState<'off' | 'on' | 'auto'>('off');
   const [facing, setFacing] = useState<'back' | 'front'>('back');
@@ -737,7 +738,7 @@ export default function ScanModal() {
           </View>
 
           <TouchableOpacity style={s.addAllBtn} onPress={handleAddAllFoods} activeOpacity={0.85}>
-            <LinearGradient colors={isPremiumCustom ? [premiumColor, premiumColor + 'CC'] : ['#7C5CFC', '#4338CA']} style={s.addAllGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+            <LinearGradient colors={isPremiumCustom ? [safePremiumColor, safePremiumColor + 'CC'] : ['#7C5CFC', '#4338CA']} style={s.addAllGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
               <Text style={{ fontSize: 18, color: '#fff' }}>✅</Text>
               <Text style={s.addAllText}>
                 {language === 'es' 
