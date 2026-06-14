@@ -18,7 +18,7 @@ function getRewardedAd(): RewardedAd {
 }
 
 export function useAICredits() {
-  const { creditsLeft, consumeCredit, rechargeCredits, resetIfNewDay, isProUser } = useAICreditsStore();
+  const { creditsLeft, consumeCredit, rechargeCredits, resetIfNewDay, isProUser, totalAdsWatched } = useAICreditsStore();
   const { isPro } = usePurchaseStore();
 
   // Sync Pro status into credits store
@@ -57,6 +57,13 @@ export function useAICredits() {
    */
   const watchAdForCredits = useCallback((): Promise<boolean> => {
     return new Promise((resolve) => {
+      const state = useAICreditsStore.getState();
+      if (state.totalAdsWatched >= 3) {
+        console.log('[AICredits] Ad limit reached for today.');
+        resolve(false);
+        return;
+      }
+
       const ad = getRewardedAd();
 
       const earnedListener = ad.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
@@ -104,5 +111,6 @@ export function useAICredits() {
     isPro,
     tryUseAI,
     watchAdForCredits,
+    totalAdsWatched,
   };
 }

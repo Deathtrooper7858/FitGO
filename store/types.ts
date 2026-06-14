@@ -28,6 +28,7 @@ export interface UserProfile extends HealthProfile {
   email:           string;
   avatarUrl?:      string;
   nameColor?:      string;
+  premiumColor?:   string;
   sex:             'male' | 'female' | 'other';
   genderOther?:    string;
   age:             number;
@@ -148,12 +149,15 @@ export interface ProgressPhoto {
 export interface ProgressEvaluation {
   id: string;
   uri: string;
-  base64ImageData?: string; // stored as data URI for persistence across sessions
+  fileName?: string; // Stored relative filename to survive absolute path changes across app restarts
   date: string;
   feedback: string;
   strengths: string[];
   improvements: string[];
   estimatedFatPercentage: string;
+  postureAnalysis?: string;
+  symmetry?: string;
+  recommendations?: string[];
 }
 
 export interface Reminder {

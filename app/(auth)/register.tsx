@@ -16,12 +16,14 @@ import * as WebBrowser from 'expo-web-browser';
 import { CustomAlert, AlertType } from '../../components/CustomAlert';
 import { CheckSquare, Square, Mail, Lock, User, Eye, EyeOff } from 'lucide-react-native';
 import * as Linking from 'expo-linking';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function RegisterScreen() {
   const { t, i18n } = useTranslation();
   const colors = useTheme();
+  const insets = useSafeAreaInsets();
   const [name, setName]         = useState('');
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
@@ -176,7 +178,7 @@ export default function RegisterScreen() {
         locations={[0, 0.5, 1]}
         style={StyleSheet.absoluteFill}
       />
-      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[s.content, { paddingTop: insets.top + 24, paddingBottom: Math.max(insets.bottom + 24, 40) }]} keyboardShouldPersistTaps="handled">
         <TouchableOpacity style={s.back} onPress={() => router.back()}>
           <Text style={[s.backText, { color: colors.primary }]}>← {t('common.back')}</Text>
         </TouchableOpacity>
@@ -318,7 +320,7 @@ const { width } = Dimensions.get('window');
 
 const s = StyleSheet.create({
   container:    { flex: 1 },
-  content:      { flexGrow: 1, padding: 24, paddingTop: 60 },
+  content:      { flexGrow: 1, padding: 24, paddingTop: 20 },
   back:         { marginBottom: 32 },
   backText:     { fontSize: 16, fontWeight: '700' },
   title:        { fontSize: 32, fontWeight: '800', marginBottom: 8, letterSpacing: -0.5 },

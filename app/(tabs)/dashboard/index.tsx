@@ -234,8 +234,9 @@ export default function DashboardScreen() {
   }
 
   const isPro = !!profile?.isPro;
-  const isValidHex = premiumColor?.startsWith('#');
-  const isPremiumCustom = (isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin') && premiumColor && isValidHex;
+  const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
+  const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
+  const isPremiumCustom = (isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin') && isValidHex;
   const { hasPremiumAdAccess } = useAdStore();
   const [premiumGate, setPremiumGate] = useState<{
     visible: boolean;
@@ -403,7 +404,7 @@ export default function DashboardScreen() {
         {/* Nutritional Score Card */}
         <View style={s.sectionHeader}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <View style={[s.sectionIconWrap, { backgroundColor: (isPremiumCustom && premiumColor ? premiumColor : colors.primary) + '20' }]}>
+            <View style={[s.sectionIconWrap, { backgroundColor: (isPremiumCustom ? safePremiumColor : colors.primary) + '20' }]}>
               <Text style={{ fontSize: 14 }}>⚡</Text>
             </View>
             <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>{t('dashboard.scoreTitle', 'Score Nutricional')}</Text>
@@ -417,7 +418,7 @@ export default function DashboardScreen() {
             end={{ x: 1, y: 1 }}
             pointerEvents="none"
           />
-          <ScoreRing consumed={calories} target={target} dateLabel={dateLabel} customColor={isPremiumCustom ? premiumColor : null} />
+          <ScoreRing consumed={calories} target={target} dateLabel={dateLabel} customColor={isPremiumCustom ? safePremiumColor : null} />
         </View>
 
 
@@ -477,7 +478,7 @@ export default function DashboardScreen() {
               onPress={() => setGoalModalVisible(true)}
             >
               <LinearGradient
-                colors={isPremiumCustom && premiumColor ? [premiumColor, premiumColor + 'CC'] : ['#7C5CFC', '#6344E0']}
+                colors={isPremiumCustom ? [safePremiumColor, safePremiumColor + 'CC'] : ['#7C5CFC', '#6344E0']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={s.updateBtnSmall}

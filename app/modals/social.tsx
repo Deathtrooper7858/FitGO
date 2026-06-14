@@ -135,7 +135,7 @@ export default function SocialModal() {
   const colors = useTheme();
   const [activeTab, setActiveTab] = useState<TabType>('you');
   const { profile } = useAuthStore();
-  const { language } = useSettingsStore();
+  const { language, premiumColor } = useSettingsStore();
   const socialStore = useSocialStore();
   const nutritionStore = useNutritionStore();
   
@@ -651,7 +651,7 @@ export default function SocialModal() {
                     </View>
                   )}
                   <View>
-                    <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id, profile?.id, profile?.nameColor, post.user_profile?.is_pro)]}>{post.user_profile?.name}</Text>
+                    <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id, profile?.id, profile?.nameColor, premiumColor)]}>{post.user_profile?.name}</Text>
                     <Text style={{ color: colors.textMuted, fontSize: 11 }}>
                       {new Date(post.created_at).toLocaleDateString()} {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </Text>
@@ -701,7 +701,7 @@ export default function SocialModal() {
                     )}
                     <View style={[s.commentBubble, { backgroundColor: colors.surfaceAlt }]}>
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                        <Text style={[s.commentUser, getNameStyle(comment.user_profile?.name_color, comment.user_id, profile?.id, profile?.nameColor, comment.user_profile?.is_pro), { marginBottom: 0 }]}>{comment.user_profile?.name}</Text>
+                        <Text style={[s.commentUser, getNameStyle(comment.user_profile?.name_color, comment.user_id, profile?.id, profile?.nameColor, premiumColor), { marginBottom: 0 }]}>{comment.user_profile?.name}</Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                           <Text style={{ color: colors.textMuted, fontSize: 9 }}>
                             {new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -908,7 +908,7 @@ export default function SocialModal() {
                       <Text style={[s.avatarInitials, { fontSize: 14 }]}>{friend.friend_profile?.name?.[0]}</Text>
                     </View>
                   )}
-                  <Text style={[s.userName, getNameStyle(friend.friend_profile?.name_color, friend.friend_profile?.id, profile?.id, profile?.nameColor, friend.friend_profile?.is_pro)]}>{friend.friend_profile?.name}</Text>
+                  <Text style={[s.userName, getNameStyle(friend.friend_profile?.name_color, friend.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>{friend.friend_profile?.name}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={s.iconBtn}
@@ -1024,7 +1024,7 @@ export default function SocialModal() {
                     )}
                   </View>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={[s.userName, getNameStyle(user.name_color, user.id, profile?.id, profile?.nameColor, user.is_pro)]}>{user.name}</Text>
+                    <Text style={[s.userName, getNameStyle(user.name_color, user.id, profile?.id, profile?.nameColor, premiumColor)]}>{user.name}</Text>
                     <View style={[s.rankBadge, { backgroundColor: rank.bg, borderColor: rank.color + '40', borderWidth: 1 }]}>
                       <Text style={[s.rankText, { color: rank.color }]}>{rank.label}</Text>
                     </View>

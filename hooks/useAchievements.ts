@@ -118,7 +118,7 @@ export function useAchievements() {
       Math.abs(carbsLogged - carbsGoal) <= (carbsGoal * 0.1) &&
       Math.abs(fatLogged - fatGoal) <= (fatGoal * 0.1);
 
-    return [
+    const allAchievements: Achievement[] = [
       // ── Categoría: General ──
       { id: 'welcome', title: '¡Bienvenido!', description: 'Te has unido a la comunidad FitGO.', icon: '👋', iconType: 'lucide' as const, lucideIcon: 'HandWaving', tier: 'bronce', category: 'General', unlocked: true, rewardBadgeId: 'verified' },
       { id: 'premium_club', title: 'Miembro Pro', description: 'Eres parte del club exclusivo de FitGO.', icon: '💎', iconType: 'lucide' as const, lucideIcon: 'Crown', tier: 'plata', category: 'General', unlocked: unlockedAchievements.includes('premium_club') || !!profile.isPro, rewardBadgeId: 'pro' },
@@ -286,6 +286,12 @@ export function useAchievements() {
       { id: 'first_friend', title: 'Primer Amigo', description: 'Agregaste a tu primer amigo en FitGO.', icon: '🤝', iconType: 'lucide' as const, lucideIcon: 'UserPlus', tier: 'bronce', category: 'Comunidad', unlocked: unlockedAchievements.includes('first_friend') || (friends?.filter((f: any) => f.status === 'accepted').length || 0) >= 1 },
       { id: 'three_friends', title: 'Equipo de Élite', description: 'Tienes 3 o más amigos en FitGO.', icon: '👥', iconType: 'lucide' as const, lucideIcon: 'Users', tier: 'plata', category: 'Comunidad', unlocked: unlockedAchievements.includes('three_friends') || (friends?.filter((f: any) => f.status === 'accepted').length || 0) >= 3 },
     ];
+
+    if (profile.role === 'owner') {
+      return allAchievements.map(a => ({ ...a, unlocked: true }));
+    }
+
+    return allAchievements;
   }, [
     profile, todayLogs, dailySleep, streakDays, dailySteps, activityLogs, dailyWater,
     measurements, latest, photos, posts, friends, totalsData

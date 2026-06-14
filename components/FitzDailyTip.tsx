@@ -22,10 +22,14 @@ export function FitzDailyTip({ streakDays }: { streakDays: number }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!profile?.id) return; // Wait until we have the actual user
+
     const fetchTip = async () => {
       try {
         const today = new Date().toISOString().split('T')[0];
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
+        // Include userId in key so different accounts never share the same cached tip
+        const storageKey = `${STORAGE_KEY}-${profile.id}`;
+        const stored = await AsyncStorage.getItem(storageKey);
         if (stored) {
           const parsed = JSON.parse(stored);
           if (parsed.date === today && parsed.tip) {
@@ -39,8 +43,8 @@ export function FitzDailyTip({ streakDays }: { streakDays: number }) {
         const newTip = await generateDailyTip(profile || {}, workouts, streakDays, language);
         setTip(newTip);
         
-        // Cache it
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ date: today, tip: newTip }));
+        // Cache it per user
+        await AsyncStorage.setItem(storageKey, JSON.stringify({ date: today, tip: newTip }));
       } catch (err) {
         console.warn('Error fetching Fitz daily tip:', err);
         setTip('¡A darle con todo hoy! 🔥');

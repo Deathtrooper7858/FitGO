@@ -124,6 +124,25 @@ export const useLeagueStore = create<LeagueStore>()(
   fetchMySquad: async (userId: string) => {
     set({ loading: true, error: null });
     try {
+      // ALWAYS fetch real league_points and streak from DB first
+      // regardless of squad membership — this ensures points are never wiped
+      const { data: myStats, error: statsErr } = await supabase
+        .from('users')
+        .select('league_points, current_streak, squad_members(contributed_points)')
+        .eq('id', userId)
+        .limit(1)
+        .maybeSingle();
+
+      if (statsErr && statsErr?.message !== 'AbortError: Aborted' && statsErr?.name !== 'AbortError') {
+        console.warn('[League] fetchMySquad stats error, keeping cache:', statsErr.message);
+        set({ loading: false });
+        return;
+      }
+
+      const realPoints  = myStats?.league_points   ?? 0;
+      const realStreak  = myStats?.current_streak  ?? 0;
+      const contributedPoints = myStats?.squad_members?.[0]?.contributed_points ?? 0;
+
       // Get squad membership
       const { data: membership, error: memberErr } = await supabase
         .from('squad_members')
@@ -132,18 +151,26 @@ export const useLeagueStore = create<LeagueStore>()(
         .limit(1)
         .maybeSingle();
 
-      // Network error: keep cached state, don't wipe
+      // Network error: update points but keep squad cached
       if (memberErr) {
         if (memberErr?.message !== 'AbortError: Aborted' && memberErr?.name !== 'AbortError') {
-          console.warn('[League] fetchMySquad network error, keeping cache:', memberErr.message);
+          console.warn('[League] fetchMySquad membership error, keeping cache:', memberErr.message);
         }
-        set({ loading: false });
+        // Still update the real points even if squad fetch failed
+        set({ myPoints: realPoints, myStreak: realStreak, loading: false });
         return;
       }
 
       if (!membership) {
-        // Definitively no squad in DB
-        set({ squad: null, members: [], myPoints: 0, mySquadPoints: 0, myStreak: 0, loading: false });
+        // User has no squad — clear squad data but KEEP their real points
+        set({
+          squad: null,
+          members: [],
+          myPoints: realPoints,
+          mySquadPoints: 0,
+          myStreak: realStreak,
+          loading: false,
+        });
         return;
       }
 
@@ -159,7 +186,7 @@ export const useLeagueStore = create<LeagueStore>()(
         if (squadErr?.message !== 'AbortError: Aborted' && squadErr?.name !== 'AbortError') {
           console.warn('[League] Squad fetch error, keeping cache:', squadErr.message);
         }
-        set({ loading: false });
+        set({ myPoints: realPoints, myStreak: realStreak, loading: false });
         return;
       }
 
@@ -171,22 +198,12 @@ export const useLeagueStore = create<LeagueStore>()(
         console.warn('[League] Leaderboard error:', lbErr.message);
       }
 
-      // Get my own stats (and contributed_points if in a squad)
-      const { data: myStats } = await supabase
-        .from('users')
-        .select('league_points, current_streak, squad_members(contributed_points)')
-        .eq('id', userId)
-        .limit(1)
-        .maybeSingle();
-
-      const contributedPoints = myStats?.squad_members?.[0]?.contributed_points ?? 0;
-
       set({
         squad: squadData as Squad,
         members: (leaderboard ?? []) as SquadMember[],
-        myPoints: myStats?.league_points ?? 0,
+        myPoints: realPoints,
         mySquadPoints: contributedPoints,
-        myStreak: myStats?.current_streak ?? 0,
+        myStreak: realStreak,
         loading: false,
       });
     } catch (err: any) {
@@ -261,7 +278,7 @@ export const useLeagueStore = create<LeagueStore>()(
         
       if (joinErr) throw joinErr;
 
-      // Reset points to 0 and add squad creator achievement
+      // Add squad creator achievement WITHOUT resetting points
       const { profile } = useAuthStore.getState();
       const currentAchievements = profile?.unlockedAchievements || [];
       const newAchievements = currentAchievements.includes('squad_creator') 
@@ -269,12 +286,11 @@ export const useLeagueStore = create<LeagueStore>()(
         : [...currentAchievements, 'squad_creator'];
 
       await supabase.from('users').update({ 
-        league_points: 0,
         unlocked_achievements: newAchievements
       }).eq('id', userId);
 
-      // Give 50 starting points
-      set({ myPoints: 0, mySquadPoints: 0, todayPointsEarned: 0 }); // reset locally
+      // Reset only squad contribution points, not total league_points
+      set({ mySquadPoints: 0, todayPointsEarned: 0 });
       
       await get().fetchMySquad(userId);
       await get().awardPoints(userId, 50, 'squad_created');
@@ -316,9 +332,9 @@ export const useLeagueStore = create<LeagueStore>()(
         return false;
       }
 
-      // Reset points so they start fresh in the new squad
-      await supabase.from('users').update({ league_points: 0, squad_points: 0 }).eq('id', userId);
-      set({ myPoints: 0, mySquadPoints: 0, todayPointsEarned: 0 });
+      // Reset only squad contribution points, total league_points stay intact
+      await supabase.from('users').update({ squad_points: 0 }).eq('id', userId);
+      set({ mySquadPoints: 0, todayPointsEarned: 0 });
 
       // Fetch existing members' push tokens to notify them
       const { data: membersInfo } = await supabase
@@ -356,12 +372,22 @@ export const useLeagueStore = create<LeagueStore>()(
       
       if (error) throw error;
       
-      // Reset points
-      await supabase.from('users').update({ league_points: 0, squad_points: 0 }).eq('id', userId);
+      // Reset only squad contribution points, league_points stay intact
+      await supabase.from('users').update({ squad_points: 0 }).eq('id', userId);
       
       await supabase.rpc('recalculate_league_tier', { p_squad_id: squad.id });
+
+      // Fetch real points from DB after leaving
+      const { data: freshStats } = await supabase
+        .from('users')
+        .select('league_points, current_streak')
+        .eq('id', userId)
+        .limit(1)
+        .maybeSingle();
       
-      set({ squad: null, members: [], myPoints: 0, mySquadPoints: 0, todayPointsEarned: 0 });
+      set({ squad: null, members: [], mySquadPoints: 0, todayPointsEarned: 0,
+            myPoints: freshStats?.league_points ?? get().myPoints,
+            myStreak: freshStats?.current_streak ?? get().myStreak });
     } catch (err: any) {
       console.error('[LeagueStore] Error leaving squad:', err);
       set({ error: err.message });
@@ -414,10 +440,10 @@ export const useLeagueStore = create<LeagueStore>()(
         .match({ id: squadId, created_by: profile?.id });
       if (error) throw error;
 
-      // Reset points for all members and notify them
+      // Reset only squad contribution points for all members, NOT league_points
       if (members.length > 0) {
         const memberIds = members.map(m => m.user_id);
-        await supabase.from('users').update({ league_points: 0, squad_points: 0 }).in('id', memberIds);
+        await supabase.from('users').update({ squad_points: 0 }).in('id', memberIds);
 
         // Fetch tokens to notify
         const { data: memberTokens } = await supabase.from('users').select('expo_push_token').in('id', memberIds);
@@ -429,7 +455,7 @@ export const useLeagueStore = create<LeagueStore>()(
         }
       }
 
-      set({ squad: null, members: [], myPoints: 0, mySquadPoints: 0, todayPointsEarned: 0, loading: false });
+      set({ squad: null, members: [], mySquadPoints: 0, todayPointsEarned: 0, loading: false });
       return true;
     } catch (err: any) {
       console.error('[LeagueStore] Error deleting squad:', err);

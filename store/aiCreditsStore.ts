@@ -10,7 +10,7 @@ interface AICreditsState {
 
   // Actions
   consumeCredit: () => boolean;
-  rechargeCredits: (amount?: number) => void;
+  rechargeCredits: (amount?: number) => boolean;
   resetIfNewDay: () => void;
   getCreditsLeft: () => number;
   isProUser: boolean;
@@ -41,6 +41,7 @@ export const useAICreditsStore = create<AICreditsState>()(
           set({
             creditsLeft: AD_CONFIG.freeAICreditsPerDay,
             lastResetDate: today,
+            totalAdsWatched: 0,
           });
           console.log('[AICredits] New day - credits reset to', AD_CONFIG.freeAICreditsPerDay);
         }
@@ -71,12 +72,17 @@ export const useAICreditsStore = create<AICreditsState>()(
        */
       rechargeCredits: (amount = AD_CONFIG.rewardedAdCredits) => {
         const { creditsLeft, totalAdsWatched } = get();
+        if (totalAdsWatched >= 3) {
+          console.log('[AICredits] Max daily ads reached.');
+          return false;
+        }
         const newCredits = Math.min(creditsLeft + amount, AD_CONFIG.maxAICredits);
         set({
           creditsLeft: newCredits,
           totalAdsWatched: totalAdsWatched + 1,
         });
         console.log('[AICredits] Recharged +', amount, '| Now:', newCredits);
+        return true;
       },
 
       getCreditsLeft: () => {
@@ -94,12 +100,11 @@ export const useAICreditsStore = create<AICreditsState>()(
     {
       name: 'fitgo-ai-credits',
       storage: createJSONStorage(() => AsyncStorage),
-      // Only persist these fields - not functions
+      // Only persist credits/date fields - NOT isProUser (comes from DB via purchaseStore)
       partialize: (state) => ({
         creditsLeft: state.creditsLeft,
         lastResetDate: state.lastResetDate,
         totalAdsWatched: state.totalAdsWatched,
-        isProUser: state.isProUser,
       }),
     }
   )

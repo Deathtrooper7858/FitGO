@@ -64,12 +64,12 @@ export const AD_CONFIG = {
   /**
    * Créditos de IA que se ganan viendo un video Rewarded (foto).
    */
-  rewardedAdCredits: 3,
+  rewardedAdCredits: 1,
 
   /**
    * Créditos de IA que se ganan viendo un video Rewarded (texto).
    */
-  rewardedAdTextCredits: 5,
+  rewardedAdTextCredits: 1,
 
   /**
    * Máximo de créditos acumulables (para evitar stockpiling).

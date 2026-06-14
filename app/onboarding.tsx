@@ -1850,7 +1850,13 @@ export default function OnboardingScreen() {
   const [saving, setSaving]           = useState(false);
   const [error, setError]             = useState<string | null>(null);
   const { setProfile, profile }       = useAuthStore();
-  const { setMassUnit, setLengthUnit } = useSettingsStore();
+  const { setMassUnit, setLengthUnit, setPremiumColor } = useSettingsStore();
+
+  // El onboarding siempre debe mostrar el color clásico (morado).
+  // Limpiamos el premiumColor al montar para que no se herede de una cuenta anterior.
+  useEffect(() => {
+    setPremiumColor(null);
+  }, []);
 
   const [alert, setAlert] = useState<{
     visible: boolean;

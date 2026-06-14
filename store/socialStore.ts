@@ -35,6 +35,7 @@ export interface Challenge {
   start_date: string;
   end_date: string;
   status: 'active' | 'completed' | 'cancelled';
+  my_status?: 'pending' | 'completed' | 'surrendered';
 }
 
 export interface Post {
@@ -558,21 +559,37 @@ export const useSocialStore = create<SocialState>((set, get) => ({
       // Use direct table fetch instead of slow legacy RPC
       const { data, error } = await supabase
         .from('users')
-        .select('id, name, avatar_url, name_color, is_pro, league_points, current_streak')
+        .select('id, name, avatar_url, name_color, is_pro, league_points, current_streak, role')
         .not('name', 'is', null)
-        .order('league_points', { ascending: false })
+        .order('league_points', { ascending: false, nullsFirst: false })
         .limit(50);
         
       if (error) throw error;
       
-      const mappedData = (data || []).map((u: any) => ({
-        id: u.id,
-        name: u.name,
-        avatar_url: u.avatar_url,
-        points: u.league_points || 0,
-        current_streak: u.current_streak || 0,
-        name_color: u.is_pro && (!u.name_color || u.name_color === '') ? '#EAB308' : u.name_color
-      }));
+      const mappedData = (data || []).map((u: any) => {
+        const hasPremiumAccess = u.is_pro || ['owner', 'admin', 'super_admin'].includes(u.role);
+        let validNameColor = u.name_color;
+        
+        // Si no tiene acceso premium, no puede usar colores premium (dorados)
+        if (!hasPremiumAccess && validNameColor && (validNameColor.toUpperCase() === '#EAB308' || validNameColor.toUpperCase() === '#FFD700' || validNameColor.toUpperCase() === '#F59E0B')) {
+          validNameColor = null;
+        }
+        
+        // Si tiene acceso premium y no tiene color, dale el dorado por defecto
+        if (hasPremiumAccess && (!validNameColor || validNameColor === '')) {
+          validNameColor = '#EAB308';
+        }
+
+        return {
+          id: u.id,
+          name: u.name,
+          avatar_url: u.avatar_url,
+          points: u.league_points || 0,
+          current_streak: u.current_streak || 0,
+          role: u.role || 'user',
+          name_color: validNameColor
+        };
+      });
       
       set({ globalRanking: mappedData });
     } catch (err: any) {
