@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Spacing, Radius } from '../../../constants';
 import { useAuthStore, useNutritionStore, selectDailyTotals, useSettingsStore, usePurchaseStore, usePlannerStore, PlanItem, WorkoutRoutine } from '../../../store';
 import { useWorkoutHistoryStore } from '../../../store/workoutHistoryStore';
-import { generateMealPlan, generateWorkoutPlan, generateWeeklyAnalysis, generateShoppingList, generateMealSwap } from '../../../services/groq';
+import { generateMealPlan, generateWorkoutPlan, generateDailyMealPlan, generateDailyWorkoutPlan, generateWeeklyAnalysis, generateShoppingList, generateShoppingListJSON, generateMealSwap } from '../../../services/groq';
 import { supabase } from '../../../services/supabase';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../hooks/useTheme';
@@ -432,6 +432,26 @@ export default function PlannerScreen() {
   const { profile }               = useAuthStore();
   const [isHomeWorkout, setIsHomeWorkout] = useState(false);
   const [homeEquipment, setHomeEquipment] = useState('');
+  const [expandedEqCategory, setExpandedEqCategory] = useState<string | null>(null);
+  const [customWeightInput, setCustomWeightInput] = useState('');
+  const [weightUnit, setWeightUnit] = useState<'kg'|'lbs'>('kg');
+  const [weightType, setWeightType] = useState<'Mancuernas'|'Kettlebell'>('Mancuernas');
+
+  const handleToggleEquipment = (item: string) => {
+    const arr = homeEquipment.split(',').map(s => s.trim()).filter(s => s);
+    if (arr.includes(item)) {
+      setHomeEquipment(arr.filter(i => i !== item).join(', '));
+    } else {
+      setHomeEquipment([...arr, item].join(', '));
+    }
+  };
+
+  const handleAddCustomWeight = () => {
+    if (!customWeightInput.trim() || isNaN(Number(customWeightInput.trim().replace(',', '.')))) return;
+    const newItem = `${weightType} de ${customWeightInput.trim()}${weightUnit}`;
+    handleToggleEquipment(newItem);
+    setCustomWeightInput('');
+  };
 
   // Modals
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -568,11 +588,86 @@ export default function PlannerScreen() {
     };
   }, [profile?.id]);
 
-  // ─── Handle Generate Button Press ────────────────────────────────────────
   const handleGeneratePress = () => {
     if (!profile) return;
     if (!isProActually) { router.push('/modals/paywall'); return; }
     setShowConfirmModal(true);
+  };
+
+  const handleGenerateDayPress = () => {
+    if (!profile) return;
+    if (!isProActually) { router.push('/modals/paywall'); return; }
+    handleGenerateDay(activeDay);
+  };
+
+  const handleGenerateDay = async (day: string) => {
+    if (!profile) return;
+    setLoading(true);
+    const currentWeekStart = getStartOfWeek(new Date());
+
+    try {
+      if (mode === 'nutrition') {
+        const parsedPlan = await generateDailyMealPlan({
+          targetCalories: profile.targetCalories || 2000, macros: profile.macros || { protein: 150, carbs: 250, fat: 65 }, goal: profile.goal || 'maintain',
+          availableFoods: profile.availableFoods, preferences: profile.preferences, age: profile.age,
+          weight: profile.weight, height: profile.height, sex: profile.sex, activityLevel: profile.activityLevel,
+          dietaryRestrictions: profile.dietaryRestrictions, medicalConditions: profile.medicalConditions,
+          medicationsSupplements: profile.medicationsSupplements, tdee: profile.tdee,
+        }, language, day);
+
+        const newPlans = { ...mealPlans, [day]: parsedPlan[day] || [] };
+        setMealPlans(newPlans, currentWeekStart);
+        
+        const { data: existing } = await supabase.from('meal_plans').select('id').eq('user_id', profile.id).eq('week_start', currentWeekStart).maybeSingle();
+        let planId = existing?.id;
+        if (!planId) {
+          const { data: inserted } = await supabase.from('meal_plans').insert({
+            user_id: profile.id, title: t('planner.weekPlan', 'Weekly AI Plan'), week_start: currentWeekStart,
+          }).select().single();
+          planId = inserted?.id;
+        }
+        
+        if (planId) {
+          await supabase.from('meal_plan_items').delete().eq('plan_id', planId).eq('day_of_week', day);
+          const itemsToInsert = (parsedPlan[day] || []).map((m: any) => ({
+            plan_id: planId, day_of_week: day, meal: m.meal, name: m.name, calories: m.calories,
+            protein: m.protein ?? 0, carbs: m.carbs ?? 0, fat: m.fat ?? 0,
+          }));
+          if (itemsToInsert.length > 0) await supabase.from('meal_plan_items').insert(itemsToInsert);
+        }
+      } else {
+        const parsedPlan = await generateDailyWorkoutPlan({
+          goal: profile.goal || 'maintain', activityLevel: profile.activityLevel, age: profile.age,
+          weight: profile.weight, height: profile.height, sex: profile.sex, medicalConditions: profile.medicalConditions,
+          medicationsSupplements: profile.medicationsSupplements, homeWorkout: isHomeWorkout, homeEquipment,
+        }, language, day);
+
+        const newPlans = { ...workoutPlans, [day]: parsedPlan[day] || { name: 'Descanso', exercises: [] } };
+        setWorkoutPlans(newPlans, currentWeekStart);
+
+        const { data: existing } = await supabase.from('workout_plans').select('id').eq('user_id', profile.id).eq('week_start', currentWeekStart).maybeSingle();
+        let planId = existing?.id;
+        if (!planId) {
+          const { data: inserted } = await supabase.from('workout_plans').insert({
+            user_id: profile.id, title: t('planner.workoutsTab', 'Weekly AI Workout'), week_start: currentWeekStart,
+          }).select().single();
+          planId = inserted?.id;
+        }
+
+        if (planId) {
+          await supabase.from('workout_plan_items').delete().eq('plan_id', planId).eq('day_of_week', day);
+          await supabase.from('workout_plan_items').insert([{
+            plan_id: planId, day_of_week: day, routine_name: newPlans[day].name || t('planner.restDay', 'Rest Day'),
+            exercises: newPlans[day].exercises || []
+          }]);
+        }
+      }
+      setShowSuccess(true);
+    } catch (err: any) {
+      showAlert('error', t('common.error'), err?.message ?? t('planner.analysisFailedSub'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ─── Actual Generation ─────────────────────────────────────────────────────
@@ -586,7 +681,7 @@ export default function PlannerScreen() {
       if (mode === 'nutrition') {
         clearMealPlans();
         const parsedPlan = await generateMealPlan({
-          targetCalories: profile.targetCalories, macros: profile.macros, goal: profile.goal,
+          targetCalories: profile.targetCalories || 2000, macros: profile.macros || { protein: 150, carbs: 250, fat: 65 }, goal: profile.goal || 'maintain',
           availableFoods: profile.availableFoods, preferences: profile.preferences, age: profile.age,
           weight: profile.weight, height: profile.height, sex: profile.sex, activityLevel: profile.activityLevel,
           dietaryRestrictions: profile.dietaryRestrictions, medicalConditions: profile.medicalConditions,
@@ -666,43 +761,184 @@ export default function PlannerScreen() {
   };
 
   const generateNutritionHTML = () => {
-    let html = `<html><head><style>body{font-family:sans-serif;padding:20px;color:#333}h1{color:#7C5CFC}h2{color:#4338CA;border-bottom:1px solid #ddd;padding-bottom:5px}table{width:100%;border-collapse:collapse;margin-bottom:20px}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background-color:#f8f9fa}.disclaimer{background:#fff3cd;border:1px solid #ffc107;padding:12px;border-radius:8px;font-size:13px;margin-bottom:20px;color:#856404}</style></head><body>`;
-    html += `<h1>FitGO - ${t('planner.nutritionTab')}</h1>`;
-    html += `<div class="disclaimer">⚠️ ${t('planner.pdfDisclaimer', 'Este plan es generado por inteligencia artificial. No reemplaza el consejo de un dietista registrado o médico. Consulte a un profesional de la salud antes de seguir este plan.')}</div>`;
+    const today = getLocalDateString();
+    const exportWeekStart = getStartOfWeek(new Date());
+    const weekEndDate = new Date(exportWeekStart);
+    weekEndDate.setDate(weekEndDate.getDate() + 6);
+    const weekEnd = getLocalDateString(weekEndDate);
+
+    const MEAL_COLORS: Record<string, string> = {
+      breakfast: '#F59E0B', lunch: '#10B981', dinner: '#7C5CFC', snack: '#3B82F6',
+    };
+    const MEAL_EMOJI: Record<string, string> = {
+      breakfast: '🌅', lunch: '☀️', dinner: '🌙', snack: '🍎',
+    };
+    const DAY_LABELS: Record<string, string> = {
+      Mon: 'Lunes', Tue: 'Martes', Wed: 'Miércoles', Thu: 'Jueves',
+      Fri: 'Viernes', Sat: 'Sábado', Sun: 'Domingo',
+    };
+
+    const totalCal = DAYS.reduce((acc, d) => acc + (mealPlans[d] || []).reduce((s: number, m: PlanItem) => s + (m.calories || 0), 0), 0);
+    const totalProt = DAYS.reduce((acc, d) => acc + (mealPlans[d] || []).reduce((s: number, m: PlanItem) => s + (m.protein || 0), 0), 0);
+    const activeDays = DAYS.filter(d => (mealPlans[d] || []).length > 0).length;
+
+    let html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>FitGO Plan Nutricional</title><style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', 'Helvetica Neue', sans-serif; background: #F0F4FF; color: #1E1B4B; -webkit-print-color-adjust: exact; }
+      .page { max-width: 800px; margin: 0 auto; padding: 32px 24px; }
+      .header { background: linear-gradient(135deg, #7C5CFC 0%, #4F46E5 100%); border-radius: 20px; padding: 32px; margin-bottom: 24px; color: white; display: flex; align-items: center; justify-content: space-between; }
+      .header-title { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+      .header-sub { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+      .logo-badge { background: rgba(255,255,255,0.2); border-radius: 50%; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+      .summary-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+      .summary-card { background: white; border-radius: 14px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+      .summary-card .val { font-size: 22px; font-weight: 800; color: #7C5CFC; }
+      .summary-card .lbl { font-size: 11px; color: #6B7280; margin-top: 2px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+      .disclaimer { background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 12px; padding: 12px 16px; margin-bottom: 24px; font-size: 12px; color: #92400E; display: flex; gap: 8px; align-items: flex-start; }
+      .day-card { background: white; border-radius: 16px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); page-break-inside: avoid; }
+      .day-header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; background: #F9F7FF; border-bottom: 1px solid #EDE9FE; }
+      .day-name { font-size: 18px; font-weight: 700; color: #4F46E5; }
+      .day-totals { font-size: 12px; color: #6B7280; font-weight: 600; background: #EDE9FE; padding: 4px 10px; border-radius: 20px; }
+      .meal-row { display: grid; grid-template-columns: 100px 1fr auto; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid #F3F4F6; }
+      .meal-row:last-child { border-bottom: none; }
+      .meal-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: white; }
+      .meal-name { font-size: 14px; font-weight: 500; color: #374151; line-height: 1.4; }
+      .meal-macros { text-align: right; }
+      .meal-kcal { font-size: 16px; font-weight: 800; color: #7C5CFC; }
+      .meal-macro-row { font-size: 10px; color: #9CA3AF; margin-top: 2px; }
+      .rest-day { text-align: center; padding: 24px; color: #9CA3AF; font-size: 15px; }
+      .footer { text-align: center; margin-top: 32px; font-size: 11px; color: #9CA3AF; }
+    </style></head><body><div class="page">`;
+
+    html += `<div class="header"><div><div class="header-title">🥗 Plan Nutricional Semanal</div><div class="header-sub">FitGO &nbsp;·&nbsp; ${exportWeekStart} al ${weekEnd}</div></div><div class="logo-badge">💪</div></div>`;
+    html += `<div class="summary-row"><div class="summary-card"><div class="val">${activeDays}</div><div class="lbl">Días planificados</div></div><div class="summary-card"><div class="val">${Math.round(activeDays > 0 ? totalCal / activeDays : 0)}</div><div class="lbl">kcal / día</div></div><div class="summary-card"><div class="val">${Math.round(activeDays > 0 ? totalProt / activeDays : 0)}g</div><div class="lbl">Proteína / día</div></div></div>`;
+    html += `<div class="disclaimer"><span>⚠️</span><span>Este plan es generado por inteligencia artificial y NO reemplaza el consejo de un dietista o médico. Consulte a un profesional de la salud antes de seguir este plan.</span></div>`;
+
     DAYS.forEach(day => {
       const meals = mealPlans[day] || [];
+      const dayLabel = DAY_LABELS[day] || day;
+      const dayCalories = meals.reduce((s: number, m: PlanItem) => s + (m.calories || 0), 0);
+      const dayProtein = meals.reduce((s: number, m: PlanItem) => s + (m.protein || 0), 0);
+      const dayCarbs = meals.reduce((s: number, m: PlanItem) => s + (m.carbs || 0), 0);
+      const dayFat = meals.reduce((s: number, m: PlanItem) => s + (m.fat || 0), 0);
+
+      html += `<div class="day-card"><div class="day-header"><span class="day-name">${dayLabel}</span>`;
       if (meals.length > 0) {
-        html += `<h2>${t(`planner.${day.toLowerCase()}`)}</h2><table><tr><th>${t('tracker.breakfast')}</th><th>${t('foodDetail.amount')}</th><th>kcal</th><th>${t('profile.protein')}/${t('profile.carbs')}/${t('profile.fat')}</th></tr>`;
-        meals.forEach((m: PlanItem) => {
-          html += `<tr><td>${t(`tracker.${m.meal}`)}</td><td>${m.name}</td><td>${m.calories} kcal</td><td>${m.protein}g / ${m.carbs}g / ${m.fat}g</td></tr>`;
-        });
-        html += `</table>`;
+        html += `<span class="day-totals">${dayCalories} kcal &nbsp;·&nbsp; P:${dayProtein}g C:${dayCarbs}g F:${dayFat}g</span>`;
       }
+      html += `</div>`;
+
+      if (meals.length === 0) {
+        html += `<div class="rest-day">Sin comidas planificadas para este día</div>`;
+      } else {
+        meals.forEach((m: PlanItem) => {
+          const color = MEAL_COLORS[m.meal] || '#7C5CFC';
+          const emoji = MEAL_EMOJI[m.meal] || '🍽️';
+          html += `<div class="meal-row"><div><div class="meal-badge" style="background:${color}">${emoji} ${m.meal}</div></div><div class="meal-name">${m.name}</div><div class="meal-macros"><div class="meal-kcal">${m.calories}</div><div class="meal-macro-row">P ${m.protein}g · C ${m.carbs}g · F ${m.fat}g</div></div></div>`;
+        });
+      }
+      html += `</div>`;
     });
-    html += `</body></html>`;
+
+    html += `<div class="footer">Generado por FitGO · ${today} · Solo para referencia personal</div></div></body></html>`;
     return html;
   };
 
+  const _UNUSED_generateNutritionHTML_old = () => {
+    return '';
+  };
+
   const generateWorkoutHTML = () => {
-    let html = `<html><head><style>body{font-family:sans-serif;padding:20px;color:#333}h1{color:#7C5CFC}h2{color:#4338CA;border-bottom:1px solid #ddd;padding-bottom:5px}ul{list-style-type:none;padding:0}li{background:#f8f9fa;margin-bottom:10px;padding:15px;border-radius:8px;border-left:4px solid #7C5CFC}.disclaimer{background:#fff3cd;border:1px solid #ffc107;padding:12px;border-radius:8px;font-size:13px;margin-bottom:20px;color:#856404}</style></head><body>`;
-    html += `<h1>FitGO - ${t('planner.workoutsTab')}</h1>`;
-    html += `<div class="disclaimer">⚠️ ${t('planner.pdfDisclaimer', 'Este plan es generado por inteligencia artificial. No reemplaza el consejo de un entrenador certificado o médico. Consulte a un profesional antes de seguir este plan.')}</div>`;
+    const today = getLocalDateString();
+    const exportWeekStart = getStartOfWeek(new Date());
+    const weekEndDate = new Date(exportWeekStart);
+    weekEndDate.setDate(weekEndDate.getDate() + 6);
+    const weekEnd = getLocalDateString(weekEndDate);
+
+    const DAY_LABELS: Record<string, string> = {
+      Mon: 'Lunes', Tue: 'Martes', Wed: 'Miércoles', Thu: 'Jueves',
+      Fri: 'Viernes', Sat: 'Sábado', Sun: 'Domingo',
+    };
+    const ENERGY_LABELS: Record<string, string> = {
+      low: '🔋 Agotado', normal: '⚡ Normal', beast: '🦍 Bestia',
+    };
+
+    const totalWorkoutDays = DAYS.filter(d => (workoutPlans[d]?.exercises?.length ?? 0) > 0).length;
+    const totalExercises = DAYS.reduce((acc, d) => acc + (workoutPlans[d]?.exercises?.length ?? 0), 0);
+
+    let html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>FitGO Rutina Semanal</title><style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', 'Helvetica Neue', sans-serif; background: #F0F4FF; color: #1E1B4B; -webkit-print-color-adjust: exact; }
+      .page { max-width: 800px; margin: 0 auto; padding: 32px 24px; }
+      .header { background: linear-gradient(135deg, #7C5CFC 0%, #06B6D4 100%); border-radius: 20px; padding: 32px; margin-bottom: 24px; color: white; display: flex; align-items: center; justify-content: space-between; }
+      .header-title { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+      .header-sub { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+      .logo-badge { background: rgba(255,255,255,0.2); border-radius: 50%; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+      .summary-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+      .summary-card { background: white; border-radius: 14px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+      .summary-card .val { font-size: 22px; font-weight: 800; color: #7C5CFC; }
+      .summary-card .lbl { font-size: 11px; color: #6B7280; margin-top: 2px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+      .context-card { background: white; border-radius: 14px; padding: 14px 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+      .context-pill { background: #EDE9FE; color: #6D28D9; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600; }
+      .disclaimer { background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 12px; padding: 12px 16px; margin-bottom: 24px; font-size: 12px; color: #92400E; display: flex; gap: 8px; align-items: flex-start; }
+      .day-card { background: white; border-radius: 16px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); page-break-inside: avoid; }
+      .day-header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; background: #F9F7FF; border-bottom: 1px solid #EDE9FE; }
+      .day-name { font-size: 18px; font-weight: 700; color: #4F46E5; }
+      .routine-name { font-size: 12px; color: #6D28D9; font-weight: 600; background: #EDE9FE; padding: 4px 10px; border-radius: 20px; }
+      .rest-badge { font-size: 12px; color: #6B7280; background: #F3F4F6; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
+      .ex-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid #F3F4F6; }
+      .ex-row:last-child { border-bottom: none; }
+      .ex-num { font-size: 11px; font-weight: 800; color: #9CA3AF; margin-bottom: 3px; }
+      .ex-name { font-size: 15px; font-weight: 600; color: #1E1B4B; }
+      .ex-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+      .badge { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }
+      .badge-sets { background: #EDE9FE; color: #6D28D9; }
+      .badge-reps { background: #DCFCE7; color: #166534; }
+      .badge-rest { background: #FEF3C7; color: #92400E; }
+      .rest-day { text-align: center; padding: 28px; color: #9CA3AF; font-size: 15px; }
+      .footer { text-align: center; margin-top: 32px; font-size: 11px; color: #9CA3AF; }
+    </style></head><body><div class="page">`;
+
+    html += `<div class="header"><div><div class="header-title">🏋️ Rutina Semanal de Entrenamiento</div><div class="header-sub">FitGO &nbsp;·&nbsp; ${exportWeekStart} al ${weekEnd}</div></div><div class="logo-badge">🔥</div></div>`;
+    html += `<div class="summary-row"><div class="summary-card"><div class="val">${totalWorkoutDays}</div><div class="lbl">Días de entreno</div></div><div class="summary-card"><div class="val">${totalExercises}</div><div class="lbl">Ejercicios totales</div></div><div class="summary-card"><div class="val">${ENERGY_LABELS[energyMode] || '⚡ Normal'}</div><div class="lbl">Energía</div></div></div>`;
+
+    if (isHomeWorkout && homeEquipment) {
+      const equipmentList = homeEquipment.split(',').map((s: string) => s.trim()).filter((s: string) => s);
+      if (equipmentList.length > 0) {
+        html += `<div class="context-card"><span style="font-size:12px;font-weight:700;color:#6B7280;margin-right:4px;">🏠 Equipos:</span>`;
+        equipmentList.forEach((eq: string) => { html += `<span class="context-pill">${eq}</span>`; });
+        html += `</div>`;
+      }
+    }
+
+    html += `<div class="disclaimer"><span>⚠️</span><span>Este plan es generado por inteligencia artificial y NO reemplaza el consejo de un entrenador certificado o médico. Consulte a un profesional antes de seguir este plan.</span></div>`;
+
     DAYS.forEach(day => {
       const workout = workoutPlans[day];
-      if (workout) {
-        html += `<h2>${t(`planner.${day.toLowerCase()}`)}: ${(workout.exercises?.length || 0) === 0 ? t('planner.restDay') : workout.name}</h2>`;
-        if ((workout.exercises?.length || 0) > 0) {
-          html += `<ul>`;
-          workout.exercises.forEach((ex: any) => {
-            html += `<li><strong>${ex.name}</strong><br/>${t('planner.sets', 'Sets')}: ${ex.sets} | ${t('planner.reps', 'Reps')}: ${ex.reps} | ${t('planner.rest', 'Rest')}: ${ex.rest}</li>`;
-          });
-          html += `</ul>`;
-        } else {
-          html += `<p>${t('planner.restDayHint')}</p>`;
-        }
+      const dayLabel = DAY_LABELS[day] || day;
+      const isRest = !workout || (workout.exercises?.length ?? 0) === 0;
+
+      html += `<div class="day-card"><div class="day-header"><span class="day-name">${dayLabel}</span>`;
+      if (isRest) {
+        html += `<span class="rest-badge">😴 Descanso</span>`;
+      } else {
+        html += `<span class="routine-name">${workout!.name}</span>`;
       }
+      html += `</div>`;
+
+      if (isRest) {
+        html += `<div class="rest-day">Día de descanso — recupera energías 💤</div>`;
+      } else {
+        workout!.exercises.forEach((ex: any, i: number) => {
+          html += `<div class="ex-row"><div><div class="ex-num">#${i + 1}</div><div class="ex-name">${ex.name}</div></div><div class="ex-badges"><span class="badge badge-sets">${ex.sets} series</span><span class="badge badge-reps">${ex.reps} reps</span><span class="badge badge-rest">⏱ ${ex.rest}</span></div></div>`;
+        });
+      }
+      html += `</div>`;
     });
-    html += `</body></html>`;
+
+    html += `<div class="footer">Generado por FitGO · ${today} · Solo para referencia personal</div></div></body></html>`;
     return html;
   };
 
@@ -714,21 +950,11 @@ export default function PlannerScreen() {
       const weekEndDate = new Date(exportWeekStart);
       weekEndDate.setDate(weekEndDate.getDate() + 6);
       const weekEnd = getLocalDateString(weekEndDate);
-      const filename = `rutina(${today}_${weekEnd}).pdf`;
+      const filename = `fitgo_${mode === 'nutrition' ? 'menu' : 'rutina'}_${today}.pdf`;
       const htmlContent = mode === 'nutrition' ? generateNutritionHTML() : generateWorkoutHTML();
       const { uri } = await Print.printToFileAsync({ html: htmlContent, base64: false });
       
-      try {
-        const fs = FileSystem as any;
-        const dir = fs.documentDirectory || fs.cacheDirectory || "";
-        const slash = dir.endsWith('/') ? '' : '/';
-        const newUri = dir + slash + filename;
-        await fs.moveAsync({ from: uri, to: newUri });
-        await Sharing.shareAsync(newUri, { UTI: '.pdf', mimeType: 'application/pdf', dialogTitle: filename });
-      } catch (moveErr) {
-        console.warn('moveAsync failed, sharing original uri:', moveErr);
-        await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf', dialogTitle: filename });
-      }
+      await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf', dialogTitle: filename });
     } catch (err) {
       console.error(err);
       showAlert('error', t('common.error'), 'Could not generate PDF');
@@ -739,17 +965,70 @@ export default function PlannerScreen() {
     if (!isProActually) { router.push('/modals/paywall'); return; }
     setGeneratingShoppingList(true);
     try {
-      const htmlContent = await generateShoppingList(mealPlans, language);
-      const filename = `Shopping_List_${getStartOfWeek(new Date())}.pdf`;
-      const { uri } = await Print.printToFileAsync({ html: htmlContent, base64: false });
-      const fs = FileSystem as any;
-      const dir = fs.cacheDirectory || fs.documentDirectory || "";
-      const newUri = dir + filename;
-      await fs.moveAsync({ from: uri, to: newUri });
-      await Sharing.shareAsync(newUri);
+      const today = getLocalDateString();
+      const weekStart = getStartOfWeek(new Date());
+      const categories = await generateShoppingListJSON(mealPlans, language);
+      const totalItems = categories.reduce((acc: number, c: any) => acc + (c.items?.length ?? 0), 0);
+
+      const CAT_COLORS: Record<string, string> = {
+        default: '#7C5CFC',
+        frutas: '#F59E0B', verduras: '#10B981', carnes: '#EF4444', lácteos: '#3B82F6',
+        proteínas: '#F59E0B', granos: '#8B5CF6', cereales: '#8B5CF6',
+        produce: '#10B981', meat: '#EF4444', dairy: '#3B82F6', pantry: '#8B5CF6',
+        snacks: '#F97316', bebidas: '#06B6D4',
+      };
+      const CAT_EMOJI: Record<string, string> = {
+        frutas: '🍎', verduras: '🥦', carnes: '#🥩', lácteos: '🥛',
+        proteínas: '🥚', granos: '🌾', cereales: '🌾', snacks: '🍿',
+        produce: '🥦', meat: '🥩', dairy: '🥛', pantry: '🥫', bebidas: '🥤',
+      };
+
+      let html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>FitGO Lista de Compras</title><style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', 'Helvetica Neue', sans-serif; background: #F0F4FF; color: #1E1B4B; -webkit-print-color-adjust: exact; }
+        .page { max-width: 800px; margin: 0 auto; padding: 32px 24px; }
+        .header { background: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%); border-radius: 20px; padding: 32px; margin-bottom: 24px; color: white; display: flex; align-items: center; justify-content: space-between; }
+        .header-title { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+        .header-sub { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+        .logo-badge { background: rgba(255,255,255,0.2); border-radius: 50%; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+        .summary-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
+        .summary-card { background: white; border-radius: 14px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .summary-card .val { font-size: 22px; font-weight: 800; color: #F59E0B; }
+        .summary-card .lbl { font-size: 11px; color: #6B7280; margin-top: 2px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .cat-card { background: white; border-radius: 16px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); page-break-inside: avoid; }
+        .cat-header { padding: 14px 20px; display: flex; align-items: center; gap: 10px; }
+        .cat-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .cat-name { font-size: 17px; font-weight: 700; color: #1E1B4B; }
+        .cat-count { margin-left: auto; font-size: 12px; color: #9CA3AF; font-weight: 600; background: #F3F4F6; padding: 3px 10px; border-radius: 20px; }
+        .item-row { display: flex; align-items: center; gap: 14px; padding: 12px 20px; border-top: 1px solid #F3F4F6; }
+        .checkbox { width: 18px; height: 18px; border: 2px solid #D1D5DB; border-radius: 4px; flex-shrink: 0; }
+        .item-name { font-size: 14px; color: #374151; font-weight: 500; }
+        .footer { text-align: center; margin-top: 32px; font-size: 11px; color: #9CA3AF; }
+      </style></head><body><div class="page">`;
+
+      html += `<div class="header"><div><div class="header-title">🛒 Lista de Compras</div><div class="header-sub">FitGO &nbsp;·&nbsp; Semana del ${weekStart}</div></div><div class="logo-badge">🥗</div></div>`;
+      html += `<div class="summary-row"><div class="summary-card"><div class="val">${categories.length}</div><div class="lbl">Categorías</div></div><div class="summary-card"><div class="val">${totalItems}</div><div class="lbl">Productos totales</div></div></div>`;
+
+      categories.forEach((cat: any) => {
+        const key = (cat.category || '').toLowerCase();
+        const color = CAT_COLORS[key] || CAT_COLORS['default'];
+        const emoji = CAT_EMOJI[key] || '🛍️';
+        html += `<div class="cat-card"><div class="cat-header"><div class="cat-dot" style="background:${color}"></div><span class="cat-name">${emoji} ${cat.category}</span><span class="cat-count">${cat.items?.length ?? 0} productos</span></div>`;
+        (cat.items || []).forEach((item: string) => {
+          html += `<div class="item-row"><div class="checkbox"></div><span class="item-name">${item}</span></div>`;
+        });
+        html += `</div>`;
+      });
+
+      html += `<div class="footer">Generado por FitGO · ${today} · Marca los productos conforme los compras ✅</div></div></body></html>`;
+
+      const filename = `fitgo_lista_compras_${weekStart}.pdf`;
+      const { uri } = await Print.printToFileAsync({ html, base64: false });
+      await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf', dialogTitle: filename });
     } catch (err) {
       console.error(err);
-      showAlert('error', t('common.error'), 'Could not generate Shopping List PDF');
+      showAlert('error', t('common.error'), 'No se pudo generar la lista de compras');
     } finally {
       setGeneratingShoppingList(false);
     }
@@ -1035,6 +1314,31 @@ export default function PlannerScreen() {
 
         <DayPicker active={activeDay} onSelect={setActiveDay} isPremiumCustom={isPremiumCustom} premiumColor={safePremiumColor} />
 
+        <View style={{ paddingHorizontal: 16, marginTop: 12 }}>
+          <TouchableOpacity 
+            style={[s.genBtn, { width: '100%', marginBottom: 12, shadowColor: safePremiumColor }]} 
+            activeOpacity={0.8} 
+            onPress={handleGenerateDayPress} 
+            disabled={loading}
+          >
+            <LinearGradient 
+              colors={
+                mode === 'workouts' 
+                  ? (energyMode === 'low' ? ['#06B6D4', '#0891B2'] : energyMode === 'beast' ? ['#EF4444', '#B91C1C'] : (isPremiumCustom ? [safePremiumColor, safePremiumColor + 'CC'] : colors.gradientPrimary))
+                  : (isPremiumCustom ? [safePremiumColor, safePremiumColor + 'CC'] : colors.gradientPrimary)
+              } 
+              style={[s.genGrad, { justifyContent: 'center', paddingVertical: 12 }]} start={{x:0,y:0}} end={{x:1,y:1}}
+            >
+              {loading ? <ActivityIndicator size="small" color="#fff" /> :
+               <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
+                 <Sparkles size={16} color="#fff" />
+                 <Text style={s.genText}>Generar Únicamente {t(`planner.${activeDay.toLowerCase()}`)}</Text>
+               </View>
+              }
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+
         {/* Energy Meter UI (Moved inside ScrollView) */}
         {mode === 'workouts' && (
           <View style={{ paddingHorizontal: 16, marginBottom: 20, marginTop: 12 }}>
@@ -1095,37 +1399,95 @@ export default function PlannerScreen() {
                 <Text style={[s.equipmentTitle, { color: colors.textPrimary }]}>{t('planner.equipmentTitle', 'Implementos Adicionales')}</Text>
                 <Text style={[s.equipmentSub, { color: colors.textSecondary }]}>{t('planner.equipmentSub', '¿Qué equipo tienes disponible?')}</Text>
                 
-                <View style={s.equipmentChips}>
+                <View style={{ marginTop: 12 }}>
                   {[
-                    t('planner.eqDumbbells', 'Mancuernas'),
-                    t('planner.eqPullup', 'Barra de dominadas'),
-                    t('planner.eqBands', 'Bandas elásticas'),
-                    t('planner.eqParallel', 'Barras paralelas'),
-                    t('planner.eqKettlebell', 'Kettlebell')
-                  ].map((item) => {
-                    const isSelected = homeEquipment.toLowerCase().includes(item.toLowerCase());
+                    { id: 'basics', title: 'Básicos de Calistenia', items: ['Barra de dominadas', 'Barras paralelas', 'Anillas de gimnasia', 'Chaleco lastrado'] },
+                    { id: 'bands', title: 'Bandas y Resistencia', items: ['Bandas elásticas tubulares', 'Bandas de resistencia (loops)', 'TRX / Suspensión'] },
+                    { id: 'accessories', title: 'Accesorios Adicionales', items: ['Tapete / Mat', 'Rueda abdominal', 'Cuerda para saltar', 'Banco ajustable'] },
+                    { id: 'weights', title: 'Pesas y Mancuernas', items: [] },
+                  ].map((cat) => {
+                    const isExpanded = expandedEqCategory === cat.id;
                     return (
-                      <TouchableOpacity
-                        key={item}
-                        style={[s.equipmentChip, isSelected ? { backgroundColor: colors.primary, borderColor: colors.primary } : { backgroundColor: colors.background, borderColor: colors.border }]}
-                        onPress={() => {
-                          if (isSelected) {
-                            setHomeEquipment(homeEquipment.replace(new RegExp(`(?:, )?${item}`, 'i'), '').replace(/^, /, ''));
-                          } else {
-                            setHomeEquipment(homeEquipment ? `${homeEquipment}, ${item}` : item);
-                          }
-                        }}
-                      >
-                        <Text style={[s.equipmentChipText, { color: isSelected ? '#fff' : colors.textPrimary }]}>{item}</Text>
-                      </TouchableOpacity>
+                      <View key={cat.id} style={{ marginBottom: 8, backgroundColor: colors.background, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: colors.border }}>
+                        <TouchableOpacity 
+                          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 12 }}
+                          onPress={() => setExpandedEqCategory(isExpanded ? null : cat.id)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={{ color: colors.textPrimary, fontWeight: '600', fontSize: 14 }}>{cat.title}</Text>
+                          {isExpanded ? <ChevronUp size={16} color={colors.textMuted} /> : <ChevronDown size={16} color={colors.textMuted} />}
+                        </TouchableOpacity>
+                        
+                        {isExpanded && (
+                          <View style={{ padding: 12, paddingTop: 0, borderTopWidth: 1, borderTopColor: colors.border + '50', marginTop: 4 }}>
+                            {cat.id === 'weights' ? (
+                              <View>
+                                <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+                                  <TouchableOpacity 
+                                    style={{ flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8, backgroundColor: weightType === 'Mancuernas' ? colors.primary + '20' : colors.surfaceAlt, borderWidth: 1, borderColor: weightType === 'Mancuernas' ? colors.primary : colors.border }}
+                                    onPress={() => setWeightType('Mancuernas')}
+                                  ><Text style={{ color: weightType === 'Mancuernas' ? colors.primary : colors.textMuted, fontWeight: '600', fontSize: 13 }}>Mancuernas</Text></TouchableOpacity>
+                                  <TouchableOpacity 
+                                    style={{ flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8, backgroundColor: weightType === 'Kettlebell' ? colors.primary + '20' : colors.surfaceAlt, borderWidth: 1, borderColor: weightType === 'Kettlebell' ? colors.primary : colors.border }}
+                                    onPress={() => setWeightType('Kettlebell')}
+                                  ><Text style={{ color: weightType === 'Kettlebell' ? colors.primary : colors.textMuted, fontWeight: '600', fontSize: 13 }}>Kettlebells</Text></TouchableOpacity>
+                                </View>
+                                <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+                                  <TextInput
+                                    style={{ flex: 1, backgroundColor: colors.surfaceAlt, color: colors.textPrimary, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: colors.border }}
+                                    placeholder="Ej: 5"
+                                    placeholderTextColor={colors.textMuted}
+                                    keyboardType="numeric"
+                                    value={customWeightInput}
+                                    onChangeText={setCustomWeightInput}
+                                  />
+                                  <TouchableOpacity 
+                                    style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: weightUnit === 'kg' ? colors.primary + '20' : colors.surfaceAlt, borderWidth: 1, borderColor: weightUnit === 'kg' ? colors.primary : colors.border, justifyContent: 'center' }}
+                                    onPress={() => setWeightUnit('kg')}
+                                  ><Text style={{ color: weightUnit === 'kg' ? colors.primary : colors.textMuted, fontWeight: '600' }}>kg</Text></TouchableOpacity>
+                                  <TouchableOpacity 
+                                    style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: weightUnit === 'lbs' ? colors.primary + '20' : colors.surfaceAlt, borderWidth: 1, borderColor: weightUnit === 'lbs' ? colors.primary : colors.border, justifyContent: 'center' }}
+                                    onPress={() => setWeightUnit('lbs')}
+                                  ><Text style={{ color: weightUnit === 'lbs' ? colors.primary : colors.textMuted, fontWeight: '600' }}>lb</Text></TouchableOpacity>
+                                  <TouchableOpacity 
+                                    style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: colors.primary, justifyContent: 'center' }}
+                                    onPress={handleAddCustomWeight}
+                                  ><Plus size={16} color="#fff" /></TouchableOpacity>
+                                </View>
+                              </View>
+                            ) : null}
+
+                            <View style={s.equipmentChips}>
+                              {(cat.id === 'weights' 
+                                ? homeEquipment.split(',').map(s => s.trim()).filter(s => s.includes('Mancuerna') || s.includes('Kettlebell') || s.includes('Pesa')) 
+                                : cat.items
+                              ).map((item) => {
+                                const arr = homeEquipment.split(',').map(s => s.trim());
+                                const isSelected = arr.includes(item);
+                                if (cat.id === 'weights' && !isSelected) return null;
+                                return (
+                                  <TouchableOpacity
+                                    key={item}
+                                    style={[s.equipmentChip, isSelected ? { backgroundColor: colors.primary, borderColor: colors.primary } : { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+                                    onPress={() => handleToggleEquipment(item)}
+                                  >
+                                    <Text style={[s.equipmentChipText, { color: isSelected ? '#fff' : colors.textPrimary }]}>{item}</Text>
+                                    {cat.id === 'weights' && <X size={12} color="#fff" style={{ marginLeft: 4 }} />}
+                                  </TouchableOpacity>
+                                );
+                              })}
+                            </View>
+                          </View>
+                        )}
+                      </View>
                     );
                   })}
                 </View>
                 
-                <View style={[s.inputWrap, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                <View style={[s.inputWrap, { backgroundColor: colors.background, borderColor: colors.border, marginTop: 4 }]}>
                   <TextInput
                     style={[s.equipmentInput, { color: colors.textPrimary }]}
-                    placeholder={t('planner.equipmentPlaceholder', 'Ej: Mancuernas de 5kg, tapete...')}
+                    placeholder={t('planner.equipmentPlaceholder', 'Opcional: Detalles adicionales (ej: banda verde fuerte)...')}
                     placeholderTextColor={colors.textMuted}
                     value={homeEquipment}
                     onChangeText={setHomeEquipment}
