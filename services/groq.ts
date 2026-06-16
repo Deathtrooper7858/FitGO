@@ -540,6 +540,64 @@ Return ONLY valid JSON — no markdown, no explanation, just the JSON object:
   }
 }
 
+export async function generateDailyMealPlan(userProfile: any, language: string = 'en', day: string): Promise<any> {
+  const targetLang = getLang(language);
+  const goalContext = userProfile.goal === 'lose'
+    ? 'fat loss / caloric deficit'
+    : userProfile.goal === 'gain'
+    ? 'muscle gain / caloric surplus'
+    : 'body recomposition / weight maintenance';
+
+  const activityDesc: Record<string, string> = {
+    sedentary: 'sedentary (little or no exercise)',
+    light: 'lightly active (1-3 days/week exercise)',
+    moderate: 'moderately active (3-5 days/week exercise)',
+    active: 'very active (6-7 days/week exercise)',
+    very_active: 'extra active (hard training + physical job)',
+  };
+  const activityLabel = activityDesc[userProfile.activityLevel ?? ''] ?? userProfile.activityLevel ?? 'Unknown';
+
+  const hasFoods = (userProfile.availableFoods?.length ?? 0) > 0;
+  const foodsInstruction = hasFoods
+    ? `AVAILABLE FOODS (STRICT): You MUST build every meal using ONLY ingredients from this list: ${userProfile.availableFoods!.join(', ')}`
+    : 'No specific food list provided.';
+
+  const targetCal = userProfile.targetCalories || 2000;
+  const macros = userProfile.macros || { protein: 150, carbs: 250, fat: 65 };
+
+  const prompt = `You are an expert sports nutritionist AI. Create a 1-day personalized meal plan for the user for the day: ${day}.
+=== USER PROFILE ===
+- Goal: ${goalContext}
+- Target Calories: ${targetCal} kcal (Must hit EXACTLY ±50 kcal)
+- Macro Targets: Protein ${macros.protein}g | Carbs ${macros.carbs}g | Fat ${macros.fat}g
+- Diet Preference: ${userProfile.preferences?.[0] ?? 'Balanced'}
+- Restrictions: ${userProfile.dietaryRestrictions?.filter((r:string) => r !== 'none').join(', ') || 'None'}
+- Medical Conditions: ${userProfile.medicalConditions?.filter((c:string) => c !== 'none').join(', ') || 'None'}
+=== FOOD AVAILABILITY ===
+${foodsInstruction}
+
+Return ONLY valid JSON (no markdown):
+{
+  "${day}": [
+    { "meal": "breakfast", "name": "Meal name in ${targetLang}", "calories": 0, "protein": 0, "carbs": 0, "fat": 0 },
+    { "meal": "lunch", "name": "...", "calories": 0, "protein": 0, "carbs": 0, "fat": 0 },
+    { "meal": "dinner", "name": "...", "calories": 0, "protein": 0, "carbs": 0, "fat": 0 }
+  ]
+}`;
+
+  const data = await fetchGroq({
+    model: CHAT_MODEL,
+    messages: [{ role: 'user', content: prompt }],
+    max_tokens: 800,
+    temperature: 0.55,
+    response_format: { type: 'json_object' },
+  });
+
+  let text = (data.choices[0]?.message?.content ?? '').trim();
+  text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+  return JSON.parse(text);
+}
+
 // ─── Generate weekly workout plan ─────────────────────────────────────────────
 export async function generateWorkoutPlan(userProfile: {
   goal: string;
@@ -637,6 +695,41 @@ Return ONLY valid JSON (no markdown). Use this exact structure:
   } catch {
     throw new Error('Failed to parse workout plan from AI. Please try again.');
   }
+}
+
+export async function generateDailyWorkoutPlan(userProfile: any, language: string = 'en', day: string): Promise<any> {
+  const targetLang = getLang(language);
+  const homeWorkoutText = userProfile.homeWorkout 
+    ? `- Workout Environment: Home workout / Calisthenics with: ${userProfile.homeEquipment || 'basic household items'}` 
+    : "- Workout Environment: Full Gym access.";
+
+  const prompt = `Create a 1-day workout plan for the user for the day: ${day}.
+- Goal: ${userProfile.goal}
+- Activity Level: ${userProfile.activityLevel}
+- Medical Conditions: ${userProfile.medicalConditions?.join(', ') || 'None'}
+${homeWorkoutText}
+
+IMPORTANT: All exercise names MUST be in ${targetLang}. Return ONLY valid JSON (no markdown).
+{
+  "${day}": {
+    "name": "${targetLang === 'Spanish' ? 'Pecho y Tríceps' : 'Chest & Triceps'}",
+    "exercises": [
+      { "name": "${targetLang === 'Spanish' ? 'Press de Banca' : 'Bench Press'}", "englishName": "Bench Press", "sets": 3, "reps": "10-12", "rest": "90s" }
+    ]
+  }
+}`;
+
+  const data = await fetchGroq({
+    model: CHAT_MODEL,
+    messages: [{ role: 'user', content: prompt }],
+    max_tokens: 800,
+    temperature: 0.6,
+    response_format: { type: 'json_object' },
+  });
+
+  let text = (data.choices[0]?.message?.content ?? '').trim();
+  text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+  return JSON.parse(text);
 }
 
 // ─── Adjust Workout to Bodyweight ─────────────────────────────────────────────
@@ -903,20 +996,37 @@ Important: Return ONLY the JSON.`;
 }
 
 // ─── Generate Shopping List ───────────────────────────────────────────────────
-export async function generateShoppingListJSON(mealPlans: Record<string, any[]>, language: string = 'en'): Promise<{category: string; items: string[]}[]> {
+export async function generateShoppingListJSON(mealPlans: Record<string, any[]>, language: string = 'en'): Promise<{category: string; items: {name: string; quantity: string; price: number}[]}[]> {
   const targetLang = getLang(language);
   
-  const prompt = `Based on the following weekly meal plan, create a categorized shopping list of ingredients needed.
-Return ONLY a valid JSON object matching this EXACT structure:
-{"categories": [{"category": "Produce", "items": ["Tomato", "Lettuce"]}, {"category": "Meat", "items": ["Chicken breast"]}]}
-Make sure all text, categories, and items are translated to ${targetLang}.
-Plan: ${JSON.stringify(mealPlans)}`;
+  const prompt = `Based on the following weekly meal plan, create a detailed and categorized shopping list of all ingredients needed for the ENTIRE week.
+Return ONLY a valid JSON object matching this EXACT structure (no markdown, no explanation):
+{
+  "categories": [
+    {
+      "category": "Category name in ${targetLang}",
+      "items": [
+        { "name": "Ingredient name in ${targetLang}", "quantity": "Estimated total quantity for the week (e.g. '500g', '6 units', '1 liter')", "price": 2.50 }
+      ]
+    }
+  ]
+}
+
+Rules:
+- Consolidate all occurrences of the same ingredient across all 7 days into ONE entry with the total quantity needed.
+- The "price" field must be a realistic approximate price in USD (e.g. 1.50 for a banana bunch, 5.00 for chicken breast 500g). It must be a number, not a string.
+- Translate ALL text (category names and ingredient names) to ${targetLang}.
+- Group items into logical categories: Frutas, Verduras, Carnes y Proteínas, Lácteos y Huevos, Cereales y Granos, Condimentos y Otros.
+- NEVER include duplicates.
+
+Meal Plan:
+${JSON.stringify(mealPlans)}`;
 
   try {
     const data = await fetchGroq({
       model: FAST_MODEL,
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 600,
+      max_tokens: 1200,
       temperature: 0.2,
       response_format: { type: 'json_object' },
     });

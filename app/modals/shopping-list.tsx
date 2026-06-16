@@ -41,9 +41,6 @@ export default function ShoppingListModal() {
       return;
     }
 
-    // Prevent fetch loops if we are already loading or have an error, unless forced
-    if (!force && (loading || error)) return;
-
     try {
       setLoading(true);
       setError(null);
@@ -58,8 +55,10 @@ export default function ShoppingListModal() {
   };
 
   useEffect(() => {
+    // Only regenerate when the meal plan data changes, not on every state change
+    if (shoppingList && shoppingList.length > 0) return;
     loadList();
-  }, [shoppingList, mealPlans, error, loading]);
+  }, [JSON.stringify(mealPlans)]);
 
   const toggleCheck = (item: string) => {
     setChecked(prev => {

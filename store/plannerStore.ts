@@ -50,7 +50,7 @@ interface PlannerState {
   /** ISO date (YYYY-MM-DD) of Monday for the week these plans belong to */
   weekStart: string | null;
   /** Cached AI-generated shopping list */
-  shoppingList: { category: string; items: string[] }[] | null;
+  shoppingList: { category: string; items: { name: string; quantity: string; price: number }[] }[] | null;
   /** AI-generated weekly nutrition analysis text */
   weeklyAnalysis: string | null;
   /** Optional warning for risky plans */
