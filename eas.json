@@ -11,9 +11,7 @@
         "simulator": true
       },
       "env": {
-        "APP_VARIANT": "development",
-        "EXPO_PUBLIC_SUPABASE_URL": "https://abvidinpswnfxijjfnic.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidmlkaW5wc3duZnhpampmbmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDI0MDEsImV4cCI6MjA5MjgxODQwMX0.-fEFidltyCJFicuxNTqtVd-Ak3a1_-Yn2_XUdQhwrrM"
+        "APP_VARIANT": "development"
       }
     },
     "preview": {
@@ -25,9 +23,6 @@
       "ios": {
         "simulator": true
       },
-      "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://abvidinpswnfxijjfnic.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidmlkaW5wc3duZnhpampmbmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDI0MDEsImV4cCI6MjA5MjgxODQwMX0.-fEFidltyCJFicuxNTqtVd-Ak3a1_-Yn2_XUdQhwrrM"
       }
     },
     "production": {
@@ -36,9 +31,7 @@
       "credentialsSource": "local",
       "env": {
         "APP_VARIANT": "production",
-        "NODE_OPTIONS": "--max-old-space-size=4096",
-        "EXPO_PUBLIC_SUPABASE_URL": "https://abvidinpswnfxijjfnic.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidmlkaW5wc3duZnhpampmbmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDI0MDEsImV4cCI6MjA5MjgxODQwMX0.-fEFidltyCJFicuxNTqtVd-Ak3a1_-Yn2_XUdQhwrrM"
+        "NODE_OPTIONS": "--max-old-space-size=4096"
       }
     }
   },

@@ -906,7 +906,8 @@ IMPORTANT: All text MUST be in ${targetLang}.`;
   try {
     const parsed = JSON.parse(text);
     return Array.isArray(parsed) ? parsed : (parsed.recipes || []);
-  } catch {
+  } catch (err) {
+    console.warn('[Groq] generateRecipes parse error:', err);
     return [];
   }
 }
@@ -994,7 +995,8 @@ Important: Return ONLY the JSON.`;
   try {
     const parsed = JSON.parse(content);
     return Math.round(parsed.calories || 0);
-  } catch {
+  } catch (err) {
+    console.warn('[Groq] estimateActivityCalories parse error:', err);
     return 0;
   }
 }

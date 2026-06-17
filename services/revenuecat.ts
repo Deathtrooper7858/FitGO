@@ -31,7 +31,7 @@ export class RevenueCatService {
     }
 
     try {
-      Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+      if (__DEV__) Purchases.setLogLevel(LOG_LEVEL.DEBUG);
 
       const apiKey = Platform.OS === 'ios' ? API_KEYS.apple : API_KEYS.google;
 
@@ -73,13 +73,13 @@ export class RevenueCatService {
     }
   }
 
-  async checkEntitlement(): Promise<boolean> {
+  async checkEntitlement(): Promise<boolean | null> {
     try {
       const customerInfo = await Purchases.getCustomerInfo();
       return !!customerInfo.entitlements.active[ENTITLEMENT_ID];
     } catch (e) {
       console.error('Error checking entitlement', e);
-      return false;
+      return null;
     }
   }
 

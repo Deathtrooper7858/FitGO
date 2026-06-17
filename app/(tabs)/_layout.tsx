@@ -2,8 +2,8 @@ import { Tabs, router, usePathname } from 'expo-router';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { FileText, BarChart2, MessageCircle, Calendar, Trophy, Users } from 'lucide-react-native';
-import { useAuthStore, usePurchaseStore, useSocialStore } from '../../store';
+import { FileText, BarChart2, MessageCircle, Calendar, Users } from 'lucide-react-native';
+import { useAuthStore, useSocialStore } from '../../store';
 import React, { useCallback, useRef } from 'react';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
@@ -54,9 +54,8 @@ export default function TabsLayout() {
   const { t } = useTranslation();
   const colors = useTheme();
   const { profile } = useAuthStore();
-  const { isPro } = usePurchaseStore();
   const pathname = usePathname();
-  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = useIsPro();
 
   // Social notifications badge
   const { totalUnreadCount, friends } = useSocialStore();

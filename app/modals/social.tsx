@@ -18,6 +18,7 @@ import { generateSocialChallenge } from '../../services/groq';
 import { ImagePickerModal } from '../../components/ImagePickerModal';
 import { supabase } from '../../services/supabase';
 import { getLocalDateString } from '../../utils/date';
+import { useAchievements, ALL_BADGES } from '../../hooks/useAchievements';
 
 
 type TabType = 'you' | 'feed' | 'friends' | 'ranking' | 'challenges';
@@ -193,8 +194,7 @@ export default function SocialModal() {
   const [showRankingInstructions, setShowRankingInstructions] = useState(false);
 
   const [inspectingUser, setInspectingUser] = useState<any>(null);
-  const { achievements, unlockedCount } = require('../../hooks/useAchievements').useAchievements();
-  const ALL_BADGES = require('../../hooks/useAchievements').ALL_BADGES;
+  const { achievements, unlockedCount } = useAchievements();
 
   const [challengeForm, setChallengeForm] = useState({
     title: '',
