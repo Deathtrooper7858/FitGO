@@ -24,8 +24,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   isLoading: false,
   customerInfo: null,
 
-  initialize: async (userId) => {
-    // RevenueCat API Inactivada
+  initialize: async () => {
     set({ isLoading: false });
   },
 
@@ -34,11 +33,11 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   },
 
   fetchOfferings: async () => {
-    // API Inactivada
+    // no-op
   },
 
   refreshStatus: async () => {
-    // API Inactivada
+    // no-op
   },
 
   grantPro: async () => {

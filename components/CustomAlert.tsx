@@ -1,12 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { Modal, View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, Platform, TextInput, KeyboardTypeOptions } from 'react-native';
+import { Modal, View, Text, StyleSheet, TouchableOpacity, Animated, Platform, TextInput, KeyboardTypeOptions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AlertCircle, CheckCircle2, Info, HelpCircle, XCircle, Sparkles } from 'lucide-react-native';
 import { useTheme } from '../hooks/useTheme';
 import { Radius, Spacing, Shadow } from '../constants';
-import { useSettingsStore, usePurchaseStore, useAuthStore } from '../store';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { useSettingsStore } from '../store';
+import { useIsPro } from '../hooks/useIsPro';
 
 export type AlertType = 'success' | 'error' | 'warning' | 'info' | 'confirm';
 
@@ -46,9 +45,7 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
   const [inputValue, setInputValue] = React.useState(initialInputValue);
 
   const { premiumColor } = useSettingsStore();
-  const { isPro } = usePurchaseStore();
-  const { profile } = useAuthStore();
-  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = useIsPro();
   const isPremiumCustom = isProActually && premiumColor && premiumColor.startsWith('#');
 
   useEffect(() => {

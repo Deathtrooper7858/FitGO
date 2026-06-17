@@ -322,7 +322,7 @@ export default function DoctorScreen() {
   const { profile } = useAuthStore();
 
   const { isPro } = usePurchaseStore();
-  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = !!isPro || !!profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const { tryUseAI } = useAICredits();
 
   useEffect(() => {

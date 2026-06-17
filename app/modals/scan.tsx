@@ -11,7 +11,8 @@ import { Spacing, Radius } from '../../constants';
 import { getFoodByBarcode, searchFood } from '../../services/foodDatabase';
 import { analyzeFoodPhoto } from '../../services/groq';
 import * as Crypto from 'expo-crypto';
-import { useNutritionStore, useSettingsStore, useAuthStore, usePurchaseStore } from '../../store';
+import { useNutritionStore, useSettingsStore } from '../../store';
+import { useIsPro } from '../../hooks/useIsPro';
 import { supabase } from '../../services/supabase';
 import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
@@ -65,9 +66,7 @@ export default function ScanModal() {
   const colors = useTheme();
   const { language, premiumColor } = useSettingsStore();
   const { addLog, fetchLogs, selectedDate } = useNutritionStore();
-  const { profile } = useAuthStore();
-  const { isPro } = usePurchaseStore();
-  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = useIsPro();
   const { aiPhotoEnergy, aiTextEnergy } = useAdStore();
 
   const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));

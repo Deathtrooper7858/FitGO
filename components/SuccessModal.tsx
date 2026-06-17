@@ -4,7 +4,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Check } from 'lucide-react-native';
 import { useTheme } from '../hooks/useTheme';
 import { Radius, Spacing } from '../constants';
-import { useSettingsStore, usePurchaseStore, useAuthStore } from '../store';
+import { useSettingsStore } from '../store';
+import { useIsPro } from '../hooks/useIsPro';
 
 interface SuccessModalProps {
   visible: boolean;
@@ -20,9 +21,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({ visible, title, mess
   const [scale] = React.useState(new Animated.Value(0));
 
   const { premiumColor } = useSettingsStore();
-  const { isPro } = usePurchaseStore();
-  const { profile } = useAuthStore();
-  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = useIsPro();
   const isPremiumCustom = isProActually && premiumColor && premiumColor.startsWith('#');
   const safePremiumColor = (isPremiumCustom && premiumColor) ? premiumColor : '#7C5CFC';
   const mainColors = isPremiumCustom ? [safePremiumColor, safePremiumColor + 'CC'] : ['#7C5CFC', '#4338CA'];

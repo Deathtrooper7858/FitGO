@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, ActivityIndicator
 } from 'react-native';
@@ -31,6 +31,13 @@ export function PremiumGate({
   const colors = useTheme();
   const { grantPremiumAdAccess } = useAdStore();
   const [loadingAd, setLoadingAd] = useState(false);
+  const goPremiumTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (goPremiumTimer.current) clearTimeout(goPremiumTimer.current);
+    };
+  }, []);
 
   const handleWatchAd = () => {
     setLoadingAd(true);
@@ -60,7 +67,7 @@ export function PremiumGate({
 
   const handleGoPremium = () => {
     onClose();
-    setTimeout(() => router.push('/modals/paywall' as any), 200);
+    goPremiumTimer.current = setTimeout(() => router.push('/modals/paywall' as any), 200);
   };
 
   return (

@@ -7,7 +7,8 @@ import * as Crypto from 'expo-crypto';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../hooks/useTheme';
-import { useNutritionStore, useSettingsStore, useAuthStore, usePurchaseStore } from '../../store';
+import { useNutritionStore, useSettingsStore } from '../../store';
+import { useIsPro } from '../../hooks/useIsPro';
 import { Radius, Spacing } from '../../constants';
 import { useTranslation } from 'react-i18next';
 import {
@@ -70,10 +71,7 @@ export default function AddActivityModal() {
   const { language } = useSettingsStore();
   const { id }       = useLocalSearchParams<{ id: string }>();
   const { addActivityLog, updateActivityLog, activityLogs, selectedDate } = useNutritionStore();
-  const { profile } = useAuthStore();
-  const { isPro } = usePurchaseStore();
-  
-  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = useIsPro();
 
   // If an `id` param was passed, we are editing an existing log entry
   const editingAct = id ? activityLogs.find(a => a.id === id) : null;

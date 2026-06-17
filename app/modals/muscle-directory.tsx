@@ -11,7 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../hooks/useTheme';
 import { ChevronDown, Dumbbell, Activity, Flame, ChevronUp, X } from 'lucide-react-native';
 import { Radius, Shadow, Spacing } from '../../constants';
-import { useAuthStore, usePurchaseStore } from '../../store';
+import { useIsPro } from '../../hooks/useIsPro';
 import { useAdStore } from '../../store/adStore';
 import { AdTimerOverlay } from '../../components/AdTimerOverlay';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -116,11 +116,9 @@ export default function MuscleDirectoryModal() {
   const [isTranslating, setIsTranslating] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
-  const { profile } = useAuthStore();
-  const { isPro } = usePurchaseStore();
   const { hasPremiumAdAccess } = useAdStore();
 
-  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = useIsPro();
   const featureId = 'directory';
   const hasAccess = isProActually || hasPremiumAdAccess(featureId);
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, ActivityIndicator,
   Animated, Easing,
@@ -49,6 +49,15 @@ export const AIEnergyGate = React.memo(function AIEnergyGate({ visible, onClose,
   const [earnedCount, setEarnedCount] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const successTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const goProTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (successTimer.current) clearTimeout(successTimer.current);
+      if (goProTimer.current) clearTimeout(goProTimer.current);
+    };
+  }, []);
 
   const isPhoto = mode === 'photo';
   const currentEnergy = isPhoto ? aiPhotoEnergy : aiTextEnergy;
@@ -98,7 +107,7 @@ export const AIEnergyGate = React.memo(function AIEnergyGate({ visible, onClose,
         if (granted) {
           setEarnedCount(prev => prev + 1);
           setShowSuccess(true);
-          setTimeout(() => {
+          successTimer.current = setTimeout(() => {
             setShowSuccess(false);
             // If user still has 0 energy but can watch more, stay open
             const newEnergy = isPhoto
@@ -151,7 +160,7 @@ export const AIEnergyGate = React.memo(function AIEnergyGate({ visible, onClose,
 
   const handleGoPro = () => {
     onClose();
-    setTimeout(() => router.push('/modals/paywall' as any), 200);
+    goProTimer.current = setTimeout(() => router.push('/modals/paywall' as any), 200);
   };
 
   // --- Render helpers ---

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert,
-  Modal, Platform, Dimensions, TextInput
+  Modal, Platform, TextInput
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,8 +14,6 @@ import {
   Sparkles, AlertCircle
 } from 'lucide-react-native';
 import { useAuthStore, useSettingsStore } from '../store';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const STEPS_COUNT = 5;
 
