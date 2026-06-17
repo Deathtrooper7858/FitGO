@@ -12,6 +12,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -21,6 +22,17 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden.");
+      setLoading(false);
+      return;
+    }
+    if (password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres.");
+      setLoading(false);
+      return;
+    }
 
     const { error: signUpError } = await supabase.auth.signUp({
       email,
@@ -120,10 +132,26 @@ export default function RegisterPage() {
                 <input
                   type="password"
                   required
+                  minLength={6}
                   placeholder={t("password")}
                   className="input-dark pl-11"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-muted">
+                  <Lock size={18} />
+                </div>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  placeholder="Confirmar contraseña"
+                  className="input-dark pl-11"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                 />
               </div>
             </div>

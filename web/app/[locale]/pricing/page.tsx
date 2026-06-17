@@ -49,8 +49,8 @@ export default function PricingPage() {
   const [billing, setBilling] = useState<"monthly" | "annual">("annual");
   const [loading, setLoading] = useState(false);
 
-  const monthlyPrice = 4.99;
-  const annualPrice = 3.33;
+  const monthlyPrice = Number(process.env.NEXT_PUBLIC_PRICE_MONTHLY) || 4.99;
+  const annualPrice = Number(process.env.NEXT_PUBLIC_PRICE_ANNUAL) || 3.33;
   const annualTotal = (annualPrice * 12).toFixed(2);
 
   const handleCheckout = async () => {
@@ -61,10 +61,15 @@ export default function PricingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ billing }),
       });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Error al procesar el pago");
+      }
       const { url } = await res.json();
       if (url) window.location.href = url;
     } catch (err) {
       console.error(err);
+      alert("Error al procesar el pago. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }

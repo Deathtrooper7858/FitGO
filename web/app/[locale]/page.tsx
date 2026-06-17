@@ -1,3 +1,4 @@
+import React from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Link } from "@/i18n/routing";
@@ -18,6 +19,19 @@ import {
   Download,
   Smartphone,
 } from "lucide-react";
+
+function HighlightedText({ text, className = "text-white" }: { text: string; className?: string }) {
+  const parts = text.split(/(<highlight>|<\/highlight>)/g);
+  const result: React.ReactNode[] = [];
+  let highlighting = false;
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (part === "<highlight>") { highlighting = true; continue; }
+    if (part === "</highlight>") { highlighting = false; continue; }
+    result.push(highlighting ? <span key={i} className={className}>{part}</span> : <React.Fragment key={i}>{part}</React.Fragment>);
+  }
+  return <>{result}</>;
+}
 
 const featurePills = [
   { icon: Apple, key: "nutrition", color: "#FF6B6B" },
@@ -151,8 +165,9 @@ export default function HomePage() {
           <p
             className="text-text-secondary text-lg md:text-2xl leading-relaxed mb-10 max-w-2xl mx-auto animate-fade-up font-medium"
             style={{ animationDelay: "0.1s" }}
-            dangerouslySetInnerHTML={{ __html: t.raw("home.motto").replace(/<highlight>/g, '<span className="text-white">').replace(/<\/highlight>/g, '</span>') }}
-          />
+          >
+            <HighlightedText text={t.raw("home.motto")} />
+          </p>
 
           {/* Feature pills */}
           <div
@@ -379,7 +394,9 @@ export default function HomePage() {
                   FitGO Pro
                 </span>
               </div>
-              <h2 className="font-display font-black text-4xl md:text-5xl text-text-primary mb-4 text-balance" dangerouslySetInnerHTML={{ __html: t.raw("home.pricing.title").replace(/<highlight>/g, '<span className="gradient-text">').replace(/<\/highlight>/g, '</span>') }} />
+              <h2 className="font-display font-black text-4xl md:text-5xl text-text-primary mb-4 text-balance">
+                <HighlightedText text={t.raw("home.pricing.title")} className="gradient-text" />
+              </h2>
               <p className="text-text-secondary text-lg mb-8">
                 {t("home.pricing.desc")}
               </p>

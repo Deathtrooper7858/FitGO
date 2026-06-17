@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, usePathname } from "@/i18n/routing";
 import { Menu, X, Zap } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { createClient } from "@/lib/supabase";
-
 import { User } from "@supabase/supabase-js";
-
 import { useTranslations } from "next-intl";
 
 export default function Navbar() {
@@ -15,7 +13,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
