@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuthStore } from './authStore';
 
 export interface CompletedWorkout {
   id: string;
@@ -25,12 +26,7 @@ export const useWorkoutHistoryStore = create<WorkoutHistoryState>()(
     (set, get) => ({
       workouts: [],
       addWorkout: (workoutData) => set((state) => {
-        // We do a soft require of authStore to avoid circular deps, or we can just import it.
-        // Actually since we cannot import it easily due to potential circular dependencies,
-        // it's better to pass userId from outside. But since we didn't change addWorkout signature,
-        // let's dynamically require it.
-        const authStore = require('./authStore').useAuthStore;
-        const userId = authStore.getState().profile?.id;
+        const userId = useAuthStore.getState().profile?.id;
         
         const newWorkout: CompletedWorkout = {
           ...workoutData,
@@ -46,8 +42,7 @@ export const useWorkoutHistoryStore = create<WorkoutHistoryState>()(
         workouts: state.workouts.filter(w => w.id !== id)
       })),
       hasCompletedWorkoutToday: (date) => {
-        const authStore = require('./authStore').useAuthStore;
-        const userId = authStore.getState().profile?.id;
+        const userId = useAuthStore.getState().profile?.id;
         return get().workouts.some(w => w.date === date && (!w.userId || w.userId === userId));
       },
       getWorkoutsForUser: (userId) => {

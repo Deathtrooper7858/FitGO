@@ -14,7 +14,7 @@ import { FoodLog, ActivityLog } from './types';
 import type { FoodItem } from '../services/foodDatabase';
 import { getLocalDateString } from '../utils/date';
 import { useAuthStore } from './authStore';
-import { useLeagueStore, LEAGUE_POINTS } from './leagueStore';
+import { useLeagueStore, LEAGUE_POINTS, getStreakMultiplier } from './leagueStore';
 import { supabase } from '../services/supabase';
 import { useToastStore } from './toastStore';
 import { NotificationTriggers } from '../utils/notificationTriggers';
@@ -49,6 +49,47 @@ const isValidUUID = (v: string | null | undefined): boolean =>
 /** Returns the value if it's a valid UUID, otherwise generates a new one. */
 const ensureUUID = (v: string | null | undefined): string =>
   isValidUUID(v) ? v! : Crypto.randomUUID();
+
+/** Shared mapper: Supabase row → FoodLog (normalises macros to per-100g). */
+function mapSupabaseRowToFoodLog(d: any): FoodLog {
+  return {
+    id: d.id,
+    foodItem: {
+      id:       d.food_id ?? d.id,
+      name:     d.food_name,
+      calories:  d.grams > 0 ? Math.round((d.calories  / d.grams) * 100) : d.calories,
+      protein:  d.grams > 0 ? Math.round((d.protein   / d.grams) * 100) : d.protein,
+      carbs:    d.grams > 0 ? Math.round((d.carbs     / d.grams) * 100) : d.carbs,
+      fat:      d.grams > 0 ? Math.round((d.fat       / d.grams) * 100) : d.fat,
+      fiber:    d.grams > 0 ? Math.round((d.fiber     / d.grams) * 100) : d.fiber,
+      sugar:    d.grams > 0 ? Math.round((d.sugar     / d.grams) * 100) : d.sugar,
+      sodium:   d.grams > 0 ? Math.round((d.sodium    / d.grams) * 100) : d.sodium,
+      saturatedFat: d.grams > 0 ? Math.round((d.saturated_fat / d.grams) * 100) : d.saturated_fat,
+      transFat: d.grams > 0 ? Math.round((d.trans_fat  / d.grams) * 100) : d.trans_fat,
+      cholesterol: d.grams > 0 ? Math.round((d.cholesterol / d.grams) * 100) : d.cholesterol,
+      iron:     d.grams > 0 ? Math.round((d.iron     / d.grams) * 100) : d.iron,
+      calcium:  d.grams > 0 ? Math.round((d.calcium  / d.grams) * 100) : d.calcium,
+      source:   'custom',
+    },
+    grams:      d.grams,
+    meal:       d.meal,
+    loggedAt:   d.logged_at,
+    calories:   d.calories,
+    protein:    d.protein,
+    carbs:      d.carbs,
+    fat:        d.fat,
+    fiber:      d.fiber,
+    sugar:      d.sugar,
+    sodium:     d.sodium,
+    iron:       d.iron,
+    calcium:    d.calcium,
+    saturatedFat: d.saturated_fat,
+    transFat:   d.trans_fat,
+    cholesterol: d.cholesterol,
+    user_id:    d.user_id,
+    is_favorite: d.is_favorite,
+  };
+}
 
 interface NutritionState {
   todayLogs:    FoodLog[];
@@ -98,6 +139,17 @@ interface NutritionState {
   // Extra Snacks logic synchronized here
   addExtraSnack: () => Promise<void>;
   removeExtraSnack: () => Promise<void>;
+}
+
+/** Module-level memo for recalculateStreak — skips recomputation when activeDays haven't changed. */
+let _cachedStreak = 0;
+let _cachedStreakInput = '';
+function memoRecalculateStreak(activeDays: Record<string, boolean>): number {
+  const key = JSON.stringify(activeDays);
+  if (key === _cachedStreakInput) return _cachedStreak;
+  _cachedStreakInput = key;
+  _cachedStreak = recalculateStreak(activeDays);
+  return _cachedStreak;
 }
 
 /**
@@ -226,7 +278,7 @@ export const useNutritionStore = create<NutritionState>()(
 
         const newActiveDays = { ...activeDays, [date]: true };
         const newPlannedDays = Object.keys(newActiveDays).length;
-        const streak = recalculateStreak(newActiveDays);
+        const streak = memoRecalculateStreak(newActiveDays);
 
         set({ activeDays: newActiveDays, plannedDays: newPlannedDays, streakDays: streak });
 
@@ -319,7 +371,7 @@ export const useNutritionStore = create<NutritionState>()(
             void (async () => {
               try {
                 const ls = useLeagueStore.getState();
-                const multiplier = ls.myStreak >= 15 ? 2.0 : ls.myStreak >= 8 ? 1.5 : ls.myStreak >= 3 ? 1.2 : 1.0;
+                const multiplier = getStreakMultiplier(ls.myStreak);
                 const finalPts = Math.round(10 * multiplier);
 
                 // Update local state only — DB trigger already persisted to DB
@@ -625,39 +677,7 @@ export const useNutritionStore = create<NutritionState>()(
 
           if (data && data.length > 0) {
             hasActivityThisDay = true;
-            const formattedLogs = data.map((d: any) => ({
-              id:        d.id,
-              foodItem:  {
-                id:       d.food_id ?? d.id,
-                name:     d.food_name,
-                calories: d.grams > 0 ? Math.round((d.calories / d.grams) * 100) : d.calories,
-                protein:  d.grams > 0 ? Math.round((d.protein  / d.grams) * 100) : d.protein,
-                carbs:    d.grams > 0 ? Math.round((d.carbs    / d.grams) * 100) : d.carbs,
-                fat:      d.grams > 0 ? Math.round((d.fat      / d.grams) * 100) : d.fat,
-                sugar:    d.grams > 0 ? Math.round((d.sugar    / d.grams) * 100) : d.sugar,
-                fiber:    d.grams > 0 ? Math.round((d.fiber    / d.grams) * 100) : d.fiber,
-                sodium:   d.grams > 0 ? Math.round((d.sodium   / d.grams) * 100) : d.sodium,
-                iron:     d.grams > 0 ? Math.round((d.iron     / d.grams) * 100) : d.iron,
-                calcium:  d.grams > 0 ? Math.round((d.calcium  / d.grams) * 100) : d.calcium,
-                saturatedFat: d.grams > 0 ? Math.round((d.saturated_fat / d.grams) * 100) : d.saturated_fat,
-                transFat:     d.grams > 0 ? Math.round((d.trans_fat     / d.grams) * 100) : d.trans_fat,
-                source:   'custom',
-              },
-              grams:    d.grams,
-              meal:     d.meal,
-              loggedAt: d.logged_at,
-              calories: d.calories,
-              protein:  d.protein,
-              carbs:    d.carbs,
-              fat:      d.fat,
-              sugar:    d.sugar,
-              fiber:    d.fiber,
-              sodium:   d.sodium,
-              iron:     d.iron,
-              calcium:  d.calcium,
-              saturatedFat: d.saturated_fat,
-              transFat:     d.trans_fat,
-            }));
+            const formattedLogs = data.map(mapSupabaseRowToFoodLog);
 
             // Merge food logs: keep others, update existing with Supabase data, preserve unsynced local logs
             set((s) => {
@@ -701,14 +721,14 @@ export const useNutritionStore = create<NutritionState>()(
               set({ 
                 activeDays: newActiveDays, 
                 plannedDays: Object.keys(newActiveDays).length,
-                streakDays: recalculateStreak(newActiveDays)
+                streakDays: memoRecalculateStreak(newActiveDays)
               });
             }
           }
 
           // Force recalculate streak to avoid stale UI
           const { activeDays } = get();
-          const streak = recalculateStreak(activeDays);
+          const streak = memoRecalculateStreak(activeDays);
           if (get().streakDays !== streak) {
             set({ streakDays: streak });
             // Sync streak to DB whenever it changes
@@ -756,39 +776,7 @@ export const useNutritionStore = create<NutritionState>()(
           if (error) throw error;
 
           if (data) {
-            const formattedLogs = data.map((d: any) => ({
-              id: d.id,
-              foodItem: {
-                id: d.food_id ?? d.id,
-                name: d.food_name,
-                calories: d.grams > 0 ? Math.round((d.calories / d.grams) * 100) : d.calories,
-                protein: d.grams > 0 ? Math.round((d.protein / d.grams) * 100) : d.protein,
-                carbs: d.grams > 0 ? Math.round((d.carbs / d.grams) * 100) : d.carbs,
-                fat: d.grams > 0 ? Math.round((d.fat / d.grams) * 100) : d.fat,
-                sugar:    d.grams > 0 ? Math.round((d.sugar    / d.grams) * 100) : d.sugar,
-                fiber:    d.grams > 0 ? Math.round((d.fiber    / d.grams) * 100) : d.fiber,
-                sodium:   d.grams > 0 ? Math.round((d.sodium   / d.grams) * 100) : d.sodium,
-                iron:     d.grams > 0 ? Math.round((d.iron     / d.grams) * 100) : d.iron,
-                calcium:  d.grams > 0 ? Math.round((d.calcium  / d.grams) * 100) : d.calcium,
-                saturatedFat: d.grams > 0 ? Math.round((d.saturated_fat / d.grams) * 100) : d.saturated_fat,
-                transFat:     d.grams > 0 ? Math.round((d.trans_fat     / d.grams) * 100) : d.trans_fat,
-                source: 'custom',
-              },
-              grams: d.grams,
-              meal: d.meal,
-              loggedAt: d.logged_at,
-              calories: d.calories,
-              protein: d.protein,
-              carbs: d.carbs,
-              fat: d.fat,
-              sugar:    d.sugar,
-              fiber:    d.fiber,
-              sodium:   d.sodium,
-              iron:     d.iron,
-              calcium:  d.calcium,
-              saturatedFat: d.saturated_fat,
-              transFat:     d.trans_fat,
-            }));
+            const formattedLogs = data.map(mapSupabaseRowToFoodLog);
 
             // Full merge-by-ID: Supabase is the source of truth for history.
             // Replace existing entries with remote data, and add any new ones.
@@ -810,7 +798,7 @@ export const useNutritionStore = create<NutritionState>()(
             set(s => {
               const mergedActiveDays = { ...s.activeDays, ...historyActiveDays };
               const newPlannedDays = Object.keys(mergedActiveDays).length;
-              const streak = recalculateStreak(mergedActiveDays);
+              const streak = memoRecalculateStreak(mergedActiveDays);
               return { activeDays: mergedActiveDays, plannedDays: newPlannedDays, streakDays: streak };
             });
           }

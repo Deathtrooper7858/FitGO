@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "analyze": "ANALYZE=true next build",
+    "analyze:turbo": "next experimental-analyze"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.7.0",

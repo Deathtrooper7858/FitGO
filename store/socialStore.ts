@@ -6,6 +6,31 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { decode } from 'base64-arraybuffer';
 import { triggerInstantNotification } from '../services/notifications';
 
+/** Shared uploader: posts/ or chat_media/ in the 'social' bucket. */
+async function uploadToSocialStorage(
+  uri: string,
+  folder: 'posts' | 'chat_media',
+  mimeType: string,
+): Promise<string | null> {
+  try {
+    const extension = mimeType.split('/')[1] || 'jpg';
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${extension}`;
+    const filePath = `${folder}/${fileName}`;
+
+    const formData = new FormData();
+    formData.append('file', { uri, name: fileName, type: mimeType } as any);
+
+    const { error } = await supabase.storage.from('social').upload(filePath, formData, { upsert: false });
+    if (error) throw error;
+
+    const { data: urlData } = supabase.storage.from('social').getPublicUrl(filePath);
+    return urlData.publicUrl;
+  } catch (err) {
+    console.warn(`[SocialStore] Error uploading to ${folder}:`, err);
+    return null;
+  }
+}
+
 let activeUnreadChannel: any = null;
 let activeSocialChannel: any = null;
 
@@ -789,84 +814,9 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     }
   },
 
-  uploadPostImage: async (uri: string) => {
-    try {
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
-      const filePath = `posts/${fileName}`;
-
-      const formData = new FormData();
-      formData.append('file', {
-        uri,
-        name: fileName,
-        type: 'image/jpeg',
-      } as any);
-
-      const { data, error } = await supabase.storage.from('social').upload(filePath, formData, {
-        upsert: false,
-      });
-
-      if (error) throw error;
-
-      const { data: urlData } = supabase.storage.from('social').getPublicUrl(filePath);
-      return urlData.publicUrl;
-    } catch (err) {
-      console.warn('[SocialStore] Error uploading post image:', err);
-      return null;
-    }
-  },
-
-  uploadChatImage: async (uri: string) => {
-    try {
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
-      const filePath = `chat_media/${fileName}`;
-
-      const formData = new FormData();
-      formData.append('file', {
-        uri,
-        name: fileName,
-        type: 'image/jpeg',
-      } as any);
-
-      const { data, error } = await supabase.storage.from('social').upload(filePath, formData, {
-        upsert: false,
-      });
-
-      if (error) throw error;
-
-      const { data: urlData } = supabase.storage.from('social').getPublicUrl(filePath);
-      return urlData.publicUrl;
-    } catch (err) {
-      console.warn('[SocialStore] Error uploading chat image:', err);
-      return null;
-    }
-  },
-
-  uploadChatAudio: async (uri: string) => {
-    try {
-      const extension = uri.split('.').pop() || 'm4a';
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${extension}`;
-      const filePath = `chat_media/${fileName}`;
-
-      const formData = new FormData();
-      formData.append('file', {
-        uri,
-        name: fileName,
-        type: `audio/${extension}`,
-      } as any);
-
-      const { data, error } = await supabase.storage.from('social').upload(filePath, formData, {
-        upsert: false,
-      });
-
-      if (error) throw error;
-
-      const { data: urlData } = supabase.storage.from('social').getPublicUrl(filePath);
-      return urlData.publicUrl;
-    } catch (err) {
-      console.warn('[SocialStore] Error uploading chat audio:', err);
-      return null;
-    }
-  },
+  uploadPostImage: (uri: string) => uploadToSocialStorage(uri, 'posts', 'image/jpeg'),
+  uploadChatImage: (uri: string) => uploadToSocialStorage(uri, 'chat_media', 'image/jpeg'),
+  uploadChatAudio: (uri: string) => uploadToSocialStorage(uri, 'chat_media', `audio/${uri.split('.').pop() || 'm4a'}`),
 
   fetchDirectMessages: async (userId: string, friendId: string) => {
     try {

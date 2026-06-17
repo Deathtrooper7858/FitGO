@@ -84,31 +84,4 @@ export const supabase = createClient(
   }
 );
 
-// ── Lightweight in-memory query cache ─────────────────────────────────────────
-// Avoids duplicate round-trips for data that doesn't change often (e.g. user
-// profile, body measurements). TTL is configurable per call-site.
-type CacheEntry = { data: any; expiresAt: number };
-const _cache = new Map<string, CacheEntry>();
 
-export async function cachedQuery<T>(
-  key: string,
-  fetcher: () => Promise<T>,
-  ttlMs = 60_000   // default: 1 minute TTL
-): Promise<T> {
-  const now = Date.now();
-  const hit = _cache.get(key);
-  if (hit && hit.expiresAt > now) return hit.data as T;
-
-  const data = await fetcher();
-  _cache.set(key, { data, expiresAt: now + ttlMs });
-  return data;
-}
-
-/** Invalidate one or all cache entries (call after mutations). */
-export function invalidateCache(key?: string) {
-  if (key) {
-    _cache.delete(key);
-  } else {
-    _cache.clear();
-  }
-}

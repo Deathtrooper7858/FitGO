@@ -8,6 +8,28 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 
+// Silence debug logs in production builds
+if (!__DEV__) {
+  console.log = () => {};
+  console.warn = () => {};
+} else {
+  // Interceptar console.warn para limpiar la terminal de avisos de librerías de terceros
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    const msg = args[0];
+    if (typeof msg === 'string' && (
+      msg.includes('is not supported with edge-to-edge enabled') ||
+      msg.includes('setLayoutAnimationEnabledExperimental') ||
+      msg.includes('Could not get historical steps') ||
+      msg.includes('Reduced motion setting is enabled') ||
+      msg.includes('Firebase not configured in this build')
+    )) {
+      return;
+    }
+    originalWarn(...args);
+  };
+}
+
 // Ignore specific warnings in the UI
 LogBox.ignoreLogs([
   'setLayoutAnimationEnabledExperimental is currently a no-op',
@@ -19,26 +41,10 @@ LogBox.ignoreLogs([
   'DOMException: Aborted',
   'AuthRetryableFetchError: Aborted'
 ]);
-// NOTA: 'AuthApiError: Invalid Refresh Token' fue eliminado de la lista de warnings
-// ignorados intencionalmente: este error indica sesión inválida y debe ser visible.
-
-// Interceptar console.warn para limpiar la terminal de avisos de librerías de terceros
-const originalWarn = console.warn;
-console.warn = (...args) => {
-  const msg = args[0];
-  if (typeof msg === 'string' && (
-    msg.includes('is not supported with edge-to-edge enabled') ||
-    msg.includes('setLayoutAnimationEnabledExperimental') ||
-    msg.includes('Could not get historical steps') ||
-    msg.includes('Reduced motion setting is enabled') ||
-    msg.includes('Firebase not configured in this build')
-  )) {
-    return;
-  }
-  originalWarn(...args);
-};
 import { supabase } from '../services/supabase';
-import { useAuthStore, useSettingsStore, usePurchaseStore } from '../store';
+import { useAuthStore } from '../store/authStore';
+import { useSettingsStore } from '../store/settingsStore';
+import { usePurchaseStore } from '../store/purchaseStore';
 import { useSocialStore } from '../store/socialStore';
 import { useAICreditsStore } from '../store/aiCreditsStore';
 import { registerForPushNotificationsAsync } from '../services/notifications';

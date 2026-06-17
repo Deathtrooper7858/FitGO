@@ -1,23 +1,10 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import * as SecureStore from 'expo-secure-store';
-import { supabase } from '../services/supabase';
 import { BodyMeasurement } from './types';
+import { supabase } from '../services/supabase';
 import { useAuthStore } from './authStore';
 import { useToastStore } from './toastStore';
-
-// Secure storage adapter for Zustand
-const secureStorage = {
-  getItem: async (name: string) => {
-    return (await SecureStore.getItemAsync(name)) || null;
-  },
-  setItem: async (name: string, value: string) => {
-    await SecureStore.setItemAsync(name, value);
-  },
-  removeItem: async (name: string) => {
-    await SecureStore.deleteItemAsync(name);
-  },
-};
+import { SecureStorage } from '../utils/storage';
 
 interface BodyState {
   measurements: BodyMeasurement[];
@@ -178,7 +165,7 @@ export const useBodyStore = create<BodyState>()(
     }),
     {
       name: 'ff-body-measurements',
-      storage: createJSONStorage(() => secureStorage),
+      storage: createJSONStorage(() => SecureStorage),
     }
   )
 );

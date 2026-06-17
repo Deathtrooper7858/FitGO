@@ -5,7 +5,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { Image } from 'expo-image';
 import { ArrowLeft, UserPlus, Check, Trophy, Heart, MessageSquare, Users, Trash2 } from 'lucide-react-native';
 import { getNameStyle } from '../../utils/styles';
-import * as LucideIcons from 'lucide-react-native';
+import { getLucideIcon } from '../../constants/iconMap';
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../../services/supabase';
 import { useAuthStore, useSocialStore, useSettingsStore, usePurchaseStore } from '../../store';
@@ -373,7 +373,7 @@ export default function UserProfileModal() {
                         >
                           {ach.iconType === 'lucide' && ach.lucideIcon ? (
                             // @ts-ignore
-                            React.createElement(LucideIcons[ach.lucideIcon] || LucideIcons.Star, {
+                            React.createElement(getLucideIcon(ach.lucideIcon), {
                               size: 24,
                               color: isHolo ? '#FFF' : activeColor,
                               strokeWidth: 2.5
@@ -470,7 +470,7 @@ export default function UserProfileModal() {
                       >
                         {achievement.iconType === 'lucide' && achievement.lucideIcon ? (
                           // @ts-ignore
-                          React.createElement(LucideIcons[achievement.lucideIcon] || LucideIcons.Star, {
+                          React.createElement(getLucideIcon(achievement.lucideIcon), {
                             size: 26,
                             color: '#FFF',
                             strokeWidth: 2.5
@@ -529,7 +529,7 @@ export default function UserProfileModal() {
                         >
                           {achievement.iconType === 'lucide' && achievement.lucideIcon ? (
                             // @ts-ignore
-                            React.createElement(LucideIcons[achievement.lucideIcon] || LucideIcons.Star, {
+                            React.createElement(getLucideIcon(achievement.lucideIcon), {
                               size: 26,
                               color: '#FFF',
                               strokeWidth: 2.5

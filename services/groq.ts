@@ -33,6 +33,10 @@ const LANG_NAMES: Record<string, string> = {
 /** Resolves a language code to a full name, defaulting to English. */
 const getLang = (code: string) => LANG_NAMES[code] || 'English';
 
+/** Language groups for prompt localisation. */
+const isRomanceLang = (lang: string) => ['Spanish', 'French', 'Portuguese', 'Italian'].includes(lang);
+const isGermanicLang = (lang: string) => ['English', 'German'].includes(lang);
+
 // ─── Model IDs ────────────────────────────────────────────────────────────────
 const CHAT_MODEL   = 'llama-3.3-70b-versatile'; //no cambiar en proximos
 const FAST_MODEL   = 'llama-3.1-8b-instant'; // Modelo rápido con límites de cuota mucho más altos (~100,000 TPM)
@@ -298,7 +302,7 @@ export async function analyzeFoodPhoto(base64Image: string, language: string = '
   }
 
   const targetLang = getLang(language);
-  const exampleName = targetLang === 'Spanish' ? 'Ensalada de pollo' : 'Chicken salad';
+  const exampleName = isRomanceLang(targetLang) ? 'Ensalada de pollo' : 'Chicken salad';
 
   const prompt = `Analyze this food image and return ONLY a JSON object with this structure: {"foods": [{"name": "${exampleName}", "grams": 150, "calories": 250, "protein": 20, "carbs": 30, "fat": 8, "sugar": 5, "fiber": 3, "sodium": 300, "iron": 1.2, "calcium": 150, "saturatedFat": 2, "transFat": 0}], "totalCalories": 250, "confidence": "high", "notes": ""}. Important: DO NOT split mixed dishes (like salads, sandwiches, stews) into individual ingredients; keep them as a single unified food item. Use ${targetLang} for names and notes.`;
 
@@ -665,18 +669,18 @@ Return ONLY valid JSON (no markdown). Use this exact structure:
 {
   "warning": "Optional warning string if risky",
   "Mon": {
-    "name": "${targetLang === 'Spanish' ? 'Pecho y Tríceps' : 'Chest & Triceps'}",
+    "name": "${isRomanceLang(targetLang) ? 'Pecho y Tríceps' : 'Chest & Triceps'}",
     "exercises": [
-      { "name": "${targetLang === 'Spanish' ? 'Press de Banca' : 'Bench Press'}", "englishName": "Bench Press", "sets": 3, "reps": "10-12", "rest": "90s" },
-      { "name": "${targetLang === 'Spanish' ? 'Press Superior con Mancuernas' : 'Incline DB Press'}", "englishName": "Incline DB Press", "sets": 3, "reps": "12", "rest": "60s" }
+      { "name": "${isRomanceLang(targetLang) ? 'Press de Banca' : 'Bench Press'}", "englishName": "Bench Press", "sets": 3, "reps": "10-12", "rest": "90s" },
+      { "name": "${isRomanceLang(targetLang) ? 'Press Superior con Mancuernas' : 'Incline DB Press'}", "englishName": "Incline DB Press", "sets": 3, "reps": "12", "rest": "60s" }
     ]
   },
-  "Tue": { "name": "${targetLang === 'Spanish' ? 'Día de Descanso' : 'Rest Day'}", "exercises": [] },
-  "Wed": { "name": "${targetLang === 'Spanish' ? 'Espalda y Bíceps' : 'Back & Biceps'}", "exercises": [] },
-  "Thu": { "name": "${targetLang === 'Spanish' ? 'Día de Descanso' : 'Rest Day'}", "exercises": [] },
-  "Fri": { "name": "${targetLang === 'Spanish' ? 'Piernas y Hombros' : 'Legs & Shoulders'}", "exercises": [] },
-  "Sat": { "name": "${targetLang === 'Spanish' ? 'Recuperación Activa' : 'Active Recovery'}", "exercises": [] },
-  "Sun": { "name": "${targetLang === 'Spanish' ? 'Día de Descanso' : 'Rest Day'}", "exercises": [] }
+  "Tue": { "name": "${isRomanceLang(targetLang) ? 'Día de Descanso' : 'Rest Day'}", "exercises": [] },
+  "Wed": { "name": "${isRomanceLang(targetLang) ? 'Espalda y Bíceps' : 'Back & Biceps'}", "exercises": [] },
+  "Thu": { "name": "${isRomanceLang(targetLang) ? 'Día de Descanso' : 'Rest Day'}", "exercises": [] },
+  "Fri": { "name": "${isRomanceLang(targetLang) ? 'Piernas y Hombros' : 'Legs & Shoulders'}", "exercises": [] },
+  "Sat": { "name": "${isRomanceLang(targetLang) ? 'Recuperación Activa' : 'Active Recovery'}", "exercises": [] },
+  "Sun": { "name": "${isRomanceLang(targetLang) ? 'Día de Descanso' : 'Rest Day'}", "exercises": [] }
 }`;
 
   const data = await fetchGroq({
@@ -712,9 +716,9 @@ ${homeWorkoutText}
 IMPORTANT: All exercise names MUST be in ${targetLang}. Return ONLY valid JSON (no markdown).
 {
   "${day}": {
-    "name": "${targetLang === 'Spanish' ? 'Pecho y Tríceps' : 'Chest & Triceps'}",
+    "name": "${isRomanceLang(targetLang) ? 'Pecho y Tríceps' : 'Chest & Triceps'}",
     "exercises": [
-      { "name": "${targetLang === 'Spanish' ? 'Press de Banca' : 'Bench Press'}", "englishName": "Bench Press", "sets": 3, "reps": "10-12", "rest": "90s" }
+      { "name": "${isRomanceLang(targetLang) ? 'Press de Banca' : 'Bench Press'}", "englishName": "Bench Press", "sets": 3, "reps": "10-12", "rest": "90s" }
     ]
   }
 }`;

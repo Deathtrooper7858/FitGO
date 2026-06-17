@@ -8,7 +8,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 import { Spacing, Radius, Shadow } from '../../../constants';
-import { useAuthStore, useNutritionStore, selectDailyTotals, useSettingsStore, useBodyStore, UserProfile } from '../../../store';
+import { useAuthStore } from '../../../store/authStore';
+import { useNutritionStore, selectDailyTotals } from '../../../store/nutritionStore';
+import { useSettingsStore } from '../../../store/settingsStore';
+import { useBodyStore } from '../../../store/bodyStore';
+import type { UserProfile } from '../../../store/types';
 import { useTheme } from '../../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../../services/supabase';
@@ -33,17 +37,13 @@ import { renderDashboardWidget } from '../../../components/dashboard/WidgetRende
 import { FitzDailyTip } from '../../../components/FitzDailyTip';
 import { useProgressStore } from '../../../store/progressStore';
 
-const { width } = Dimensions.get('window');
-
-const WIDGET_WIDTH = (width - Spacing.base * 2 - Spacing.md) / 2;
-
 const RING_SIZE     = 180;
 const STROKE_WIDTH  = 15;
 const RADIUS        = (RING_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 // ─── Calorie/Score Ring (Premium) ────────────────────────────────────────────
-function ScoreRing({ consumed, target, dateLabel, customColor }: { consumed: number; target: number; dateLabel: string; customColor?: string | null }) {
+const ScoreRing = React.memo(function ScoreRing({ consumed, target, dateLabel, customColor }: { consumed: number; target: number; dateLabel: string; customColor?: string | null }) {
   const { t } = useTranslation();
   const colors = useTheme();
   const safeConsumed = Number(consumed) || 0;
@@ -125,7 +125,7 @@ function ScoreRing({ consumed, target, dateLabel, customColor }: { consumed: num
       </View>
     </View>
   );
-}
+});
 const ring = StyleSheet.create({
   container:  { alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginVertical: 12 },
   datePill:   { paddingHorizontal: 14, paddingVertical: 5, borderRadius: 20, borderWidth: 1, marginBottom: 4 },
@@ -138,7 +138,7 @@ const ring = StyleSheet.create({
 });
 
 // ─── Achievement Preview ───────────────────────────────────────────────────────
-function AchievementPreview({ achievements, onPress }: { achievements: Achievement[]; onPress: () => void }) {
+const AchievementPreview = React.memo(function AchievementPreview({ achievements, onPress }: { achievements: Achievement[]; onPress: () => void }) {
   const colors = useTheme();
   const { t } = useTranslation();
   const unlockedCount = achievements.filter(a => a.unlocked).length;
@@ -159,8 +159,7 @@ function AchievementPreview({ achievements, onPress }: { achievements: Achieveme
       </View>
     </TouchableOpacity>
   );
-}
-
+});
 const ap = StyleSheet.create({
   container: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(255, 215, 0, 0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255, 215, 0, 0.2)' },
   trophyCircle: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
@@ -185,7 +184,7 @@ export default function DashboardScreen() {
   const { calories } = totalsData;
   const target = profile?.targetCalories ?? 2000;
   const name = profile?.name?.split(' ')[0] ?? t('dashboard.fallbackName');
-  const streakDays = 5; // Placeholder
+  const streakDays = useNutritionStore(state => state.streakDays);
 
   const navigation = useNavigation();
 

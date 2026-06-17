@@ -11,7 +11,7 @@ interface AICreditsBarProps {
   compact?: boolean;
 }
 
-export function AICreditsBar({ compact = false }: AICreditsBarProps) {
+export const AICreditsBar = React.memo(function AICreditsBar({ compact = false }: AICreditsBarProps) {
   const colors = useTheme();
   const { creditsLeft, hasCredits, isPro, maxCredits } = useAICredits();
 
@@ -78,8 +78,7 @@ export function AICreditsBar({ compact = false }: AICreditsBarProps) {
       )}
     </View>
   );
-}
-
+});
 const s = StyleSheet.create({
   container: {
     borderRadius: 16,

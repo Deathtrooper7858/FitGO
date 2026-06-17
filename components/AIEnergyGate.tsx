@@ -36,7 +36,7 @@ function getOrCreateRewardedAd(): RewardedAd {
   return rewardedAdInstance;
 }
 
-export function AIEnergyGate({ visible, onClose, onEnergyGranted, mode = 'photo' }: AIEnergyGateProps) {
+export const AIEnergyGate = React.memo(function AIEnergyGate({ visible, onClose, onEnergyGranted, mode = 'photo' }: AIEnergyGateProps) {
   const colors = useTheme();
   const {
     aiPhotoEnergy, aiTextEnergy,
@@ -331,8 +331,7 @@ export function AIEnergyGate({ visible, onClose, onEnergyGranted, mode = 'photo'
       </View>
     </Modal>
   );
-}
-
+});
 // ─── useAIEnergy hook ───────────────────────────────────────────────────────
 export function useAIEnergy() {
   const {

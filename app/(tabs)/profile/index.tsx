@@ -33,7 +33,7 @@ import {
   Utensils, Sparkles, Leaf, Clock, Trophy, Check, Briefcase, Coffee, PersonStanding, X
 } from 'lucide-react-native';
 import { getNameStyle } from '../../../utils/styles';
-import * as LucideIcons from 'lucide-react-native';
+import { getLucideIcon } from '../../../constants/iconMap';
 import * as XLSX from 'xlsx';
 import { cacheDirectory, EncodingType, writeAsStringAsync } from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
@@ -730,7 +730,7 @@ const VitrinaTrofeoItem = React.memo(function VitrinaTrofeoItem({
       >
         {ach.iconType === 'lucide' && ach.lucideIcon ? (
           // @ts-ignore
-          React.createElement(LucideIcons[ach.lucideIcon] || LucideIcons.Star, {
+          React.createElement(getLucideIcon(ach.lucideIcon), {
             size: 24, color: isHolo ? '#FFF' : tierColor, strokeWidth: 2.5
           })
         ) : (

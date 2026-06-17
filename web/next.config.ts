@@ -5,8 +5,37 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["192.168.18.6"],
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: '*.supabase.co' },
+    ],
+  },
   turbopack: {
     root: "..",
+  },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
+              "frame-src https://js.stripe.com",
+              "img-src 'self' data: blob: https://*.supabase.co",
+              "connect-src 'self' https://*.supabase.co https://api.stripe.com",
+              "style-src 'self' 'unsafe-inline'",
+            ].join('; '),
+          },
+        ],
+      },
+    ];
   },
 };
 

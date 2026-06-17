@@ -5,8 +5,8 @@ import { useToastStore } from '../store/toastStore';
 import { useTheme } from '../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as LucideIcons from 'lucide-react-native';
 import { X } from 'lucide-react-native';
+import { getLucideIcon } from '../constants/iconMap';
 import * as Haptics from 'expo-haptics';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -107,7 +107,7 @@ export function AppToast() {
       >
         {currentToast.iconType === 'lucide' && currentToast.lucideIcon ? (
           // @ts-ignore
-          React.createElement(LucideIcons[currentToast.lucideIcon] || LucideIcons.Star, {
+          React.createElement(getLucideIcon(currentToast.lucideIcon || 'Star'), {
             size: 28, color: isHolo ? '#FFF' : tierColor, strokeWidth: 2.5
           })
         ) : (

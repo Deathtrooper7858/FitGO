@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Radius, Spacing } from '../../constants';
-import { useAuthStore } from '../../store';
+import { useAuthStore } from '../../store/authStore';
 import { useAdStore } from '../../store/adStore';
 import { useTheme } from '../../hooks/useTheme';
 import { AnimatedCard } from '../AnimatedCard';
-
-// Extracted from dashboard/index.tsx
-import { Dimensions } from 'react-native';
-const { width } = Dimensions.get('window');
-const WIDGET_WIDTH = (width - Spacing.base * 2 - Spacing.md) / 2;
 
 export function WidgetAdTimer({ featureId }: { featureId: string }) {
   const { profile } = useAuthStore();
@@ -69,13 +64,15 @@ interface WidgetProps {
 
 export function WidgetCard({ title, icon, value, subValue, onPress, customContent, onLongPress, isEditing, onMoveLeft, onMoveRight, canMoveLeft, canMoveRight, index, adTimerFeatureId }: WidgetProps) {
   const colors = useTheme();
+  const { width: screenWidth } = useWindowDimensions();
+  const widgetWidth = (screenWidth - Spacing.base * 2 - Spacing.md) / 2;
   
   return (
-    <AnimatedCard index={index} direction="up" style={{ width: WIDGET_WIDTH }}>
+    <AnimatedCard index={index} direction="up" style={{ width: widgetWidth }}>
       <TouchableOpacity 
         style={[
           w.card, 
-          { backgroundColor: colors.surface, borderColor: isEditing ? colors.primary : colors.surfaceAlt },
+          { width: widgetWidth, backgroundColor: colors.surface, borderColor: isEditing ? colors.primary : colors.surfaceAlt },
           isEditing && { borderWidth: 2, shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
           !isEditing && { shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 4 }
         ]} 
@@ -130,7 +127,7 @@ export function WidgetCard({ title, icon, value, subValue, onPress, customConten
 }
 
 export const w = StyleSheet.create({
-  card: { width: WIDGET_WIDTH, height: 160, borderRadius: Radius.xl, padding: Spacing.lg, justifyContent: 'space-between', borderWidth: 1, overflow: 'hidden' },
+  card: { height: 160, borderRadius: Radius.xl, padding: Spacing.lg, justifyContent: 'space-between', borderWidth: 1, overflow: 'hidden' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   iconWrap: { width: 34, height: 34, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   icon: { fontSize: 18 },

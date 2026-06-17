@@ -50,6 +50,8 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       const { error } = await supabase.rpc('upgrade_to_pro_user', { target_user_id: profile.id });
       if (error) {
         console.error('Error upgrading to pro via RPC:', error);
+        set({ isLoading: false });
+        return;
       }
       
       set({ isPro: true, isLoading: false });
@@ -73,6 +75,8 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       const { error } = await supabase.rpc('downgrade_from_pro', { target_user_id: profile.id });
       if (error) {
         console.error('Error downgrading from pro via RPC:', error);
+        set({ isLoading: false });
+        return;
       }
       
       set({ isPro: false, isLoading: false });
