@@ -29,6 +29,11 @@ export interface WorkoutRoutine {
   exercises: { name: string; englishName?: string; sets: number; reps: string; rest: string }[];
 }
 
+export interface ShoppingListGroup {
+  category: string;
+  items: { name: string; quantity: string; price: number }[];
+}
+
 interface PlannerState {
   /** Cached 7-day nutrition plan, keyed by day abbreviation (Mon, Tue, …) */
   mealPlans: Record<string, PlanItem[]>;
@@ -37,7 +42,7 @@ interface PlannerState {
   /** ISO date (YYYY-MM-DD) of Monday for the week these plans belong to */
   weekStart: string | null;
   /** Cached AI-generated shopping list */
-  shoppingList: { category: string; items: { name: string; quantity: string; price: number }[] }[] | null;
+  shoppingList: ShoppingListGroup[] | null;
   /** AI-generated weekly nutrition analysis text */
   weeklyAnalysis: string | null;
   /** Optional warning for risky plans */
@@ -46,7 +51,7 @@ interface PlannerState {
   setMealPlans: (plans: Record<string, PlanItem[]>, weekStart: string, warning?: string) => void;
   setWorkoutPlans: (plans: Record<string, WorkoutRoutine>, weekStart: string, warning?: string) => void;
   setWeeklyAnalysis: (text: string) => void;
-  setShoppingList: (list: { category: string; items: string[] }[]) => void;
+  setShoppingList: (list: ShoppingListGroup[]) => void;
   clearPlans: () => void;
   clearMealPlans: () => void;
   clearWorkoutPlans: () => void;
@@ -74,7 +79,7 @@ export const usePlannerStore = create<PlannerState>()(
         set({ weeklyAnalysis: text }),
 
       setShoppingList: (list) =>
-        set({ shoppingList: list }),
+        set( {shoppingList: list }),
 
       /** Called when the user generates a fresh plan or when the week changes. */
       clearPlans: () =>

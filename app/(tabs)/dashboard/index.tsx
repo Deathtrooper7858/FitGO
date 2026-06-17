@@ -7,7 +7,7 @@ import { router, useNavigation } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
-import { Spacing, Radius } from '../../../constants';
+import { Spacing, Radius, Shadow } from '../../../constants';
 import { useAuthStore } from '../../../store/authStore';
 import { useNutritionStore, selectDailyTotals } from '../../../store/nutritionStore';
 import { useSettingsStore } from '../../../store/settingsStore';

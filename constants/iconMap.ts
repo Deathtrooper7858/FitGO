@@ -1,5 +1,5 @@
 import {
-  Star, Trophy, Flame, Crown, HandWaving, Moon, Medal, Apple, Sunrise, Dumbbell,
+  Star, Trophy, Flame, Crown, Hand, Moon, Medal, Apple, Sunrise, Dumbbell,
   Salad, ChartBar, Droplets, Waves, ClipboardList, BookOpen, Sandwich, Leaf, ChefHat,
   Beef, Cookie, Coffee, Timer, Target, TrendingDown, BicepsFlexed, Ruler,
   Footprints, Zap, Swords, BedDouble, CloudMoon, Megaphone, Users, FlaskConical,
@@ -7,7 +7,7 @@ import {
   HeartHandshake, Eye, Database, Heart, HeartPulse, Shield, MessageCircle,
   Activity, BatteryCharging, Flower2, Scale, ThumbsUp, UtensilsCrossed, GlassWater,
   Calendar, Bike, TrendingUp, Globe, CalendarCheck, AlarmClock, UserPlus, Lock,
-  CheckCircle2, ChevronDown, ChevronUp, ArrowLeft, Info, Hand, Sparkles, Plus,
+  CheckCircle2, ChevronDown, ChevronUp, ArrowLeft, Info, Sparkles, Plus,
   Check, X, MoreHorizontal, Share2, Copy, RefreshCw, Fingerprint,
   Palette, Languages, Settings, HelpCircle, Pen, Trash2, LogOut, Bell, SmilePlus,
   Camera,
@@ -15,7 +15,7 @@ import {
 import type { LucideIcon } from 'lucide-react-native';
 
 const iconMap: Record<string, LucideIcon> = {
-  Star, Trophy, Flame, Crown, HandWaving, Moon, Medal, Apple, Sunrise, Dumbbell,
+  Star, Trophy, Flame, Crown, Hand, Moon, Medal, Apple, Sunrise, Dumbbell,
   Salad, ChartBar, Droplets, Waves, ClipboardList, BookOpen, Sandwich, Leaf, ChefHat,
   Beef, Cookie, Coffee, Timer, Target, TrendingDown, BicepsFlexed, Ruler,
   Footprints, Zap, Swords, BedDouble, CloudMoon, Megaphone, Users, FlaskConical,
@@ -23,7 +23,7 @@ const iconMap: Record<string, LucideIcon> = {
   HeartHandshake, Eye, Database, Heart, HeartPulse, Shield, MessageCircle,
   Activity, BatteryCharging, Flower2, Scale, ThumbsUp, UtensilsCrossed, GlassWater,
   Calendar, Bike, TrendingUp, Globe, CalendarCheck, AlarmClock, UserPlus, Lock,
-  CheckCircle2, ChevronDown, ChevronUp, ArrowLeft, Info, Hand, Sparkles, Plus,
+  CheckCircle2, ChevronDown, ChevronUp, ArrowLeft, Info, Sparkles, Plus,
   Check, X, MoreHorizontal, Share2, Copy, RefreshCw, Fingerprint,
   Palette, Languages, Settings, HelpCircle, Pen, Trash2, LogOut, Bell, SmilePlus,
   Camera,

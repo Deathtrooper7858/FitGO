@@ -17,6 +17,7 @@ export interface FoodItem {
   fat:      number;
   saturatedFat?: number;
   transFat?:     number;
+  cholesterol?: number;
   sugar?:   number;
   fiber?:   number;
   sodium?:  number;

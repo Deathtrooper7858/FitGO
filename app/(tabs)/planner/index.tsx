@@ -10,7 +10,7 @@ import { useNutritionStore, selectDailyTotals } from '../../../store/nutritionSt
 import { useSettingsStore } from '../../../store/settingsStore';
 import { usePurchaseStore } from '../../../store/purchaseStore';
 import { usePlannerStore } from '../../../store/plannerStore';
-import type { PlanItem, WorkoutRoutine } from '../../../store/types';
+import type { PlanItem, WorkoutRoutine } from '../../../store/plannerStore';
 import { useWorkoutHistoryStore } from '../../../store/workoutHistoryStore';
 import { generateMealPlan, generateWorkoutPlan, generateDailyMealPlan, generateDailyWorkoutPlan, generateWeeklyAnalysis, generateShoppingList, generateShoppingListJSON, generateMealSwap } from '../../../services/groq';
 import { supabase } from '../../../services/supabase';

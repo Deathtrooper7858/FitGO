@@ -81,6 +81,9 @@ export interface FoodLog {
   calcium?:   number;
   saturatedFat?: number;
   transFat?:     number;
+  cholesterol?: number;
+  user_id?:     string;
+  is_favorite?: boolean;
 }
 
 export interface ActivityLog {

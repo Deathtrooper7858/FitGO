@@ -60,9 +60,9 @@ export default function ShoppingListModal() {
     loadList();
   }, [JSON.stringify(mealPlans)]);
 
-  const toggleCheck = (item: string) => {
+  const toggleCheck = (itemKey: string) => {
     setChecked(prev => {
-      const next = { ...prev, [item]: !prev[item] };
+      const next = { ...prev, [itemKey]: !prev[itemKey] };
       AsyncStorage.setItem('ff_shopping_checked', JSON.stringify(next));
       return next;
     });
@@ -118,18 +118,24 @@ export default function ShoppingListModal() {
             <View key={i} style={[s.group, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={[s.groupTitle, { color: colors.primary }]}>{group.category}</Text>
               {group.items.map((item, j) => {
-                const isChecked = !!checked[item];
+                const itemKey = item.name.toLowerCase();
+                const isChecked = !!checked[itemKey];
                 return (
                   <TouchableOpacity 
                     key={j} 
                     style={[s.itemRow, { borderBottomColor: j === group.items.length - 1 ? 'transparent' : colors.border }]}
-                    onPress={() => toggleCheck(item)}
+                    onPress={() => toggleCheck(itemKey)}
                     activeOpacity={0.7}
                   >
                     {isChecked ? <CheckCircle size={20} color="#10B981" /> : <Circle size={20} color={colors.textMuted} />}
-                    <Text style={[s.itemText, { color: isChecked ? colors.textMuted : colors.textPrimary, textDecorationLine: isChecked ? 'line-through' : 'none' }]}>
-                      {item}
-                    </Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[s.itemText, { color: isChecked ? colors.textMuted : colors.textPrimary, textDecorationLine: isChecked ? 'line-through' : 'none' }]}>
+                        {item.name}
+                      </Text>
+                      <Text style={{ fontSize: 12, color: colors.textMuted }}>
+                        {item.quantity}{item.price ? ` - $${item.price.toFixed(2)}` : ''}
+                      </Text>
+                    </View>
                   </TouchableOpacity>
                 );
               })}

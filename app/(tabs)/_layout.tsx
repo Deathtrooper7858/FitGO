@@ -4,6 +4,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { FileText, BarChart2, MessageCircle, Calendar, Users } from 'lucide-react-native';
 import { useAuthStore, useSocialStore } from '../../store';
+import { useIsPro } from '../../hooks/useIsPro';
 import React, { useCallback, useRef } from 'react';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';

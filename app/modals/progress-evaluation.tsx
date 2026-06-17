@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
 import { Spacing, Radius, Shadow } from '../../constants';
 import { analyzePhysiquePhoto } from '../../services/groq';
-import { useSettingsStore, useProgressStore } from '../../store';
+import { useSettingsStore, useProgressStore, useAuthStore, usePurchaseStore } from '../../store';
 import { useIsPro } from '../../hooks/useIsPro';
 import { useAdStore } from '../../store/adStore';
 import { AdTimerOverlay } from '../../components/AdTimerOverlay';
