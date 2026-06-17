@@ -220,6 +220,10 @@
         "title": "Die Idee entsteht",
         "desc": "Frustriert von bestehenden Fitness-Apps begannen wir, FitGO auf Papier zu skizzieren."
       },
+      "2026": {
+        "title": "FitGO Web",
+        "desc": "Wir starten die Web-Plattform, damit du dein Konto vom Browser aus verwalten kannst."
+      },
       "2025Q1": {
         "title": "Erster Prototyp",
         "desc": "Das erste Build von FitGO läuft auf unseren Telefonen. Der Gewichts-Tracker funktioniert zum ersten Mal."
@@ -231,10 +235,6 @@
       "2025Q3": {
         "title": "Öffentlicher Start",
         "desc": "FitGO kommt in den App Store und Google Play. Die Community wächst organisch."
-      },
-      "2026": {
-        "title": "FitGO Web",
-        "desc": "Wir starten die Web-Plattform, damit du dein Konto vom Browser aus verwalten kannst."
       }
     },
     "team": {
@@ -341,7 +341,8 @@
       "nutrition": "KI-Ernährung",
       "unlimited": "Keine Limits"
     },
-    "secure": "Sichere Zahlung · Jederzeit kündbar"
+    "secure": "Sichere Zahlung · Jederzeit kündbar",
+    "errorMsg": "Fehler bei der Zahlungsverarbeitung. Bitte versuche es erneut."
   },
   "auth": {
     "login": {
@@ -362,7 +363,8 @@
       "btn": "Konto erstellen",
       "loading": "Konto wird erstellt...",
       "hasAccount": "Hast du bereits ein Konto?",
-      "login": "Anmelden"
+      "login": "Anmelden",
+      "confirmPassword": "Passwort bestätigen"
     },
     "forgot": {
       "title": "Stelle deinen Zugang zu FitGO wieder her.",
@@ -370,7 +372,19 @@
       "email": "E-Mail Adresse",
       "btn": "Link senden",
       "loading": "Wird gesendet...",
-      "back": "Zurück zur Anmeldung"
+      "back": "Zurück zur Anmeldung",
+      "successMsg": "Überprüfe deine E-Mail für den Wiederherstellungslink."
+    },
+    "reset": {
+      "title": "Lege dein neues Passwort fest",
+      "password": "Neues Passwort",
+      "confirmPassword": "Passwort bestätigen",
+      "btn": "Passwort aktualisieren",
+      "loading": "Wird aktualisiert...",
+      "back": "Zurück zum Login",
+      "successMsg": "Passwort erfolgreich aktualisiert.",
+      "errorMismatch": "Passwörter stimmen nicht überein.",
+      "errorLength": "Das Passwort muss mindestens 6 Zeichen lang sein."
     }
   }
 }

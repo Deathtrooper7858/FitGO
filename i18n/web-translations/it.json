@@ -1,6 +1,6 @@
 {
   "home": {
-    "badge": "Your best version",
+    "badge": "La tua versione migliore",
     "motto": "<highlight>L'app di fitness più fluida</highlight> e gamificata. Progressi, nutrizione e allenamenti — tutto sincronizzato in tempo reale.",
     "cta": {
       "start": "Inizia gratis",
@@ -70,7 +70,8 @@
       "fats": "Grassi",
       "today": "Oggi",
       "kcal": "kcal consumate"
-    }
+    },
+    "subtitle": "TUTTO CIÒ DI CUI HAI BISOGNO"
   },
   "nav": {
     "home": "Home",
@@ -212,6 +213,10 @@
         "title": "L'idea nasce",
         "desc": "Frustrati dalle app di fitness esistenti, abbiamo iniziato a schizzare FitGO su carta."
       },
+      "2026": {
+        "title": "FitGO Web",
+        "desc": "Lanciamo la piattaforma web per gestire il tuo account dal browser."
+      },
       "2025Q1": {
         "title": "Primo prototipo",
         "desc": "Il primo build di FitGO gira sui nostri telefoni. Il tracker del peso funziona per la prima volta."
@@ -223,10 +228,6 @@
       "2025Q3": {
         "title": "Lancio pubblico",
         "desc": "FitGO arriva sull'App Store e Google Play. La community cresce organicamente."
-      },
-      "2026": {
-        "title": "FitGO Web",
-        "desc": "Lanciamo la piattaforma web per gestire il tuo account dal browser."
       }
     },
     "team": {
@@ -333,7 +334,8 @@
       "nutrition": "Nutrizione IA",
       "unlimited": "Senza limiti"
     },
-    "secure": "Pagamento sicuro · Annulla in qualsiasi momento"
+    "secure": "Pagamento sicuro · Annulla in qualsiasi momento",
+    "errorMsg": "Errore nell'elaborazione del pagamento. Riprova."
   },
   "auth": {
     "login": {
@@ -354,7 +356,8 @@
       "btn": "Crea account",
       "loading": "Creazione account...",
       "hasAccount": "Hai già un account?",
-      "login": "Accedi"
+      "login": "Accedi",
+      "confirmPassword": "Conferma password"
     },
     "forgot": {
       "title": "Recupera il tuo accesso a FitGO.",
@@ -362,7 +365,19 @@
       "email": "Indirizzo e-mail",
       "btn": "Invia link",
       "loading": "Invio in corso...",
-      "back": "Torna al login"
+      "back": "Torna al login",
+      "successMsg": "Controlla la tua email per il link di recupero."
+    },
+    "reset": {
+      "title": "Imposta la tua nuova password",
+      "password": "Nuova password",
+      "confirmPassword": "Conferma password",
+      "btn": "Aggiorna password",
+      "loading": "Aggiornamento...",
+      "back": "Torna al login",
+      "successMsg": "Password aggiornata con successo.",
+      "errorMismatch": "Le password non corrispondono.",
+      "errorLength": "La password deve contenere almeno 6 caratteri."
     }
   }
 }

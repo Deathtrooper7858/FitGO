@@ -1,6 +1,6 @@
 {
   "home": {
-    "badge": "Your best version",
+    "badge": "Votre meilleure version",
     "motto": "<highlight>L'application de fitness la plus fluide</highlight> et gamifiée. Progrès, nutrition et entraînements — tous synchronisés en temps réel.",
     "cta": {
       "start": "Commencer gratuitement",
@@ -212,6 +212,10 @@
         "title": "L'idée naît",
         "desc": "Frustrés par les applications de fitness existantes, nous avons commencé à esquisser FitGO sur papier."
       },
+      "2026": {
+        "title": "FitGO Web",
+        "desc": "Nous lançons la plateforme web pour que vous puissiez gérer votre compte depuis un navigateur."
+      },
       "2025Q1": {
         "title": "Premier prototype",
         "desc": "Le premier build de FitGO tourne sur nos téléphones. Le tracker de poids fonctionne pour la première fois."
@@ -223,10 +227,6 @@
       "2025Q3": {
         "title": "Lancement public",
         "desc": "FitGO arrive sur l'App Store et Google Play. La communauté grandit organiquement."
-      },
-      "2026": {
-        "title": "FitGO Web",
-        "desc": "Nous lançons la plateforme web pour que vous puissiez gérer votre compte depuis un navigateur."
       }
     },
     "team": {
@@ -333,7 +333,8 @@
       "nutrition": "Nutrition IA",
       "unlimited": "Sans limites"
     },
-    "secure": "Paiement sécurisé · Annulez à tout moment"
+    "secure": "Paiement sécurisé · Annulez à tout moment",
+    "errorMsg": "Erreur de traitement du paiement. Veuillez réessayer."
   },
   "auth": {
     "login": {
@@ -354,7 +355,8 @@
       "btn": "Créer un compte",
       "loading": "Création du compte...",
       "hasAccount": "Vous avez déjà un compte ?",
-      "login": "Connexion"
+      "login": "Connexion",
+      "confirmPassword": "Confirmer le mot de passe"
     },
     "forgot": {
       "title": "Récupérez votre accès à FitGO.",
@@ -362,7 +364,19 @@
       "email": "Adresse e-mail",
       "btn": "Envoyer le lien",
       "loading": "Envoi en cours...",
-      "back": "Retour à la connexion"
+      "back": "Retour à la connexion",
+      "successMsg": "Consultez vos e-mails pour le lien de récupération."
+    },
+    "reset": {
+      "title": "Définissez votre nouveau mot de passe",
+      "password": "Nouveau mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "btn": "Mettre à jour le mot de passe",
+      "loading": "Mise à jour...",
+      "back": "Retour à la connexion",
+      "successMsg": "Mot de passe mis à jour avec succès.",
+      "errorMismatch": "Les mots de passe ne correspondent pas.",
+      "errorLength": "Le mot de passe doit contenir au moins 6 caractères."
     }
   }
 }
