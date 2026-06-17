@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com",
+               "script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com",
               "frame-src https://js.stripe.com",
               "img-src 'self' data: blob: https://*.supabase.co https://fonts.gstatic.com",
               "connect-src 'self' https://*.supabase.co https://api.stripe.com https://fonts.googleapis.com",

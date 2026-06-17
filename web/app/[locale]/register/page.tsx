@@ -148,7 +148,7 @@ export default function RegisterPage() {
                   type="password"
                   required
                   minLength={6}
-                  placeholder="Confirmar contraseña"
+                  placeholder={t("confirmPassword")}
                   className="input-dark pl-11"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

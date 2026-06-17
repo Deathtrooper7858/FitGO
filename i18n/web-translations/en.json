@@ -333,7 +333,8 @@
       "nutrition": "AI Nutrition",
       "unlimited": "No limits"
     },
-    "secure": "Secure payment · Cancel anytime"
+    "secure": "Secure payment · Cancel anytime",
+    "errorMsg": "Error processing payment. Please try again."
   },
   "auth": {
     "login": {
@@ -354,7 +355,8 @@
       "btn": "Create account",
       "loading": "Creating account...",
       "hasAccount": "Already have an account?",
-      "login": "Log in"
+      "login": "Log in",
+      "confirmPassword": "Confirm password"
     },
     "forgot": {
       "title": "Recover your access to FitGO.",
@@ -362,7 +364,19 @@
       "email": "Email address",
       "btn": "Send link",
       "loading": "Sending...",
-      "back": "Back to login"
+      "back": "Back to login",
+      "successMsg": "Check your email for the recovery link."
+    },
+    "reset": {
+      "title": "Set your new password",
+      "password": "New password",
+      "confirmPassword": "Confirm password",
+      "btn": "Update password",
+      "loading": "Updating...",
+      "back": "Back to login",
+      "successMsg": "Password updated successfully.",
+      "errorMismatch": "Passwords do not match.",
+      "errorLength": "Password must be at least 6 characters."
     }
   }
 }

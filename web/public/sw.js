@@ -1,5 +1,5 @@
 const CACHE = 'fitgo-v2'
-const STATIC_ASSETS = ['/', '/offline']
+const STATIC_ASSETS = ['/']
 
 self.addEventListener('install', (event) => {
   self.skipWaiting()

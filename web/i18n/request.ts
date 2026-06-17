@@ -21,7 +21,6 @@ export default getRequestConfig(async ({requestLocale}) => {
     messages: {
       ...mobileTranslations,
       web: webTranslations,
-      ...webTranslations,
     }
   };
 });

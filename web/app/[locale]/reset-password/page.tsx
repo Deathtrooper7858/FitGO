@@ -4,8 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Zap, Lock, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import { useTranslations } from "next-intl";
 
 export default function ResetPasswordPage() {
+  const t = useTranslations("auth.reset");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -17,12 +19,12 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     if (password !== confirmPassword) {
       setStatus("error");
-      setMessage("Las contraseñas no coinciden.");
+      setMessage(t("errorMismatch"));
       return;
     }
     if (password.length < 6) {
       setStatus("error");
-      setMessage("La contraseña debe tener al menos 6 caracteres.");
+      setMessage(t("errorLength"));
       return;
     }
     setStatus("loading");
@@ -35,7 +37,7 @@ export default function ResetPasswordPage() {
       setMessage(error.message);
     } else {
       setStatus("success");
-      setMessage("Contraseña actualizada correctamente.");
+      setMessage(t("successMsg"));
       setTimeout(() => router.push("/login"), 2000);
     }
   };
@@ -54,7 +56,7 @@ export default function ResetPasswordPage() {
             </div>
             <h1 className="font-display font-black text-3xl gradient-text">FitGO</h1>
           </div>
-          <p className="text-text-secondary mt-2">Establece tu nueva contraseña</p>
+          <p className="text-text-secondary mt-2">{t("title")}</p>
         </div>
 
         <div className="glass rounded-3xl p-8 shadow-card border border-white/10">
@@ -78,23 +80,23 @@ export default function ResetPasswordPage() {
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-muted">
                   <Lock size={18} />
                 </div>
-                <input type="password" required minLength={6} placeholder="Nueva contraseña" className="input-dark pl-11" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <input type="password" required minLength={6} placeholder={t("password")} className="input-dark pl-11" value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
 
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-muted">
                   <Lock size={18} />
                 </div>
-                <input type="password" required minLength={6} placeholder="Confirmar contraseña" className="input-dark pl-11" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                <input type="password" required minLength={6} placeholder={t("confirmPassword")} className="input-dark pl-11" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
               </div>
 
               <button type="submit" disabled={status === "loading"} className="btn-primary w-full justify-center mt-2 text-base" style={{ opacity: status === "loading" ? 0.7 : 1 }}>
-                {status === "loading" ? "Actualizando..." : "Actualizar contraseña"}
+                {status === "loading" ? t("loading") : t("btn")}
               </button>
 
               <div className="mt-6 text-center">
                 <button onClick={() => router.push("/login")} className="text-sm text-text-secondary hover:text-text-primary transition-colors inline-flex items-center gap-2">
-                  <ArrowLeft size={16} /> Volver a iniciar sesión
+                  <ArrowLeft size={16} /> {t("back")}
                 </button>
               </div>
             </form>
