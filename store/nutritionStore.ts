@@ -14,7 +14,7 @@ import { FoodLog, ActivityLog } from './types';
 import type { FoodItem } from '../services/foodDatabase';
 import { getLocalDateString } from '../utils/date';
 import { useAuthStore } from './authStore';
-import { useLeagueStore, LEAGUE_POINTS, getStreakMultiplier } from './leagueStore';
+import { useLeagueStore, getStreakMultiplier } from './leagueStore';
 import { supabase } from '../services/supabase';
 import { useToastStore } from './toastStore';
 import { NotificationTriggers } from '../utils/notificationTriggers';

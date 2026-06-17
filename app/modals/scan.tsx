@@ -22,7 +22,7 @@ import { CustomAlert, AlertType } from '../../components/CustomAlert';
 import { AIEnergyGate, useAIEnergy, AIEnergyMode } from '../../components/AIEnergyGate';
 import { useAdStore, MAX_AI_PHOTO_ENERGY, MAX_AI_TEXT_ENERGY } from '../../store/adStore';
 
-import { useAudioRecorder, useAudioRecorderState, AudioModule, RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync } from 'expo-audio';
+import { useAudioRecorder, useAudioRecorderState, RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync } from 'expo-audio';
 import { transcribeAudio, parseVoiceLog } from '../../services/groq';
 
 type ScanMode = 'barcode' | 'photo' | 'text' | 'search';

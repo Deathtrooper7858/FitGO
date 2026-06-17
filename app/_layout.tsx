@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 if (!__DEV__) {
   console.log = () => {};
   console.warn = () => {};
+  // console.error intentionally NOT silenced — critical for crash reporting
 } else {
   // Interceptar console.warn para limpiar la terminal de avisos de librerías de terceros
   const originalWarn = console.warn;

@@ -80,14 +80,7 @@ interface LeagueStore {
 export const LEAGUE_POINTS = {
   MEAL_LOG: 10,
   MACRO_PERFECT: 100,
-  SQUAD_SYNERGY: 50,
 } as const;
-
-const STREAK_MULTIPLIERS: Record<string, number> = {
-  '3':  1.2,
-  '8':  1.5,
-  '15': 2.0,
-};
 
 function getStreakMultiplier(streak: number): number {
   if (streak >= 15) return 2.0;
@@ -526,8 +519,8 @@ export const useLeagueStore = create<LeagueStore>()(
       if (currentSquad?.id) {
         try {
           await supabase.rpc('recalculate_league_tier', { p_squad_id: currentSquad.id });
-        } catch {
-          // Non-fatal: tier will be corrected on next fetchMySquad
+        } catch (err) {
+          console.warn('[LeagueStore] recalculate_league_tier error:', err);
         }
       }
 
