@@ -11,80 +11,9 @@
  *  3. FitGoWaterWidget  – Agua consumida vs meta (mediano)
  */
 import React from 'react';
-import { WidgetTaskHandlerProps } from 'react-native-android-widget';
-import { FlexWidget, TextWidget, SvgWidget } from 'react-native-android-widget';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { WidgetTaskHandlerProps , FlexWidget, TextWidget, SvgWidget } from 'react-native-android-widget';
 
-// ─────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────
-
-interface WidgetData {
-  streak: number;
-  calsConsumed: number;
-  calsTarget: number;
-  protein: number;
-  proteinTarget: number;
-  waterMl: number;
-  waterTarget: number;
-  userName: string;
-}
-
-async function loadWidgetData(): Promise<WidgetData> {
-  const defaults: WidgetData = {
-    streak: 0,
-    calsConsumed: 0,
-    calsTarget: 2000,
-    protein: 0,
-    proteinTarget: 150,
-    waterMl: 0,
-    waterTarget: 2000,
-    userName: 'Usuario',
-  };
-
-  try {
-    const [nutritionStr, authStr] = await Promise.all([
-      AsyncStorage.getItem('ff-nutrition-v2'),
-      AsyncStorage.getItem('ff-auth'),
-    ]);
-
-    if (authStr) {
-      const auth = JSON.parse(authStr);
-      const profile = auth?.state?.profile;
-      if (profile) {
-        defaults.userName = (profile.name || '').split(' ')[0] || 'Usuario';
-        defaults.calsTarget = profile.targetCalories || 2000;
-        defaults.proteinTarget = profile.macros?.protein || 150;
-      }
-    }
-
-    if (nutritionStr) {
-      const nutrition = JSON.parse(nutritionStr);
-      const state = nutrition?.state;
-      if (state) {
-        defaults.streak = state.streakDays || 0;
-
-        const dateStr = new Date().toLocaleDateString('en-CA');
-
-        // Food logs
-        const todayLogs = (state.todayLogs || []).filter(
-          (l: any) => l.loggedAt && l.loggedAt.startsWith(dateStr)
-        );
-        todayLogs.forEach((l: any) => {
-          defaults.calsConsumed += Number(l.calories || 0);
-          defaults.protein += Number(l.protein || 0);
-        });
-
-        // Water
-        defaults.waterMl = state.dailyWater?.[dateStr] || 0;
-      }
-    }
-  } catch (e) {
-    // Fail silently — show defaults if no data yet
-  }
-
-  return defaults;
-}
+import { loadWidgetData, WidgetData } from './utils/widgetData';
 
 // ─────────────────────────────────────────────────────────
 // Widget 1: Main (Calorías + Proteína + Racha)  – 4×2 cells

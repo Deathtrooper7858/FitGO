@@ -1,4 +1,4 @@
-const isDev = __DEV__;
+const isDev = typeof __DEV__ !== 'undefined' && __DEV__;
 
 export const logger = {
   log: (...args: unknown[]) => { if (isDev) console.log(...args); },

@@ -19,6 +19,7 @@ export const safe = (str: string | undefined | null): string => {
  * Returns `fallback` (default 0) if the value is NaN or non-finite.
  */
 export const safeNum = (value: string | number | undefined | null, fallback = 0): number => {
+  if (value === '' || value === null || value === undefined) return fallback;
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
 };

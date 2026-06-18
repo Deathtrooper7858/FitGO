@@ -1,4 +1,4 @@
-name: Security Audit
+name: FitGO CI
 
 on:
   pull_request:
@@ -6,10 +6,10 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: '0 8 * * 1' # every Monday
+    - cron: '0 8 * * 1'
 
 jobs:
-  audit:
+  quality:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,4 +18,9 @@ jobs:
           node-version: 20
           cache: 'npm'
       - run: npm ci
-      - run: npm run ci:audit
+      - name: Security audit
+        run: npm run ci:audit
+      - name: Lint
+        run: npm run lint
+      - name: TypeScript check
+        run: npm run typecheck

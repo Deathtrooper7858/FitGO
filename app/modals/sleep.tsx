@@ -1,18 +1,20 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../hooks/useTheme';
 import { useNutritionStore } from '../../store';
 import { Spacing, Radius } from '../../constants';
-import { useTranslation } from 'react-i18next';
-import { useState, useMemo } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
+
 
 export default function SleepModal() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const { setSleep, dailySleep, selectedDate } = useNutritionStore();
+  const setSleep = useNutritionStore(s => s.setSleep);
+  const dailySleep = useNutritionStore(s => s.dailySleep);
+  const selectedDate = useNutritionStore(s => s.selectedDate);
 
   // Pre-fill wake time based on existing saved sleep hours (bed=23:00 + saved hours)
   const initialWaketime = useMemo(() => {

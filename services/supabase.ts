@@ -8,6 +8,7 @@
  */
 import { createClient } from '@supabase/supabase-js';
 import { SecureStorage } from '../utils/storage';
+import { logger } from '../utils/logger';
 
 const supabaseUrl     = process.env.EXPO_PUBLIC_SUPABASE_URL     ?? '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
@@ -18,37 +19,42 @@ if (!supabaseUrl || !supabaseAnonKey) {
     'Crea un archivo .env en la raíz del proyecto con:\n' +
     '  EXPO_PUBLIC_SUPABASE_URL=...\n' +
     '  EXPO_PUBLIC_SUPABASE_ANON_KEY=...';
-  // En producción solo loguear — no crashear el módulo de inicialización
-  // (el error de auth se mostrará al intentar cualquier operación de DB).
-  console.error(msg);
+  logger.warn(msg);
 }
 
-// ── Custom fetch with timeout and retries ───────────────────────────────────
-// Prevents requests from hanging indefinitely and retries once on network failure.
+// ── Custom fetch with exponential backoff and circuit-breaker awareness ────
+// Prevents requests from hanging indefinitely and retries with backoff on failure.
+const MAX_RETRIES = 2;
+const BASE_TIMEOUT = 10_000;
+
 const fetchWithTimeout: typeof fetch = async (input, init) => {
-  const attemptFetch = async (retries: number): Promise<Response> => {
+  const attemptFetch = async (attempt: number): Promise<Response> => {
     const controller = new AbortController();
-    const timeout = 10_000; // 10s per attempt to fail fast and retry
+    const timeout = BASE_TIMEOUT * (attempt + 1);
     const timer = setTimeout(() => controller.abort(), timeout);
-    
+
     try {
       const response = await fetch(input, { ...init, signal: controller.signal });
       clearTimeout(timer);
+      if (!response.ok && response.status >= 429 && attempt < MAX_RETRIES) {
+        const backoff = Math.min(1000 * Math.pow(2, attempt), 4000);
+        await new Promise(res => setTimeout(res, backoff));
+        return attemptFetch(attempt + 1);
+      }
       return response;
     } catch (err: any) {
       clearTimeout(timer);
-      // Retries on network or abort errors if we have attempts left
-      const isNetworkOrAbortError = err.name === 'AbortError' || err.message?.includes('Network');
-      if (retries > 0 && isNetworkOrAbortError) {
-        // Simple backoff pause before retrying
-        await new Promise(res => setTimeout(res, 500));
-        return attemptFetch(retries - 1);
+      const retryable = err.name === 'AbortError' || err.message?.includes('Network') || err.message?.includes('fetch');
+      if (attempt < MAX_RETRIES && retryable) {
+        const backoff = Math.min(500 * Math.pow(2, attempt), 3000);
+        await new Promise(res => setTimeout(res, backoff));
+        return attemptFetch(attempt + 1);
       }
       throw err;
     }
   };
 
-  return attemptFetch(1); // 1 retry total (2 attempts)
+  return attemptFetch(0);
 };
 
 export const supabase = createClient(
@@ -63,21 +69,15 @@ export const supabase = createClient(
       flowType:           'pkce',
     },
     realtime: {
-      // Prevent aggressive reconnects on slow/weak networks.
-      // 30s gives the OS time to restore connectivity before attempting a new WS.
       timeout: 30000,
       params: {
-        // Reduce heartbeat frequency to save battery/bandwidth on mobile.
         heartbeatIntervalMs: 25000,
       },
     },
     global: {
       fetch: fetchWithTimeout,
       headers: {
-        // Encourage HTTP/1.1 connection reuse — each Supabase query opens to the
-        // same host so keep-alive eliminates repeated TCP handshakes.
         'Connection': 'keep-alive',
-        // Hint CDN/proxy layers to cache read-only responses briefly.
         'Cache-Control': 'max-age=10',
       },
     },

@@ -375,7 +375,17 @@
     "all": "Tutti",
     "cardio": "Cardio",
     "strength": "Forza",
-    "sports": "Sport"
+    "sports": "Sport",
+    "elliptical": "Elliptical",
+    "rowing": "Rowing",
+    "jump_rope": "Jump rope",
+    "stairs": "Stairs",
+    "zumba": "Zumba",
+    "powerlifting": "Powerlifting",
+    "stretching": "Stretching",
+    "gymnastics": "Gymnastics",
+    "baseball": "Baseball",
+    "surfing": "Surfing"
   },
   "welcome": {
     "motto": "Fit-Go: La tua migliore versione",
@@ -902,7 +912,119 @@
       "bone_broth": "Brodo di ossa",
       "kombucha": "Kombucha",
       "dairy": "Latticini",
-      "beverages": "Bevande"
+      "beverages": "Bevande",
+      "squid": "Squid",
+      "goat": "Goat Meat",
+      "rabbit": "Rabbit",
+      "guinea_pig": "Guinea Pig",
+      "chorizo": "Chorizo",
+      "morcilla": "Blood Sausage",
+      "chicharron": "Pork Belly / Chicharron",
+      "cecina": "Dried Meat / Jerky",
+      "quail_eggs": "Quail Eggs",
+      "amaranth": "Amaranth",
+      "whole_wheat_bread": "Whole Wheat Bread",
+      "tortilla_corn": "Corn Tortilla",
+      "tortilla_flour": "Flour Tortilla",
+      "arepa": "Arepa",
+      "empanada_dough": "Empanada Dough",
+      "tamal_masa": "Tamal Dough",
+      "arracacha": "Arracacha",
+      "olluco": "Olluco",
+      "mote": "Hominy / Mote",
+      "crackers": "Crackers",
+      "avocado_oil": "Avocado Oil",
+      "corn_oil": "Corn Oil",
+      "soybean_oil": "Soybean Oil",
+      "peanut_oil": "Peanut Oil",
+      "lard": "Lard",
+      "margarine": "Margarine",
+      "peanuts": "Peanuts",
+      "sesame_seeds": "Sesame Seeds",
+      "olives": "Olives",
+      "cheese_fat": "Hard Cheese",
+      "bacon_fat": "Bacon",
+      "mayo_fat": "Mayonnaise",
+      "guava": "Guava",
+      "lulo": "Lulo",
+      "tree_tomato": "Tree Tomato",
+      "mandarin": "Mandarin",
+      "strawberries": "Strawberries",
+      "blackberries": "Blackberries",
+      "melon": "Melon",
+      "soursop": "Soursop",
+      "tamarind": "Tamarind",
+      "mamey": "Mamey",
+      "cherimoya": "Cherimoya",
+      "garlic_veg": "Garlic",
+      "chili_pepper": "Chili Pepper",
+      "cilantro": "Cilantro",
+      "chayote": "Chayote",
+      "cactus": "Nopales / Cactus",
+      "jicama": "Jicama",
+      "scallion": "Scallion",
+      "swiss_chard": "Swiss Chard",
+      "watercress": "Watercress",
+      "black_pepper": "Black Pepper",
+      "achiote": "Annatto",
+      "cilantro_cond": "Cilantro",
+      "parsley": "Parsley",
+      "garlic_cond": "Garlic Powder",
+      "onion_powder": "Onion Powder",
+      "chili_powder": "Chili Powder",
+      "vinegar": "White Vinegar",
+      "hogao": "Sofrito",
+      "salsa_verde": "Green Salsa",
+      "salsa_roja": "Red Salsa",
+      "panela": "Panela",
+      "cloves": "Cloves",
+      "vanilla": "Vanilla",
+      "bouillon": "Bouillon Cube",
+      "queso_fresco": "Fresh Cheese",
+      "queso_doble_crema": "Melting Cheese",
+      "queso_costeno": "Salty Cheese",
+      "queso_panela": "Panela Cheese",
+      "queso_rallado": "Grated Cheese",
+      "suero": "Sour Cream",
+      "crema_leche": "Heavy Cream",
+      "greek_yogurt_dairy": "Greek Yogurt",
+      "butter_dairy": "Butter",
+      "dulce_de_leche": "Dulce de Leche",
+      "condensed_milk": "Condensed Milk",
+      "evaporated_milk": "Evaporated Milk",
+      "powdered_milk": "Powdered Milk",
+      "lactose_free_milk": "Lactose Free Milk",
+      "skim_milk": "Skim Milk",
+      "almond_milk_dairy": "Almond Milk",
+      "oat_milk_dairy": "Oat Milk",
+      "soy_milk_dairy": "Soy Milk",
+      "coconut_milk_dairy": "Coconut Milk",
+      "cottage_cheese_dairy": "Cottage Cheese",
+      "goat_cheese": "Goat Cheese",
+      "goat_milk": "Goat Milk",
+      "sparkling_water": "Sparkling Water",
+      "cafe_con_leche": "Coffee with Milk",
+      "agua_panela": "Panela Water",
+      "mate": "Mate",
+      "tea": "Tea",
+      "hot_chocolate": "Hot Chocolate",
+      "jugo_naranja": "Orange Juice",
+      "jugo_mora": "Blackberry Juice",
+      "jugo_lulo": "Lulo Juice",
+      "jugo_maracuya": "Passion Fruit Juice",
+      "jugo_guanabana": "Soursop Juice",
+      "lemonade": "Lemonade",
+      "agua_fresca": "Agua Fresca",
+      "chicha": "Chicha",
+      "avena_bebida": "Oatmeal Drink",
+      "protein_shake_bev": "Protein Shake",
+      "energy_drink": "Energy Drink",
+      "soda": "Soda / Soft Drink",
+      "diet_soda": "Diet Soda",
+      "beer": "Beer",
+      "wine": "Wine",
+      "aguardiente": "Liquor (Aguardiente, etc)",
+      "aloe_vera": "Aloe Vera Juice"
     },
     "foodsTitle": "Cibi Preferiti",
     "foodsSub": "Seleziona i cibi che ti piacciono di più.",
@@ -1023,7 +1145,9 @@
     "beverages": "Bevande",
     "creatingPlan": "Creazione del piano...",
     "goal": "Obiettivo",
-    "selectedCount": "selezionati"
+    "selectedCount": "selezionati",
+    "allSelected": "✓ All selected",
+    "searchFood": "Search food..."
   },
   "reminders": {
     "stayOnTrack": "Rimani in carreggiata",
@@ -3715,38 +3839,6 @@
   "competitive": {
     "mySquad": "La Mia Squadra",
     "individual": "Individuale",
-    "leagues": {
-      "carbono": {
-        "name": "Lega Carbonio",
-        "desc": "Il tuo punto di partenza in FitGO. Guadagna punti per salire!"
-      },
-      "neon": {
-        "name": "Lega Neon",
-        "desc": "Lega intermedia. Continua così!"
-      },
-      "titanio": {
-        "name": "Lega Titanio",
-        "desc": "Lega avanzata. Stai diventando élite!"
-      },
-      "cuarzo": {
-        "name": "Lega Quarzo",
-        "desc": "Lega competitiva di alto livello."
-      },
-      "zenit": {
-        "name": "Lega Elite Zenit",
-        "desc": "Il vertice della competizione FitGO."
-      },
-      "bronce": {},
-      "plata": {},
-      "oro": {},
-      "platino": {},
-      "esmeralda": {},
-      "diamante": {},
-      "maestro": {},
-      "leyenda": {},
-      "titan": {},
-      "celestial": {}
-    },
     "squads": {
       "days": "giorni",
       "emptyTitle": "Guerre di Macro",
@@ -3847,7 +3939,49 @@
     "squads.inviteBtn": "Invita",
     "squads.copiedText": "Copiato!",
     "squads.podiumTitle": "Podio delle leghe",
-    "squads.podiumSub": "I migliori squad di FitGO Competitive"
+    "squads.podiumSub": "I migliori squad di FitGO Competitive",
+    "leagues": {
+      "bronce": {
+        "name": "Bronze League",
+        "desc": "Your starting point in FitGO. Earn points to climb!"
+      },
+      "plata": {
+        "name": "Silver League",
+        "desc": "You've taken the first real step! Stay consistent."
+      },
+      "oro": {
+        "name": "Gold League",
+        "desc": "You are taking this seriously. Great consistency."
+      },
+      "platino": {
+        "name": "Platinum League",
+        "desc": "Advanced level. You are now part of the competitive top."
+      },
+      "esmeralda": {
+        "name": "Emerald League",
+        "desc": "Tactical elite. Your macros and workouts are precise."
+      },
+      "diamante": {
+        "name": "Diamond League",
+        "desc": "Unbreakable discipline. Expert level."
+      },
+      "maestro": {
+        "name": "Master League",
+        "desc": "Only for true masters of their physique."
+      },
+      "leyenda": {
+        "name": "Legend League",
+        "desc": "Your consistency is legendary. You are a role model."
+      },
+      "titan": {
+        "name": "Titan League",
+        "desc": "Absolute power. You belong to the FitGO Olympus."
+      },
+      "celestial": {
+        "name": "Celestial League",
+        "desc": "The pinnacle. The highest peak of global competition."
+      }
+    }
   },
   "calendar": {
     "myStreaks": "Le Mie Serie",

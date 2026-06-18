@@ -89,7 +89,12 @@ export const ALL_BADGES: Record<string, BadgeInfo> = {
 export function useAchievements() {
   const { t } = useTranslation();
   const { profile } = useAuthStore();
-  const { todayLogs, dailySleep, streakDays, dailySteps, activityLogs, dailyWater } = useNutritionStore();
+  const todayLogs = useNutritionStore(s => s.todayLogs);
+  const dailySleep = useNutritionStore(s => s.dailySleep);
+  const streakDays = useNutritionStore(s => s.streakDays);
+  const dailySteps = useNutritionStore(s => s.dailySteps);
+  const activityLogs = useNutritionStore(s => s.activityLogs);
+  const dailyWater = useNutritionStore(s => s.dailyWater);
   const totalsData = useNutritionStore(selectDailyTotals);
   const { measurements, latest } = useBodyStore();
   const { photos } = useProgressStore();

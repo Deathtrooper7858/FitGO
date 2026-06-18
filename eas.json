@@ -22,7 +22,6 @@
       },
       "ios": {
         "simulator": true
-      },
       }
     },
     "production": {

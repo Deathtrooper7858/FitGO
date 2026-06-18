@@ -8,16 +8,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Spacing, Radius } from '../../constants';
-import { useBodyStore, useAuthStore, BodyMeasurement, useNutritionStore, useSettingsStore } from '../../store';
-import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { convertMass, convertLength, formatValue } from '../../utils/units';
-import { CustomAlert, AlertType } from '../../components/CustomAlert';
-import { supabase } from '../../services/supabase';
-import { calculateTDEE, calculateMacros } from '../../services/foodDatabase';
 import * as Haptics from 'expo-haptics';
-
 import { 
   Scale, 
   Percent, 
@@ -31,6 +23,14 @@ import {
   ChevronRight,
   Info
 } from 'lucide-react-native';
+import { Spacing, Radius } from '../../constants';
+import { useBodyStore, useAuthStore, BodyMeasurement, useNutritionStore, useSettingsStore } from '../../store';
+import { useTheme } from '../../hooks/useTheme';
+import { convertMass, convertLength, formatValue } from '../../utils/units';
+import { CustomAlert, AlertType } from '../../components/CustomAlert';
+import { supabase } from '../../services/supabase';
+import { calculateTDEE, calculateMacros } from '../../services/foodDatabase';
+
   
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = 12;
@@ -106,7 +106,7 @@ export default function BodyMeasurementsModal() {
   };
 
 
-  const { selectedDate } = useNutritionStore();
+  const selectedDate = useNutritionStore(s => s.selectedDate);
   const last = measurements[0];
 
   useEffect(() => {

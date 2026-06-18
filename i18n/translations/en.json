@@ -3782,7 +3782,7 @@
         "description": "You gave 10 likes to your friends' posts."
       },
       "mystery_item": {
-        "title": null,
+        "title": "???",
         "description": "Complete mystery challenges to unlock this."
       },
       "notifications_enabled": {

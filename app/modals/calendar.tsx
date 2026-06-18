@@ -11,9 +11,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { X, Flame, Calendar, Star, Trophy, Zap, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
 import { useNutritionStore } from '../../store';
-import { useTranslation } from 'react-i18next';
 import { getLocalDateString } from '../../utils/date';
 
 // Helper: hexToRgb for generating rgba values from a hex color
@@ -28,7 +28,10 @@ function hexToRgba(hex: string, alpha: number): string {
 export default function CalendarModal() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const { streakDays, activeDays, selectedDate, setDate } = useNutritionStore();
+  const streakDays = useNutritionStore(s => s.streakDays);
+  const activeDays = useNutritionStore(s => s.activeDays);
+  const selectedDate = useNutritionStore(s => s.selectedDate);
+  const setDate = useNutritionStore(s => s.setDate);
 
   // Derive plannedDays from the real activeDays count
   const plannedDays = Object.keys(activeDays).length;

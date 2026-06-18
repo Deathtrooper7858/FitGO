@@ -3,15 +3,11 @@ export const getNameStyle = (
   userId?: string,
   currentUserId?: string,
   currentUserColor?: string | null,
-  /** Pass the local store premiumColor so own-user rows always reflect real-time changes */
-  storePremiumColor?: string | null
-): any => {
-  // Always use live profile color for the current user (avoids stale cache)
+  premiumColor?: string | null,
+): { color: string; textShadowColor?: string; textShadowOffset?: { width: number; height: number }; textShadowRadius?: number } => {
   const isMe = userId && userId === currentUserId;
-  const baseColor = isMe ? (currentUserColor || nameColor) : nameColor;
-
-  // Never override admin_glow with a local store premium color. 
-  const resolvedColor = baseColor;
+  const color = isMe ? (currentUserColor || nameColor) : nameColor;
+  const resolvedColor = color || premiumColor;
 
   if (resolvedColor === 'admin_glow') {
     return {
@@ -21,8 +17,7 @@ export const getNameStyle = (
       textShadowRadius: 10,
     };
   }
-  
-  // Return the custom color if set, otherwise strictly enforce white (#FFFFFF)
+
   return { color: resolvedColor || '#FFFFFF' };
 };
 

@@ -2,13 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { useTheme } from '../../hooks/useTheme';
-import { useNutritionStore, useAuthStore, UserProfile } from '../../store';
-import { supabase } from '../../services/supabase';
-import { Radius, Spacing } from '../../constants';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
-import { calculateTDEE, calculateMacros, resolveActivityLevel } from '../../services/foodDatabase';
 import { 
   ChevronLeft, 
   Monitor, 
@@ -21,6 +16,11 @@ import {
   Coffee,
   Briefcase
 } from 'lucide-react-native';
+import { useTheme } from '../../hooks/useTheme';
+import { useNutritionStore, useAuthStore, UserProfile } from '../../store';
+import { supabase } from '../../services/supabase';
+import { Radius, Spacing } from '../../constants';
+import { calculateTDEE, calculateMacros, resolveActivityLevel } from '../../services/foodDatabase';
 
 const NEAT_OPTIONS = [
   {
@@ -71,7 +71,9 @@ const ACTIVITY_TO_NEAT: Record<string, string> = {
 export default function SelectNeatModal() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const { dailyNeat, setNeat, selectedDate } = useNutritionStore();
+  const dailyNeat = useNutritionStore(s => s.dailyNeat);
+  const setNeat = useNutritionStore(s => s.setNeat);
+  const selectedDate = useNutritionStore(s => s.selectedDate);
   const { profile, setProfile } = useAuthStore();
   const [saving, setSaving] = useState(false);
   
@@ -133,7 +135,7 @@ export default function SelectNeatModal() {
     }
   };
 
-  const { dailyExercise } = useNutritionStore();
+  const dailyExercise = useNutritionStore(s => s.dailyExercise);
 
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>

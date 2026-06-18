@@ -212,6 +212,10 @@
         "title": "La idea nace",
         "desc": "Frustrados con las apps de fitness existentes, empezamos a bocetar FitGO en papel."
       },
+      "2026": {
+        "title": "FitGO Web",
+        "desc": "Lanzamos la plataforma web para que puedas gestionar tu cuenta y suscripción desde el navegador."
+      },
       "2025Q1": {
         "title": "Primer prototipo",
         "desc": "El primer build de FitGO corre en nuestros teléfonos. El tracker de peso funciona por primera vez."
@@ -223,10 +227,6 @@
       "2025Q3": {
         "title": "Lanzamiento público",
         "desc": "FitGO llega a App Store y Google Play. La comunidad crece orgánicamente."
-      },
-      "2026": {
-        "title": "FitGO Web",
-        "desc": "Lanzamos la plataforma web para que puedas gestionar tu cuenta y suscripción desde el navegador."
       }
     },
     "team": {

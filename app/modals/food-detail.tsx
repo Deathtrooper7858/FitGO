@@ -4,12 +4,12 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { PieChart } from 'react-native-gifted-charts';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Crypto from 'expo-crypto';
+import { useTranslation } from 'react-i18next';
 import { Spacing, Radius } from '../../constants';
 import { FoodItem } from '../../services/foodDatabase';
 import { useSettingsStore, useAuthStore, useNutritionStore } from '../../store';
-import * as Crypto from 'expo-crypto';
 import { useTheme } from '../../hooks/useTheme';
-import { useTranslation } from 'react-i18next';
 import { convertEnergy } from '../../utils/units';
 import { parseVoiceLog } from '../../services/groq';
 import { getLocalDateString } from '../../utils/date';
@@ -95,7 +95,9 @@ export default function FoodDetailModal() {
     });
   };
 
-  const { addLog, updateLog, removeLog } = useNutritionStore();
+  const addLog = useNutritionStore(s => s.addLog);
+  const updateLog = useNutritionStore(s => s.updateLog);
+  const removeLog = useNutritionStore(s => s.removeLog);
   const { profile } = useAuthStore();
 
   const g      = parseFloat(grams) || 0;

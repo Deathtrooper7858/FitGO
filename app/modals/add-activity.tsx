@@ -6,21 +6,21 @@ import {
 import * as Crypto from 'expo-crypto';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useTheme } from '../../hooks/useTheme';
-import { useNutritionStore, useSettingsStore } from '../../store';
-import { useIsPro } from '../../hooks/useIsPro';
-import { Radius, Spacing } from '../../constants';
 import { useTranslation } from 'react-i18next';
 import {
   useAudioRecorder, RecordingPresets,
   requestRecordingPermissionsAsync, setAudioModeAsync
 } from 'expo-audio';
-import { transcribeAudio, estimateActivityCalories } from '../../services/groq';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import {
   X, Search, Mic, Square, Flame, Clock, Sparkles, Plus, Minus, Check, ArrowLeft, Lock
 } from 'lucide-react-native';
+import { useTheme } from '../../hooks/useTheme';
+import { useNutritionStore, useSettingsStore } from '../../store';
+import { useIsPro } from '../../hooks/useIsPro';
+import { Radius, Spacing } from '../../constants';
+import { transcribeAudio, estimateActivityCalories } from '../../services/groq';
 import { CustomAlert, AlertType } from '../../components/CustomAlert';
 
 /** Preset exercise list with fixed kcal-per-30-min values and category mapping. */
@@ -70,7 +70,10 @@ export default function AddActivityModal() {
   const colors       = useTheme();
   const { language } = useSettingsStore();
   const { id }       = useLocalSearchParams<{ id: string }>();
-  const { addActivityLog, updateActivityLog, activityLogs, selectedDate } = useNutritionStore();
+  const addActivityLog = useNutritionStore(s => s.addActivityLog);
+  const updateActivityLog = useNutritionStore(s => s.updateActivityLog);
+  const activityLogs = useNutritionStore(s => s.activityLogs);
+  const selectedDate = useNutritionStore(s => s.selectedDate);
   const isProActually = useIsPro();
 
   // If an `id` param was passed, we are editing an existing log entry

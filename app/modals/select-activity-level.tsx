@@ -2,11 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { useTheme } from '../../hooks/useTheme';
-import { useNutritionStore, useAuthStore, UserProfile } from '../../store';
-import { supabase } from '../../services/supabase';
-import { calculateTDEE, calculateMacros, resolveActivityLevel } from '../../services/foodDatabase';
-import { Radius, Spacing } from '../../constants';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { 
@@ -19,6 +14,11 @@ import {
   Zap,
   ChevronRight
 } from 'lucide-react-native';
+import { useTheme } from '../../hooks/useTheme';
+import { useNutritionStore, useAuthStore, UserProfile } from '../../store';
+import { supabase } from '../../services/supabase';
+import { calculateTDEE, calculateMacros, resolveActivityLevel } from '../../services/foodDatabase';
+import { Radius, Spacing } from '../../constants';
 
 const ACTIVITY_OPTIONS = [
   { 
@@ -77,7 +77,9 @@ const ACTIVITY_TO_EXERCISE: Record<string, string> = {
 export default function SelectActivityLevelModal() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const { dailyExercise, setExerciseLevel, selectedDate } = useNutritionStore();
+  const dailyExercise = useNutritionStore(s => s.dailyExercise);
+  const setExerciseLevel = useNutritionStore(s => s.setExerciseLevel);
+  const selectedDate = useNutritionStore(s => s.selectedDate);
   const { profile, setProfile } = useAuthStore();
   const [saving, setSaving] = useState(false);
 

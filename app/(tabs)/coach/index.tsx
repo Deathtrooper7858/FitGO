@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams } from 'expo-router';
 import { Apple, Dumbbell, Activity } from 'lucide-react-native';
-import NutritionistScreen from '../../../components/NutritionistScreen';
-import TrainerScreen from '../../../components/TrainerScreen';
-import DoctorScreen from '../../../components/DoctorScreen';
+import { useTheme } from '../../../hooks/useTheme';
+import CoachScreen from '../../../components/CoachScreen';
 import { GlobalBackground } from '../../../components/GlobalBackground';
 
 export default function CoachIndex() {
@@ -98,7 +96,7 @@ export default function CoachIndex() {
         </View>
       </SafeAreaView>
       <View style={{ flex: 1 }}>
-        {activeCoach === 'nutritionist' ? <NutritionistScreen /> : activeCoach === 'trainer' ? <TrainerScreen /> : <DoctorScreen />}
+        <CoachScreen coachType={activeCoach} />
       </View>
     </View>
   );

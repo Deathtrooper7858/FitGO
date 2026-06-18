@@ -1,20 +1,28 @@
 import { useEffect } from 'react';
 import { Stack, router, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import * as SplashScreen from 'expo-splash-screen';
+import { preventAutoHideAsync, hideAsync } from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, View, ActivityIndicator, Platform, LogBox, Text } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
+import * as NavigationBar from 'expo-navigation-bar';
+import { supabase } from '../services/supabase';
+import { useAuthStore } from '../store/authStore';
+import { useSettingsStore } from '../store/settingsStore';
+import { usePurchaseStore } from '../store/purchaseStore';
+import { useSocialStore } from '../store/socialStore';
+import { useAICreditsStore } from '../store/aiCreditsStore';
+import { registerForPushNotificationsAsync } from '../services/notifications';
+import { Colors } from '../constants';
+import i18n from '../i18n';
+import { useTheme } from '../hooks/useTheme';
+import { useAdMob } from '../hooks/useAdMob';
+import { AppToast } from '../components/AppToast';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 
-// Silence debug logs in production builds
-if (!__DEV__) {
-  console.log = () => {};
-  console.warn = () => {};
-  // console.error intentionally NOT silenced — critical for crash reporting
-} else {
-  // Interceptar console.warn para limpiar la terminal de avisos de librerías de terceros
+if (__DEV__) {
   const originalWarn = console.warn;
   console.warn = (...args) => {
     const msg = args[0];
@@ -42,24 +50,11 @@ LogBox.ignoreLogs([
   'DOMException: Aborted',
   'AuthRetryableFetchError: Aborted'
 ]);
-import { supabase } from '../services/supabase';
-import { useAuthStore } from '../store/authStore';
-import { useSettingsStore } from '../store/settingsStore';
-import { usePurchaseStore } from '../store/purchaseStore';
-import { useSocialStore } from '../store/socialStore';
-import { useAICreditsStore } from '../store/aiCreditsStore';
-import { registerForPushNotificationsAsync } from '../services/notifications';
-import { Colors } from '../constants';
-import i18n from '../i18n';
-import { useTheme } from '../hooks/useTheme';
-import { useAdMob } from '../hooks/useAdMob';
-import * as NavigationBar from 'expo-navigation-bar';
-import { AppToast } from '../components/AppToast';
 
 // Safely detect if edge-to-edge is enabled
 let isEdgeToEdgeActive = false;
 
-SplashScreen.preventAutoHideAsync();
+preventAutoHideAsync();
 
 // ─── Navigation Guard ─────────────────────────────────────────────────────────
 function NavigationGuard() {
@@ -152,7 +147,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     // Hide the native OS splash screen immediately so our custom RN splash takes over
-    SplashScreen.hideAsync();
+    hideAsync();
 
     // ── Race condition guard ────────────────────────────────────────────────────
     // onAuthStateChange puede dispararse varias veces seguidas (token refresh +
@@ -286,6 +281,7 @@ export default function RootLayout() {
         <StatusBar style={theme === 'dark' ? 'light' : 'dark'} backgroundColor={colors.background} />
         <NavigationGuard />
         <AppToast />
+        <ErrorBoundary>
         <Stack screenOptions={{ 
           headerShown: false, 
           animation: 'none',
@@ -389,6 +385,7 @@ export default function RootLayout() {
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />
         </Stack>
+        </ErrorBoundary>
     </GestureHandlerRootView>
   );
 }

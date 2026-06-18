@@ -10,18 +10,26 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import { Trophy, Users, Zap, Crown, Shield, Copy, LogOut, Plus, Hash, Star, ChevronRight, X, Sword, Trash2 } from 'lucide-react-native';
-import FitGOChallenges from './FitGOChallenges';
+import * as Clipboard from 'expo-clipboard';
+import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming
+} from 'react-native-reanimated';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuthStore, useSocialStore, useSettingsStore, useNutritionStore } from '../../store';
 import { useLeagueStore, LeagueTier, SquadMember, Squad } from '../../store/leagueStore';
 import { FireStreakBadge } from '../FireStreakBadge';
 import MacroRewardAnimation from '../MacroRewardAnimation';
-import * as Clipboard from 'expo-clipboard';
 import { getNameStyle, getSafeColor } from '../../utils/styles';
-import { router } from 'expo-router';
 import { CustomAlert, AlertType } from '../CustomAlert';
-import { useTranslation } from 'react-i18next';
 import { supabase } from '../../services/supabase';
+
+import FitGOChallenges from './FitGOChallenges';
 
 // ─── Liga Config ──────────────────────────────────────────────────────────────
 
@@ -337,14 +345,6 @@ function PodiumCard({ squad, position, onInspect }: { squad: Squad; position: nu
   );
 }
 
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming
-} from 'react-native-reanimated';
-
 function LocalFireStreakBadge({ streakDays, style, size = 'default' }: { streakDays: number; style?: any; size?: 'small' | 'default' | 'large' }) {
   const colors = useTheme();
   const isOnFire = (streakDays || 0) >= 3;
@@ -424,12 +424,22 @@ export default function FitGOCompetitive() {
   const { t } = useTranslation();
   const { profile } = useAuthStore();
   const { premiumColor } = useSettingsStore();
-  const {
-    squad, members, myPoints, mySquadPoints, myStreak,
-    loading, fetchMySquad, leaveSquad, createSquad, joinSquadByCode,
-    rewardVisible, rewardPoints, hideReward, topSquads, fetchTopSquads,
-  } = useLeagueStore();
-  const { streakDays } = useNutritionStore();
+  const squad = useLeagueStore(s => s.squad);
+  const members = useLeagueStore(s => s.members);
+  const myPoints = useLeagueStore(s => s.myPoints);
+  const mySquadPoints = useLeagueStore(s => s.mySquadPoints);
+  const myStreak = useLeagueStore(s => s.myStreak);
+  const loading = useLeagueStore(s => s.loading);
+  const fetchMySquad = useLeagueStore(s => s.fetchMySquad);
+  const leaveSquad = useLeagueStore(s => s.leaveSquad);
+  const createSquad = useLeagueStore(s => s.createSquad);
+  const joinSquadByCode = useLeagueStore(s => s.joinSquadByCode);
+  const rewardVisible = useLeagueStore(s => s.rewardVisible);
+  const rewardPoints = useLeagueStore(s => s.rewardPoints);
+  const hideReward = useLeagueStore(s => s.hideReward);
+  const topSquads = useLeagueStore(s => s.topSquads);
+  const fetchTopSquads = useLeagueStore(s => s.fetchTopSquads);
+  const streakDays = useNutritionStore(s => s.streakDays);
   
   // Sync streak to DB on mount AND whenever streakDays changes
   // so the leaderboard always reflects the current true local value.
@@ -492,7 +502,7 @@ export default function FitGOCompetitive() {
   };
 
   // Swipe between ranking / my-squad / challenges
-  const SECTIONS: Array<'ranking' | 'my-squad' | 'challenges'> = ['ranking', 'my-squad', 'challenges'];
+  const SECTIONS: ('ranking' | 'my-squad' | 'challenges')[] = ['ranking', 'my-squad', 'challenges'];
   const swipeGesture = Gesture.Pan()
     .activeOffsetX([-35, 35])
     .failOffsetY([-12, 12])
