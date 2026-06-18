@@ -28,7 +28,7 @@ import { AnimatedCard } from '../../../components/AnimatedCard';
 import { getNameStyle } from '../../../utils/styles';
 import { GlassCard } from '../../../components/GlassCard';
 import { getLocalDateString } from '../../../utils/date';
-import { Confetti } from '../../../components/Confetti';
+import { triggerInstantNotification } from '../../../services/notifications';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -438,6 +438,7 @@ export default function PlannerScreen() {
   const [isHomeWorkout, setIsHomeWorkout] = useState(false);
   const [homeEquipment, setHomeEquipment] = useState('');
   const [expandedEqCategory, setExpandedEqCategory] = useState<string | null>(null);
+  const [showWorkoutSettings, setShowWorkoutSettings] = useState(false);
   const [customWeightInput, setCustomWeightInput] = useState('');
   const [weightUnit, setWeightUnit] = useState<'kg'|'lbs'>('kg');
   const [weightType, setWeightType] = useState<'Mancuernas'|'Kettlebell'>('Mancuernas');
@@ -461,7 +462,6 @@ export default function PlannerScreen() {
   // Modals
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showResetWarning, setShowResetWarning] = useState(false);
-  const [confettiTrigger, setConfettiTrigger] = useState(0);
   const [exerciseMetrics, setExerciseMetrics] = useState<Record<number, { weight: string, rpe: string }>>({});
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resetWarningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1129,7 +1129,7 @@ export default function PlannerScreen() {
   const handleCompleteWorkout = () => {
     if (!workout || workout.exercises.length === 0 || alreadyCompleted) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setConfettiTrigger(prev => prev + 1);
+    triggerInstantNotification('✅ ¡Entrenamiento Completado!', 'Has registrado tu entrenamiento de hoy exitosamente.', undefined, 'fitness');
     addWorkout({
       date: activeDayDate,
       routineName: workout.name,
@@ -1207,7 +1207,6 @@ export default function PlannerScreen() {
   return (
     <View style={{ flex: 1 }}>
       <GlobalBackground />
-      <Confetti trigger={confettiTrigger} />
       <SafeAreaView style={[s.safe, { backgroundColor: 'transparent' }]}>
       <CustomAlert visible={alert.visible} type={alert.type} title={alert.title} message={alert.message} onConfirm={alert.onConfirm} />
 
@@ -1284,9 +1283,9 @@ export default function PlannerScreen() {
               style={s.genGrad} start={{x:0,y:0}} end={{x:1,y:1}}
             >
               {loading ? <ActivityIndicator size="small" color="#fff" /> :
-               <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
+                <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
                  <Sparkles size={16} color="#fff" />
-                 <Text style={s.genText}>{t('planner.generate')}</Text>
+                 <Text style={s.genText}>{t('planner.generateWeekly', 'Generar Plan Semanal')}</Text>
                </View>
               }
             </LinearGradient>
@@ -1344,161 +1343,181 @@ export default function PlannerScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Energy Meter UI (Moved inside ScrollView) */}
+        {/* Workout Settings Accordion */}
         {mode === 'workouts' && (
-          <View style={{ paddingHorizontal: 16, marginBottom: 20, marginTop: 12 }}>
-             <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 8 }}>¿Cómo te sientes hoy?</Text>
-             <View style={{ flexDirection: 'row', gap: 8 }}>
-               <TouchableOpacity 
-                 activeOpacity={0.8}
-                 onPress={() => {
-                   setEnergyMode('low');
-                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-                 }}
-                 style={{ flex: 1, paddingVertical: 10, backgroundColor: energyMode === 'low' ? '#06B6D420' : colors.surfaceAlt, borderRadius: 16, borderWidth: 1, borderColor: energyMode === 'low' ? '#06B6D4' : colors.border, alignItems: 'center' }}>
-                 <Text style={{ fontSize: 20 }}>🔋</Text>
-                 <Text style={{ fontSize: 12, fontWeight: '800', color: energyMode === 'low' ? '#06B6D4' : colors.textMuted, marginTop: 4 }}>Agotado</Text>
-               </TouchableOpacity>
-               <TouchableOpacity 
-                 activeOpacity={0.8}
-                 onPress={() => {
-                   setEnergyMode('normal');
-                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                 }}
-                 style={{ flex: 1, paddingVertical: 10, backgroundColor: energyMode === 'normal' ? colors.primary + '20' : colors.surfaceAlt, borderRadius: 16, borderWidth: 1, borderColor: energyMode === 'normal' ? colors.primary : colors.border, alignItems: 'center' }}>
-                 <Text style={{ fontSize: 20 }}>⚡</Text>
-                 <Text style={{ fontSize: 12, fontWeight: '800', color: energyMode === 'normal' ? colors.primary : colors.textMuted, marginTop: 4 }}>Normal</Text>
-               </TouchableOpacity>
-               <TouchableOpacity 
-                 activeOpacity={0.8}
-                 onPress={() => {
-                   setEnergyMode('beast');
-                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-                   setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy), 100);
-                 }}
-                 style={{ flex: 1, paddingVertical: 10, backgroundColor: energyMode === 'beast' ? '#EF444420' : colors.surfaceAlt, borderRadius: 16, borderWidth: 1, borderColor: energyMode === 'beast' ? '#EF4444' : colors.border, alignItems: 'center' }}>
-                 <Text style={{ fontSize: 20 }}>🦍</Text>
-                 <Text style={{ fontSize: 12, fontWeight: '800', color: energyMode === 'beast' ? '#EF4444' : colors.textMuted, marginTop: 4 }}>Bestia</Text>
-               </TouchableOpacity>
-             </View>
-          </View>
-        )}
-
-        {mode === 'workouts' && (
-          <View style={{ marginBottom: Spacing.lg }}>
-            <View style={[s.homeWorkoutWrap, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, marginBottom: isHomeWorkout ? 12 : 0 }]}>
-              <View style={{flex: 1}}>
-                <Text style={[s.homeWorkoutTitle, { color: colors.textPrimary }]}>{t('planner.homeWorkoutTitle', 'Entrenamiento en Casa')}</Text>
-                <Text style={[s.homeWorkoutSub, { color: colors.textSecondary }]}>{t('planner.homeWorkoutSub', 'Solo calistenia y peso corporal')}</Text>
+          <View style={{ marginHorizontal: 16, marginBottom: 20, marginTop: 12 }}>
+            <TouchableOpacity 
+              style={[s.aiDisclaimerBanner, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, marginHorizontal: 0, marginBottom: showWorkoutSettings ? 12 : 0 }]}
+              onPress={() => setShowWorkoutSettings(!showWorkoutSettings)}
+              activeOpacity={0.8}
+            >
+              <View style={[s.aiDisclaimerRow, { alignItems: 'center' }]}>
+                <Dumbbell size={18} color={colors.primary} />
+                <Text style={[s.aiDisclaimerTitle, { color: colors.textPrimary, flex: 1, marginLeft: 8 }]}>
+                  {t('planner.workoutSettingsTitle', 'Ajustes de Entrenamiento')}
+                </Text>
+                {showWorkoutSettings ? <ChevronUp size={20} color={colors.textMuted} /> : <ChevronDown size={20} color={colors.textMuted} />}
               </View>
-              <Switch
-                value={isHomeWorkout}
-                onValueChange={setIsHomeWorkout}
-                trackColor={{ false: colors.border, true: colors.primary }}
-                thumbColor="#fff"
-              />
-            </View>
-            
-            {isHomeWorkout && (
-              <View style={[s.equipmentWrap, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Text style={[s.equipmentTitle, { color: colors.textPrimary }]}>{t('planner.equipmentTitle', 'Implementos Adicionales')}</Text>
-                <Text style={[s.equipmentSub, { color: colors.textSecondary }]}>{t('planner.equipmentSub', '¿Qué equipo tienes disponible?')}</Text>
-                
-                <View style={{ marginTop: 12 }}>
-                  {[
-                    { id: 'basics', title: 'Básicos de Calistenia', items: ['Barra de dominadas', 'Barras paralelas', 'Anillas de gimnasia', 'Chaleco lastrado'] },
-                    { id: 'bands', title: 'Bandas y Resistencia', items: ['Bandas elásticas tubulares', 'Bandas de resistencia (loops)', 'TRX / Suspensión'] },
-                    { id: 'accessories', title: 'Accesorios Adicionales', items: ['Tapete / Mat', 'Rueda abdominal', 'Cuerda para saltar', 'Banco ajustable'] },
-                    { id: 'weights', title: 'Pesas y Mancuernas', items: [] },
-                  ].map((cat) => {
-                    const isExpanded = expandedEqCategory === cat.id;
-                    return (
-                      <View key={cat.id} style={{ marginBottom: 8, backgroundColor: colors.background, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: colors.border }}>
-                        <TouchableOpacity 
-                          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 12 }}
-                          onPress={() => setExpandedEqCategory(isExpanded ? null : cat.id)}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={{ color: colors.textPrimary, fontWeight: '600', fontSize: 14 }}>{cat.title}</Text>
-                          {isExpanded ? <ChevronUp size={16} color={colors.textMuted} /> : <ChevronDown size={16} color={colors.textMuted} />}
-                        </TouchableOpacity>
-                        
-                        {isExpanded && (
-                          <View style={{ padding: 12, paddingTop: 0, borderTopWidth: 1, borderTopColor: colors.border + '50', marginTop: 4 }}>
-                            {cat.id === 'weights' ? (
-                              <View>
-                                <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
-                                  <TouchableOpacity 
-                                    style={{ flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8, backgroundColor: weightType === 'Mancuernas' ? colors.primary + '20' : colors.surfaceAlt, borderWidth: 1, borderColor: weightType === 'Mancuernas' ? colors.primary : colors.border }}
-                                    onPress={() => setWeightType('Mancuernas')}
-                                  ><Text style={{ color: weightType === 'Mancuernas' ? colors.primary : colors.textMuted, fontWeight: '600', fontSize: 13 }}>Mancuernas</Text></TouchableOpacity>
-                                  <TouchableOpacity 
-                                    style={{ flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8, backgroundColor: weightType === 'Kettlebell' ? colors.primary + '20' : colors.surfaceAlt, borderWidth: 1, borderColor: weightType === 'Kettlebell' ? colors.primary : colors.border }}
-                                    onPress={() => setWeightType('Kettlebell')}
-                                  ><Text style={{ color: weightType === 'Kettlebell' ? colors.primary : colors.textMuted, fontWeight: '600', fontSize: 13 }}>Kettlebells</Text></TouchableOpacity>
-                                </View>
-                                <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
-                                  <TextInput
-                                    style={{ flex: 1, backgroundColor: colors.surfaceAlt, color: colors.textPrimary, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: colors.border }}
-                                    placeholder="Ej: 5"
-                                    placeholderTextColor={colors.textMuted}
-                                    keyboardType="numeric"
-                                    value={customWeightInput}
-                                    onChangeText={setCustomWeightInput}
-                                  />
-                                  <TouchableOpacity 
-                                    style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: weightUnit === 'kg' ? colors.primary + '20' : colors.surfaceAlt, borderWidth: 1, borderColor: weightUnit === 'kg' ? colors.primary : colors.border, justifyContent: 'center' }}
-                                    onPress={() => setWeightUnit('kg')}
-                                  ><Text style={{ color: weightUnit === 'kg' ? colors.primary : colors.textMuted, fontWeight: '600' }}>kg</Text></TouchableOpacity>
-                                  <TouchableOpacity 
-                                    style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: weightUnit === 'lbs' ? colors.primary + '20' : colors.surfaceAlt, borderWidth: 1, borderColor: weightUnit === 'lbs' ? colors.primary : colors.border, justifyContent: 'center' }}
-                                    onPress={() => setWeightUnit('lbs')}
-                                  ><Text style={{ color: weightUnit === 'lbs' ? colors.primary : colors.textMuted, fontWeight: '600' }}>lb</Text></TouchableOpacity>
-                                  <TouchableOpacity 
-                                    style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: colors.primary, justifyContent: 'center' }}
-                                    onPress={handleAddCustomWeight}
-                                  ><Plus size={16} color="#fff" /></TouchableOpacity>
-                                </View>
-                              </View>
-                            ) : null}
+            </TouchableOpacity>
 
-                            <View style={s.equipmentChips}>
-                              {(cat.id === 'weights' 
-                                ? homeEquipment.split(',').map(s => s.trim()).filter(s => s.includes('Mancuerna') || s.includes('Kettlebell') || s.includes('Pesa')) 
-                                : cat.items
-                              ).map((item) => {
-                                const arr = homeEquipment.split(',').map(s => s.trim());
-                                const isSelected = arr.includes(item);
-                                if (cat.id === 'weights' && !isSelected) return null;
-                                return (
-                                  <TouchableOpacity
-                                    key={item}
-                                    style={[s.equipmentChip, isSelected ? { backgroundColor: colors.primary, borderColor: colors.primary } : { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
-                                    onPress={() => handleToggleEquipment(item)}
-                                  >
-                                    <Text style={[s.equipmentChipText, { color: isSelected ? '#fff' : colors.textPrimary }]}>{item}</Text>
-                                    {cat.id === 'weights' && <X size={12} color="#fff" style={{ marginLeft: 4 }} />}
-                                  </TouchableOpacity>
-                                );
-                              })}
-                            </View>
-                          </View>
-                        )}
-                      </View>
-                    );
-                  })}
-                </View>
-                
-                <View style={[s.inputWrap, { backgroundColor: colors.background, borderColor: colors.border, marginTop: 4 }]}>
-                  <TextInput
-                    style={[s.equipmentInput, { color: colors.textPrimary }]}
-                    placeholder={t('planner.equipmentPlaceholder', 'Opcional: Detalles adicionales (ej: banda verde fuerte)...')}
-                    placeholderTextColor={colors.textMuted}
-                    value={homeEquipment}
-                    onChangeText={setHomeEquipment}
-                    multiline
-                  />
-                </View>
+            {showWorkoutSettings && (
+              <View>
+                 {/* Energy Meter UI */}
+                 <View style={{ marginBottom: 20 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 8 }}>¿Cómo te sientes hoy?</Text>
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                      <TouchableOpacity 
+                        activeOpacity={0.8}
+                        onPress={() => {
+                          setEnergyMode('low');
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+                        }}
+                        style={{ flex: 1, paddingVertical: 10, backgroundColor: energyMode === 'low' ? '#06B6D420' : colors.surfaceAlt, borderRadius: 16, borderWidth: 1, borderColor: energyMode === 'low' ? '#06B6D4' : colors.border, alignItems: 'center' }}>
+                        <Text style={{ fontSize: 20 }}>🔋</Text>
+                        <Text style={{ fontSize: 12, fontWeight: '800', color: energyMode === 'low' ? '#06B6D4' : colors.textMuted, marginTop: 4 }}>Agotado</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        activeOpacity={0.8}
+                        onPress={() => {
+                          setEnergyMode('normal');
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        }}
+                        style={{ flex: 1, paddingVertical: 10, backgroundColor: energyMode === 'normal' ? colors.primary + '20' : colors.surfaceAlt, borderRadius: 16, borderWidth: 1, borderColor: energyMode === 'normal' ? colors.primary : colors.border, alignItems: 'center' }}>
+                        <Text style={{ fontSize: 20 }}>⚡</Text>
+                        <Text style={{ fontSize: 12, fontWeight: '800', color: energyMode === 'normal' ? colors.primary : colors.textMuted, marginTop: 4 }}>Normal</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        activeOpacity={0.8}
+                        onPress={() => {
+                          setEnergyMode('beast');
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+                          setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy), 100);
+                        }}
+                        style={{ flex: 1, paddingVertical: 10, backgroundColor: energyMode === 'beast' ? '#EF444420' : colors.surfaceAlt, borderRadius: 16, borderWidth: 1, borderColor: energyMode === 'beast' ? '#EF4444' : colors.border, alignItems: 'center' }}>
+                        <Text style={{ fontSize: 20 }}>🦍</Text>
+                        <Text style={{ fontSize: 12, fontWeight: '800', color: energyMode === 'beast' ? '#EF4444' : colors.textMuted, marginTop: 4 }}>Bestia</Text>
+                      </TouchableOpacity>
+                    </View>
+                 </View>
+
+                 {/* Home Workout Toggle */}
+                 <View style={{ marginBottom: Spacing.lg }}>
+                   <View style={[s.homeWorkoutWrap, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, marginBottom: isHomeWorkout ? 12 : 0, marginHorizontal: 0 }]}>
+                     <View style={{flex: 1}}>
+                       <Text style={[s.homeWorkoutTitle, { color: colors.textPrimary }]}>{t('planner.homeWorkoutTitle', 'Entrenamiento en Casa')}</Text>
+                       <Text style={[s.homeWorkoutSub, { color: colors.textSecondary }]}>{t('planner.homeWorkoutSub', 'Solo calistenia y peso corporal')}</Text>
+                     </View>
+                     <Switch
+                       value={isHomeWorkout}
+                       onValueChange={setIsHomeWorkout}
+                       trackColor={{ false: colors.border, true: colors.primary }}
+                       thumbColor="#fff"
+                     />
+                   </View>
+                   
+                   {isHomeWorkout && (
+                     <View style={[s.equipmentWrap, { backgroundColor: colors.surface, borderColor: colors.border, marginHorizontal: 0 }]}>
+                       <Text style={[s.equipmentTitle, { color: colors.textPrimary }]}>{t('planner.equipmentTitle', 'Implementos Adicionales')}</Text>
+                       <Text style={[s.equipmentSub, { color: colors.textSecondary }]}>{t('planner.equipmentSub', '¿Qué equipo tienes disponible?')}</Text>
+                       
+                       <View style={{ marginTop: 12 }}>
+                         {[
+                           { id: 'basics', title: 'Básicos de Calistenia', items: ['Barra de dominadas', 'Barras paralelas', 'Anillas de gimnasia', 'Chaleco lastrado'] },
+                           { id: 'bands', title: 'Bandas y Resistencia', items: ['Bandas elásticas tubulares', 'Bandas de resistencia (loops)', 'TRX / Suspensión'] },
+                           { id: 'accessories', title: 'Accesorios Adicionales', items: ['Tapete / Mat', 'Rueda abdominal', 'Cuerda para saltar', 'Banco ajustable'] },
+                           { id: 'weights', title: 'Pesas y Mancuernas', items: [] },
+                         ].map((cat) => {
+                           const isExpanded = expandedEqCategory === cat.id;
+                           return (
+                             <View key={cat.id} style={{ marginBottom: 8, backgroundColor: colors.background, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: colors.border }}>
+                               <TouchableOpacity 
+                                 style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 12 }}
+                                 onPress={() => setExpandedEqCategory(isExpanded ? null : cat.id)}
+                                 activeOpacity={0.7}
+                               >
+                                 <Text style={{ color: colors.textPrimary, fontWeight: '600', fontSize: 14 }}>{cat.title}</Text>
+                                 {isExpanded ? <ChevronUp size={16} color={colors.textMuted} /> : <ChevronDown size={16} color={colors.textMuted} />}
+                               </TouchableOpacity>
+                               
+                               {isExpanded && (
+                                 <View style={{ padding: 12, paddingTop: 0, borderTopWidth: 1, borderTopColor: colors.border + '50', marginTop: 4 }}>
+                                   {cat.id === 'weights' ? (
+                                     <View>
+                                       <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+                                         <TouchableOpacity 
+                                           style={{ flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8, backgroundColor: weightType === 'Mancuernas' ? colors.primary + '20' : colors.surfaceAlt, borderWidth: 1, borderColor: weightType === 'Mancuernas' ? colors.primary : colors.border }}
+                                           onPress={() => setWeightType('Mancuernas')}
+                                         ><Text style={{ color: weightType === 'Mancuernas' ? colors.primary : colors.textMuted, fontWeight: '600', fontSize: 13 }}>Mancuernas</Text></TouchableOpacity>
+                                         <TouchableOpacity 
+                                           style={{ flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8, backgroundColor: weightType === 'Kettlebell' ? colors.primary + '20' : colors.surfaceAlt, borderWidth: 1, borderColor: weightType === 'Kettlebell' ? colors.primary : colors.border }}
+                                           onPress={() => setWeightType('Kettlebell')}
+                                         ><Text style={{ color: weightType === 'Kettlebell' ? colors.primary : colors.textMuted, fontWeight: '600', fontSize: 13 }}>Kettlebells</Text></TouchableOpacity>
+                                       </View>
+                                       <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+                                         <TextInput
+                                           style={{ flex: 1, backgroundColor: colors.surfaceAlt, color: colors.textPrimary, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: colors.border }}
+                                           placeholder="Ej: 5"
+                                           placeholderTextColor={colors.textMuted}
+                                           keyboardType="numeric"
+                                           value={customWeightInput}
+                                           onChangeText={setCustomWeightInput}
+                                         />
+                                         <TouchableOpacity 
+                                           style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: weightUnit === 'kg' ? colors.primary + '20' : colors.surfaceAlt, borderWidth: 1, borderColor: weightUnit === 'kg' ? colors.primary : colors.border, justifyContent: 'center' }}
+                                           onPress={() => setWeightUnit('kg')}
+                                         ><Text style={{ color: weightUnit === 'kg' ? colors.primary : colors.textMuted, fontWeight: '600' }}>kg</Text></TouchableOpacity>
+                                         <TouchableOpacity 
+                                           style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: weightUnit === 'lbs' ? colors.primary + '20' : colors.surfaceAlt, borderWidth: 1, borderColor: weightUnit === 'lbs' ? colors.primary : colors.border, justifyContent: 'center' }}
+                                           onPress={() => setWeightUnit('lbs')}
+                                         ><Text style={{ color: weightUnit === 'lbs' ? colors.primary : colors.textMuted, fontWeight: '600' }}>lb</Text></TouchableOpacity>
+                                         <TouchableOpacity 
+                                           style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: colors.primary, justifyContent: 'center' }}
+                                           onPress={handleAddCustomWeight}
+                                         ><Plus size={16} color="#fff" /></TouchableOpacity>
+                                       </View>
+                                     </View>
+                                   ) : null}
+       
+                                   <View style={s.equipmentChips}>
+                                     {(cat.id === 'weights' 
+                                       ? homeEquipment.split(',').map(s => s.trim()).filter(s => s.includes('Mancuerna') || s.includes('Kettlebell') || s.includes('Pesa')) 
+                                       : cat.items
+                                     ).map((item) => {
+                                       const arr = homeEquipment.split(',').map(s => s.trim());
+                                       const isSelected = arr.includes(item);
+                                       if (cat.id === 'weights' && !isSelected) return null;
+                                       return (
+                                         <TouchableOpacity
+                                           key={item}
+                                           style={[s.equipmentChip, isSelected ? { backgroundColor: colors.primary, borderColor: colors.primary } : { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+                                           onPress={() => handleToggleEquipment(item)}
+                                         >
+                                           <Text style={[s.equipmentChipText, { color: isSelected ? '#fff' : colors.textPrimary }]}>{item}</Text>
+                                           {cat.id === 'weights' && <X size={12} color="#fff" style={{ marginLeft: 4 }} />}
+                                         </TouchableOpacity>
+                                       );
+                                     })}
+                                   </View>
+                                 </View>
+                               )}
+                             </View>
+                           );
+                         })}
+                       </View>
+                       
+                       <View style={[s.inputWrap, { backgroundColor: colors.background, borderColor: colors.border, marginTop: 4 }]}>
+                         <TextInput
+                           style={[s.equipmentInput, { color: colors.textPrimary }]}
+                           placeholder={t('planner.equipmentPlaceholder', 'Opcional: Detalles adicionales (ej: banda verde fuerte)...')}
+                           placeholderTextColor={colors.textMuted}
+                           value={homeEquipment}
+                           onChangeText={setHomeEquipment}
+                           multiline
+                         />
+                       </View>
+                     </View>
+                   )}
+                 </View>
               </View>
             )}
           </View>

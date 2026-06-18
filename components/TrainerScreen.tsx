@@ -72,6 +72,12 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
   const textColor = isUser ? '#FFFFFF' : colors.textPrimary;
   const boldColor = isUser ? '#FFFFFF' : colors.primary;
   
+  if (!isUser) {
+    // Strip the common disclaimer from the text before parsing
+    content = content.replace(/recuerda que.*?profesional certificado.*?proporcione\.?\s*(🙏|💪|🥦)?/ig, '');
+    content = content.trim();
+  }
+
   const lines = content.split('\n');
   
   return lines.map((line, lineIdx) => {
@@ -81,13 +87,6 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
 
     const isBullet = line.trim().startsWith('* ') || line.trim().startsWith('- ');
     const isNumberList = /^\d+\.\s/.test(line.trim());
-    const isDisclaimer = !isUser && (
-      line.toLowerCase().includes('recuerda que') || 
-      line.toLowerCase().includes('profesional certificado') ||
-      line.toLowerCase().includes('disclaimer') ||
-      line.toLowerCase().includes('not a certified professional') ||
-      line.toLowerCase().includes('consult a real professional')
-    );
     
     let cleanLine = line;
     let prefix = '';
@@ -111,9 +110,8 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
         <Text
           key={partIdx}
           style={{
-            fontWeight: isBold ? '800' : (isDisclaimer ? '400' : '500'),
-            color: isBold ? boldColor : (isDisclaimer ? colors.textMuted : textColor),
-            fontStyle: isDisclaimer && !isBold ? 'italic' : 'normal',
+            fontWeight: isBold ? '800' : '500',
+            color: isBold ? boldColor : textColor,
           }}
         >
           {part}
@@ -127,8 +125,8 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
           <Text style={{ 
             color: isUser ? '#FFF' : colors.primary, 
             fontWeight: '900', 
-            fontSize: isDisclaimer ? 13 : 15, 
-            lineHeight: isDisclaimer ? 20 : 24,
+            fontSize: 15, 
+            lineHeight: 24,
             marginRight: 6
           }}>
             {prefix}
@@ -136,9 +134,9 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
         ) : null}
         <Text 
           style={{ 
-            fontSize: isOnlyEmoji ? 26 : (isDisclaimer ? 13 : 15), 
-            lineHeight: isOnlyEmoji ? 32 : (isDisclaimer ? 20 : 24), 
-            color: isDisclaimer ? colors.textMuted : textColor,
+            fontSize: isOnlyEmoji ? 26 : 15, 
+            lineHeight: isOnlyEmoji ? 32 : 24, 
+            color: textColor,
             flexShrink: 1,
             letterSpacing: 0.15
           }}
@@ -793,6 +791,13 @@ export default function TrainerScreen() {
             </>
           }
         />
+
+        {/* ── Permanent Legal Disclaimer ── */}
+        <View style={{ alignItems: 'center', paddingVertical: 4, backgroundColor: colors.background, paddingHorizontal: 16 }}>
+          <Text style={{ fontSize: 10, color: colors.textMuted, textAlign: 'center', fontWeight: '500' }}>
+            {t('coach.disclaimer', 'La IA puede cometer errores. Consulta a un profesional certificado antes de seguir recomendaciones médicas o deportivas.')}
+          </Text>
+        </View>
 
         {/* ── Input area ── */}
         <View style={[s.inputAreaContainer, { borderTopColor: colors.border, backgroundColor: colors.background }]}>
