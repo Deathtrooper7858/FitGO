@@ -5,9 +5,7 @@ import { Link, usePathname } from "@/i18n/routing";
 import { Menu, X, Zap } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { createClient } from "@/lib/supabase";
-
 import { User } from "@supabase/supabase-js";
-
 import { useTranslations } from "next-intl";
 
 export default function Navbar() {

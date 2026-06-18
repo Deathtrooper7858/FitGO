@@ -18,6 +18,7 @@ import {
   Flame,
   Lock,
   ChevronRight,
+  AlertCircle,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -48,23 +49,29 @@ export default function PricingPage() {
 
   const [billing, setBilling] = useState<"monthly" | "annual">("annual");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const monthlyPrice = 4.99;
-  const annualPrice = 3.33;
+  const monthlyPrice = Number(process.env.NEXT_PUBLIC_PRICE_MONTHLY) || 4.99;
+  const annualPrice = Number(process.env.NEXT_PUBLIC_PRICE_ANNUAL) || 3.33;
   const annualTotal = (annualPrice * 12).toFixed(2);
 
   const handleCheckout = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ billing }),
       });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || t("errorMsg"));
+      }
       const { url } = await res.json();
       if (url) window.location.href = url;
     } catch (err) {
-      console.error(err);
+      setError(err instanceof Error ? err.message : t("errorMsg"));
     } finally {
       setLoading(false);
     }
@@ -131,8 +138,18 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Pricing cards */}
-      <section className="py-16 px-6">
+        {/* Error banner */}
+        {error && (
+          <section className="px-6">
+            <div className="max-w-5xl mx-auto mb-4 p-4 rounded-xl bg-error/10 border border-error/20 flex items-start gap-3">
+              <AlertCircle size={18} className="text-error shrink-0 mt-0.5" />
+              <p className="text-sm text-error/90 leading-tight">{error}</p>
+            </div>
+          </section>
+        )}
+
+        {/* Pricing cards */}
+        <section className="py-16 px-6">
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
           {/* Free card */}
           <div className="glass rounded-3xl p-8">

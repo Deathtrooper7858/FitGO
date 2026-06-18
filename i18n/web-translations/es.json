@@ -333,7 +333,8 @@
       "nutrition": "Nutrición IA",
       "unlimited": "Sin límites"
     },
-    "secure": "Pago seguro · Cancela cuando quieras"
+    "secure": "Pago seguro · Cancela cuando quieras",
+    "errorMsg": "Error al procesar el pago. Intenta de nuevo."
   },
   "auth": {
     "login": {
@@ -354,7 +355,8 @@
       "btn": "Crear cuenta",
       "loading": "Creando cuenta...",
       "hasAccount": "¿Ya tienes cuenta?",
-      "login": "Inicia sesión"
+      "login": "Inicia sesión",
+      "confirmPassword": "Confirmar contraseña"
     },
     "forgot": {
       "title": "Recupera tu acceso a FitGO.",
@@ -362,7 +364,19 @@
       "email": "Correo electrónico",
       "btn": "Enviar enlace",
       "loading": "Enviando...",
-      "back": "Volver al inicio de sesión"
+      "back": "Volver al inicio de sesión",
+      "successMsg": "Revisa tu correo para el enlace de recuperación."
+    },
+    "reset": {
+      "title": "Establece tu nueva contraseña",
+      "password": "Nueva contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "btn": "Actualizar contraseña",
+      "loading": "Actualizando...",
+      "back": "Volver a iniciar sesión",
+      "successMsg": "Contraseña actualizada correctamente.",
+      "errorMismatch": "Las contraseñas no coinciden.",
+      "errorLength": "La contraseña debe tener al menos 6 caracteres."
     }
   }
 }

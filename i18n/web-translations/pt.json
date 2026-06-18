@@ -1,6 +1,6 @@
 {
   "home": {
-    "badge": "Your best version",
+    "badge": "Sua melhor versão",
     "motto": "<highlight>O aplicativo de fitness mais fluido</highlight> e gamificado. Progresso, nutrição e treinos — tudo sincronizado em tempo real.",
     "cta": {
       "start": "Começar grátis",
@@ -212,6 +212,10 @@
         "title": "A ideia nasce",
         "desc": "Frustrados com os apps de fitness existentes, começamos a esboçar o FitGO no papel."
       },
+      "2026": {
+        "title": "FitGO Web",
+        "desc": "Lançamos a plataforma web para gerenciar sua conta pelo navegador."
+      },
       "2025Q1": {
         "title": "Primeiro protótipo",
         "desc": "O primeiro build do FitGO roda em nossos telefones. O rastreador de peso funciona pela primeira vez."
@@ -223,10 +227,6 @@
       "2025Q3": {
         "title": "Lançamento público",
         "desc": "FitGO chega na App Store e Google Play. A comunidade cresce organicamente."
-      },
-      "2026": {
-        "title": "FitGO Web",
-        "desc": "Lançamos a plataforma web para gerenciar sua conta pelo navegador."
       }
     },
     "team": {
@@ -333,7 +333,8 @@
       "nutrition": "Nutrição IA",
       "unlimited": "Sem limites"
     },
-    "secure": "Pagamento seguro · Cancele a qualquer momento"
+    "secure": "Pagamento seguro · Cancele a qualquer momento",
+    "errorMsg": "Erro ao processar pagamento. Tente novamente."
   },
   "auth": {
     "login": {
@@ -354,7 +355,8 @@
       "btn": "Criar conta",
       "loading": "Criando conta...",
       "hasAccount": "Já tem uma conta?",
-      "login": "Entrar"
+      "login": "Entrar",
+      "confirmPassword": "Confirmar senha"
     },
     "forgot": {
       "title": "Recupere seu acesso ao FitGO.",
@@ -362,7 +364,19 @@
       "email": "Endereço de e-mail",
       "btn": "Enviar link",
       "loading": "Enviando...",
-      "back": "Voltar ao login"
+      "back": "Voltar ao login",
+      "successMsg": "Verifique seu e-mail para o link de recuperação."
+    },
+    "reset": {
+      "title": "Defina sua nova senha",
+      "password": "Nova senha",
+      "confirmPassword": "Confirmar senha",
+      "btn": "Atualizar senha",
+      "loading": "Atualizando...",
+      "back": "Voltar ao login",
+      "successMsg": "Senha atualizada com sucesso.",
+      "errorMismatch": "As senhas não coincidem.",
+      "errorLength": "A senha deve ter pelo menos 6 caracteres."
     }
   }
 }

@@ -11,7 +11,6 @@
     "analyze:turbo": "next experimental-analyze"
   },
   "dependencies": {
-    "@stripe/stripe-js": "^9.7.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.2",
     "lucide-react": "^1.17.0",
@@ -28,7 +27,6 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
-    "gh-pages": "^6.3.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

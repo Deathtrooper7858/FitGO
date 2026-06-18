@@ -27,7 +27,7 @@ export default function ForgotPasswordPage() {
       setMessage(error.message);
     } else {
       setStatus("success");
-      setMessage("Revisa tu correo para el enlace de recuperación.");
+      setMessage(t("successMsg"));
     }
   };
 

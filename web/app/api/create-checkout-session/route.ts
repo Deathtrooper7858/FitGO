@@ -29,6 +29,10 @@ export async function POST(req: Request) {
 
     const { data: { user } } = await supabase.auth.getUser();
 
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
     // Determine Stripe price ID based on selected plan
     const priceId = 
       billing === "annual" 
