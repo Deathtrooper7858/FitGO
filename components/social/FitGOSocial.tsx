@@ -475,7 +475,7 @@ export default function FitGOSocial() {
                     <View style={{ padding: Spacing.md }}>
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
                         <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>{t('social.you.trophyShowcase', '🏆 Trophy Showcase')}</Text>
-                        <TouchableOpacity onPress={() => router.navigate('/modals/achievements-showcase-edit' as any)}>
+                        <TouchableOpacity onPress={() => router.push('/modals/achievements' as any)}>
                           <Text style={{ fontSize: 13, fontWeight: '700', color: accentColor }}>{t('common.edit', 'Editar')}</Text>
                         </TouchableOpacity>
                       </View>
@@ -521,7 +521,7 @@ export default function FitGOSocial() {
               )}
 
               <TouchableOpacity
-                onPress={() => router.navigate('/modals/achievements' as any)}
+                onPress={() => router.push('/modals/achievements' as any)}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',

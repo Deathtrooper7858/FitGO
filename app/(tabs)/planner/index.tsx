@@ -32,7 +32,7 @@ import ShoppingListModal from '../../../components/planner/ShoppingListModal';
 import GenerateConfirmModal from '../../../components/planner/GenerateConfirmModal';
 import AILoadingOverlay from '../../../components/planner/AILoadingOverlay';
 import ResetWarningModal from '../../../components/planner/ResetWarningModal';
-import { generateNutritionHTML, generateWorkoutHTML } from '../../../components/planner/pdfHelpers';
+import { generateNutritionHTML, generateWorkoutHTML } from '../../../components/planner/pdfHelpers';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 type PlannerMode = 'nutrition' | 'workouts';
@@ -118,7 +118,7 @@ export default function PlannerScreen() {
     return () => clearInterval(interval);
   }, [restTimer]);
 
-  // Load stored plans
+  // Load stored plans
   useEffect(() => {
     (async () => {
       if (!profile?.id) { setInitialLoading(false); return; }
@@ -295,7 +295,7 @@ export default function PlannerScreen() {
     if (!workout || workout.exercises.length===0 || alreadyCompleted) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setConfettiTrigger(p=>p+1);
-    addWorkout({ date: activeDayDate, routineName: workout.name, exercises: workout.exercises.map((ex:any,i)=>({name:ex.name,englishName:ex.englishName,sets:ex.sets,reps:ex.reps,weight:exerciseMetrics[i]?.weight,rpe:exerciseMetrics[i]?.rpe})) });
+    addWorkout({ date: activeDayDate, routineName: workout.name, exercises: workout.exercises.map((ex:any,i)=>({name:ex.name,englishName:ex.englishName,sets:ex.sets,reps:ex.reps,weight:exerciseMetrics[i]?.weight,rpe:exerciseMetrics[i]?.rpe})) });
   };
 
   const getPreviousRPE = (exerciseName: string) => {
@@ -350,7 +350,6 @@ export default function PlannerScreen() {
   return (
     <View style={{ flex: 1 }}>
       <GlobalBackground />
-      <Confetti trigger={confettiTrigger} />
       <SafeAreaView style={[s.safe, { backgroundColor: 'transparent' }]}>
         <CustomAlert visible={alert.visible} type={alert.type} title={alert.title} message={alert.message} onConfirm={alert.onConfirm} />
         <AILoadingOverlay visible={loading||analyzing||isAdjustingBW} mode={loading?mode:analyzing?'analysis':'bodyweight'} />
@@ -362,7 +361,7 @@ export default function PlannerScreen() {
           <TouchableOpacity style={[s.floatingTimer,{backgroundColor:colors.surface}]} activeOpacity={0.8} onPress={()=>setRestTimer(null)}>
             <Activity size={24} color={colors.primary} />
             <View style={{minWidth:60}}><Text style={[s.timerTitle,{color:colors.textPrimary}]}>Descanso</Text><Text style={[s.timerValue,{color:colors.primary}]}>{Math.floor(restTimer/60)}:{(restTimer%60).toString().padStart(2,'0')}</Text></View>
-            <X size={20} color={colors.textMuted} style={{marginLeft:10}} />
+            <X size={20} color={colors.textMuted} style={{marginLeft:10}} />
           </TouchableOpacity>
         )}
 

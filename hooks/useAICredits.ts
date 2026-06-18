@@ -1,9 +1,9 @@
 import { useCallback, useEffect } from 'react';
 import { RewardedAd, RewardedAdEventType, AdEventType } from 'react-native-google-mobile-ads';
-import { useAICreditsStore } from '../store/aiCreditsStore';
-import { usePurchaseStore } from '../store';
-import { AD_UNIT_IDS, AD_CONFIG } from '../constants/adConfig';
 import { router } from 'expo-router';
+import { useAICreditsStore } from '../store/aiCreditsStore';
+import { usePurchaseStore, useAuthStore } from '../store';
+import { AD_UNIT_IDS, AD_CONFIG } from '../constants/adConfig';
 
 // Pre-load rewarded ad singleton
 let rewardedAd: RewardedAd | null = null;
@@ -19,7 +19,10 @@ function getRewardedAd(): RewardedAd {
 
 export function useAICredits() {
   const { creditsLeft, consumeCredit, rechargeCredits, resetIfNewDay, isProUser, totalAdsWatched } = useAICreditsStore();
-  const { isPro } = usePurchaseStore();
+  const { isPro: baseIsPro } = usePurchaseStore();
+  const { profile } = useAuthStore();
+  
+  const isPro = !!baseIsPro || !!profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
 
   // Sync Pro status into credits store
   useEffect(() => {

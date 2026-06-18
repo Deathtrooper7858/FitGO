@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Animated, Dimensions, Easing } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
-const CONFETTI_COUNT = 80;
-const CONFETTI_EMOJIS = ['🎉', '✨', '🔥', '💪', '🏆'];
+const CONFETTI_COUNT = 15;
+const COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899'];
 
 export function Confetti({ trigger }: { trigger: number }) {
   const [particles, setParticles] = useState<any[]>([]);
@@ -14,14 +14,15 @@ export function Confetti({ trigger }: { trigger: number }) {
       const newParticles = Array.from({ length: CONFETTI_COUNT }).map((_, i) => {
         return {
           id: `${trigger}-${i}`,
-          x: Math.random() * width,
-          emoji: CONFETTI_EMOJIS[Math.floor(Math.random() * CONFETTI_EMOJIS.length)],
-          animY: new Animated.Value(-50),
+          x: (width / 2) + (Math.random() * 40 - 20),
+          y: height * 0.7,
+          color: COLORS[Math.floor(Math.random() * COLORS.length)],
+          animY: new Animated.Value(0),
           animX: new Animated.Value(0),
-          animRot: new Animated.Value(0),
           animOp: new Animated.Value(1),
-          speedY: 1500 + Math.random() * 2000,
-          wobbleAmt: 20 + Math.random() * 40,
+          animScale: new Animated.Value(1 + Math.random() * 0.5),
+          destX: (Math.random() - 0.5) * 250,
+          destY: (Math.random() - 0.5) * 250 - 100,
         };
       });
       setParticles(newParticles);
@@ -29,27 +30,27 @@ export function Confetti({ trigger }: { trigger: number }) {
       newParticles.forEach((p) => {
         Animated.parallel([
           Animated.timing(p.animY, {
-            toValue: height + 100,
-            duration: p.speedY,
-            easing: Easing.linear,
+            toValue: p.destY,
+            duration: 800,
+            easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
           }),
           Animated.timing(p.animX, {
-            toValue: p.wobbleAmt * (Math.random() > 0.5 ? 1 : -1),
-            duration: p.speedY,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-          Animated.timing(p.animRot, {
-            toValue: 1,
-            duration: p.speedY,
-            easing: Easing.linear,
+            toValue: p.destX,
+            duration: 800,
+            easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
           }),
           Animated.timing(p.animOp, {
             toValue: 0,
-            duration: p.speedY,
-            delay: p.speedY - 500,
+            duration: 800,
+            easing: Easing.in(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.timing(p.animScale, {
+            toValue: 0,
+            duration: 800,
+            easing: Easing.in(Easing.cubic),
             useNativeDriver: true,
           })
         ]).start();
@@ -57,7 +58,7 @@ export function Confetti({ trigger }: { trigger: number }) {
 
       const timer = setTimeout(() => {
         setParticles([]);
-      }, 4000);
+      }, 1000);
 
       return () => clearTimeout(timer);
     }
@@ -68,27 +69,25 @@ export function Confetti({ trigger }: { trigger: number }) {
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999, elevation: 9999 }]} pointerEvents="none">
       {particles.map((p) => {
-        const spin = p.animRot.interpolate({
-          inputRange: [0, 1],
-          outputRange: ['0deg', `${360 + Math.random() * 360}deg`]
-        });
         return (
-          <Animated.Text
+          <Animated.View
             key={p.id}
             style={{
               position: 'absolute',
               left: p.x,
-              fontSize: 28 + Math.random() * 20,
+              top: p.y,
+              width: 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: p.color,
               transform: [
                 { translateY: p.animY },
                 { translateX: p.animX },
-                { rotate: spin }
+                { scale: p.animScale }
               ],
               opacity: p.animOp
             }}
-          >
-            {p.emoji}
-          </Animated.Text>
+          />
         );
       })}
     </View>
