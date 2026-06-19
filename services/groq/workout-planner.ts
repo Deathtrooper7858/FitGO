@@ -84,7 +84,7 @@ Return ONLY valid JSON (no markdown). Use this exact structure:
   const data = await fetchGroq({
     model: CHAT_MODEL,
     messages: [{ role: 'user', content: prompt }],
-    max_tokens: 1200,
+    max_tokens: 3500,
     temperature: 0.6,
     response_format: { type: 'json_object' },
   });
@@ -92,11 +92,21 @@ Return ONLY valid JSON (no markdown). Use this exact structure:
   let text = (data.choices[0]?.message?.content ?? '').trim();
   text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
 
+  let parsed: any;
   try {
-    return JSON.parse(text);
+    parsed = JSON.parse(text);
   } catch {
     throw new Error('Failed to parse workout plan from AI. Please try again.');
   }
+
+  // Validate all 7 days are present to prevent truncated plan bugs
+  const requiredDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const missingDays = requiredDays.filter(d => !parsed[d]);
+  if (missingDays.length > 0) {
+    throw new Error(`El plan de entrenamiento está incompleto (faltan: ${missingDays.join(', ')}). Por favor intenta de nuevo.`);
+  }
+
+  return parsed;
 }
 
 export async function generateDailyWorkoutPlan(userProfile: any, language: string = 'en', day: string): Promise<any> {

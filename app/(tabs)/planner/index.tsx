@@ -367,7 +367,7 @@ export default function PlannerScreen() {
       <SafeAreaView style={[s.safe, { backgroundColor: 'transparent' }]}>
         <CustomAlert visible={alert.visible} type={alert.type} title={alert.title} message={alert.message} onConfirm={alert.onConfirm} />
         <AILoadingOverlay visible={loading||analyzing||isAdjustingBW} mode={loading?mode:analyzing?'analysis':'bodyweight'} />
-        <GenerateConfirmModal visible={showConfirmModal} onConfirm={handleGenerate} onChangeFoods={()=>{setShowConfirmModal(false);router.push('/modals/health-profile');}} onCancel={()=>setShowConfirmModal(false)} mode={mode} availableFoods={profile?.availableFoods} targetCalories={profile?.targetCalories} isHomeWorkout={isHomeWorkout} homeEquipment={homeEquipment} profile={profile} premiumColor={safePremiumColor} isPremiumCustom={isPremiumCustom} />
+        <GenerateConfirmModal visible={showConfirmModal} onConfirm={handleGenerate} onChangeFoods={()=>{setShowConfirmModal(false);router.push('/modals/food-selection');}} onCancel={()=>setShowConfirmModal(false)} mode={mode} availableFoods={profile?.availableFoods} targetCalories={profile?.targetCalories} isHomeWorkout={isHomeWorkout} homeEquipment={homeEquipment} profile={profile} premiumColor={safePremiumColor} isPremiumCustom={isPremiumCustom} />
         <ResetWarningModal visible={showResetWarning} onDismiss={()=>setShowResetWarning(false)} />
         <ShoppingListModal visible={showShoppingList} onClose={()=>setShowShoppingList(false)} mealPlans={mealPlans} language={language} />
 

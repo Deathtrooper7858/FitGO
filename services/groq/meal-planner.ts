@@ -97,7 +97,7 @@ Return ONLY valid JSON — no markdown, no explanation, just the JSON object:
   const data = await fetchGroq({
     model: CHAT_MODEL,
     messages: [{ role: 'user', content: prompt }],
-    max_tokens: 1500,
+    max_tokens: 4000,
     temperature: 0.55,
     response_format: { type: 'json_object' },
   });
@@ -105,11 +105,22 @@ Return ONLY valid JSON — no markdown, no explanation, just the JSON object:
   let text = (data.choices[0]?.message?.content ?? '').trim();
   text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
 
+  let parsed: any;
   try {
-    return JSON.parse(text);
+    parsed = JSON.parse(text);
   } catch {
     throw new Error('Failed to parse meal plan from AI. Please try again.');
   }
+
+  // Validate that all 7 days are present — a truncated response (due to token limit)
+  // will be missing Sat/Sun which causes the "only breakfast on Saturday, empty Sunday" bug.
+  const requiredDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const missingDays = requiredDays.filter(d => !parsed[d] || !Array.isArray(parsed[d]) || parsed[d].length === 0);
+  if (missingDays.length > 0) {
+    throw new Error(`El plan generado está incompleto (faltan: ${missingDays.join(', ')}). Por favor intenta de nuevo.`);
+  }
+
+  return parsed;
 }
 
 export async function generateDailyMealPlan(userProfile: any, language: string = 'en', day: string): Promise<any> {
