@@ -1,21 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, TextInput, Alert } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Camera, X, Upload, Brain, CheckCircle, ArrowUpCircle, History, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { Camera, X, Upload, Brain, CheckCircle, ArrowUpCircle, History, ChevronRight, ChevronDown, ChevronUp, Trash2 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { useTranslation } from 'react-i18next';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../hooks/useTheme';
 import { Spacing, Radius, Shadow } from '../../constants';
 import { analyzePhysiquePhoto } from '../../services/groq';
 import { useSettingsStore, useProgressStore, useAuthStore, usePurchaseStore } from '../../store';
-import { useIsPro } from '../../hooks/useIsPro';
 import { useAdStore } from '../../store/adStore';
 import { AdTimerOverlay } from '../../components/AdTimerOverlay';
 import { getLocalDateString } from '../../utils/date';
-import { LinearGradient } from 'expo-linear-gradient';
 
 const Accordion = ({ title, icon, color, defaultExpanded = false, children, colors }: any) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
@@ -45,7 +44,38 @@ export default function ProgressEvaluationModal() {
   const { t } = useTranslation();
   const colors = useTheme();
   const { language } = useSettingsStore();
-  const { evaluations, addEvaluation } = useProgressStore();
+  const { evaluations, addEvaluation, deleteEvaluation } = useProgressStore();
+  const { profile } = useAuthStore();
+  const currentUserId = profile?.id;
+  const userEvaluations = evaluations.filter(e => !e.userId || e.userId === currentUserId);
+
+  const handleDeleteItem = (item: typeof evaluations[0]) => {
+    Alert.alert(
+      t('evaluation.deleteConfirmTitle', 'Eliminar Evaluación'),
+      t('evaluation.deleteConfirmMsg', '¿Estás seguro de que deseas eliminar esta evaluación del historial?'),
+      [
+        { text: t('common.cancel', 'Cancelar'), style: 'cancel' },
+        { 
+          text: t('common.delete', 'Eliminar'), 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const fileUri = item.fileName ? `${FileSystem.documentDirectory}${item.fileName}` : item.uri;
+              if (fileUri) {
+                const info = await FileSystem.getInfoAsync(fileUri);
+                if (info.exists) {
+                  await FileSystem.deleteAsync(fileUri, { idempotent: true });
+                }
+              }
+            } catch (err) {
+              console.warn('Error deleting photo file:', err);
+            }
+            deleteEvaluation(item.id);
+          }
+        }
+      ]
+    );
+  };
 
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [base64Image, setBase64Image] = useState<string | null>(null);
@@ -67,7 +97,6 @@ export default function ProgressEvaluationModal() {
 
   const [showHistory, setShowHistory] = useState(false);
 
-  const { profile } = useAuthStore();
   const { isPro } = usePurchaseStore();
   const { hasPremiumAdAccess } = useAdStore();
 
@@ -156,6 +185,7 @@ export default function ProgressEvaluationModal() {
         uri: localUri,
         fileName: fileName, // Guaranteed persistence across app sessions without AsyncStorage bloat
         date: getLocalDateString(),
+        userId: currentUserId || undefined,
         ...response
       };
       setResult(newEvaluation);
@@ -259,18 +289,26 @@ export default function ProgressEvaluationModal() {
                <Text style={[s.backToMainText, { color: colors.primary }]}>{t('common.back', 'Volver')}</Text>
              </TouchableOpacity>
              <Text style={[s.historyTitle, { color: colors.textPrimary }]}>{t('evaluation.history', 'Historial de Evaluaciones')}</Text>
-             {evaluations.length === 0 ? (
+             {userEvaluations.length === 0 ? (
                <Text style={[s.instruction, { color: colors.textSecondary }]}>{t('evaluation.noHistory', 'Aún no hay evaluaciones.')}</Text>
              ) : (
-               evaluations.map(e => (
-                 <TouchableOpacity key={e.id} style={[s.historyItem, { backgroundColor: colors.surface, borderBottomColor: colors.border }]} onPress={() => viewHistoryItem(e)}>
-                   <Image source={{ uri: e.fileName ? `${FileSystem.documentDirectory}${e.fileName}` : e.uri }} style={s.historyThumb} />
-                   <View style={s.historyInfo}>
-                     <Text style={[s.historyDate, { color: colors.textPrimary }]}>{e.date}</Text>
-                     <Text style={[s.historyFat, { color: colors.textSecondary }]}>{t('evaluation.fatLabel', 'Grasa')}: {e.estimatedFatPercentage}</Text>
-                   </View>
-                   <ChevronRight size={20} color={colors.textSecondary} />
-                 </TouchableOpacity>
+               userEvaluations.map(e => (
+                 <View key={e.id} style={[s.historyItem, { backgroundColor: colors.surface, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center' }]}>
+                   <TouchableOpacity style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }} onPress={() => viewHistoryItem(e)}>
+                     <Image source={{ uri: e.fileName ? `${FileSystem.documentDirectory}${e.fileName}` : e.uri }} style={s.historyThumb} />
+                     <View style={s.historyInfo}>
+                       <Text style={[s.historyDate, { color: colors.textPrimary }]}>{e.date}</Text>
+                       <Text style={[s.historyFat, { color: colors.textSecondary }]}>{t('evaluation.fatLabel', 'Grasa')}: {e.estimatedFatPercentage}</Text>
+                     </View>
+                     <ChevronRight size={20} color={colors.textSecondary} style={{ marginRight: 8 }} />
+                   </TouchableOpacity>
+                   <TouchableOpacity 
+                     onPress={() => handleDeleteItem(e)}
+                     style={{ padding: 8, justifyContent: 'center', alignItems: 'center' }}
+                   >
+                     <Trash2 size={20} color={colors.error || '#EF4444'} />
+                   </TouchableOpacity>
+                 </View>
                ))
              )}
           </View>
@@ -333,7 +371,7 @@ export default function ProgressEvaluationModal() {
               </TouchableOpacity>
             </View>
 
-            {evaluations.length > 0 && (
+            {userEvaluations.length > 0 && (
               <TouchableOpacity style={[s.historyBtn, { 
                 backgroundColor: colors.surface,
                 borderColor: `${colors.primary}20`,
@@ -388,7 +426,7 @@ export default function ProgressEvaluationModal() {
           </View>
         )}
 
-        {result && renderResult(result, !!result.id && imageUri === evaluations.find(e => e.id === result.id)?.uri)}
+        {result && renderResult(result, !!result.id && imageUri === userEvaluations.find(e => e.id === result.id)?.uri)}
 
         {result && result.id && (
           <TouchableOpacity style={[s.secondaryBtn, { backgroundColor: colors.surface, marginTop: Spacing.md }]} onPress={() => { setImageUri(null); setResult(null); }}>

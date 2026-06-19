@@ -9,6 +9,7 @@ interface ProgressState {
   addPhoto:   (p: ProgressPhoto) => void;
   setPhotos:  (ps: ProgressPhoto[]) => void;
   addEvaluation: (e: ProgressEvaluation) => void;
+  deleteEvaluation: (id: string) => void;
   setEvaluations: (es: ProgressEvaluation[]) => void;
   reset:      () => void;
 }
@@ -21,6 +22,7 @@ export const useProgressStore = create<ProgressState>()(
       addPhoto: (p) => set((s) => ({ photos: [p, ...s.photos] })),
       setPhotos:(photos) => set({ photos }),
       addEvaluation: (e) => set((s) => ({ evaluations: [e, ...s.evaluations] })),
+      deleteEvaluation: (id) => set((s) => ({ evaluations: s.evaluations.filter(e => e.id !== id) })),
       setEvaluations: (evaluations) => set({ evaluations }),
       reset: () => set({ photos: [], evaluations: [] }),
     }),

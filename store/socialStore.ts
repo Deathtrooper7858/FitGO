@@ -1,10 +1,10 @@
 import { create } from 'zustand';
-import { supabase } from '../services/supabase';
-import { useAuthStore } from './authStore';
-import { useLeagueStore } from './leagueStore';
 import * as FileSystem from 'expo-file-system/legacy';
 import { decode } from 'base64-arraybuffer';
+import { supabase } from '../services/supabase';
 import { triggerInstantNotification } from '../services/notifications';
+import { useAuthStore } from './authStore';
+import { useLeagueStore } from './leagueStore';
 
 /** Shared uploader: posts/ or chat_media/ in the 'social' bucket. */
 async function uploadToSocialStorage(
@@ -124,6 +124,10 @@ function debounce(key: string, fn: () => void, ms = 300) {
   }, ms));
 }
 
+// ── Global ranking cache (5-minute TTL) ────────────────────────────────────────
+let _rankingCacheTs = 0;
+const RANKING_CACHE_TTL = 5 * 60 * 1000; // 5 min
+
 interface SocialState {
   friends: Friend[];
   challenges: Challenge[];
@@ -146,7 +150,7 @@ interface SocialState {
   fetchChallengeParticipants: (challengeId: string) => Promise<any[]>;
   surrenderChallenge: (challengeId: string, userId: string) => Promise<void>;
   completeChallengeAndAwardPoints: (challengeId: string, userId: string) => Promise<void>;
-  fetchGlobalRanking: () => Promise<void>;
+  fetchGlobalRanking: (forceRefresh?: boolean) => Promise<void>;
   fetchPosts: () => Promise<void>;
   createPost: (post: Partial<Post>) => Promise<void>;
   deletePost: (postId: string) => Promise<void>;
@@ -304,15 +308,70 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     }
     const uniqueSuffix = Math.random().toString(36).substring(7);
     activeSocialChannel = supabase.channel(`social_events_${userId}_${uniqueSuffix}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => {
-        // Debounce: avoids 5 re-fetches if several posts change rapidly
-        debounce('posts_refresh', () => get().fetchPosts(), 500);
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, () => {
+        // New post: full refresh needed to get profile joins
+        debounce('posts_refresh', () => get().fetchPosts(), 600);
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'post_comments' }, () => {
-        debounce('posts_refresh', () => get().fetchPosts(), 500);
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, (payload: any) => {
+        // Optimistic remove — no re-fetch needed
+        if (payload.old?.id) {
+          set(s => ({ posts: s.posts.filter(p => p.id !== payload.old.id) }));
+        }
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'post_likes' }, () => {
-        debounce('posts_refresh', () => get().fetchPosts(), 500);
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'post_comments' }, (payload: any) => {
+        // Increment comments_count locally — no full re-fetch
+        const postId = payload.new?.post_id;
+        if (postId) {
+          set(s => ({
+            posts: s.posts.map(p =>
+              p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p
+            ),
+          }));
+        }
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'post_comments' }, (payload: any) => {
+        const postId = payload.old?.post_id;
+        if (postId) {
+          set(s => ({
+            posts: s.posts.map(p =>
+              p.id === postId ? { ...p, comments_count: Math.max(0, p.comments_count - 1) } : p
+            ),
+          }));
+        }
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'post_likes' }, (payload: any) => {
+        // Increment likes_count locally — no full re-fetch
+        const postId = payload.new?.post_id;
+        const likerId = payload.new?.user_id;
+        if (postId) {
+          set(s => ({
+            posts: s.posts.map(p => {
+              if (p.id !== postId) return p;
+              return {
+                ...p,
+                likes_count: p.likes_count + 1,
+                // Mark as liked if the liker is the current user
+                is_liked: p.is_liked || likerId === userId,
+              };
+            }),
+          }));
+        }
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'post_likes' }, (payload: any) => {
+        const postId = payload.old?.post_id;
+        const likerId = payload.old?.user_id;
+        if (postId) {
+          set(s => ({
+            posts: s.posts.map(p => {
+              if (p.id !== postId) return p;
+              return {
+                ...p,
+                likes_count: Math.max(0, p.likes_count - 1),
+                is_liked: likerId === userId ? false : p.is_liked,
+              };
+            }),
+          }));
+        }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'friends' }, (payload: any) => {
         debounce(`friends_refresh_${userId}`, () => get().fetchFriends(userId), 300);
@@ -578,7 +637,11 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     }
   },
 
-  fetchGlobalRanking: async () => {
+  fetchGlobalRanking: async (forceRefresh = false) => {
+    // Skip fetch if cache is still fresh (5 min TTL) and not forced
+    if (!forceRefresh && Date.now() - _rankingCacheTs < RANKING_CACHE_TTL && get().globalRanking.length > 0) {
+      return;
+    }
     set({ isRankingLoading: true });
     try {
       // Use direct table fetch instead of slow legacy RPC
@@ -616,6 +679,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         };
       });
       
+      _rankingCacheTs = Date.now();
       set({ globalRanking: mappedData });
     } catch (err: any) {
       if (err?.message !== 'AbortError: Aborted' && err?.name !== 'AbortError') {

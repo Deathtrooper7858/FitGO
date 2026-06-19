@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Colors, Spacing, Radius } from '../../constants';
-import { supabase } from '../../services';
 import { useTranslation } from 'react-i18next';
-
-import { useTheme } from '../../hooks/useTheme';
 import * as Linking from 'expo-linking';
+import { Spacing, Radius } from '../../constants';
+import { supabase } from '../../services';
+import { useTheme } from '../../hooks/useTheme';
 
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();

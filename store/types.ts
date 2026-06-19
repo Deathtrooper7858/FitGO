@@ -147,6 +147,7 @@ export interface ProgressPhoto {
   uri:       string;
   date:      string; // YYYY-MM-DD
   notes?:    string;
+  userId?:   string;
 }
 
 export interface ProgressEvaluation {
@@ -161,6 +162,7 @@ export interface ProgressEvaluation {
   postureAnalysis?: string;
   symmetry?: string;
   recommendations?: string[];
+  userId?: string;
 }
 
 export interface Reminder {

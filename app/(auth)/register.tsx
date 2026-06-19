@@ -1,22 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, TextInput,
-  ScrollView, Alert, KeyboardAvoidingView, Platform, Pressable, Dimensions
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Colors, Spacing, Radius } from '../../constants';
-import { supabase } from '../../services';
-import { useTheme } from '../../hooks/useTheme';
-import { useAuthStore } from '../../store';
 import { useTranslation } from 'react-i18next';
 import { makeRedirectUri } from 'expo-auth-session';
 import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import * as WebBrowser from 'expo-web-browser';
-import { CustomAlert, AlertType } from '../../components/CustomAlert';
-import { CheckSquare, Square, Mail, Lock, User, Eye, EyeOff } from 'lucide-react-native';
 import * as Linking from 'expo-linking';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CheckSquare, Square, Mail, Lock, User, Eye, EyeOff } from 'lucide-react-native';
+import { Radius } from '../../constants';
+import { supabase } from '../../services';
+import { useTheme } from '../../hooks/useTheme';
+import { useAuthStore } from '../../store';
+import { CustomAlert, AlertType } from '../../components/CustomAlert';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -41,7 +38,7 @@ export default function RegisterScreen() {
   // Log the redirect URI once on mount (not on every re-render)
   useEffect(() => {
     if (__DEV__) console.log('[OAuth] redirectTo:', redirectTo);
-  }, []);
+  }, [redirectTo]);
 
   const showAlert = (title: string, message: string, type: AlertType = 'error') => {
     setAlertConfig({ title, message, type });
@@ -316,7 +313,7 @@ export default function RegisterScreen() {
   );
 }
 
-const { width } = Dimensions.get('window');
+
 
 const s = StyleSheet.create({
   container:    { flex: 1 },

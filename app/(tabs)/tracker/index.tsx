@@ -7,13 +7,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, G, Polygon, Line, Text as SvgText } from 'react-native-svg';
 import { BarChart } from 'react-native-gifted-charts';
 import { useTranslation } from 'react-i18next';
-import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming, runOnJS } from 'react-native-reanimated';
 import { Radius } from '../../../constants';
 import { useAuthStore, useNutritionStore, selectDailyTotals, useSettingsStore, useSocialStore } from '../../../store';
 import { useTheme } from '../../../hooks/useTheme';
-import { getLocalDateString, addDays } from '../../../utils/date';
+import { getLocalDateString } from '../../../utils/date';
 import { requestNotificationPermissions } from '../../../services/notifications';
 import { convertEnergy } from '../../../utils/units';
 import { CustomAlert, AlertType } from '../../../components/CustomAlert';
@@ -160,7 +158,6 @@ export default function TrackerScreen() {
   // Handlers
   const handleAddMeal = (meal: string) => router.push({ pathname: '/modals/scan', params: { initialMeal: meal, date: selectedDate } } as any);
   const handleAddMissingFood = (meal: string) => router.push({ pathname: '/modals/scan', params: { initialMeal: meal, date: selectedDate, initialMode: 'photo' } } as any);
-  const changeDate = (dir: 1 | -1) => { setDate(addDays(selectedDate, dir)); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); };
 
   const handleFoodPress = (log: any) => router.push({ pathname: '/modals/food-detail', params: { foodJson: JSON.stringify(log.foodItem), logId: log.id, initialGrams: String(log.grams), meal: log.meal, date: selectedDate } } as any);
   const handleFoodLongPress = (log: any) => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setSelectedLogIds(prev => { const n = new Set(prev); n.add(log.id); return n; }); };
@@ -222,21 +219,6 @@ export default function TrackerScreen() {
     });
   }, [todayLogs, language, colors]);
 
-  // Swipe
-  const swipeX = useSharedValue(0);
-  const swipeOpacity = useSharedValue(1);
-  const gesture = Gesture.Pan()
-    .activeOffsetX([-15, 15])
-    .onUpdate((e) => { swipeX.value = e.translationX * 0.18; })
-    .onEnd((e) => {
-      if (Math.abs(e.velocityX) > 400 || Math.abs(e.translationX) > 60) {
-        const dir = e.velocityX > 0 ? -1 : 1;
-        swipeOpacity.value = withTiming(0.5, { duration: 80 }, () => { runOnJS(changeDate)(dir as 1 | -1); swipeOpacity.value = withSpring(1, { damping: 14, stiffness: 200 }); });
-      }
-      swipeX.value = withSpring(0, { damping: 18, stiffness: 250 });
-    });
-  const swipeAnimStyle = useAnimatedStyle(() => ({ transform: [{ translateX: swipeX.value }], opacity: swipeOpacity.value }));
-
   return (
     <View style={{ flex: 1 }}>
       <GlobalBackground />
@@ -262,11 +244,9 @@ export default function TrackerScreen() {
             <SocialBadge badgeCount={socialNotificationCount} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/social' as any); }} colors={colors} />
           </View>
 
-          <Animated.View style={[{ flex: 1 }, swipeAnimStyle]}>
+          <View style={{ flex: 1 }}>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scrollContent}>
-              <GestureDetector gesture={gesture}>
-                <DateNavigator selectedDate={selectedDate} onDateChange={setDate} colors={colors} t={t} language={language} />
-              </GestureDetector>
+              <DateNavigator selectedDate={selectedDate} onDateChange={setDate} colors={colors} t={t} language={language} />
 
               {/* Widgets Carousel */}
               <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={s.carousel} contentContainerStyle={s.carouselContent} onMomentumScrollEnd={(e) => setCarouselIndex(Math.round(e.nativeEvent.contentOffset.x / (width - 32)))}>
@@ -408,7 +388,7 @@ export default function TrackerScreen() {
               <WaterTracker waterMl={rawWater} onAddWater={addWater} onCustomWaterPress={handleCustomWater} colors={colors} t={t} volumeUnit={volumeUnit} />
               <StepsWidget steps={currentSteps} onAddSteps={addSteps} colors={colors} t={t} />
             </ScrollView>
-          </Animated.View>
+          </View>
         </View>
       </SafeAreaView>
     </View>

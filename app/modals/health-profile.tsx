@@ -7,12 +7,12 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../hooks/useTheme';
-import { useAuthStore } from '../../store';
-import { supabase } from '../../services/supabase';
 import { ChevronLeft, Apple, Heart, Activity, Check, AlertCircle } from 'lucide-react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
+import { useTheme } from '../../hooks/useTheme';
+import { useAuthStore } from '../../store';
+import { supabase } from '../../services/supabase';
 import { Radius, Spacing } from '../../constants';
 
 export default function HealthProfileModal() {
@@ -28,19 +28,19 @@ export default function HealthProfileModal() {
   const [activeTab, setActiveTab] = useState<'restrictions' | 'conditions' | 'medications'>('restrictions');
   const [saving, setSaving] = useState(false);
 
-  const HEALTH_TABS: Array<'restrictions' | 'conditions' | 'medications'> = ['restrictions', 'conditions', 'medications'];
+  const HEALTH_TABS: ('restrictions' | 'conditions' | 'medications')[] = ['restrictions', 'conditions', 'medications'];
 
   const swipeGesture = Gesture.Pan()
     .activeOffsetX([-30, 30])
     .runOnJS(true)
     .onEnd((e) => {
       if (Math.abs(e.velocityX) > 400 || Math.abs(e.translationX) > 80) {
+        Haptics.selectionAsync();
         const currentIndex = HEALTH_TABS.indexOf(activeTab);
         const direction = e.translationX > 0 ? -1 : 1;
         const newIndex = currentIndex + direction;
         if (newIndex >= 0 && newIndex < HEALTH_TABS.length) {
           setActiveTab(HEALTH_TABS[newIndex]);
-          Haptics.selectionAsync();
         }
       }
     });

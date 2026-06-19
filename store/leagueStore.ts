@@ -2,9 +2,9 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../services/supabase';
-import { useAuthStore } from './authStore';
 import { NotificationTriggers } from '../utils/notificationTriggers';
 import { getLocalDateString } from '../utils/date';
+import { useAuthStore } from './authStore';
 
 // AsyncStorage adapter — SecureStore has a hard 2KB/key limit on Android which
 // causes silent persist failures when leagueStore data grows (members list etc.)
@@ -117,14 +117,24 @@ export const useLeagueStore = create<LeagueStore>()(
   fetchMySquad: async (userId: string) => {
     set({ loading: true, error: null });
     try {
-      // ALWAYS fetch real league_points and streak from DB first
-      // regardless of squad membership — this ensures points are never wiped
-      const { data: myStats, error: statsErr } = await supabase
-        .from('users')
-        .select('league_points, current_streak, squad_members(contributed_points)')
-        .eq('id', userId)
-        .limit(1)
-        .maybeSingle();
+      // Fetch user stats and squad membership IN PARALLEL (~2x faster than sequential)
+      const [statsResult, memberResult] = await Promise.all([
+        supabase
+          .from('users')
+          .select('league_points, current_streak, squad_members(contributed_points)')
+          .eq('id', userId)
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('squad_members')
+          .select('squad_id')
+          .eq('user_id', userId)
+          .limit(1)
+          .maybeSingle(),
+      ]);
+
+      const { data: myStats, error: statsErr } = statsResult;
+      const { data: membership, error: memberErr } = memberResult;
 
       if (statsErr && statsErr?.message !== 'AbortError: Aborted' && statsErr?.name !== 'AbortError') {
         console.warn('[League] fetchMySquad stats error, keeping cache:', statsErr.message);
@@ -135,14 +145,6 @@ export const useLeagueStore = create<LeagueStore>()(
       const realPoints  = myStats?.league_points   ?? 0;
       const realStreak  = myStats?.current_streak  ?? 0;
       const contributedPoints = myStats?.squad_members?.[0]?.contributed_points ?? 0;
-
-      // Get squad membership
-      const { data: membership, error: memberErr } = await supabase
-        .from('squad_members')
-        .select('squad_id')
-        .eq('user_id', userId)
-        .limit(1)
-        .maybeSingle();
 
       // Network error: update points but keep squad cached
       if (memberErr) {

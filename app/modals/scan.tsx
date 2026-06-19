@@ -1,20 +1,16 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, ScrollView, TextInput, Platform } from 'react-native';
-import { Image } from 'expo-image';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, TextInput, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Crypto from 'expo-crypto';
 import { useTranslation } from 'react-i18next';
 import { Spacing, Radius } from '../../constants';
-import { getFoodByBarcode, searchFood } from '../../services/foodDatabase';
-import { analyzeFoodPhoto , transcribeAudio, parseVoiceLog } from '../../services/groq';
+import { getFoodByBarcode } from '../../services/foodDatabase';
+import { analyzeFoodPhoto , parseVoiceLog } from '../../services/groq';
 import { useNutritionStore, useSettingsStore } from '../../store';
 import { useIsPro } from '../../hooks/useIsPro';
-import { supabase } from '../../services/supabase';
 import { useTheme } from '../../hooks/useTheme';
 import { SuccessModal } from '../../components/SuccessModal';
 import { getLocalDateString } from '../../utils/date';
@@ -33,7 +29,6 @@ type Meal = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
 export default function ScanModal() {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
   const { initialMeal, date, initialMode } = useLocalSearchParams<{ initialMeal?: Meal, date?: string, initialMode?: ScanMode }>();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
@@ -43,8 +38,6 @@ export default function ScanModal() {
   const colors = useTheme();
   const { language, premiumColor } = useSettingsStore();
   const addLog = useNutritionStore(s => s.addLog);
-  const fetchLogs = useNutritionStore(s => s.fetchLogs);
-  const selectedDate = useNutritionStore(s => s.selectedDate);
   const isProActually = useIsPro();
   const { aiPhotoEnergy, aiTextEnergy } = useAdStore();
 
@@ -56,7 +49,7 @@ export default function ScanModal() {
   const [facing, setFacing] = useState<'back' | 'front'>('back');
 
   const { gateVisible, gateMode, setGateVisible, setGateMode, setPendingAction, requestAIAction, handleEnergyGranted } = useAIEnergy();
-  const [pendingScanCallback, setPendingScanCallback] = useState<(() => void) | null>(null);
+
 
   const isAddingAllRef = useRef(false);
 
@@ -91,7 +84,7 @@ export default function ScanModal() {
 
   useEffect(() => {
     if (!permission?.granted) requestPermission();
-  }, []);
+  }, [permission?.granted, requestPermission]);
 
   const [photoResult, setPhotoResult] = useState<{
     foods: {
@@ -331,7 +324,7 @@ export default function ScanModal() {
     setLoading(true);
 
     const targetMeal = initialMeal || getAutoMeal();
-    const logDate = date || getLocalDateString();
+
     const ts = logTime.toISOString().split('T')[1] || '12:00:00.000Z';
     const finalLoggedAt = date ? `${date}T${ts}` : logTime.toISOString();
 

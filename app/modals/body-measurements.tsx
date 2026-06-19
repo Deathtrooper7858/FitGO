@@ -208,7 +208,8 @@ export default function BodyMeasurementsModal() {
   };
 
   const renderMainWidget = (key: 'weight' | 'bodyFat', Icon: any, color: string, min: number, max: number) => {
-    const val = values[key] || (last?.[key] ? (key === 'weight' ? convertMass(last[key]!, 'kg', massUnit).toFixed(1) : last[key]?.toString()) : min.toString()) || min.toString();
+    // inputVal is the raw string in the TextInput — can be empty when user clears it
+    const inputVal = values[key] ?? '';
     const change = getChange(key);
     const unit = key === 'weight' ? massUnit : '%';
 
@@ -238,18 +239,19 @@ export default function BodyMeasurementsModal() {
             <View style={s.inputRow}>
               <TextInput
                 style={[s.mainValueInput, { color: colors.textPrimary }]}
-                value={val}
+                value={inputVal}
                 onChangeText={(v) => {
                   const clean = v.replace(/[^0-9.]/g, '');
                   setValues(p => ({ ...p, [key]: clean }));
                 }}
                 onBlur={() => {
-                  if (val && !isNaN(parseFloat(val))) {
-                    setValues(p => ({ ...p, [key]: parseFloat(val).toFixed(1) }));
+                  if (inputVal && !isNaN(parseFloat(inputVal))) {
+                    setValues(p => ({ ...p, [key]: parseFloat(inputVal).toFixed(1) }));
                   }
                 }}
                 keyboardType="numeric"
                 maxLength={5}
+                placeholder="--"
                 placeholderTextColor={colors.textMuted}
                 selectTextOnFocus
                 underlineColorAndroid="transparent"

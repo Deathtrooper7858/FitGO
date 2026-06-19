@@ -77,11 +77,11 @@ export default function SocialModal() {
   const TABS: TabType[] = ['you', 'feed', 'friends', 'ranking', 'challenges'];
 
   const handleSwipeTab = (direction: 1 | -1) => {
+    Haptics.selectionAsync();
     const currentIndex = TABS.indexOf(activeTab);
     const newIndex = currentIndex + direction;
     if (newIndex >= 0 && newIndex < TABS.length) {
       setActiveTab(TABS[newIndex]);
-      Haptics.selectionAsync();
     }
   };
 

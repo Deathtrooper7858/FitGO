@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Platform, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Modal } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
@@ -44,11 +44,6 @@ export default function FitGOChallenges() {
 
 // Challenges state
   const [isCreatingChallenge, setIsCreatingChallenge] = useState(false);
-  const [showRankingInstructions, setShowRankingInstructions] = useState(false);
-
-  const [inspectingUser, setInspectingUser] = useState<any>(null);
-  const { achievements, unlockedCount } = require('../../hooks/useAchievements').useAchievements();
-  const ALL_BADGES = require('../../hooks/useAchievements').ALL_BADGES;
 
   const [challengeForm, setChallengeForm] = useState({
     title: '',
@@ -80,7 +75,7 @@ const generateAIChallenge = async () => {
     try {
       const response = await generateSocialChallenge(language);
       setAiRecommendation(response);
-    } catch (err) {
+    } catch {
       setAiRecommendation(t('social.challenges.aiFallback', 'Camina 10,000 pasos durante 3 días seguidos.'));
     } finally {
       setAiLoading(false);
@@ -173,7 +168,7 @@ const generateAIChallenge = async () => {
 
               {aiRecommendation && !aiLoading && (
                 <View style={[s.aiResult, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '50' }]}>
-                  <Text style={{ color: colors.textPrimary, fontSize: 15, fontStyle: 'italic', lineHeight: 22, fontWeight: '500' }}>"{aiRecommendation}"</Text>
+                  <Text style={{ color: colors.textPrimary, fontSize: 15, fontStyle: 'italic', lineHeight: 22, fontWeight: '500' }}>&quot;{aiRecommendation}&quot;</Text>
                   <TouchableOpacity 
                     style={[s.actionBtn, { backgroundColor: colors.primary, marginTop: 16, alignSelf: 'flex-start', paddingHorizontal: 20, paddingVertical: 10 }]}
                     onPress={() => {

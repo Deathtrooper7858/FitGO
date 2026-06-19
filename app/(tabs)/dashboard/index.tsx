@@ -1,14 +1,14 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Dimensions, Alert, Image, Platform, RefreshControl
+  TouchableOpacity, Platform, RefreshControl
 } from 'react-native';
 import { router, useNavigation } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+
 import * as Haptics from 'expo-haptics';
 import { Trophy, Flame, Dumbbell, Heart, Target } from 'lucide-react-native';
 import { Spacing, Radius, Shadow } from '../../../constants';
@@ -16,18 +16,15 @@ import { useAuthStore } from '../../../store/authStore';
 import { useNutritionStore, selectDailyTotals } from '../../../store/nutritionStore';
 import { useSettingsStore } from '../../../store/settingsStore';
 import { useBodyStore } from '../../../store/bodyStore';
-import type { UserProfile } from '../../../store/types';
+
 import { useTheme } from '../../../hooks/useTheme';
 import { supabase } from '../../../services/supabase';
 import { MuscleSymmetryCard } from '../../../components/MuscleSymmetryCard';
-import { calculateTDEE, calculateMacros, resolveActivityLevel } from '../../../services/foodDatabase';
 import { getLocalDateString } from '../../../utils/date';
-import { AnimatedCard } from '../../../components/AnimatedCard';
 import { GlobalBackground } from '../../../components/GlobalBackground';
 import { getNameStyle } from '../../../utils/styles';
 import { useAchievements, Achievement } from '../../../hooks/useAchievements';
-import { GoalWizardModal, ACTIVITY_TO_EXERCISE } from '../../../components/GoalWizardModal';
-import { useInterstitial } from '../../../hooks/useInterstitial';
+import { GoalWizardModal } from '../../../components/GoalWizardModal';
 import { PremiumGate } from '../../../components/PremiumGate';
 import { useAdStore } from '../../../store/adStore';
 import { CustomAlert, AlertType } from '../../../components/CustomAlert';
@@ -35,7 +32,6 @@ import { calculateProgressPct, handleGoalSave } from '../../../hooks/useDashboar
 import { renderDashboardWidget } from '../../../components/dashboard/WidgetRenderer';
 
 import { FitzDailyTip } from '../../../components/FitzDailyTip';
-import { useProgressStore } from '../../../store/progressStore';
 
 const RING_SIZE     = 180;
 const STROKE_WIDTH  = 15;
@@ -170,18 +166,18 @@ const ap = StyleSheet.create({
 
 
 
+const DEFAULT_WIDGETS = ['weight', 'bodyFat', 'muscle_directory', 'recipe_search', 'photos', 'measurements', 'sleep', 'calories'];
+
 // ─── Dashboard (Progreso) Screen ────────────────────────────────────────────────
 export default function DashboardScreen() {
   const { t } = useTranslation();
   const colors = useTheme();
   const { language, premiumColor } = useSettingsStore();
   const { profile, setProfile } = useAuthStore();
-  const todayLogs = useNutritionStore(s => s.todayLogs);
   const dailySleep = useNutritionStore(s => s.dailySleep);
   const selectedDate = useNutritionStore(s => s.selectedDate);
   const fetchLogs = useNutritionStore(s => s.fetchLogs);
-  const setDate = useNutritionStore(s => s.setDate);
-  const { latest, fetchMeasurements, getForDate, measurements } = useBodyStore();
+  const { fetchMeasurements, getForDate, measurements } = useBodyStore();
   const { achievements } = useAchievements();
   
   const totalsData = useNutritionStore(selectDailyTotals);
@@ -206,7 +202,7 @@ export default function DashboardScreen() {
       loadSelectedData();
     });
     return unsubscribe;
-  }, [profile?.id, selectedDate, navigation]);
+  }, [profile?.id, selectedDate, navigation, fetchLogs, fetchMeasurements]);
 
   const dateMeasurement = getForDate(selectedDate);
   const oldestWeight = (measurements.length > 0 ? measurements[measurements.length - 1].weight : null)
@@ -261,12 +257,8 @@ export default function DashboardScreen() {
       openPremiumGate(featureId, featureName, featureIcon, route);
     }
   };
-
   const [isEditing, setIsEditing] = useState(false);
-  const handleEditMode = () => {
-    setIsEditing(true);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  };
+
   const [alert, setAlert] = useState<{
     visible: boolean;
     type: AlertType;
@@ -311,7 +303,7 @@ export default function DashboardScreen() {
     });
   };
 
-  const DEFAULT_WIDGETS = ['weight', 'bodyFat', 'muscle_directory', 'recipe_search', 'photos', 'measurements', 'sleep', 'calories'];
+
 
   const [widgetsOrder, setWidgetsOrder] = useState(() => {
     if (profile?.widgetsOrder) {

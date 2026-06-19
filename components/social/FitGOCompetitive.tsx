@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, TextInput, Alert, RefreshControl, Modal,
-  Platform, Share,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
-import { Trophy, Users, Zap, Crown, Shield, Copy, LogOut, Plus, Hash, Star, ChevronRight, X, Sword, Trash2 } from 'lucide-react-native';
+import { Trophy, Users, Crown, Copy, LogOut, Plus, Hash, Star, ChevronRight, X, Sword, Trash2 } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -20,10 +19,10 @@ import Animated, {
   withSequence,
   withTiming
 } from 'react-native-reanimated';
+import { useIsPro } from '../../hooks/useIsPro';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuthStore, useSocialStore, useSettingsStore, useNutritionStore } from '../../store';
 import { useLeagueStore, LeagueTier, SquadMember, Squad } from '../../store/leagueStore';
-import { FireStreakBadge } from '../FireStreakBadge';
 import MacroRewardAnimation from '../MacroRewardAnimation';
 import { getNameStyle, getSafeColor } from '../../utils/styles';
 import { CustomAlert, AlertType } from '../CustomAlert';
@@ -221,7 +220,7 @@ function EmptySquad({ onCreate, onJoin }: { onCreate: () => void; onJoin: () => 
     } else {
       setLoading(false);
     }
-  }, [profile?.id]);
+  }, [profile?.id, socialStore]);
 
   return (
     <View style={styles.emptyContainer}>
@@ -308,9 +307,6 @@ function EmptySquad({ onCreate, onJoin }: { onCreate: () => void; onJoin: () => 
 
 function PodiumCard({ squad, position, onInspect }: { squad: Squad; position: number; onInspect: (s: Squad) => void }) {
   const colors = useTheme();
-  const { t } = useTranslation();
-  const { profile } = useAuthStore();
-  const leagueStore = useLeagueStore();
 
   const cfg = LEAGUE_CONFIG[squad.league_tier];
   const podiumColors: Record<number, { medal: string; height: number; glow: string }> = {
@@ -346,7 +342,6 @@ function PodiumCard({ squad, position, onInspect }: { squad: Squad; position: nu
 }
 
 function LocalFireStreakBadge({ streakDays, style, size = 'default' }: { streakDays: number; style?: any; size?: 'small' | 'default' | 'large' }) {
-  const colors = useTheme();
   const isOnFire = (streakDays || 0) >= 3;
   
   const pulseOpacity = useSharedValue(0.4);
@@ -374,7 +369,7 @@ function LocalFireStreakBadge({ streakDays, style, size = 'default' }: { streakD
       pulseOpacity.value = 0;
       scale.value = 1;
     }
-  }, [isOnFire]);
+  }, [isOnFire, pulseOpacity, scale]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: pulseOpacity.value,
@@ -419,16 +414,23 @@ function LocalFireStreakBadge({ streakDays, style, size = 'default' }: { streakD
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
-export default function FitGOCompetitive() {
+interface FitGOCompetitiveProps {
+  initialSection?: 'ranking' | 'my-squad' | 'challenges';
+  onNavigateToSocial?: () => void;
+}
+
+export default function FitGOCompetitive({
+  initialSection = 'ranking',
+  onNavigateToSocial
+}: FitGOCompetitiveProps) {
   const colors = useTheme();
   const { t } = useTranslation();
   const { profile } = useAuthStore();
   const { premiumColor } = useSettingsStore();
+  const isProActually = useIsPro();
   const squad = useLeagueStore(s => s.squad);
   const members = useLeagueStore(s => s.members);
-  const myPoints = useLeagueStore(s => s.myPoints);
   const mySquadPoints = useLeagueStore(s => s.mySquadPoints);
-  const myStreak = useLeagueStore(s => s.myStreak);
   const loading = useLeagueStore(s => s.loading);
   const fetchMySquad = useLeagueStore(s => s.fetchMySquad);
   const leaveSquad = useLeagueStore(s => s.leaveSquad);
@@ -441,32 +443,22 @@ export default function FitGOCompetitive() {
   const fetchTopSquads = useLeagueStore(s => s.fetchTopSquads);
   const streakDays = useNutritionStore(s => s.streakDays);
   
-  // Sync streak to DB on mount AND whenever streakDays changes
-  // so the leaderboard always reflects the current true local value.
+  // Sync streak to DB only when streakDays actually *changes* (not on every mount)
+  const isFirstStreakSync = useRef(true);
   useEffect(() => {
+    if (isFirstStreakSync.current) {
+      isFirstStreakSync.current = false;
+      return; // skip mount — value is already in DB from last session
+    }
     const profile = useAuthStore.getState().profile;
     if (profile?.id && streakDays !== undefined) {
       void supabase
         .from('users')
         .update({ current_streak: streakDays })
         .eq('id', profile.id);
-      // Keep leagueStore in sync so multipliers use the right value
       useLeagueStore.setState({ myStreak: streakDays });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount to correct any stale DB value
-
-  useEffect(() => {
-    const profile = useAuthStore.getState().profile;
-    if (profile?.id && streakDays !== undefined) {
-      void supabase
-        .from('users')
-        .update({ current_streak: streakDays })
-        .eq('id', profile.id);
-      // Keep leagueStore in sync so multipliers use the right value
-      useLeagueStore.setState({ myStreak: streakDays });
-    }
-  }, [streakDays]); // Also run when streak changes
+  }, [streakDays]); // Only runs when streak changes
 
   const socialStore = useSocialStore();
 
@@ -482,11 +474,17 @@ export default function FitGOCompetitive() {
   const [copied, setCopied] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [invitedFriends, setInvitedFriends] = useState<Record<string, boolean>>({});
-  const [activeSection, setActiveSection] = useState<'my-squad' | 'ranking' | 'challenges'>('ranking');
+  const [activeSection, setActiveSection] = useState<'my-squad' | 'ranking' | 'challenges'>(initialSection);
   const [rankingSubTab, setRankingSubTab] = useState<'squads' | 'individual'>('individual');
   const [showRankingInfo, setShowRankingInfo] = useState(false);
   const [showRanksList, setShowRanksList] = useState(false);
   const [showSquadInfo, setShowSquadInfo] = useState(false);
+
+  useEffect(() => {
+    if (initialSection) {
+      setActiveSection(initialSection);
+    }
+  }, [initialSection]);
   
   const [alert, setAlert] = useState<{
     visible: boolean; type: AlertType; title: string; message: string; confirmText?: string; cancelText?: string; onConfirm: () => void; onCancel?: () => void;
@@ -502,6 +500,8 @@ export default function FitGOCompetitive() {
   };
 
   // Swipe between ranking / my-squad / challenges
+  // ← izquierda: ranking → my-squad → challenges
+  // → derecha:  challenges → my-squad → ranking → (Social/Planner tab)
   const SECTIONS: ('ranking' | 'my-squad' | 'challenges')[] = ['ranking', 'my-squad', 'challenges'];
   const swipeGesture = Gesture.Pan()
     .activeOffsetX([-35, 35])
@@ -515,6 +515,17 @@ export default function FitGOCompetitive() {
         if (next >= 0 && next < SECTIONS.length) {
           Haptics.selectionAsync();
           setActiveSection(SECTIONS[next]);
+        } else if (next < 0) {
+          Haptics.selectionAsync();
+          if (onNavigateToSocial) {
+            onNavigateToSocial();
+          } else {
+            if (!isProActually) {
+              router.push('/modals/paywall');
+            } else {
+              router.push('/(tabs)/planner');
+            }
+          }
         }
       }
     });
@@ -523,15 +534,16 @@ export default function FitGOCompetitive() {
     if (profile?.id) fetchMySquad(profile.id);
     fetchTopSquads();
     socialStore.fetchGlobalRanking();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id]);
 
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     if (profile?.id) await fetchMySquad(profile.id);
     await fetchTopSquads();
-    await socialStore.fetchGlobalRanking();
+    await socialStore.fetchGlobalRanking(true); // force bypass cache on manual refresh
     setRefreshing(false);
-  };
+  }, [profile?.id, fetchMySquad, fetchTopSquads, socialStore]);
 
   const getRankGrade = (points: number) => {
     if (points >= 15000) return { label: 'S++', color: '#FF0055', bg: '#FF005520' };

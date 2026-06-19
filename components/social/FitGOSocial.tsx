@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Platform, Share, Modal } from 'react-native';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Share, Modal } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Search, Trophy, Users, Sword, Plus, Bot, Check, X, MessageSquare, Heart, Share2, Send, Trash2, Camera, Pencil } from 'lucide-react-native';
+import { Search, Trophy, Users, Plus, Check, X, MessageSquare, Heart, Share2, Send, Trash2, Camera, Pencil } from 'lucide-react-native';
+import * as LucideIcons from 'lucide-react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
@@ -14,13 +15,12 @@ import { useTheme } from '../../hooks/useTheme';
 import { Radius, Spacing } from '../../constants';
 import { GlassCard } from '../../components/GlassCard';
 import { useSocialStore, useAuthStore, useSettingsStore, usePurchaseStore } from '../../store';
-import { generateSocialChallenge } from '../../services/groq';
 import { ImagePickerModal } from '../../components/ImagePickerModal';
 import { ImageViewerModal } from '../../components/ImageViewerModal';
 import { CustomAlert } from '../../components/CustomAlert';
 import { AvatarViewerModal } from '../../components/AvatarViewerModal';
 import { supabase } from '../../services/supabase';
-import { getLocalDateString } from '../../utils/date';
+import { useAchievements, ALL_BADGES } from '../../hooks/useAchievements';
 
 type TabType = 'you' | 'feed' | 'friends' | 'ranking' | 'challenges';
 
@@ -132,25 +132,73 @@ const s = StyleSheet.create({
   },
 });
 
-export default function FitGOSocial() {
+interface FitGOSocialProps {
+  initialTab?: TabType;
+  initialFriendsTab?: 'list' | 'search' | 'requests';
+  onNavigateToCompetitive?: () => void;
+}
+
+export default function FitGOSocial({
+  initialTab = 'you',
+  initialFriendsTab = 'list',
+  onNavigateToCompetitive
+}: FitGOSocialProps) {
   const { t } = useTranslation();
   const colors = useTheme();
-  const [activeTab, setActiveTab] = useState<TabType>('you');
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const { profile } = useAuthStore();
-  const { language, premiumColor } = useSettingsStore();
+  const { premiumColor } = useSettingsStore();
   const { isPro } = usePurchaseStore();
   const socialStore = useSocialStore();
-  const [friendsTab, setFriendsTab] = useState<'list' | 'requests' | 'search'>('list');
+  const [friendsTab, setFriendsTab] = useState<'list' | 'requests' | 'search'>(initialFriendsTab);
   const [deleteFriendAlert, setDeleteFriendAlert] = useState<{ friendId: string; friendName: string } | null>(null);
   
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
+
+  useEffect(() => {
+    if (initialFriendsTab) {
+      setFriendsTab(initialFriendsTab);
+    }
+  }, [initialFriendsTab]);
+
   const TABS: TabType[] = ['you', 'feed', 'friends'];
+  const FRIENDS_TABS: ('list' | 'search' | 'requests')[] = ['list', 'search', 'requests'];
   
   const handleSwipeTab = (direction: 1 | -1) => {
+    Haptics.selectionAsync();
+    if (activeTab === 'friends') {
+      const currentFriendsIdx = FRIENDS_TABS.indexOf(friendsTab);
+      const nextFriendsIdx = currentFriendsIdx + direction;
+      if (nextFriendsIdx >= 0 && nextFriendsIdx < FRIENDS_TABS.length) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setFriendsTab(FRIENDS_TABS[nextFriendsIdx]);
+        return;
+      } else if (nextFriendsIdx < 0) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setActiveTab('feed');
+        return;
+      } else if (nextFriendsIdx >= FRIENDS_TABS.length) {
+        if (onNavigateToCompetitive) {
+          onNavigateToCompetitive();
+          return;
+        }
+      }
+    }
+
     const currentIndex = TABS.indexOf(activeTab);
     const newIndex = currentIndex + direction;
     if (newIndex >= 0 && newIndex < TABS.length) {
       setActiveTab(TABS[newIndex]);
-      Haptics.selectionAsync();
+    } else if (newIndex < 0 && activeTab === 'you') {
+      router.push('/(tabs)/planner' as any);
+    } else if (newIndex >= TABS.length && activeTab === 'friends') {
+      if (onNavigateToCompetitive) {
+        onNavigateToCompetitive();
+      }
     }
   };
 
@@ -175,9 +223,6 @@ export default function FitGOSocial() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isPosting, setIsPosting] = useState(false);
 
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiRecommendation, setAiRecommendation] = useState<string | null>(null);
-
   // Comments state
   const [expandedComments, setExpandedComments] = useState<string | null>(null);
   const [postComments, setPostComments] = useState<Record<string, any[]>>({});
@@ -189,8 +234,7 @@ export default function FitGOSocial() {
 
   const [inspectingUser, setInspectingUser] = useState<any>(null);
   const [avatarViewerData, setAvatarViewerData] = useState<{ url: string; name: string } | null>(null);
-  const { achievements, unlockedCount } = require('../../hooks/useAchievements').useAchievements();
-  const ALL_BADGES = require('../../hooks/useAchievements').ALL_BADGES;
+  const { achievements } = useAchievements();
 
   const getRank = (points: number) => {
     if (points >= 15000) return { label: 'S++', color: '#FF0055', bg: '#FF005520', glow: '#FF005550' };
@@ -218,6 +262,7 @@ export default function FitGOSocial() {
     return () => {
       if (unsubscribeEvents) unsubscribeEvents();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id]);
 
   useEffect(() => {
@@ -233,6 +278,7 @@ export default function FitGOSocial() {
     return () => {
       if (commentsChannel) supabase.removeChannel(commentsChannel);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expandedComments]);
 
     const handleCamera = async () => {
@@ -271,7 +317,7 @@ export default function FitGOSocial() {
     }
   };
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
       return;
@@ -280,18 +326,18 @@ export default function FitGOSocial() {
     const results = await socialStore.searchUsers(searchQuery);
     setSearchResults(results.filter(u => u.id !== profile?.id));
     setIsSearching(false);
-  };
+  }, [searchQuery, socialStore, profile?.id]);
 
-  const handleAddFriend = async (userId: string) => {
+  const handleAddFriend = useCallback(async (userId: string) => {
     if (profile?.id) {
       await socialStore.addFriend(profile.id, userId);
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setSearchQuery('');
       setSearchResults([]);
     }
-  };
+  }, [profile?.id, socialStore]);
 
-  const handleCreatePost = async () => {
+  const handleCreatePost = useCallback(async () => {
     if (!newPostContent.trim() && !selectedImage || !profile?.id) return;
     setIsPosting(true);
     
@@ -310,18 +356,18 @@ export default function FitGOSocial() {
     setSelectedImage(null);
     setIsPosting(false);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
-  };
+  }, [newPostContent, selectedImage, profile?.id, socialStore]);
 
-  const handleLike = async (postId: string, isLiked: boolean) => {
+  const handleLike = useCallback(async (postId: string, isLiked: boolean) => {
     if (!profile?.id) return;
     if (isLiked) {
       await socialStore.unlikePost(postId, profile.id);
     } else {
       await socialStore.likePost(postId, profile.id);
     }
-  };
+  }, [profile?.id, socialStore]);
 
-  const handleShare = async (content: string) => {
+  const handleShare = useCallback(async (content: string) => {
     try {
       await Share.share({
         message: `${content}\n\n${t('social.sharedFrom', 'Compartido desde FitGo')}`,
@@ -329,7 +375,7 @@ export default function FitGOSocial() {
     } catch (error) {
       console.warn(error);
     }
-  };
+  }, [t]);
 
   const toggleComments = async (postId: string) => {
     if (expandedComments === postId) {
@@ -379,7 +425,6 @@ export default function FitGOSocial() {
     const acceptedFriends = socialStore.friends.filter(f => f.status === 'accepted');
     const userRankInfo = socialStore.globalRanking.find(u => u.id === profile?.id);
     const userRankIndex = socialStore.globalRanking.findIndex(u => u.id === profile?.id);
-    const userGrade = userRankInfo ? getRank(userRankInfo.points) : getRank(0);
     const myPosts = socialStore.posts.filter(p => p.user_id === profile?.id);
     const currentBadgeId = profile?.selectedBadge || (profile?.role === 'owner' ? 'owner' : profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
     const currentBadge = ALL_BADGES[currentBadgeId] || ALL_BADGES.verified;
@@ -498,7 +543,7 @@ export default function FitGOSocial() {
                               >
                                 {ach.iconType === 'lucide' && ach.lucideIcon ? (
                                   // @ts-ignore
-                                  React.createElement(require('lucide-react-native')[ach.lucideIcon] || require('lucide-react-native').Star, {
+                                  React.createElement((LucideIcons as any)[ach.lucideIcon] || LucideIcons.Star, {
                                     size: 24,
                                     color: isHolo ? '#FFF' : tierColor,
                                     strokeWidth: 2.5
@@ -607,7 +652,7 @@ export default function FitGOSocial() {
   };
 
 
-  const postHeader = (
+  const postHeader = useMemo(() => (
     <GlassCard style={{ marginBottom: 20, padding: 12 }}>
       <View style={s.postInputRow}>
         {profile?.avatarUrl ? (
@@ -653,7 +698,7 @@ export default function FitGOSocial() {
         </TouchableOpacity>
       </View>
     </GlassCard>
-  );
+  ), [newPostContent, selectedImage, isPosting, profile?.avatarUrl, profile?.name, colors.primary, colors.surfaceAlt, colors.textPrimary, colors.textMuted, colors.textSecondary, handleCreatePost, t]);
 
   const renderFeed = () => (
     <View style={s.tabContent}>

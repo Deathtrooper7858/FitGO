@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import mobileAds, { MaxAdContentRating } from 'react-native-google-mobile-ads';
 
 let initialized = false;

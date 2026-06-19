@@ -11,7 +11,7 @@ export default function AuthLayout() {
   // el color clásico, sin importar lo que haya en el store persistido.
   useEffect(() => {
     setPremiumColor(null);
-  }, []);
+  }, [setPremiumColor]);
 
   return (
     <Stack

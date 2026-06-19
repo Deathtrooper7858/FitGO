@@ -1,7 +1,5 @@
 import {
-  Sparkles, Send, Camera, Mic, Clock,
-  MessageSquarePlus, Apple, Salad, Flame,
-  BarChart2, Edit2, ShieldAlert, Heart, Compass, Zap, Activity, Dumbbell
+  Flame, Dumbbell, Heart, Activity, Zap, Compass, Clock, Sparkles, Apple, Salad, BarChart2
 } from 'lucide-react-native';
 
 export const COACH_CONFIG = {

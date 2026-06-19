@@ -133,7 +133,31 @@ export function EditModal({
               <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '600', marginBottom: 12 }}>
                 {t('profile.nameColorPro', 'Color del Nombre (Pro)')}
               </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+              <ScrollView
+                ref={(ref) => {
+                  if (ref) {
+                    // We can scroll to the position of the selected color
+                    // Each item is 44px + 12px gap.
+                    // The default option (selectedColor === '') is at index 0.
+                    let idx = 0;
+                    if (selectedColor !== '') {
+                      const foundIdx = allColors.findIndex(c => c.hex === selectedColor);
+                      if (foundIdx !== -1) {
+                        idx = foundIdx + 1; // +1 to account for the default option
+                      }
+                    }
+                    // Approx offset calculation: idx * (itemWidth + gap)
+                    // itemWidth = 44, gap = 12
+                    const offset = Math.max(0, idx * 56 - 40); // Subtracting a bit so it centers/shows context
+                    setTimeout(() => {
+                      ref.scrollTo({ x: offset, animated: true });
+                    }, 50);
+                  }
+                }}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 12 }}
+              >
                 <TouchableOpacity
                   activeOpacity={0.8}
                   style={{

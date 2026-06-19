@@ -14,7 +14,6 @@ interface WaterTrackerProps {
 
 export function WaterTracker({ waterMl, onAddWater, onCustomWaterPress, colors, t, volumeUnit }: WaterTrackerProps) {
   const displayWater = volumeUnit === 'ml' ? waterMl : waterMl / 1000;
-  const displayUnit = volumeUnit === 'ml' ? 'ml' : 'L';
 
   return (
     <GlassCard noPadding showStripe accentColor="#06B6D4">

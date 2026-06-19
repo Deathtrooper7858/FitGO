@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Colors, Spacing, Radius } from '../../constants';
-import { supabase } from '../../services';
 import { useTranslation } from 'react-i18next';
+import { Spacing, Radius } from '../../constants';
+import { supabase } from '../../services';
 import { useTheme } from '../../hooks/useTheme';
 
 export default function UpdatePasswordScreen() {
@@ -24,7 +24,7 @@ export default function UpdatePasswordScreen() {
         }
       });
     }
-  }, [params.code, params.access_token]);
+  }, [params.code, params.access_token, t]);
 
   const handleUpdate = async () => {
     if (!password || password.length < 6) {

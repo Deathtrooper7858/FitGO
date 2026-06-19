@@ -1,6 +1,6 @@
 import { supabase } from '../services/supabase';
 import { calculateTDEE, calculateMacros, resolveActivityLevel } from '../services/foodDatabase';
-import { useAuthStore, useNutritionStore, useBodyStore, UserProfile } from '../store';
+import { useNutritionStore, useBodyStore, UserProfile } from '../store';
 import { getLocalDateString } from '../utils/date';
 
 export function calculateProgressPct(

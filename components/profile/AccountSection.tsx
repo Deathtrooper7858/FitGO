@@ -1,13 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   User, Scale, Ruler, Calendar, Activity, Database, Zap, RefreshCw,
-  Fingerprint, Mail, Key, Trash2, LogOut
+  Fingerprint, Mail, Key, Trash2
 } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
-import { Spacing } from '../../constants';
 import { convertMass, convertLength } from '../../utils/units';
 import type { UserProfile } from '../../store';
 import { SettingsItem } from './SettingsItem';
@@ -31,14 +29,13 @@ interface AccountSectionProps {
   onCopyID: () => void;
   onUpdateEmail: () => void;
   onDeleteAccount: () => void;
-  onSignOut: () => void;
 }
 
 export function AccountSection({
   profile, massUnit, lengthUnit, isPro, expanded, onToggle,
   onEditName, onEditWeight, onEditHeight, onEditAge, onEditSex,
   onExportData, onManageSubscription, onCancelSubscription, onVerifySubscription,
-  onCopyID, onUpdateEmail, onDeleteAccount, onSignOut,
+  onCopyID, onUpdateEmail, onDeleteAccount,
 }: AccountSectionProps) {
   const colors = useTheme();
   const { t } = useTranslation();
@@ -89,25 +86,6 @@ export function AccountSection({
           <SettingsItem icon={Trash2} label={t('profile.deleteAccount', 'Eliminar Cuenta')} indent onPress={onDeleteAccount} isDestructive />
         </View>
       )}
-
-      {/* Sign Out Button */}
-      <TouchableOpacity
-        onPress={onSignOut}
-        activeOpacity={0.7}
-        style={{ marginTop: Spacing.sm }}
-      >
-        <LinearGradient
-          colors={['rgba(239, 68, 68, 0.15)', 'rgba(239, 68, 68, 0.05)']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{ borderRadius: 20, borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.2)', paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}
-        >
-          <LogOut size={20} color="#EF4444" strokeWidth={2.5} />
-          <Text style={{ color: '#EF4444', fontSize: 16, fontWeight: '700' }}>
-            {t('profile.signOut', 'Cerrar Sesión')}
-          </Text>
-        </LinearGradient>
-      </TouchableOpacity>
     </>
   );
 }

@@ -2,7 +2,7 @@ import { Tabs, router, usePathname } from 'expo-router';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { FileText, BarChart2, MessageCircle, Calendar, Users } from 'lucide-react-native';
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -51,14 +51,13 @@ const TabIcon = React.memo(function TabIcon({ Icon, label, focused, badgeCount }
 });
 
 const TAB_ROUTES = [
+  '/(tabs)/profile',
   '/(tabs)/tracker',
   '/(tabs)/dashboard',
   '/(tabs)/coach',
   '/(tabs)/planner',
   '/(tabs)/social',
 ] as const;
-
-const TOP_ZONE_THRESHOLD = 200;
 
 export default function TabsLayout() {
   const { t } = useTranslation();
@@ -69,10 +68,9 @@ export default function TabsLayout() {
 
   // Social notifications badge
   const totalUnreadCount = useSocialStore(s => s.totalUnreadCount);
-  const friends = useSocialStore(s => s.friends);
-  const pendingFriendRequests = useMemo(() => friends.filter(
-    f => f.status === 'pending' && f.user_id_2 === profile?.id
-  ).length, [friends, profile?.id]);
+  const pendingFriendRequests = useSocialStore(s => s.friends.reduce((count, f) => 
+    count + (f.status === 'pending' && f.user_id_2 === profile?.id ? 1 : 0), 0
+  ));
   const socialBadgeCount = totalUnreadCount + pendingFriendRequests;
 
   const insets = useSafeAreaInsets();
@@ -82,44 +80,50 @@ export default function TabsLayout() {
   const tabBarHeight = baseHeight + paddingBottom;
 
   const getCurrentTabIndex = useCallback(() => {
-    if (pathname.includes('tracker'))  return 0;
-    if (pathname.includes('dashboard')) return 1;
-    if (pathname.includes('coach'))    return 2;
-    if (pathname.includes('planner'))  return 3;
-    if (pathname.includes('social'))   return 4;
-    return 0;
+    if (pathname.includes('profile'))   return 0;
+    if (pathname.includes('tracker'))   return 1;
+    if (pathname.includes('dashboard')) return 2;
+    if (pathname.includes('coach'))     return 3;
+    if (pathname.includes('planner'))   return 4;
+    if (pathname.includes('social'))    return 5;
+    return 1;
   }, [pathname]);
 
-  const gestureStartY = useRef(0);
-
   const navigateTab = useCallback((direction: number) => {
+    // Vibrar siempre que se detecte el gesto, sin importar si hay cambio
+    Haptics.selectionAsync();
     const currentIndex = getCurrentTabIndex();
     const nextIndex = currentIndex + direction;
     if (nextIndex < 0 || nextIndex >= TAB_ROUTES.length) return;
-    if (nextIndex === 3 && !isProActually) {
+    if (nextIndex === 4 && !isProActually) {
       router.push('/modals/paywall');
       return;
     }
-    Haptics.selectionAsync();
     router.push(TAB_ROUTES[nextIndex] as any);
   }, [getCurrentTabIndex, isProActually]);
 
+  const gestureStartY = React.useRef(0);
+
   const swipeGesture = useMemo(() => Gesture.Pan()
-    .activeOffsetX([-50, 50])
-    .failOffsetY([-20, 20])
-    .minDistance(30)
+    .activeOffsetX([-15, 15])
+    .failOffsetY([-50, 50])
     .runOnJS(true)
     .onBegin((e) => {
-      gestureStartY.current = e.absoluteY;
+      gestureStartY.current = e.y;
     })
     .onEnd((e) => {
-      if (gestureStartY.current > TOP_ZONE_THRESHOLD) return;
-      const enoughVelocity = Math.abs(e.velocityX) > 400;
-      const enoughDistance = Math.abs(e.translationX) > 80;
+      // Exclude if we are on the social/community tab to avoid interfering with local sub-tab gestures
+      if (pathname.includes('social')) return;
+
+      // Exclude horizontal swipes starting in the Day Bar vertical zone (Y between 70 and 180)
+      if (gestureStartY.current >= 70 && gestureStartY.current <= 180) return;
+
+      const enoughVelocity = Math.abs(e.velocityX) > 300;
+      const enoughDistance = Math.abs(e.translationX) > 60;
       if (!enoughVelocity && !enoughDistance) return;
       const direction = e.translationX > 0 ? -1 : 1;
       navigateTab(direction);
-    }), [navigateTab]);
+    }), [navigateTab, pathname]);
 
   const tabScreenOptions = useMemo(() => ({
     headerShown: false,

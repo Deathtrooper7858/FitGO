@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { preventAutoHideAsync, hideAsync } from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, View, ActivityIndicator, Platform, LogBox, Text } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
@@ -14,8 +15,7 @@ import { useSettingsStore } from '../store/settingsStore';
 import { usePurchaseStore } from '../store/purchaseStore';
 import { useSocialStore } from '../store/socialStore';
 import { useAICreditsStore } from '../store/aiCreditsStore';
-import { registerForPushNotificationsAsync } from '../services/notifications';
-import { Colors } from '../constants';
+
 import i18n from '../i18n';
 import { useTheme } from '../hooks/useTheme';
 import { useAdMob } from '../hooks/useAdMob';
@@ -112,7 +112,7 @@ function NavigationGuard() {
 }
 
 export default function RootLayout() {
-  const { setSession, setLoading, setProfile, fetchProfile, clearAuth, isLoading } = useAuthStore();
+  const { setSession, setLoading, fetchProfile, clearAuth, isLoading } = useAuthStore();
   const { initialize: initPurchases } = usePurchaseStore();
   const { language, theme, setPremiumColor } = useSettingsStore();
   const colors = useTheme();
@@ -235,7 +235,7 @@ export default function RootLayout() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [clearAuth, fetchProfile, initPurchases, setLoading, setPremiumColor, setSession]);
 
   // ── IMPORTANT: Keep the splash screen or a blank view while loading
   //    to prevent "flashes" of the wrong screens.
@@ -277,6 +277,7 @@ export default function RootLayout() {
   }
 
   return (
+    <SafeAreaProvider>
     <GestureHandlerRootView style={[styles.root, { backgroundColor: colors.background }]}>
         <StatusBar style={theme === 'dark' ? 'light' : 'dark'} backgroundColor={colors.background} />
         <NavigationGuard />
@@ -387,6 +388,7 @@ export default function RootLayout() {
         </Stack>
         </ErrorBoundary>
     </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }
 

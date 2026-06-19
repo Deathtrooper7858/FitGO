@@ -13,4 +13,18 @@ config.resolver.blockList = [
 
 config.resolver.assetExts.push('tflite');
 
+config.transformer = {
+  ...config.transformer,
+  minifierConfig: {
+    keep_fnames: true,
+    mangle: { keep_fnames: true },
+    output: { ascii_only: true, quote_style: 3, wrap_iife: true },
+    sourceMap: { includeSources: false },
+    toplevel: false,
+    compress: {
+      reduce_funcs: false,
+    },
+  },
+};
+
 module.exports = config;

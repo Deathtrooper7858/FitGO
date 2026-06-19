@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { Spacing } from '../constants';
 import {
   useAuthStore, useSettingsStore, useNutritionStore,
-  useCoachStore, useBodyStore, useRecipesStore, useProgressStore
+  useCoachStore, useBodyStore, useRecipesStore
 } from '../store';
 import { useTheme } from '../hooks/useTheme';
 import { calculateTDEE, calculateMacros } from '../services/foodDatabase';
@@ -108,7 +108,6 @@ export default function OnboardingScreen() {
     useCoachStore.getState().resetAll();
     useBodyStore.getState().reset();
     useRecipesStore.getState().reset();
-    useProgressStore.getState().reset();
   }, []);
 
   const stepId = STEPS[currentStep];
@@ -348,7 +347,6 @@ export default function OnboardingScreen() {
               useCoachStore.getState().resetAll();
               useBodyStore.getState().reset();
               useRecipesStore.getState().reset();
-              useProgressStore.getState().reset();
 
               await supabase.auth.signOut();
               setProfile(null);

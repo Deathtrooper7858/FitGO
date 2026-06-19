@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Platform, ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -51,6 +52,7 @@ export default function FoodResultCard({
   onTimeChange, onToggleTimePicker,
 }: FoodResultCardProps) {
   const confidenceColor = food.confidence === 'high' ? colors.success : food.confidence === 'medium' ? colors.warning : colors.error;
+  const insets = useSafeAreaInsets();
 
   const getAutoMeal = () => {
     const h = new Date().getHours();
@@ -62,7 +64,11 @@ export default function FoodResultCard({
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      <View style={[s.resultHeader, { backgroundColor: colors.background }]}>
+      <LinearGradient
+        colors={[isPremiumCustom ? safePremiumColor + '25' : colors.primary + '20', colors.background, colors.background]}
+        style={StyleSheet.absoluteFill}
+      />
+      <View style={[s.resultHeader, { backgroundColor: 'transparent' }]}>
         <View style={{ width: 40 }} />
         <Text style={[s.title, { color: colors.textPrimary }]}>{t('scan.analysisTitle')}</Text>
         <View style={{ width: 40 }} />
@@ -168,7 +174,7 @@ export default function FoodResultCard({
           <Text style={[s.notesText, { color: colors.textSecondary }]}>💡 {food.notes}</Text>
         )}
       </ScrollView>
-      <View style={[s.resultFooter, { backgroundColor: colors.background, borderTopColor: colors.border, paddingBottom: 32 }]}>
+      <View style={[s.resultFooter, { backgroundColor: colors.background, borderTopColor: colors.border, paddingBottom: Math.max(32, insets.bottom + 16) }]}>
         <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
           <TouchableOpacity style={[s.actionBtn, { borderColor: colors.border, backgroundColor: colors.surface }]} onPress={onResetPhoto}>
             <Text style={{ fontSize: 18 }}>📷</Text>

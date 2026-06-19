@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,26 +10,34 @@ import { useTheme } from '../../../hooks/useTheme';
 import { GlobalBackground } from '../../../components/GlobalBackground';
 import FitGOSocial from '../../../components/social/FitGOSocial';
 import FitGOCompetitive from '../../../components/social/FitGOCompetitive';
-import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 
 export default function SocialTabScreen() {
   const colors = useTheme();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'social' | 'competitive'>('social');
+  const [socialInitialTab, setSocialInitialTab] = useState<'you' | 'feed' | 'friends'>('you');
+  const [socialInitialFriendsTab, setSocialInitialFriendsTab] = useState<'list' | 'search' | 'requests'>('list');
+  const [competitiveInitialSection, setCompetitiveInitialSection] = useState<'ranking' | 'my-squad' | 'challenges'>('ranking');
 
   // Swipe left/right to switch between Social and Competitive
-  const MAIN_TABS: Array<'social' | 'competitive'> = ['social', 'competitive'];
+  const MAIN_TABS: ('social' | 'competitive')[] = ['social', 'competitive'];
   const swipeGesture = Gesture.Pan()
-    .activeOffsetX([-35, 35])
-    .failOffsetY([-12, 12])
+    .activeOffsetX([-15, 15])
+    .failOffsetY([-15, 15])
     .runOnJS(true)
     .onEnd((e) => {
-      if (Math.abs(e.velocityX) > 400 || Math.abs(e.translationX) > 80) {
+      if (Math.abs(e.velocityX) > 150 || Math.abs(e.translationX) > 35) {
+        Haptics.selectionAsync();
         const dir = e.translationX > 0 ? -1 : 1;
         const idx = MAIN_TABS.indexOf(activeTab);
         const next = idx + dir;
         if (next >= 0 && next < MAIN_TABS.length) {
-          Haptics.selectionAsync();
+          if (MAIN_TABS[next] === 'social') {
+            setSocialInitialTab('friends');
+            setSocialInitialFriendsTab('requests');
+          } else {
+            setCompetitiveInitialSection('ranking');
+          }
           setActiveTab(MAIN_TABS[next]);
         }
       }
@@ -44,79 +53,99 @@ export default function SocialTabScreen() {
       />
 
       <SafeAreaView style={styles.safe} edges={['top']}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
-            {activeTab === 'social' ? `FitGO ${t('social.headers.socialTab', 'Social')}` : `FitGO ${t('social.headers.compTab', 'Competitive')}`}
-          </Text>
-          <Text style={[styles.headerSub, { color: colors.textSecondary }]}>
-            {activeTab === 'social'
-              ? t('social.headers.socialSubtitle', 'Connect with your community')
-              : t('social.headers.compSubtitle', 'Compete and climb the ranking')}
-          </Text>
-        </View>
-
-        {/* Segmented Control */}
-        <View style={[styles.segmentWrapper, { backgroundColor: colors.surfaceAlt }]}>
-          <TouchableOpacity
-            style={[styles.segmentBtn, activeTab === 'social' && styles.segmentActive]}
-            onPress={() => {
-              Haptics.selectionAsync();
-              setActiveTab('social');
-            }}
-            activeOpacity={0.8}
-          >
-            {activeTab === 'social' ? (
-              <LinearGradient
-                colors={[colors.primary, colors.secondary || '#A855F7']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={StyleSheet.absoluteFill}
-              />
-            ) : null}
-            <Users
-              size={16}
-              color={activeTab === 'social' ? '#fff' : colors.textSecondary}
-              strokeWidth={2.2}
-            />
-            <Text style={[styles.segmentText, { color: activeTab === 'social' ? '#fff' : colors.textSecondary }]}>
-              {t('social.headers.socialTab', 'Social')}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.segmentBtn, activeTab === 'competitive' && styles.segmentActive]}
-            onPress={() => {
-              Haptics.selectionAsync();
-              setActiveTab('competitive');
-            }}
-            activeOpacity={0.8}
-          >
-            {activeTab === 'competitive' ? (
-              <LinearGradient
-                colors={['#F59E0B', '#EC4899']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={StyleSheet.absoluteFill}
-              />
-            ) : null}
-            <Trophy
-              size={16}
-              color={activeTab === 'competitive' ? '#fff' : colors.textSecondary}
-              strokeWidth={2.2}
-            />
-            <Text style={[styles.segmentText, { color: activeTab === 'competitive' ? '#fff' : colors.textSecondary }]}>
-              {t('social.headers.compTab', 'Competitive')}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Content — wrapped in swipe gesture for Social ↔ Competitive */}
+        {/* Header & Segmented Control wrapped with GestureDetector */}
         <GestureDetector gesture={swipeGesture}>
-          <View style={{ flex: 1 }}>
-            {activeTab === 'social' ? <FitGOSocial /> : <FitGOCompetitive />}
+          <View>
+            <View style={styles.header}>
+              <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+                {activeTab === 'social' ? `FitGO ${t('social.headers.socialTab', 'Social')}` : `FitGO ${t('social.headers.compTab', 'Competitive')}`}
+              </Text>
+              <Text style={[styles.headerSub, { color: colors.textSecondary }]}>
+                {activeTab === 'social'
+                  ? t('social.headers.socialSubtitle', 'Connect with your community')
+                  : t('social.headers.compSubtitle', 'Compete and climb the ranking')}
+              </Text>
+            </View>
+
+            <View style={[styles.segmentWrapper, { backgroundColor: colors.surfaceAlt }]}>
+              <TouchableOpacity
+                style={[styles.segmentBtn, activeTab === 'social' && styles.segmentActive]}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setSocialInitialTab('you');
+                  setActiveTab('social');
+                }}
+                activeOpacity={0.8}
+              >
+                {activeTab === 'social' ? (
+                  <LinearGradient
+                    colors={[colors.primary, colors.secondary || '#A855F7']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                ) : null}
+                <Users
+                  size={16}
+                  color={activeTab === 'social' ? '#fff' : colors.textSecondary}
+                  strokeWidth={2.2}
+                />
+                <Text style={[styles.segmentText, { color: activeTab === 'social' ? '#fff' : colors.textSecondary }]}>
+                  {t('social.headers.socialTab', 'Social')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.segmentBtn, activeTab === 'competitive' && styles.segmentActive]}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setCompetitiveInitialSection('ranking');
+                  setActiveTab('competitive');
+                }}
+                activeOpacity={0.8}
+              >
+                {activeTab === 'competitive' ? (
+                  <LinearGradient
+                    colors={['#F59E0B', '#EC4899']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                ) : null}
+                <Trophy
+                  size={16}
+                  color={activeTab === 'competitive' ? '#fff' : colors.textSecondary}
+                  strokeWidth={2.2}
+                />
+                <Text style={[styles.segmentText, { color: activeTab === 'competitive' ? '#fff' : colors.textSecondary }]}>
+                  {t('social.headers.compTab', 'Competitive')}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </GestureDetector>
+
+        {/* Content — both always mounted to avoid re-fetch on every tab switch */}
+        <View style={[{ flex: 1 }, activeTab !== 'social' && { display: 'none' }]}>
+          <FitGOSocial
+            initialTab={socialInitialTab}
+            initialFriendsTab={socialInitialFriendsTab}
+            onNavigateToCompetitive={() => {
+              setCompetitiveInitialSection('ranking');
+              setActiveTab('competitive');
+            }}
+          />
+        </View>
+        <View style={[{ flex: 1 }, activeTab !== 'competitive' && { display: 'none' }]}>
+          <FitGOCompetitive
+            initialSection={competitiveInitialSection}
+            onNavigateToSocial={() => {
+              setSocialInitialTab('friends');
+              setSocialInitialFriendsTab('requests');
+              setActiveTab('social');
+            }}
+          />
+        </View>
       </SafeAreaView>
     </View>
   );

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  TextInput, ActivityIndicator, Alert, Animated, Platform
+  TextInput, ActivityIndicator, Alert, Animated
 } from 'react-native';
 import * as Crypto from 'expo-crypto';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,9 +19,9 @@ import {
 import { useTheme } from '../../hooks/useTheme';
 import { useNutritionStore, useSettingsStore } from '../../store';
 import { useIsPro } from '../../hooks/useIsPro';
-import { Radius, Spacing } from '../../constants';
+
 import { transcribeAudio, estimateActivityCalories } from '../../services/groq';
-import { CustomAlert, AlertType } from '../../components/CustomAlert';
+import { CustomAlert } from '../../components/CustomAlert';
 
 /** Preset exercise list with fixed kcal-per-30-min values and category mapping. */
 const EXERCISES = [
@@ -277,19 +277,6 @@ export default function AddActivityModal() {
     }
   };
 
-  const getBadgeTextColor = (category: string) => {
-    switch (category) {
-      case 'strength':
-        return '#10B981';
-      case 'cardio':
-        return '#F43F5E';
-      case 'sports':
-        return '#06B6D4';
-      default:
-        return '#8B5CF6';
-    }
-  };
-
   // Filter exercises by category and search query (excluding custom entry)
   const filteredExercises = EXERCISES.filter(ex => {
     if (ex.id === 'custom') return false;
@@ -305,7 +292,6 @@ export default function AddActivityModal() {
   // ─── DETAIL VIEW (After exercise selection) ──────────────────────────────────
   if (selected) {
     const badgeBg = getBadgeBg(selected.category);
-    const badgeText = getBadgeTextColor(selected.category);
     const isCustom = selected.id === 'custom';
 
     return (

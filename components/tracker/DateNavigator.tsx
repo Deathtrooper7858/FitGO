@@ -1,6 +1,9 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { getLocalDateString } from '../../utils/date';
+import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming, runOnJS } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
+import { getLocalDateString, addDays } from '../../utils/date';
 
 interface DateNavigatorProps {
   selectedDate: string;
@@ -11,6 +14,9 @@ interface DateNavigatorProps {
 }
 
 export function DateNavigator({ selectedDate, onDateChange, colors, t, language }: DateNavigatorProps) {
+  const { width } = useWindowDimensions();
+  const translateX = useSharedValue(0);
+
   const days = useMemo(() => {
     const arr = [];
     const base = new Date(selectedDate + 'T12:00:00');
@@ -26,22 +32,63 @@ export function DateNavigator({ selectedDate, onDateChange, colors, t, language 
     return arr;
   }, [language, selectedDate]);
 
+  const handleSwipeDateChange = (direction: number) => {
+    onDateChange(addDays(selectedDate, direction));
+  };
+
+  const gesture = Gesture.Pan()
+    .activeOffsetX([-15, 15])
+    .failOffsetY([-50, 50])
+    .onUpdate((e) => {
+      translateX.value = e.translationX;
+    })
+    .onEnd((e) => {
+      const threshold = 60;
+      if (e.translationX > threshold || e.velocityX > 300) {
+        // Swipe Right -> Go to previous day
+        runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Medium);
+        translateX.value = withTiming(width, { duration: 180 }, () => {
+          runOnJS(handleSwipeDateChange)(-1);
+          translateX.value = -width;
+          translateX.value = withSpring(0, { damping: 15, stiffness: 120 });
+        });
+      } else if (e.translationX < -threshold || e.velocityX < -300) {
+        // Swipe Left -> Go to next day
+        runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Medium);
+        translateX.value = withTiming(-width, { duration: 180 }, () => {
+          runOnJS(handleSwipeDateChange)(1);
+          translateX.value = width;
+          translateX.value = withSpring(0, { damping: 15, stiffness: 120 });
+        });
+      } else {
+        translateX.value = withSpring(0, { damping: 12 });
+      }
+    });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
+
   return (
-    <View style={s.datePicker}>
-      {days.map((d) => (
-        <TouchableOpacity
-          key={d.full}
-          style={s.dateItem}
-          onPress={() => onDateChange(d.full)}
-        >
-          <Text style={[s.dateLabel, { color: colors.textSecondary }]}>{d.label}</Text>
-          <View style={[s.dateNumWrap, selectedDate === d.full && { backgroundColor: colors.primary }]}>
-            <Text style={[s.dateNum, { color: selectedDate === d.full ? '#fff' : colors.textPrimary }]}>{d.dayNum}</Text>
-          </View>
-          {selectedDate === d.full && <View style={[s.dateDot, { backgroundColor: colors.primary }]} />}
-        </TouchableOpacity>
-      ))}
-    </View>
+    <GestureDetector gesture={gesture}>
+      <View style={{ overflow: 'hidden', width: '100%', paddingVertical: 4 }}>
+        <Animated.View style={[s.datePicker, animatedStyle]}>
+          {days.map((d) => (
+            <TouchableOpacity
+              key={d.full}
+              style={s.dateItem}
+              onPress={() => onDateChange(d.full)}
+            >
+              <Text style={[s.dateLabel, { color: colors.textSecondary }]}>{d.label}</Text>
+              <View style={[s.dateNumWrap, selectedDate === d.full && { backgroundColor: colors.primary }]}>
+                <Text style={[s.dateNum, { color: selectedDate === d.full ? '#fff' : colors.textPrimary }]}>{d.dayNum}</Text>
+              </View>
+              {selectedDate === d.full && <View style={[s.dateDot, { backgroundColor: colors.primary }]} />}
+            </TouchableOpacity>
+          ))}
+        </Animated.View>
+      </View>
+    </GestureDetector>
   );
 }
 

@@ -1,30 +1,27 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Switch, Platform, Animated, Dimensions, LayoutAnimation, UIManager
+  Switch, Platform, Animated, LayoutAnimation, UIManager
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Colors, Spacing, Radius } from '../../constants';
-import { useSettingsStore, Reminder } from '../../store';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../hooks/useTheme';
 import {
   Bell, ChevronLeft, ChevronDown, ChevronUp, Clock, Utensils, Droplets, Dumbbell,
   Check, AlertCircle, Pill, Footprints, Moon, Coffee,
   Trophy, Users, Zap, Star, Sword, Target, Medal, MessageSquare
 } from 'lucide-react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useSettingsStore, Reminder } from '../../store';
+import { useTheme } from '../../hooks/useTheme';
 import { GlassCard } from '../../components/GlassCard';
 import { GlobalBackground } from '../../components/GlobalBackground';
 import { scheduleReminder, cancelReminder, requestNotificationPermissions } from '../../services/notifications';
-import DateTimePicker from '@react-native-community/datetimepicker';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // ─── Category config ────────────────────────────────────────────────────────
 type ReminderCategory = 'meal' | 'water' | 'workout' | 'general' | 'social';
@@ -205,6 +202,19 @@ export default function RemindersModal() {
     saveAndSchedule(updated, id);
   };
 
+  const handleDaysChange = (id: string, dayIndex: number) => {
+    const updated = localReminders.map(r => {
+      if (r.id === id) {
+        const days = r.days.includes(dayIndex)
+          ? r.days.filter(d => d !== dayIndex)
+          : [...r.days, dayIndex].sort((a, b) => a - b);
+        return { ...r, days };
+      }
+      return r;
+    });
+    saveAndSchedule(updated, id);
+  };
+
   const handleTimeChange = (event: any, selectedDate?: Date) => {
     if (event.type === 'set' && selectedDate && showTimePicker) {
       const hh = selectedDate.getHours().toString().padStart(2, '0');
@@ -358,6 +368,7 @@ export default function RemindersModal() {
                         icon={getIcon(reminder.type, reminder.title)}
                         onToggle={handleToggle}
                         onTimePress={setShowTimePicker}
+                        onDaysChange={handleDaysChange}
                       />
                     ))}
                   </View>
@@ -390,6 +401,7 @@ export default function RemindersModal() {
                     icon={getIcon(reminder.type, reminder.title)}
                     onToggle={handleToggle}
                     onTimePress={setShowTimePicker}
+                    onDaysChange={handleDaysChange}
                   />
                 ))}
               </View>
@@ -441,15 +453,18 @@ interface ReminderCardProps {
   icon: React.ReactNode;
   onToggle: (id: string) => void;
   onTimePress: (id: string) => void;
+  onDaysChange: (id: string, dayIndex: number) => void;
 }
 
-function ReminderCard({ reminder, colors, accent, icon, onToggle, onTimePress }: ReminderCardProps) {
+function ReminderCard({ reminder, colors, accent, icon, onToggle, onTimePress, onDaysChange }: ReminderCardProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () =>
     Animated.spring(scaleAnim, { toValue: 0.97, useNativeDriver: true, speed: 25 }).start();
   const handlePressOut = () =>
     Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 25 }).start();
+
+  const dayLabels = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }], marginBottom: 10, opacity: reminder.enabled ? 1 : 0.6 }}>
@@ -487,6 +502,33 @@ function ReminderCard({ reminder, colors, accent, icon, onToggle, onTimePress }:
             thumbColor={Platform.OS === 'ios' ? '#fff' : (reminder.enabled ? '#fff' : '#A1A1AA')}
           />
         </View>
+
+        {/* Days selector */}
+        {reminder.enabled && (
+          <View style={s.daysRow}>
+            {dayLabels.map((label, idx) => {
+              const isSelected = reminder.days.includes(idx);
+              return (
+                <TouchableOpacity
+                  key={idx}
+                  activeOpacity={0.7}
+                  onPress={() => onDaysChange(reminder.id, idx)}
+                  style={[
+                    s.dayButton,
+                    isSelected && { backgroundColor: accent, borderColor: accent }
+                  ]}
+                >
+                  <Text style={[
+                    s.dayText,
+                    { color: isSelected ? '#fff' : colors.textSecondary }
+                  ]}>
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
 
         {/* Active glow line */}
         {reminder.enabled && (
@@ -630,4 +672,26 @@ const s = StyleSheet.create({
     paddingHorizontal: 4,
   },
   infoText: { fontSize: 12, flex: 1, lineHeight: 17 },
+
+  daysRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingBottom: 12,
+    gap: 6,
+  },
+  dayButton: {
+    flex: 1,
+    height: 28,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dayText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
 });

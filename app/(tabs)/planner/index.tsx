@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as Haptics from 'expo-haptics';
-import { Download, Sparkles, Utensils, Dumbbell, Activity, Moon, ShoppingCart, AlertTriangle, ChevronDown, ChevronUp, X, ShieldAlert, Play, CheckCircle, Plus } from 'lucide-react-native';
+import { Download, Sparkles, Utensils, Dumbbell, Activity, ShoppingCart, AlertTriangle, ChevronDown, ChevronUp, X, ShieldAlert, Plus } from 'lucide-react-native';
 import { useAuthStore } from '../../../store/authStore';
 import { useNutritionStore, selectDailyTotals } from '../../../store/nutritionStore';
 import { useSettingsStore } from '../../../store/settingsStore';
@@ -20,7 +20,6 @@ import { useTheme } from '../../../hooks/useTheme';
 import { SuccessModal } from '../../../components/SuccessModal';
 import { CustomAlert, AlertType } from '../../../components/CustomAlert';
 import { GlobalBackground } from '../../../components/GlobalBackground';
-import { Confetti } from '../../../components/Confetti';
 import { getNameStyle } from '../../../utils/styles';
 import { getLocalDateString } from '../../../utils/date';
 import { Spacing, Radius } from '../../../constants';
@@ -72,7 +71,6 @@ export default function PlannerScreen() {
   const [showResetWarning, setShowResetWarning] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showWarnings, setShowWarnings] = useState(false);
-  const [confettiTrigger, setConfettiTrigger] = useState(0);
   const [analyzing, setAnalyzing] = useState(false);
   const [showShoppingList, setShowShoppingList] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -92,7 +90,7 @@ export default function PlannerScreen() {
   }, []));
 
   const { mealPlans, workoutPlans, weeklyAnalysis: analysis, weekStart, warning, setMealPlans, setWorkoutPlans, setWeeklyAnalysis: setAnalysis, clearPlans, clearMealPlans, clearWorkoutPlans } = usePlannerStore();
-  const { addWorkout, hasCompletedWorkoutToday, clearHistory } = useWorkoutHistoryStore();
+  const { addWorkout, hasCompletedWorkoutToday } = useWorkoutHistoryStore();
   const { profile } = useAuthStore();
   const { isPro } = usePurchaseStore();
   const streakDays = useNutritionStore(s => s.streakDays);
@@ -118,7 +116,7 @@ export default function PlannerScreen() {
     return () => clearInterval(interval);
   }, [restTimer]);
 
-  // Load stored plans
+   
   useEffect(() => {
     (async () => {
       if (!profile?.id) { setInitialLoading(false); return; }
@@ -140,12 +138,13 @@ export default function PlannerScreen() {
           wData.workout_plan_items.forEach((item: any) => { grouped[item.day_of_week] = { name: item.routine_name, exercises: item.exercises || [] }; });
           setWorkoutPlans(grouped, currentWeekStart);
         } else if (!(Object.keys(workoutPlans).length > 0 && weekStart === currentWeekStart) && weekStart !== currentWeekStart) clearPlans();
-      } catch (err) { console.error('[Planner] Load error:', err); }
+      } catch (_err) { console.error('[Planner] Load error:', _err); }
       finally { setInitialLoading(false); }
     })();
   }, [profile?.id]);
 
   // Sunday 23:59 auto-reset
+   
   useEffect(() => {
     const scheduleWeeklyReset = () => {
       const msToReset = msUntilSundayReset();
@@ -251,7 +250,8 @@ export default function PlannerScreen() {
       const html = mode === 'nutrition' ? generateNutritionHTML(mealPlans, today, ws, we) : generateWorkoutHTML(workoutPlans, energyMode, today, ws, we);
       const { uri } = await Print.printToFileAsync({ html, base64: false });
       await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf', dialogTitle: `fitgo_${mode==='nutrition'?'menu':'rutina'}_${today}.pdf` });
-    } catch (err) { showAlert('error', t('common.error'), 'Could not generate PDF'); }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_err) { showAlert('error', t('common.error'), 'Could not generate PDF'); }
   };
 
   const handleWeeklyAnalysis = async () => {
@@ -261,21 +261,35 @@ export default function PlannerScreen() {
       const stats = useNutritionStore.getState().todayLogs ? selectDailyTotals(useNutritionStore.getState()) : { calories: 0, protein: 0, carbs: 0, fat: 0 };
       const res = await generateWeeklyAnalysis({ avgCalories: stats.calories, targetCalories: profile?.targetCalories??2000, avgProtein: stats.protein, avgCarbs: stats.carbs, avgFat: stats.fat, goal: profile?.goal??'maintain', daysLogged: streakDays }, language);
       setAnalysis(res);
-    } catch (err) { showAlert('error', t('planner.analysisFailed'), t('planner.analysisFailedSub')); }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_err) { showAlert('error', t('planner.analysisFailed'), t('planner.analysisFailedSub')); }
     finally { setAnalyzing(false); }
   };
 
   // Computed values
-  const meals = mealPlans[activeDay] ?? [];
-  const totalCal = meals.reduce((a,m)=>a+m.calories,0);
+  const meals = React.useMemo(() => mealPlans[activeDay] ?? [], [mealPlans, activeDay]);
+  const totalCal = meals.reduce((a: number, m: PlanItem) => a + m.calories, 0);
   const workout = workoutPlans[activeDay];
   const getDayDate = (dayAbbr: string) => { const idx = DAYS.indexOf(dayAbbr); const d = new Date(); const monOff = d.getDay()===0 ? -6 : 1-d.getDay(); const m = new Date(d); m.setDate(d.getDate()+monOff); m.setDate(m.getDate()+idx); return getLocalDateString(m); };
   const activeDayDate = getDayDate(activeDay);
   const todayDate = getLocalDateString();
   const isActiveToday = activeDayDate === todayDate;
   const alreadyCompleted = hasCompletedWorkoutToday(activeDayDate);
-  const consumedMacros = React.useMemo(() => { if (!isActiveToday) return {p:0,c:0,f:0}; return todayLogs.filter(l=>l.loggedAt.startsWith(todayDate)).reduce((acc,l)=>({p:acc.p+(l.protein||0),c:acc.c+(l.carbs||0),f:acc.f+(l.fat||0)}),{p:0,c:0,f:0}); }, [isActiveToday, todayLogs, todayDate]);
-  const plannedMacros = React.useMemo(() => meals.reduce((acc,m)=>({p:acc.p+(m.protein||0),c:acc.c+(m.carbs||0),f:acc.f+(m.fat||0)}),{p:0,c:0,f:0}), [meals]);
+  const consumedMacros = React.useMemo(() => {
+    if (!isActiveToday) return { p: 0, c: 0, f: 0 };
+    return todayLogs
+      .filter((l: any) => l.loggedAt.startsWith(todayDate))
+      .reduce((acc: { p: number; c: number; f: number }, l: any) => ({
+        p: acc.p + (l.protein || 0),
+        c: acc.c + (l.carbs || 0),
+        f: acc.f + (l.fat || 0)
+      }), { p: 0, c: 0, f: 0 });
+  }, [isActiveToday, todayLogs, todayDate]);
+  const plannedMacros = React.useMemo(() => meals.reduce((acc: { p: number; c: number; f: number }, m: PlanItem) => ({
+    p: acc.p + (m.protein || 0),
+    c: acc.c + (m.carbs || 0),
+    f: acc.f + (m.fat || 0)
+  }), { p: 0, c: 0, f: 0 }), [meals]);
   const waterToday = dailyWater[todayDate] || 0;
   const hasData = mode === 'nutrition' ? Object.keys(mealPlans).length > 0 : Object.keys(workoutPlans).length > 0;
 
@@ -294,8 +308,7 @@ export default function PlannerScreen() {
   const handleCompleteWorkout = () => {
     if (!workout || workout.exercises.length===0 || alreadyCompleted) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setConfettiTrigger(p=>p+1);
-    addWorkout({ date: activeDayDate, routineName: workout.name, exercises: workout.exercises.map((ex:any,i)=>({name:ex.name,englishName:ex.englishName,sets:ex.sets,reps:ex.reps,weight:exerciseMetrics[i]?.weight,rpe:exerciseMetrics[i]?.rpe})) });
+    addWorkout({ date: activeDayDate, routineName: workout.name, exercises: workout.exercises.map((ex:any,i:number)=>({name:ex.name,englishName:ex.englishName,sets:ex.sets,reps:ex.reps,weight:exerciseMetrics[i]?.weight,rpe:exerciseMetrics[i]?.rpe})) });
   };
 
   const getPreviousRPE = (exerciseName: string) => {
@@ -320,7 +333,8 @@ export default function PlannerScreen() {
       const adjusted = await adjustWorkoutToBodyweight(workout.name, workout.exercises, language);
       setWorkoutPlans({...workoutPlans, [activeDay]: {...workout, exercises: adjusted.exercises, name: adjusted.name}}, weekStart||getStartOfWeek(new Date()), warning||undefined);
       if (profile?.id) supabase.from('workout_plan_items').update({exercises: adjusted.exercises, routine_name: adjusted.name}).eq('user_id',profile.id).eq('day_of_week',activeDay).then();
-    } catch (err) { showAlert('error', t('common.error'), 'No se pudo ajustar el entrenamiento.'); }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_err) { showAlert('error', t('common.error'), 'No se pudo ajustar el entrenamiento.'); }
     finally { setIsAdjustingBW(false); }
   };
 
@@ -337,8 +351,8 @@ export default function PlannerScreen() {
   };
 
   const handleToggleEquipment = (item: string) => {
-    const arr = homeEquipment.split(',').map(s=>s.trim()).filter(s=>s);
-    setHomeEquipment(arr.includes(item) ? arr.filter(i=>i!==item).join(', ') : [...arr, item].join(', '));
+    const arr = homeEquipment.split(',').map((s: string) => s.trim()).filter((s: string) => s);
+    setHomeEquipment(arr.includes(item) ? arr.filter((i: string) => i !== item).join(', ') : [...arr, item].join(', '));
   };
 
   const handleAddCustomWeight = () => {
@@ -367,16 +381,18 @@ export default function PlannerScreen() {
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 160 }}>
           <View style={s.header}>
-            <View style={s.headerTextWrap}>
-              <Text style={[s.title,{color:colors.textPrimary}]}>{t('planner.title')}</Text>
-              {profile?.name && <Text style={[s.subtitle,{color:colors.primary,fontWeight:'700',fontSize:16,marginBottom:2},getNameStyle(profile?.nameColor)]}>{t('common.greeting','Hola')}, {profile.name}!</Text>}
-              <Text style={[s.subtitle,{color:colors.textSecondary}]}>{profile?.goal?`${t('planner.planFor','Plan para:')} ${getGoalTranslation()}`:t('planner.weekPlan')}</Text>
+            <Text style={[s.title,{color:colors.textPrimary, marginBottom: 12}]}>{t('planner.title')}</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={s.headerTextWrap}>
+                {profile?.name && <Text style={[s.subtitle,{color:colors.primary,fontWeight:'700',fontSize:16,marginBottom:2},getNameStyle(profile?.nameColor)]}>{t('common.greeting','Hola')}, {profile.name}!</Text>}
+                <Text style={[s.subtitle,{color:colors.textSecondary}]}>{profile?.goal?`${t('planner.planFor','Plan para:')} ${getGoalTranslation()}`:t('planner.weekPlan')}</Text>
+              </View>
+              <TouchableOpacity style={[s.genBtn,{shadowColor:safePremiumColor}]} activeOpacity={0.8} onPress={handleGeneratePress} disabled={loading}>
+                <LinearGradient colors={mode==='workouts'?(energyMode==='low'?['#06B6D4','#0891B2']:energyMode==='beast'?['#EF4444','#B91C1C']:(isPremiumCustom?[safePremiumColor,safePremiumColor+'CC']:colors.gradientPrimary)):(isPremiumCustom?[safePremiumColor,safePremiumColor+'CC']:colors.gradientPrimary)} style={s.genGrad} start={{x:0,y:0}} end={{x:1,y:1}}>
+                  {loading ? <ActivityIndicator size="small" color="#fff" /> : <View style={{flexDirection:'row',alignItems:'center',gap:6}}><Sparkles size={16} color="#fff" /><Text style={s.genText}>{t('planner.generateWeekly', 'Generar Plan Semanal')}</Text></View>}
+                </LinearGradient>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={[s.genBtn,{shadowColor:safePremiumColor}]} activeOpacity={0.8} onPress={handleGeneratePress} disabled={loading}>
-              <LinearGradient colors={mode==='workouts'?(energyMode==='low'?['#06B6D4','#0891B2']:energyMode==='beast'?['#EF4444','#B91C1C']:(isPremiumCustom?[safePremiumColor,safePremiumColor+'CC']:colors.gradientPrimary)):(isPremiumCustom?[safePremiumColor,safePremiumColor+'CC']:colors.gradientPrimary)} style={s.genGrad} start={{x:0,y:0}} end={{x:1,y:1}}>
-                {loading ? <ActivityIndicator size="small" color="#fff" /> : <View style={{flexDirection:'row',alignItems:'center',gap:6}}><Sparkles size={16} color="#fff" /><Text style={s.genText}>{t('planner.generate')}</Text></View>}
-              </LinearGradient>
-            </TouchableOpacity>
           </View>
 
           <View style={s.toggleContainer}>
@@ -484,8 +500,8 @@ export default function PlannerScreen() {
 
 const s = StyleSheet.create({
   safe:        { flex: 1 },
-  header:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.base, paddingTop: Spacing.lg, paddingBottom: Spacing.md },
-  headerTextWrap: { flex: 1 },
+  header:      { paddingHorizontal: Spacing.base, paddingTop: Spacing.lg, paddingBottom: Spacing.md },
+  headerTextWrap: { flex: 1, paddingRight: 12 },
   title:       { fontSize: 28, fontWeight: '900', letterSpacing: -0.5 },
   subtitle:    { fontSize: 14, marginTop: 2, fontWeight: '500' },
   genBtn:      { borderRadius: Radius.full, overflow: 'hidden', elevation: 4, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },

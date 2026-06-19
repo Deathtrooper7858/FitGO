@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
-import { Reminder } from '../store/types';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
+import { Reminder } from '../store/types';
 
 // We use lazy loading for expo-notifications to avoid the "remote notifications removed" error
 // that crashes Expo Go on Android even when only using local notifications.
@@ -165,23 +165,49 @@ export async function scheduleReminder(reminder: Reminder): Promise<string | und
       ? CHANNELS.nutrition.id
       : CHANNELS.reminders.id;
 
-    const id = await notif.scheduleNotificationAsync({
-      content: {
-        title: reminder.title,
-        body: reminder.body,
-        sound: true,
-        channelId,
-        color: '#7C5CFC',
-      },
-      trigger: {
-        type: 'daily',
-        hour,
-        minute,
-        channelId,
-      },
-    });
+    // If no specific days or all days are selected, trigger daily.
+    if (!reminder.days || reminder.days.length === 0 || reminder.days.length === 7) {
+      const id = await notif.scheduleNotificationAsync({
+        content: {
+          title: reminder.title,
+          body: reminder.body,
+          sound: true,
+          channelId,
+          color: '#7C5CFC',
+        },
+        trigger: {
+          hour,
+          minute,
+          repeats: true,
+        },
+      });
+      return id;
+    }
 
-    return id;
+    // Otherwise, schedule weekly triggers for each specific day
+    const ids: string[] = [];
+    for (const day of reminder.days) {
+      const expoWeekday = day + 1; // 0 (Sunday) -> 1, 6 (Saturday) -> 7
+      const id = await notif.scheduleNotificationAsync({
+        content: {
+          title: reminder.title,
+          body: reminder.body,
+          sound: true,
+          channelId,
+          color: '#7C5CFC',
+        },
+        trigger: {
+          weekday: expoWeekday,
+          hour,
+          minute,
+          repeats: true,
+        },
+      });
+      if (id) {
+        ids.push(id);
+      }
+    }
+    return ids.length > 0 ? ids.join(',') : undefined;
   } catch (e) {
     console.error('[Notifications] Schedule error:', e);
     return undefined;
@@ -193,7 +219,13 @@ export async function cancelReminder(notificationId: string) {
     const notif = getNotifications();
     if (notif._isMock) return;
     try {
-      await notif.cancelScheduledNotificationAsync(notificationId);
+      const ids = notificationId.split(',');
+      for (const id of ids) {
+        const trimmed = id.trim();
+        if (trimmed) {
+          await notif.cancelScheduledNotificationAsync(trimmed);
+        }
+      }
     } catch (e) {
       console.error('[Notifications] Cancel error:', e);
     }

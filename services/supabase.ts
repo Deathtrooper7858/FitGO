@@ -25,7 +25,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // ── Custom fetch with exponential backoff and circuit-breaker awareness ────
 // Prevents requests from hanging indefinitely and retries with backoff on failure.
 const MAX_RETRIES = 2;
-const BASE_TIMEOUT = 10_000;
+const BASE_TIMEOUT = 8_000;
 
 const fetchWithTimeout: typeof fetch = async (input, init) => {
   const attemptFetch = async (attempt: number): Promise<Response> => {
@@ -78,7 +78,7 @@ export const supabase = createClient(
       fetch: fetchWithTimeout,
       headers: {
         'Connection': 'keep-alive',
-        'Cache-Control': 'max-age=10',
+        'Cache-Control': 'max-age=30',
       },
     },
   }

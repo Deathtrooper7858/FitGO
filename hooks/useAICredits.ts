@@ -18,7 +18,7 @@ function getRewardedAd(): RewardedAd {
 }
 
 export function useAICredits() {
-  const { creditsLeft, consumeCredit, rechargeCredits, resetIfNewDay, isProUser, totalAdsWatched } = useAICreditsStore();
+  const { creditsLeft, consumeCredit, rechargeCredits, resetIfNewDay, totalAdsWatched } = useAICreditsStore();
   const { isPro: baseIsPro } = usePurchaseStore();
   const { profile } = useAuthStore();
   
@@ -32,7 +32,7 @@ export function useAICredits() {
   // Reset credits if it's a new day on mount
   useEffect(() => {
     resetIfNewDay();
-  }, []);
+  }, [resetIfNewDay]);
 
   // Pre-load rewarded ad
   useEffect(() => {

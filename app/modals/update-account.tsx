@@ -1,23 +1,36 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { supabase } from '../../services/supabase';
-import { useAuthStore } from '../../store';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../hooks/useTheme';
 import { Mail, Lock, Eye, EyeOff, ChevronLeft } from 'lucide-react-native';
+
+import { supabase } from '../../services/supabase';
+import { useAuthStore, useSettingsStore } from '../../store';
+import { useTheme } from '../../hooks/useTheme';
 import { CustomAlert, AlertType } from '../../components/CustomAlert';
+import { GlobalBackground } from '../../components/GlobalBackground';
 
 export default function UpdateAccountScreen() {
   const { profile } = useAuthStore();
+  const premiumColor = useSettingsStore((state) => state.premiumColor);
   const { t } = useTranslation();
   const colors = useTheme();
+
+  const safeColor = premiumColor === 'admin_glow' ? '#00F0FF' : premiumColor;
+  const isPremiumCustom = !!safeColor && (safeColor.startsWith('#') || premiumColor === 'admin_glow');
+  const accentGradient: [string, string] = premiumColor === 'admin_glow'
+    ? ['#00F0FF', '#7C5CFC']
+    : (isPremiumCustom
+      ? [safeColor!, safeColor + 'AA']
+      : colors.gradientPrimary as [string, string]);
 
   const [email, setEmail] = useState(profile?.email || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isEmailFocused, setIsEmailFocused] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
 
   const [alert, setAlert] = useState<{
     visible: boolean;
@@ -96,6 +109,7 @@ export default function UpdateAccountScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <GlobalBackground />
       <CustomAlert 
         visible={alert.visible}
         type={alert.type}
@@ -105,7 +119,7 @@ export default function UpdateAccountScreen() {
       />
 
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+      <View style={[styles.header, { borderBottomColor: colors.border + '30' }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <ChevronLeft color={colors.textPrimary} size={24} />
         </TouchableOpacity>
@@ -123,8 +137,15 @@ export default function UpdateAccountScreen() {
         {/* Email Input */}
         <View style={styles.inputGroup}>
           <Text style={[styles.label, { color: colors.textPrimary }]}>{t('auth.email', 'Correo Electrónico')}</Text>
-          <View style={[styles.inputContainer, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-            <Mail color={colors.textMuted} size={20} style={styles.icon} />
+          <View style={[
+            styles.inputContainer, 
+            { 
+              backgroundColor: colors.surfaceAlt, 
+              borderColor: isEmailFocused ? (safeColor || colors.primary) : colors.border,
+              borderWidth: isEmailFocused ? 1.5 : 1,
+            }
+          ]}>
+            <Mail color={isEmailFocused ? (safeColor || colors.primary) : colors.textMuted} size={20} style={styles.icon} />
             <TextInput
               style={[styles.input, { color: colors.textPrimary }]}
               value={email}
@@ -134,6 +155,8 @@ export default function UpdateAccountScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               editable={!loading}
+              onFocus={() => setIsEmailFocused(true)}
+              onBlur={() => setIsEmailFocused(false)}
             />
           </View>
         </View>
@@ -141,8 +164,15 @@ export default function UpdateAccountScreen() {
         {/* Password Input */}
         <View style={styles.inputGroup}>
           <Text style={[styles.label, { color: colors.textPrimary }]}>{t('auth.newPassword', 'Nueva Contraseña')}</Text>
-          <View style={[styles.inputContainer, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-            <Lock color={colors.textMuted} size={20} style={styles.icon} />
+          <View style={[
+            styles.inputContainer, 
+            { 
+              backgroundColor: colors.surfaceAlt, 
+              borderColor: isPasswordFocused ? (safeColor || colors.primary) : colors.border,
+              borderWidth: isPasswordFocused ? 1.5 : 1,
+            }
+          ]}>
+            <Lock color={isPasswordFocused ? (safeColor || colors.primary) : colors.textMuted} size={20} style={styles.icon} />
             <TextInput
               style={[styles.input, { color: colors.textPrimary }]}
               value={password}
@@ -151,12 +181,14 @@ export default function UpdateAccountScreen() {
               placeholderTextColor={colors.textMuted}
               secureTextEntry={!showPassword}
               editable={!loading}
+              onFocus={() => setIsPasswordFocused(true)}
+              onBlur={() => setIsPasswordFocused(false)}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
               {showPassword ? (
-                <EyeOff color={colors.textMuted} size={20} />
+                <EyeOff color={isPasswordFocused ? (safeColor || colors.primary) : colors.textMuted} size={20} />
               ) : (
-                <Eye color={colors.textMuted} size={20} />
+                <Eye color={isPasswordFocused ? (safeColor || colors.primary) : colors.textMuted} size={20} />
               )}
             </TouchableOpacity>
           </View>
@@ -167,7 +199,7 @@ export default function UpdateAccountScreen() {
           onPress={handleUpdate}
           disabled={loading}
         >
-          <LinearGradient colors={colors.gradientPrimary} style={styles.saveButtonGradient}>
+          <LinearGradient colors={accentGradient} style={styles.saveButtonGradient}>
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
