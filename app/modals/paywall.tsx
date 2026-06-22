@@ -1,52 +1,217 @@
-import React from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, Text, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  X, CheckCircle2, XCircle, Crown, Star, Zap,
-  BrainCircuit, Camera, FileText, Trophy, History,
-  ShieldOff, ChefHat, Mic, Activity, Infinity
+  X, Crown, Star,
+  BrainCircuit, Camera, Trophy, History,
+  ShieldOff, ChefHat, Mic, Activity, Infinity,
+  Zap, Clock, Gift
 } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../hooks/useTheme';
 import { usePurchaseStore } from '../../store';
-import { useTranslation } from 'react-i18next';
 import { Spacing, Radius } from '../../constants';
+import { useToastStore } from '../../store/toastStore';
+import { PurchaseConfirmModal } from '../../components/PurchaseConfirmModal';
+import { TrialConfirmModal } from '../../components/TrialConfirmModal';
 
 export default function PaywallModal() {
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [trialConfirmVisible, setTrialConfirmVisible] = useState(false);
   const colors = useTheme();
-  const { t } = useTranslation();
-  const { grantPro } = usePurchaseStore();
+  const { t, i18n } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const { 
+    offering, 
+    fetchOfferings, 
+    purchasePackage, 
+    restorePurchases, 
+    isLoading,
+    grantPro,
+    startTrial,
+    hasUsedTrial,
+    isTrialActive,
+    trialExpiresAt,
+    trialUsedAt,
+  } = usePurchaseStore();
+
+  useEffect(() => {
+    fetchOfferings();
+  }, [fetchOfferings]);
 
   const handleDismiss = () => router.back();
 
-  const handlePurchase = async () => {
-    await grantPro();
-    router.back();
+  // Find monthly package if available
+  const monthlyPackage = offering?.monthly;
+
+  const handlePurchase = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setConfirmVisible(true);
+  };
+
+  const handleConfirmedPurchase = async () => {
+    setConfirmVisible(false);
+    try {
+      if (monthlyPackage) {
+        await purchasePackage(monthlyPackage);
+      } else {
+        // Fallback for testing / admin bypass
+        await grantPro();
+      }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      useToastStore.getState().addNotification({
+        title: t('paywall.successTitle', '¡Suscripción Activa!'),
+        description: t('paywall.successDesc', '¡Bienvenido a FitGO Pro! Ya tienes acceso ilimitado.'),
+        iconType: 'emoji',
+        icon: '👑',
+        tier: 'success',
+      });
+      router.back();
+    } catch (err) {
+      console.warn('Purchase failed or was cancelled', err);
+    }
+  };
+
+  const handleTrial = () => {
+    if (hasUsedTrial()) return; // Guard: already used
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setTrialConfirmVisible(true);
+  };
+
+  const handleConfirmedTrial = async () => {
+    setTrialConfirmVisible(false);
+    try {
+      await startTrial();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      useToastStore.getState().addNotification({
+        title: t('paywall.trial.active', 'Trial active'),
+        description: t('paywall.trial.activeDesc', 'Your free trial is active. Enjoy all Pro features until it expires!'),
+        iconType: 'emoji',
+        icon: '🎁',
+        tier: 'success',
+      });
+      router.back();
+    } catch (err: any) {
+      if (err?.message === 'TRIAL_ALREADY_USED') {
+        useToastStore.getState().addNotification({
+          title: t('paywall.trial.alreadyUsed', 'Trial already used'),
+          description: t('paywall.trial.alreadyUsedDesc', "You've already used the free trial."),
+          iconType: 'emoji',
+          icon: '⚠️',
+          tier: 'warning',
+        });
+      } else {
+        console.warn('Trial start failed', err);
+      }
+    }
+  };
+
+  const handleRestore = async () => {
+    try {
+      await restorePurchases();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      useToastStore.getState().addNotification({
+        title: t('paywall.restoreTitle', 'Compras Restauradas'),
+        description: t('paywall.restoreDesc', 'Tu estado de FitGO Pro ha sido verificado con éxito.'),
+        iconType: 'emoji',
+        icon: '✅',
+        tier: 'success',
+      });
+      router.back();
+    } catch (err) {
+      console.warn("Restore failed", err);
+    }
   };
 
   const PRO_FEATURES: { icon: any; title: string; desc: string; badge?: string; badgeColor?: string }[] = [
-    { icon: BrainCircuit, title: 'Coach IA Ilimitado', desc: 'Nutriólogo, Entrenador y Médico IA sin restricciones — 24/7', badge: '∞ ILIMITADO', badgeColor: '#7C5CFC' },
-    { icon: ChefHat, title: 'Recetas IA Personalizadas', desc: '200+ recetas adaptadas a tu dieta y metas, nuevas cada semana', badge: '200+', badgeColor: '#10B981' },
-    { icon: Camera, title: 'Análisis Corporal con Fotos', desc: 'La IA analiza tu grasa, músculo y progreso a través de fotos', badge: 'EXCLUSIVO', badgeColor: '#F59E0B' },
-    { icon: BrainCircuit, title: 'Planificador Nutricional IA', desc: 'Tu menú semanal personalizado generado en segundos', badge: 'IA', badgeColor: '#7C5CFC' },
-    { icon: Activity, title: 'Directorio Muscular Completo', desc: '500+ ejercicios con animaciones y técnica correcta', badge: '500+', badgeColor: '#EF4444' },
-    { icon: FileText, title: 'Lista de Compras en PDF', desc: 'Exporta y comparte tu lista de la semana automáticamente', badge: 'AUTO', badgeColor: '#3B82F6' },
-    { icon: Trophy, title: 'Ligas Élite y Retos', desc: 'Compite con la comunidad global y gana badges exclusivos', badge: 'ÉLITE', badgeColor: '#F59E0B' },
-    { icon: History, title: 'Historial Ilimitado', desc: 'Revisa todo tu progreso desde el primer día sin límites', badge: 'ILIMITADO', badgeColor: '#10B981' },
-    { icon: Mic, title: 'Voz al Coach IA', desc: 'Habla directamente con tu coach, sin teclear nada', badge: 'VIP', badgeColor: '#8B5CF6' },
-    { icon: ShieldOff, title: 'Cero Publicidad', desc: 'Experiencia 100% limpia sin interrupciones ni videos', badge: 'PREMIUM', badgeColor: '#7C5CFC' },
-    { icon: Activity, title: 'Sync Apple Health / Google Fit', badge: 'INTEGRADO', badgeColor: '#3B82F6', desc: 'Pasos y calorías quemadas sincronizados automáticamente' },
-    { icon: Zap, title: 'Macros Personalizables', desc: 'Ajusta tus macros manualmente si eres un experto en nutrición', badge: 'AVANZADO', badgeColor: '#F59E0B' },
+    { icon: BrainCircuit, title: t('paywall.features.coachTitle'), desc: t('paywall.features.coachDesc'), badge: t('paywall.features.coachBadge'), badgeColor: '#7C5CFC' },
+    { icon: ChefHat, title: t('paywall.features.plannerTitle'), desc: t('paywall.features.plannerDesc'), badge: t('paywall.features.plannerBadge'), badgeColor: '#10B981' },
+    { icon: Camera, title: t('paywall.features.scannerTitle'), desc: t('paywall.features.scannerDesc'), badge: t('paywall.features.scannerBadge'), badgeColor: '#F59E0B' },
+    { icon: Mic, title: t('paywall.features.voiceTitle'), desc: t('paywall.features.voiceDesc'), badge: t('paywall.features.voiceBadge'), badgeColor: '#3B82F6' },
+    { icon: Activity, title: t('paywall.features.directoryTitle'), desc: t('paywall.features.directoryDesc'), badge: t('paywall.features.directoryBadge'), badgeColor: '#EF4444' },
+    { icon: Star, title: t('paywall.features.colorsTitle'), desc: t('paywall.features.colorsDesc'), badge: t('paywall.features.colorsBadge'), badgeColor: '#F59E0B' },
+    { icon: Trophy, title: t('paywall.features.leaguesTitle'), desc: t('paywall.features.leaguesDesc'), badge: t('paywall.features.leaguesBadge'), badgeColor: '#8B5CF6' },
+    { icon: History, title: t('paywall.features.historyTitle'), desc: t('paywall.features.historyDesc'), badge: t('paywall.features.historyBadge'), badgeColor: '#10B981' },
+    { icon: ShieldOff, title: t('paywall.features.adsTitle'), desc: t('paywall.features.adsDesc'), badge: t('paywall.features.adsBadge'), badgeColor: '#7C5CFC' },
   ];
 
   const COMPARISON_ROWS = [
-    { feature: 'Coach IA', free: '5 / día', pro: 'Ilimitado' },
-    { feature: 'Recetas IA', free: 'Bloqueado', pro: '200+' },
-    { feature: 'Análisis de Fotos', free: 'Bloqueado', pro: 'Incluido' },
-    { feature: 'Publicidad', free: 'Anuncios + Videos', pro: 'Sin anuncios' },
-    { feature: 'Historial', free: '30 días', pro: 'Ilimitado' },
-    { feature: 'Directorio Muscular', free: 'Básico', pro: 'Completo' },
+    { feature: t('paywall.rows.coach'), free: t('paywall.rows.coachFree'), pro: t('paywall.rows.coachPro') },
+    { feature: t('paywall.rows.scanner'), free: t('paywall.rows.scannerFree'), pro: t('paywall.rows.scannerPro') },
+    { feature: t('paywall.rows.planner'), free: t('paywall.rows.plannerFree'), pro: t('paywall.rows.plannerPro') },
+    { feature: t('paywall.rows.voice'), free: t('paywall.rows.voiceFree'), pro: t('paywall.rows.voicePro') },
+    { feature: t('paywall.rows.directory'), free: t('paywall.rows.directoryFree'), pro: t('paywall.rows.directoryPro') },
+    { feature: t('paywall.rows.history'), free: t('paywall.rows.historyFree'), pro: t('paywall.rows.historyPro') },
+    { feature: t('paywall.rows.colors'), free: t('paywall.rows.colorsFree'), pro: t('paywall.rows.colorsPro') },
+    { feature: t('paywall.rows.ads'), free: t('paywall.rows.adsFree'), pro: t('paywall.rows.adsPro') },
   ];
+
+  const formatPrice = (usdAmount: number, lang: string) => {
+    const normalizedLang = lang.toLowerCase();
+    const baseLang = normalizedLang.split('-')[0];
+    
+    // Check if the locale specifies Spain or if it is a European country language
+    if (normalizedLang === 'es-es' || ['de', 'fr', 'it'].includes(baseLang)) {
+      return `${usdAmount.toFixed(2).replace('.', ',')} €`;
+    }
+    
+    switch (baseLang) {
+      case 'es':
+        return `US$ ${usdAmount.toFixed(2).replace('.', ',')}`;
+      case 'pt':
+        // Convert to Brazilian Real (R$) using approximate exchange rate (approx 5.0x)
+        return `R$ ${(usdAmount * 5).toFixed(2).replace('.', ',')}`;
+      case 'ru':
+        // Convert to Russian Ruble (₽) using approximate exchange rate (approx 90x)
+        return `${Math.round(usdAmount * 90)} ₽`;
+      default:
+        return `$${usdAmount.toFixed(2)}`;
+    }
+  };
+
+  const getMonthSuffix = (lang: string) => {
+    const baseLang = lang.toLowerCase().split('-')[0];
+    switch (baseLang) {
+      case 'es': return ' / mes';
+      case 'pt': return ' / mês';
+      case 'ru': return ' / мес';
+      case 'de': return ' / Monat';
+      case 'fr': return ' / mois';
+      case 'it': return ' / mese';
+      default: return ' / month';
+    }
+  };
+
+  const lang = i18n.language || 'en';
+  let displayPrice = formatPrice(4.99, lang);
+  let displayOldPrice = formatPrice(9.99, lang);
+
+  if (monthlyPackage) {
+    const rcPrice = monthlyPackage.product.price;
+    const currencyCode = monthlyPackage.product.currencyCode;
+    try {
+      const formatter = new Intl.NumberFormat(lang === 'es' ? 'es-ES' : lang, {
+        style: 'currency',
+        currency: currencyCode,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      if (rcPrice > 7) {
+        displayOldPrice = monthlyPackage.product.priceString;
+        displayPrice = formatter.format(rcPrice * (4.99 / 9.99));
+      } else {
+        displayPrice = monthlyPackage.product.priceString;
+        displayOldPrice = formatter.format(rcPrice * (9.99 / 4.99));
+      }
+    } catch {
+      displayPrice = formatPrice(4.99, lang);
+      displayOldPrice = formatPrice(9.99, lang);
+    }
+  }
+
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
@@ -64,27 +229,19 @@ export default function PaywallModal() {
             <Crown size={40} color="#FFB800" />
           </View>
           <Text style={[s.heroTitle, { color: colors.textPrimary }]}>
-            Desbloquea <Text style={{ color: colors.primary }}>FitGO Pro</Text>
+            {t('paywall.title').split('FitGO Pro')[0]}<Text style={{ color: colors.primary }}>FitGO Pro</Text>{t('paywall.title').split('FitGO Pro')[1] || ''}
           </Text>
           <Text style={[s.heroSub, { color: colors.textSecondary }]}>
-            Tu coach personal de IA. Sin límites. Sin excusas.
+            {t('paywall.subtitle')}
           </Text>
-
-          {/* Social proof */}
-          <View style={[s.socialProof, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={s.stars}>⭐⭐⭐⭐⭐</Text>
-            <Text style={[s.socialText, { color: colors.textSecondary }]}>
-              +2,400 usuarios Pro activos
-            </Text>
-          </View>
 
           {/* Tags */}
           <View style={s.tagRow}>
             {[
-              { icon: Infinity, label: 'IA Ilimitada' },
-              { icon: ShieldOff, label: 'Sin Ads' },
-              { icon: Crown, label: 'Pro Élite' },
-              { icon: Star, label: 'Exclusivo' },
+              { icon: Infinity, label: t('paywall.features.coachBadge') },
+              { icon: ShieldOff, label: t('paywall.features.adsBadge') },
+              { icon: Crown, label: t('paywall.pro') },
+              { icon: Star, label: t('paywall.features.colorsBadge') },
             ].map(({ icon: Icon, label }, i) => (
               <View key={i} style={[s.tag, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '30' }]}>
                 <Icon size={11} color={colors.primary} />
@@ -96,7 +253,7 @@ export default function PaywallModal() {
 
         {/* Features List */}
         <View style={[s.featuresSection, { borderColor: colors.border }]}>
-          <Text style={[s.sectionLabel, { color: colors.textPrimary }]}>¿Qué incluye Pro?</Text>
+          <Text style={[s.sectionLabel, { color: colors.textPrimary }]}>{t('paywall.featuresTitle')}</Text>
           {PRO_FEATURES.map((feat, i) => {
             const Icon = feat.icon;
             return (
@@ -125,11 +282,11 @@ export default function PaywallModal() {
 
         {/* Comparison Table */}
         <View style={[s.tableWrap, { borderColor: colors.border }]}>
-          <Text style={[s.sectionLabel, { color: colors.textPrimary }]}>Free vs Pro</Text>
+          <Text style={[s.sectionLabel, { color: colors.textPrimary }]}>{t('paywall.vsTitle')}</Text>
           <View style={[s.tableHeaderRow, { backgroundColor: colors.primary + '10' }]}>
             <View style={s.tableFeatureCol} />
-            <View style={s.tableValueCol}><Text style={[s.colLabelFree, { color: colors.textMuted }]}>Gratis</Text></View>
-            <View style={[s.tableValueCol, { backgroundColor: colors.primary + '10' }]}><Text style={s.colLabelPro}>PRO</Text></View>
+            <View style={s.tableValueCol}><Text style={[s.colLabelFree, { color: colors.textMuted }]}>{t('paywall.free')}</Text></View>
+            <View style={[s.tableValueCol, { backgroundColor: colors.primary + '10' }]}><Text style={s.colLabelPro}>{t('paywall.pro')}</Text></View>
           </View>
           {COMPARISON_ROWS.map((row, i) => (
             <View
@@ -149,44 +306,142 @@ export default function PaywallModal() {
           ))}
         </View>
 
+        {/* Trial Card */}
+        {!isTrialActive && !trialUsedAt && (
+          <TouchableOpacity
+            style={[s.trialCard, { borderColor: '#10B981', backgroundColor: colors.surface }]}
+            onPress={handleTrial}
+            activeOpacity={0.85}
+          >
+            <LinearGradient colors={['#10B98112', 'transparent']} style={StyleSheet.absoluteFillObject} />
+            <View style={s.trialBadgeRow}>
+              <View style={[s.trialBadge, { backgroundColor: '#10B98120', borderColor: '#10B98140' }]}>
+                <Gift size={11} color="#10B981" />
+                <Text style={[s.trialBadgeText, { color: '#10B981' }]}>{t('paywall.trial.badge')}</Text>
+              </View>
+            </View>
+            <View style={s.trialContent}>
+              <View style={[s.trialIconWrap, { backgroundColor: '#10B98120' }]}>
+                <Zap size={22} color="#10B981" fill="#10B981" />
+              </View>
+              <View style={s.trialTexts}>
+                <Text style={[s.trialTitle, { color: colors.textPrimary }]}>{t('paywall.trial.title')}</Text>
+                <Text style={[s.trialSub, { color: colors.textSecondary }]}>{t('paywall.trial.subtitle')}</Text>
+                <View style={s.trialExpireRow}>
+                  <Clock size={11} color={colors.textMuted} />
+                  <Text style={[s.trialExpire, { color: colors.textMuted }]}>{t('paywall.trial.expires')}</Text>
+                </View>
+              </View>
+            </View>
+            <LinearGradient colors={['#10B981', '#059669']} style={s.trialCta} start={{x:0,y:0}} end={{x:1,y:0}}>
+              <Text style={s.trialCtaText}>{t('paywall.trial.cta')}</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
+
+        {/* Trial already used notice */}
+        {!!trialUsedAt && !isTrialActive && (
+          <View style={[s.trialUsedCard, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+            <Clock size={16} color={colors.textMuted} />
+            <View style={{ flex: 1 }}>
+              <Text style={[s.trialUsedTitle, { color: colors.textPrimary }]}>{t('paywall.trial.alreadyUsed')}</Text>
+              <Text style={[s.trialUsedDesc, { color: colors.textSecondary }]}>{t('paywall.trial.alreadyUsedDesc')}</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Trial active notice */}
+        {isTrialActive && (
+          <View style={[s.trialActiveCard, { borderColor: '#10B981', backgroundColor: '#10B98110' }]}>
+            <Zap size={16} color="#10B981" fill="#10B981" />
+            <View style={{ flex: 1 }}>
+              <Text style={[s.trialUsedTitle, { color: '#10B981' }]}>{t('paywall.trial.active')}</Text>
+              <Text style={[s.trialUsedDesc, { color: colors.textSecondary }]}>
+                {trialExpiresAt ? `${t('paywall.trial.activeDesc')} (${new Date(trialExpiresAt).toLocaleDateString()})` : t('paywall.trial.activeDesc')}
+              </Text>
+            </View>
+          </View>
+        )}
+
         {/* Price Card */}
         <View style={[s.priceCard, { borderColor: colors.primary, backgroundColor: colors.surface }]}>
           <LinearGradient colors={[colors.primary + '12', 'transparent']} style={StyleSheet.absoluteFillObject} />
           <View style={s.bestSellerPill}>
             <Star size={11} color="#000" fill="#000" />
-            <Text style={s.bestSellerText}>MÁS POPULAR</Text>
+            <Text style={s.bestSellerText}>{t('paywall.mostPopular')}</Text>
           </View>
           <View style={s.priceCardTop}>
-            <Text style={[s.planName, { color: colors.textPrimary }]}>Acceso Total Pro</Text>
+            <Text style={[s.planName, { color: colors.textPrimary }]}>{t('paywall.accessTotal')}</Text>
             <LinearGradient colors={colors.gradientPrimary} style={s.ofertaBadge} start={{x:0,y:0}} end={{x:1,y:0}}>
-              <Text style={s.ofertaText}>OFERTA LANZAMIENTO</Text>
+              <Text style={s.ofertaText}>{t('paywall.launchOffer')}</Text>
             </LinearGradient>
           </View>
           <View style={s.priceRow}>
-            <Text style={[s.oldPrice, { color: colors.textMuted }]}>$25.000</Text>
+            <Text style={[s.oldPrice, { color: colors.textMuted }]}>{displayOldPrice}</Text>
             <View style={s.newPriceRow}>
-              <Text style={[s.price, { color: colors.primary }]}>$11.800</Text>
-              <Text style={[s.priceSuffix, { color: colors.textSecondary }]}> COP / mes</Text>
+              <Text style={[s.price, { color: colors.primary }]}>{displayPrice}</Text>
+              <Text style={[s.priceSuffix, { color: colors.textSecondary }]}>{getMonthSuffix(lang)}</Text>
             </View>
           </View>
-          <Text style={[s.cancelText, { color: colors.textMuted }]}>Cancela en cualquier momento · Sin compromisos</Text>
+          <Text style={[s.cancelText, { color: colors.textMuted }]}>{t('paywall.cancelAnytime')}</Text>
         </View>
 
-        <View style={{ height: 120 }} />
+        <View style={{ height: 160 }} />
       </ScrollView>
 
       {/* Sticky CTA Footer */}
-      <View style={[s.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
-        <TouchableOpacity style={s.ctaBtn} onPress={handlePurchase} activeOpacity={0.85}>
-          <LinearGradient colors={colors.gradientPrimary} style={s.ctaGrad} start={{x:0,y:0}} end={{x:1,y:1}}>
-            <Crown size={18} color="#fff" />
-            <Text style={s.ctaText}>Desbloquear Ahora · $11.800/mes</Text>
+      <View style={[
+        s.footer, 
+        { 
+          backgroundColor: colors.background, 
+          borderTopColor: colors.border,
+          paddingBottom: insets.bottom > 0 ? insets.bottom + 12 : (Platform.OS === 'ios' ? 44 : 36)
+        }
+      ]}>
+        <TouchableOpacity 
+          style={[s.ctaBtn, isLoading && { opacity: 0.7 }]} 
+          onPress={handlePurchase} 
+          disabled={isLoading}
+          activeOpacity={0.85}
+        >
+          <LinearGradient colors={colors.gradientPrimary} style={s.ctaGrad} start={{x:0,y:0}} end={{x:1,y:0.5}}>
+            {isLoading ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <>
+                <Crown size={18} color="#fff" />
+                <Text style={s.ctaText}>{t('paywall.unlockNow')} · {displayPrice}</Text>
+              </>
+            )}
           </LinearGradient>
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleDismiss} style={{ marginTop: 12 }}>
-          <Text style={[s.skipText, { color: colors.textMuted }]}>Continuar con el plan gratuito</Text>
-        </TouchableOpacity>
+        
+        <View style={{ flexDirection: 'row', gap: 16, marginTop: 12 }}>
+          <TouchableOpacity onPress={handleRestore} disabled={isLoading}>
+            <Text style={[s.skipText, { color: colors.textMuted }]}>{t('paywall.restore')}</Text>
+          </TouchableOpacity>
+          <Text style={{ color: colors.textMuted }}>·</Text>
+          <TouchableOpacity onPress={handleDismiss} disabled={isLoading}>
+            <Text style={[s.skipText, { color: colors.textMuted }]}>{t('paywall.continueFree')}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
+
+      <PurchaseConfirmModal
+        visible={confirmVisible}
+        price={displayPrice}
+        oldPrice={displayOldPrice}
+        monthSuffix={getMonthSuffix(lang)}
+        isLoading={isLoading}
+        onConfirm={handleConfirmedPurchase}
+        onCancel={() => setConfirmVisible(false)}
+      />
+      <TrialConfirmModal
+        visible={trialConfirmVisible}
+        isLoading={isLoading}
+        onConfirm={handleConfirmedTrial}
+        onCancel={() => setTrialConfirmVisible(false)}
+      />
     </View>
   );
 }
@@ -249,9 +504,85 @@ const s = StyleSheet.create({
   cancelText: { fontSize: 13, fontWeight: '500' },
 
   // Footer
-  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: Spacing.xl, borderTopWidth: 1, paddingBottom: 32, alignItems: 'center' },
+  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: Spacing.xl, borderTopWidth: 1, paddingBottom: Platform.OS === 'ios' ? 44 : 36, alignItems: 'center' },
+
   ctaBtn: { width: '100%', borderRadius: Radius.full, overflow: 'hidden', elevation: 8, shadowColor: '#7C5CFC', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12 },
   ctaGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 18 },
   ctaText: { color: '#fff', fontSize: 16, fontWeight: '900', letterSpacing: 0.3 },
   skipText: { fontSize: 13, fontWeight: '600' },
+
+  // Trial card
+  trialCard: {
+    borderWidth: 1.5,
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
+    marginBottom: 16,
+    position: 'relative',
+  },
+  trialBadgeRow: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    marginBottom: 4,
+  },
+  trialBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  trialBadgeText: { fontSize: 9, fontWeight: '900', letterSpacing: 0.5 },
+  trialContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  trialIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  trialTexts: { flex: 1 },
+  trialTitle: { fontSize: 16, fontWeight: '900', marginBottom: 2 },
+  trialSub: { fontSize: 12, fontWeight: '500', marginBottom: 6 },
+  trialExpireRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  trialExpire: { fontSize: 11, fontWeight: '600' },
+  trialCta: {
+    margin: 12,
+    marginTop: 0,
+    borderRadius: 14,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  trialCtaText: { color: '#fff', fontSize: 14, fontWeight: '900', letterSpacing: 0.3 },
+
+  // Trial used / active cards
+  trialUsedCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    borderWidth: 1,
+    borderRadius: Radius.xl,
+    padding: 14,
+    marginBottom: 16,
+  },
+  trialActiveCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    borderWidth: 1.5,
+    borderRadius: Radius.xl,
+    padding: 14,
+    marginBottom: 16,
+  },
+  trialUsedTitle: { fontSize: 14, fontWeight: '800', marginBottom: 2 },
+  trialUsedDesc: { fontSize: 12, fontWeight: '500', lineHeight: 18 },
 });

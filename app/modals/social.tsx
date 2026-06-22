@@ -9,6 +9,7 @@ import { Search, Trophy, Users, Sword, Plus, ArrowLeft, Bot, Check, X, MessageSq
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import { getNameStyle } from '../../utils/styles';
 import { useTheme } from '../../hooks/useTheme';
 import { Radius, Spacing } from '../../constants';
@@ -100,6 +101,7 @@ export default function SocialModal() {
 
   const [newPostContent, setNewPostContent] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedAudio, setSelectedAudio] = useState<string | null>(null);
   const [isPosting, setIsPosting] = useState(false);
 
   const [aiLoading, setAiLoading] = useState(false);
@@ -194,6 +196,19 @@ export default function SocialModal() {
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.8 });
     if (!result.canceled) {
       setSelectedImage(result.assets[0].uri);
+      setSelectedAudio(null);
+    }
+  };
+
+  const handleSelectAudio = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({ type: 'audio/*', copyToCacheDirectory: true });
+      if (!result.canceled && result.assets?.[0]) {
+        setSelectedAudio(result.assets[0].uri);
+        setSelectedImage(null);
+      }
+    } catch (e) {
+      console.warn('Error audio:', e);
     }
   };
 
@@ -218,15 +233,19 @@ export default function SocialModal() {
   };
 
   const handleCreatePost = async () => {
-    if (!newPostContent.trim() && !selectedImage || !profile?.id) return;
+    if (!newPostContent.trim() && !selectedImage && !selectedAudio || !profile?.id) return;
     setIsPosting(true);
     let imageUrl = null;
+    let audioUrl = null;
     if (selectedImage) {
       imageUrl = await socialStore.uploadPostImage(selectedImage);
+    } else if (selectedAudio) {
+      audioUrl = await socialStore.uploadPostAudio(selectedAudio);
     }
-    await socialStore.createPost({ user_id: profile.id, content: newPostContent, image_url: imageUrl || undefined });
+    await socialStore.createPost({ user_id: profile.id, content: newPostContent, image_url: imageUrl || undefined, audio_url: audioUrl || undefined });
     setNewPostContent('');
     setSelectedImage(null);
+    setSelectedAudio(null);
     setIsPosting(false);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
   };
@@ -700,6 +719,7 @@ export default function SocialModal() {
               premiumColor={premiumColor ?? undefined}
               newPostContent={newPostContent}
               selectedImage={selectedImage}
+              selectedAudio={selectedAudio}
               isPosting={isPosting}
               expandedComments={expandedComments}
               postComments={postComments}
@@ -708,7 +728,8 @@ export default function SocialModal() {
               editingCommentText={editingCommentText}
               onNewPostContentChange={setNewPostContent}
               onSelectImage={handleImageModal}
-              onRemoveImage={() => setSelectedImage(null)}
+              onSelectAudio={handleSelectAudio}
+              onRemoveImage={() => { setSelectedImage(null); setSelectedAudio(null); }}
               onCreatePost={handleCreatePost}
               onLike={handleLike}
               onToggleComments={toggleComments}

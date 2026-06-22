@@ -47,9 +47,11 @@ interface PlannerState {
   weeklyAnalysis: string | null;
   /** Optional warning for risky plans */
   warning: string | null;
+  /** The user ID this cached plan belongs to */
+  userId: string | null;
 
-  setMealPlans: (plans: Record<string, PlanItem[]>, weekStart: string, warning?: string) => void;
-  setWorkoutPlans: (plans: Record<string, WorkoutRoutine>, weekStart: string, warning?: string) => void;
+  setMealPlans: (plans: Record<string, PlanItem[]>, weekStart: string, warning?: string, userId?: string) => void;
+  setWorkoutPlans: (plans: Record<string, WorkoutRoutine>, weekStart: string, warning?: string, userId?: string) => void;
   setWeeklyAnalysis: (text: string) => void;
   setShoppingList: (list: ShoppingListGroup[]) => void;
   clearPlans: () => void;
@@ -58,7 +60,6 @@ interface PlannerState {
   swapMeal: (day: string, mealIndex: number, newMeal: PlanItem) => void;
 }
 
-// ─── Store ────────────────────────────────────────────────────────────────────
 export const usePlannerStore = create<PlannerState>()(
   persist(
     (set) => ({
@@ -68,12 +69,13 @@ export const usePlannerStore = create<PlannerState>()(
       shoppingList:   null,
       weeklyAnalysis: null,
       warning:        null,
+      userId:         null,
 
-      setMealPlans: (plans, weekStart, warning) =>
-        set({ mealPlans: plans, weekStart, warning: warning || null }),
+      setMealPlans: (plans, weekStart, warning, userId) =>
+        set({ mealPlans: plans, weekStart, warning: warning || null, userId: userId || null }),
 
-      setWorkoutPlans: (plans, weekStart, warning) =>
-        set({ workoutPlans: plans, weekStart, warning: warning || null }),
+      setWorkoutPlans: (plans, weekStart, warning, userId) =>
+        set({ workoutPlans: plans, weekStart, warning: warning || null, userId: userId || null }),
 
       setWeeklyAnalysis: (text) =>
         set({ weeklyAnalysis: text }),
@@ -83,7 +85,7 @@ export const usePlannerStore = create<PlannerState>()(
 
       /** Called when the user generates a fresh plan or when the week changes. */
       clearPlans: () =>
-        set({ mealPlans: {}, workoutPlans: {}, weekStart: null, shoppingList: null, weeklyAnalysis: null, warning: null }),
+        set({ mealPlans: {}, workoutPlans: {}, weekStart: null, shoppingList: null, weeklyAnalysis: null, warning: null, userId: null }),
         
       clearMealPlans: () => set({ mealPlans: {}, shoppingList: null }),
       clearWorkoutPlans: () => set({ workoutPlans: {} }),

@@ -28,7 +28,7 @@ export interface WidgetRendererProps {
 export function renderDashboardWidget(props: WidgetRendererProps) {
   const {
     id, index, isEditing, canMoveLeft, canMoveRight, onMoveLeft, onMoveRight, onLongPress,
-    currentWeight, sleepHours, calories, bodyFat, totalsData, isPro, colors, t, router,
+    currentWeight, sleepHours, calories, bodyFat, isPro, colors, t, router,
     hasPremiumAdAccess, handlePremiumFeaturePress
   } = props;
 
@@ -81,19 +81,7 @@ export function renderDashboardWidget(props: WidgetRendererProps) {
           onPress={() => router.push('/modals/body-measurements')}
         />
       );
-    case 'macros':
-      return (
-        <WidgetCard key={id} {...commonProps} title={t('dashboard.macrosWidget')} icon="🥗"
-          customContent={
-            <View style={[w.content, { gap: 4 }]}>
-              <Text style={{ fontSize: 13, color: colors.protein }}>P: {totalsData.protein}g</Text>
-              <Text style={{ fontSize: 13, color: colors.carbs }}>C: {totalsData.carbs}g</Text>
-              <Text style={{ fontSize: 13, color: colors.fat }}>G: {totalsData.fat}g</Text>
-            </View>
-          }
-          onPress={() => router.push('/(tabs)/tracker')}
-        />
-      );
+    // 'macros' widget has been removed permanently
     case 'measurements':
       return (
         <WidgetCard key={id} {...commonProps} title={t('dashboard.measurementsWidget')} icon="📏"

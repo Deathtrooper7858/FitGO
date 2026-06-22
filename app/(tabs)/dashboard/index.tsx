@@ -307,16 +307,18 @@ export default function DashboardScreen() {
 
   const [widgetsOrder, setWidgetsOrder] = useState(() => {
     if (profile?.widgetsOrder) {
-      const missing = DEFAULT_WIDGETS.filter(w => !profile.widgetsOrder!.includes(w));
-      return [...profile.widgetsOrder, ...missing];
+      const saved = profile.widgetsOrder.filter((w: string) => w !== 'macros');
+      const missing = DEFAULT_WIDGETS.filter(w => !saved.includes(w));
+      return [...saved, ...missing];
     }
     return DEFAULT_WIDGETS;
   });
 
   useEffect(() => {
     if (profile?.widgetsOrder) {
-      const missing = DEFAULT_WIDGETS.filter(w => !profile.widgetsOrder!.includes(w));
-      setWidgetsOrder([...profile.widgetsOrder, ...missing]);
+      const saved = profile.widgetsOrder.filter((w: string) => w !== 'macros');
+      const missing = DEFAULT_WIDGETS.filter(w => !saved.includes(w));
+      setWidgetsOrder([...saved, ...missing]);
     }
   }, [profile?.widgetsOrder]);
 

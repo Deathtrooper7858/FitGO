@@ -176,9 +176,9 @@ export async function scheduleReminder(reminder: Reminder): Promise<string | und
           color: '#7C5CFC',
         },
         trigger: {
+          type: 'daily',
           hour,
           minute,
-          repeats: true,
         },
       });
       return id;
@@ -197,10 +197,10 @@ export async function scheduleReminder(reminder: Reminder): Promise<string | und
           color: '#7C5CFC',
         },
         trigger: {
+          type: 'weekly',
           weekday: expoWeekday,
           hour,
           minute,
-          repeats: true,
         },
       });
       if (id) {

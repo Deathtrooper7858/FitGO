@@ -6,6 +6,7 @@ import { Trophy, Heart, MessageSquare, Trash2 } from 'lucide-react-native';
 import { Radius, Spacing } from '../../../constants';
 import { GlassCard } from '../../../components/GlassCard';
 import { ALL_BADGES } from '../../../hooks/useAchievements';
+import { PostAudioPlayer } from './PostCard';
 
 interface SocialProfileTabProps {
   profile: any;
@@ -128,6 +129,9 @@ export default function SocialProfileTab({
               <Text style={[s.postContent, { color: colors.textPrimary }]}>{post.content}</Text>
               {post.image_url && (
                 <Image source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
+              )}
+              {post.audio_url && (
+                <PostAudioPlayer audioUrl={post.audio_url} colors={colors} />
               )}
             </View>
             <View style={[s.postFooter, { borderTopColor: colors.border + '33' }]}>

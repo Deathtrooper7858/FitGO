@@ -7,11 +7,11 @@ enabled = true
 port = 54321
 schemas = ["public", "graphql_public"]
 extra_search_path = ["public"]
-max_request_body_size = 2097152  # 2MB
+# max_request_body_size = 2097152  # 2MB
 
 # ─── Database Settings ─────────────────────────────────────────────────────
 [db]
-migration_directory = "supabase/migrations"
+# migration_directory = "supabase/migrations"
 
 # ─── Auth Settings ─────────────────────────────────────────────────────────
 [auth]
@@ -34,3 +34,10 @@ enabled = true
 verify_jwt = true
 import_map = "./functions/edamam-proxy/deno.json"
 entrypoint = "./functions/edamam-proxy/index.ts"
+
+[functions.revenuecat-webhook]
+enabled = true
+verify_jwt = false
+import_map = "./functions/revenuecat-webhook/deno.json"
+entrypoint = "./functions/revenuecat-webhook/index.ts"
+

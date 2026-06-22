@@ -2,8 +2,56 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation } from 'react-native';
 import { Image } from 'expo-image';
 import { Heart, MessageSquare, Share2, Trash2 } from 'lucide-react-native';
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { Radius, Spacing } from '../../../constants';
 import { GlassCard } from '../../../components/GlassCard';
+
+export function PostAudioPlayer({ audioUrl, colors }: { audioUrl: string; colors: any }) {
+  const player = useAudioPlayer(audioUrl);
+  const status = useAudioPlayerStatus(player);
+
+  const formatTime = (seconds: number) => {
+    const s = Math.floor(seconds);
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  };
+
+  const progress = status.duration > 0 ? status.currentTime / status.duration : 0;
+
+  const handleToggle = () => {
+    if (status.playing) player.pause();
+    else {
+      if (status.didJustFinish) player.seekTo(0);
+      player.play();
+    }
+  };
+
+  return (
+    <View style={audioStyles.container}>
+      <TouchableOpacity onPress={handleToggle} style={[audioStyles.playBtn, { backgroundColor: colors.primary + '30' }]}>
+        <Text style={{ color: colors.primary, fontWeight: 'bold' }}>
+          {status.playing ? '⏸' : '▶️'}
+        </Text>
+      </TouchableOpacity>
+      <View style={audioStyles.progressWrapper}>
+        <View style={[audioStyles.progressTrack, { backgroundColor: colors.border }]}>
+          <View style={[audioStyles.progressFill, { width: `${progress * 100}%`, backgroundColor: colors.primary }]} />
+        </View>
+        <Text style={[audioStyles.timeText, { color: colors.textMuted }]}>
+          {status.playing ? formatTime(status.currentTime) : status.duration > 0 ? formatTime(status.duration) : '0:00'}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+const audioStyles = StyleSheet.create({
+  container: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, paddingHorizontal: 12, backgroundColor: 'rgba(0,0,0,0.03)', borderRadius: 12, marginBottom: 12 },
+  playBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  progressWrapper: { flex: 1, gap: 4 },
+  progressTrack: { height: 4, borderRadius: 2, overflow: 'hidden' },
+  progressFill: { height: 4, borderRadius: 2 },
+  timeText: { fontSize: 11 },
+});
 
 interface PostCardProps {
   post: any;
@@ -53,6 +101,9 @@ export function PostCard({
         <Text style={[s.postContent, { color: colors.textPrimary }]}>{post.content}</Text>
         {post.image_url && (
           <Image source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
+        )}
+        {post.audio_url && (
+          <PostAudioPlayer audioUrl={post.audio_url} colors={colors} />
         )}
       </View>
       <View style={[s.postFooter, { borderTopColor: colors.border + '33' }]}>

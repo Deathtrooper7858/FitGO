@@ -122,6 +122,10 @@ export default function PlannerScreen() {
       if (!profile?.id) { setInitialLoading(false); return; }
       const currentWeekStart = getStartOfWeek(new Date());
       try {
+        // Always clear if the cached plan belongs to a different user
+        if (usePlannerStore.getState().userId !== profile.id) {
+          clearPlans();
+        }
         const { data: mData } = await supabase.from('meal_plans').select('*, meal_plan_items(*)').eq('user_id', profile.id).order('created_at',{ascending:false}).limit(1).maybeSingle();
         if (mData && mData.week_start === currentWeekStart && mData.meal_plan_items?.length > 0) {
           const grouped: Record<string, PlanItem[]> = {};
@@ -129,15 +133,22 @@ export default function PlannerScreen() {
             if (!grouped[item.day_of_week]) grouped[item.day_of_week] = [];
             grouped[item.day_of_week].push({ meal: item.meal, name: item.name, calories: item.calories, protein: item.protein, carbs: item.carbs, fat: item.fat });
           });
-          setMealPlans(grouped, currentWeekStart);
-        } else if (!(Object.keys(mealPlans).length > 0 && weekStart === currentWeekStart)) clearPlans();
+          setMealPlans(grouped, currentWeekStart, undefined, profile.id);
+        } else {
+          // No Supabase data for this user this week — always clear to prevent
+          // showing stale/shared data (e.g. after a fresh Pro purchase)
+          clearMealPlans();
+        }
 
         const { data: wData } = await supabase.from('workout_plans').select('*, workout_plan_items(*)').eq('user_id', profile.id).order('created_at',{ascending:false}).limit(1).maybeSingle();
         if (wData && wData.week_start === currentWeekStart && wData.workout_plan_items?.length > 0) {
           const grouped: Record<string, WorkoutRoutine> = {};
           wData.workout_plan_items.forEach((item: any) => { grouped[item.day_of_week] = { name: item.routine_name, exercises: item.exercises || [] }; });
-          setWorkoutPlans(grouped, currentWeekStart);
-        } else if (!(Object.keys(workoutPlans).length > 0 && weekStart === currentWeekStart) && weekStart !== currentWeekStart) clearPlans();
+          setWorkoutPlans(grouped, currentWeekStart, undefined, profile.id);
+        } else {
+          // No Supabase data for this user this week — always clear
+          clearWorkoutPlans();
+        }
       } catch (_err) { console.error('[Planner] Load error:', _err); }
       finally { setInitialLoading(false); }
     })();
@@ -186,7 +197,7 @@ export default function PlannerScreen() {
       if (mode === 'nutrition') {
         const parsedPlan = await generateDailyMealPlan({ targetCalories: profile.targetCalories||2000, macros: profile.macros||{protein:150,carbs:250,fat:65}, goal: profile.goal||'maintain', availableFoods: profile.availableFoods, preferences: profile.preferences, age: profile.age, weight: profile.weight, height: profile.height, sex: profile.sex, activityLevel: profile.activityLevel, dietaryRestrictions: profile.dietaryRestrictions, medicalConditions: profile.medicalConditions, medicationsSupplements: profile.medicationsSupplements, tdee: profile.tdee }, language, day);
         const newPlans = { ...mealPlans, [day]: parsedPlan[day] || [] };
-        setMealPlans(newPlans, currentWeekStart);
+        setMealPlans(newPlans, currentWeekStart, undefined, profile.id);
         const { data: existing } = await supabase.from('meal_plans').select('id').eq('user_id',profile.id).eq('week_start',currentWeekStart).maybeSingle();
         let planId = existing?.id;
         if (!planId) { const { data: inserted } = await supabase.from('meal_plans').insert({user_id:profile.id,title:t('planner.weekPlan','Weekly AI Plan'),week_start:currentWeekStart}).select().single(); planId = inserted?.id; }
@@ -194,7 +205,7 @@ export default function PlannerScreen() {
       } else {
         const parsedPlan = await generateDailyWorkoutPlan({ goal: profile.goal||'maintain', activityLevel: profile.activityLevel, age: profile.age, weight: profile.weight, height: profile.height, sex: profile.sex, medicalConditions: profile.medicalConditions, medicationsSupplements: profile.medicationsSupplements, homeWorkout: isHomeWorkout, homeEquipment }, language, day);
         const newPlans = { ...workoutPlans, [day]: parsedPlan[day] || { name: 'Descanso', exercises: [] } };
-        setWorkoutPlans(newPlans, currentWeekStart);
+        setWorkoutPlans(newPlans, currentWeekStart, undefined, profile.id);
         const { data: existing } = await supabase.from('workout_plans').select('id').eq('user_id',profile.id).eq('week_start',currentWeekStart).maybeSingle();
         let planId = existing?.id;
         if (!planId) { const { data: inserted } = await supabase.from('workout_plans').insert({user_id:profile.id,title:t('planner.workoutsTab','Weekly AI Workout'),week_start:currentWeekStart}).select().single(); planId = inserted?.id; }
@@ -215,7 +226,7 @@ export default function PlannerScreen() {
         clearMealPlans();
         const parsedPlan = await generateMealPlan({ targetCalories: profile.targetCalories||2000, macros: profile.macros||{protein:150,carbs:250,fat:65}, goal: profile.goal||'maintain', availableFoods: profile.availableFoods, preferences: profile.preferences, age: profile.age, weight: profile.weight, height: profile.height, sex: profile.sex, activityLevel: profile.activityLevel, dietaryRestrictions: profile.dietaryRestrictions, medicalConditions: profile.medicalConditions, medicationsSupplements: profile.medicationsSupplements, tdee: profile.tdee }, language);
         const { warning: planWarning, ...plansOnly } = parsedPlan as any;
-        setMealPlans(plansOnly, currentWeekStart, planWarning);
+        setMealPlans(plansOnly, currentWeekStart, planWarning, profile.id);
         await supabase.from('meal_plans').delete().eq('user_id',profile.id);
         const { data: planData } = await supabase.from('meal_plans').insert({user_id:profile.id,title:t('planner.weekPlan','Weekly AI Plan'),week_start:currentWeekStart}).select().single();
         if (planData) { const items = DAYS.flatMap(d=>((plansOnly as Record<string,any[]>)[d]||[]).map((m:any)=>({plan_id:planData.id,day_of_week:d,meal:m.meal,name:m.name,calories:m.calories,protein:m.protein??0,carbs:m.carbs??0,fat:m.fat??0}))); if(items.length) await supabase.from('meal_plan_items').insert(items); }
@@ -231,7 +242,7 @@ export default function PlannerScreen() {
         }
         const parsedPlan = await generateWorkoutPlan({ goal: profile.goal, activityLevel: profile.activityLevel, age: profile.age, weight: profile.weight, height: profile.height, sex: profile.sex, medicalConditions: profile.medicalConditions, medicationsSupplements: profile.medicationsSupplements, homeWorkout: isHomeWorkout, homeEquipment, intensityMode: options?.intensityMode||'standard', focusMuscles, energyMode }, language);
         const { warning: planWarning, ...plansOnly } = parsedPlan as any;
-        setWorkoutPlans(plansOnly, currentWeekStart, planWarning);
+        setWorkoutPlans(plansOnly, currentWeekStart, planWarning, profile.id);
         await supabase.from('workout_plans').delete().eq('user_id',profile.id);
         const { data: planData } = await supabase.from('workout_plans').insert({user_id:profile.id,title:t('planner.workoutsTab','Weekly AI Workout'),week_start:currentWeekStart}).select().single();
         if (planData) { await supabase.from('workout_plan_items').insert(DAYS.map(d=>({plan_id:planData.id,day_of_week:d,routine_name:(plansOnly as Record<string,any>)[d]?.name||t('planner.restDay','Rest Day'),exercises:(plansOnly as Record<string,any>)[d]?.exercises||[]}))); }
@@ -301,7 +312,7 @@ export default function PlannerScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     [newEx[index], newEx[t2]] = [newEx[t2], newEx[index]];
     const updated = {...workout, exercises: newEx};
-    setWorkoutPlans({...workoutPlans, [activeDay]: updated}, weekStart||getStartOfWeek(new Date()), warning||undefined);
+    setWorkoutPlans({...workoutPlans, [activeDay]: updated}, weekStart||getStartOfWeek(new Date()), warning||undefined, profile?.id);
     if (profile?.id) supabase.from('workout_plan_items').update({exercises:newEx}).eq('user_id',profile.id).eq('day_of_week',activeDay).then();
   };
 
@@ -324,14 +335,14 @@ export default function PlannerScreen() {
     if (type !== 'bodyweight') {
       const newEx = workout.exercises.map((ex:any) => ({...ex, sets: type==='up' ? ex.sets+1 : Math.max(1, ex.sets-1)}));
       const updated = {...workout, exercises: newEx};
-      setWorkoutPlans({...workoutPlans, [activeDay]: updated}, weekStart||getStartOfWeek(new Date()), warning||undefined);
+      setWorkoutPlans({...workoutPlans, [activeDay]: updated}, weekStart||getStartOfWeek(new Date()), warning||undefined, profile?.id);
       if (profile?.id) supabase.from('workout_plan_items').update({exercises:newEx}).eq('user_id',profile.id).eq('day_of_week',activeDay).then();
       return;
     }
     setIsAdjustingBW(true);
     try {
       const adjusted = await adjustWorkoutToBodyweight(workout.name, workout.exercises, language);
-      setWorkoutPlans({...workoutPlans, [activeDay]: {...workout, exercises: adjusted.exercises, name: adjusted.name}}, weekStart||getStartOfWeek(new Date()), warning||undefined);
+      setWorkoutPlans({...workoutPlans, [activeDay]: {...workout, exercises: adjusted.exercises, name: adjusted.name}}, weekStart||getStartOfWeek(new Date()), warning||undefined, profile?.id);
       if (profile?.id) supabase.from('workout_plan_items').update({exercises: adjusted.exercises, routine_name: adjusted.name}).eq('user_id',profile.id).eq('day_of_week',activeDay).then();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) { showAlert('error', t('common.error'), 'No se pudo ajustar el entrenamiento.'); }

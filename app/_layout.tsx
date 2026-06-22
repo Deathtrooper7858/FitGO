@@ -15,6 +15,7 @@ import { useSettingsStore } from '../store/settingsStore';
 import { usePurchaseStore } from '../store/purchaseStore';
 import { useSocialStore } from '../store/socialStore';
 import { useAICreditsStore } from '../store/aiCreditsStore';
+import { usePlannerStore } from '../store/plannerStore';
 
 import i18n from '../i18n';
 import { useTheme } from '../hooks/useTheme';
@@ -113,7 +114,7 @@ function NavigationGuard() {
 
 export default function RootLayout() {
   const { setSession, setLoading, fetchProfile, clearAuth, isLoading } = useAuthStore();
-  const { initialize: initPurchases } = usePurchaseStore();
+  const { initialize: initPurchases, syncTrialState, checkAndRevokeExpiredTrial } = usePurchaseStore();
   const { language, theme, setPremiumColor } = useSettingsStore();
   const colors = useTheme();
   const { t } = useTranslation();
@@ -191,13 +192,18 @@ export default function RootLayout() {
               fetchProfile(newSession.user.id),
               initPurchases(newSession.user.id)
             ]);
+            // Sync trial state and check/revoke if expired
+            await syncTrialState();
+            await checkAndRevokeExpiredTrial();
           } else {
-            // Si no estamos bloqueando (tenemos caché), hidratamos datos en segundo plano
-            // para que la UI cargue instantáneamente
+            // If not blocking (have cache), hydrate data in the background
             Promise.all([
               fetchProfile(newSession.user.id),
               initPurchases(newSession.user.id)
-            ]).catch(err => console.error('Background fetch error:', err));
+            ]).then(() => {
+              // Background trial check
+              syncTrialState().then(() => checkAndRevokeExpiredTrial());
+            }).catch(err => console.error('Background fetch error:', err));
           }
           // Resetear créditos de IA si es un nuevo día (se llama siempre al login)
           useAICreditsStore.getState().resetIfNewDay();
@@ -214,6 +220,8 @@ export default function RootLayout() {
           useSocialStore.getState().reset();
           // Resetear estado Pro de créditos IA para evitar que se herede entre sesiones
           useAICreditsStore.getState().setIsProUser(false);
+          // Limpiar el cache del planificador del usuario anterior
+          usePlannerStore.getState().clearPlans();
         }
       } catch (err) {
         console.error('Error in auth state change:', err);
@@ -235,7 +243,7 @@ export default function RootLayout() {
     });
 
     return () => subscription.unsubscribe();
-  }, [clearAuth, fetchProfile, initPurchases, setLoading, setPremiumColor, setSession]);
+  }, [clearAuth, fetchProfile, initPurchases, setLoading, setPremiumColor, setSession, syncTrialState, checkAndRevokeExpiredTrial]);
 
   // ── IMPORTANT: Keep the splash screen or a blank view while loading
   //    to prevent "flashes" of the wrong screens.

@@ -10,6 +10,12 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, Send, Image as ImageIcon, Mic, Play, Pause, X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
+import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
+import {
+  useAudioRecorder, useAudioPlayer, useAudioPlayerStatus,
+  requestRecordingPermissionsAsync, setAudioModeAsync, RecordingPresets
+} from 'expo-audio';
 import { useTheme } from '../../hooks/useTheme';
 import { useKeyboardNavBar } from '../../hooks/useKeyboardNavBar';
 import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
@@ -18,13 +24,10 @@ import { useAuthStore, useSocialStore, useSettingsStore } from '../../store';
 import { DirectMessage } from '../../store/socialStore';
 import { getNameStyle } from '../../utils/styles';
 import { supabase } from '../../services/supabase';
-import * as ImagePicker from 'expo-image-picker';
-import {
-  useAudioRecorder, useAudioPlayer, useAudioPlayerStatus,
-  requestRecordingPermissionsAsync, setAudioModeAsync, RecordingPresets
-} from 'expo-audio';
 import { AvatarViewerModal } from '../../components/AvatarViewerModal';
-import { PhotoSourceModal } from '../../components/PhotoSourceModal';
+import { MediaPickerModal } from '../../components/MediaPickerModal';
+import { VideoPlayerView } from '../../components/social/VideoPlayerView';
+
 
 // Darkens a hex color by a given ratio (0–1)
 const darkenHex = (hex: string, amount = 0.22): string => {
@@ -220,20 +223,45 @@ export default function ChatModal() {
     await socialStore.sendDirectMessage(profile.id, friendId, content);
   };
 
-  // ── Image Picker ─────────────────────────────────────────────────────────────
+  // ── Media Picker ─────────────────────────────────────────────────────────────
   const handlePickFromCamera = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') { Alert.alert('Permiso requerido', 'Se necesita acceso a la cámara.'); return; }
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8 });
-    if (!result.canceled && result.assets[0]) setPreviewImage(result.assets[0].uri);
+    if (!result.canceled && result.assets?.[0]) setPreviewImage(result.assets[0].uri);
+  };
+
+  const handleRecordVideo = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') { Alert.alert('Permiso requerido', 'Se necesita acceso a la cámara.'); return; }
+    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['videos'], quality: 0.8 });
+    if (!result.canceled && result.assets?.[0]) setPreviewImage(result.assets[0].uri);
   };
 
   const handlePickFromGallery = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') { Alert.alert('Permiso requerido', 'Se necesita acceso a la galería.'); return; }
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
-    if (!result.canceled && result.assets[0]) setPreviewImage(result.assets[0].uri);
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images', 'videos'], quality: 0.8 });
+    if (!result.canceled && result.assets?.[0]) setPreviewImage(result.assets[0].uri);
   };
+
+  const handlePickAudio = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({ type: 'audio/*', copyToCacheDirectory: true });
+      if (!result.canceled && result.assets?.[0]) {
+        const uri = result.assets[0].uri;
+        if (!profile?.id) return;
+        optimisticSend('', undefined, uri);
+        const uploadedUrl = await socialStore.uploadChatAudio(uri);
+        if (uploadedUrl) {
+          await socialStore.sendDirectMessage(profile.id, friendId, '', undefined, uploadedUrl);
+        }
+      }
+    } catch (e) {
+      console.warn('Error audio:', e);
+    }
+  };
+
 
   const handleSendPreviewImage = async () => {
     if (!previewImage || !profile?.id) return;
@@ -241,14 +269,18 @@ export default function ChatModal() {
     setPreviewImage(null);
     setPreviewIsSending(true);
     optimisticSend('', uri); // show local preview immediately
-    const url = await socialStore.uploadChatImage(uri);
+    const isVideo = uri.toLowerCase().includes('.mp4') || uri.toLowerCase().includes('.mov') || uri.includes('video');
+    const url = isVideo 
+      ? await socialStore.uploadChatVideo(uri)
+      : await socialStore.uploadChatImage(uri);
     if (url) {
       await socialStore.sendDirectMessage(profile.id, friendId, '', url, undefined);
     } else {
-      Alert.alert('Error', 'No se pudo subir la imagen.');
+      Alert.alert('Error', 'No se pudo subir el archivo.');
     }
     setPreviewIsSending(false);
   };
+
 
   // ── Voice Recording ──────────────────────────────────────────────────────────
   const handleStartRecording = async () => {
@@ -355,17 +387,27 @@ export default function ChatModal() {
                   ]}
                 >
                   {msg.image_url ? (
-                    <TouchableOpacity
-                      style={[styles.imageWrapper, isMine ? { borderBottomRightRadius: 4 } : { borderBottomLeftRadius: 4 }]}
-                      onPress={() => setPreviewImage(msg.image_url!)}
-                      activeOpacity={0.9}
-                    >
-                      <Image source={{ uri: msg.image_url }} style={styles.chatImage} contentFit="cover" />
-                      <Text style={[styles.messageTime, styles.imageTime]}>
-                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </Text>
-                    </TouchableOpacity>
+                    msg.image_url.toLowerCase().includes('.mp4') || msg.image_url.toLowerCase().includes('.mov') || msg.image_url.includes('chat_media/17') || msg.image_url.includes('video') ? (
+                      <View style={[styles.imageWrapper, { width: 220, height: 180 }, isMine ? { borderBottomRightRadius: 4 } : { borderBottomLeftRadius: 4 }]}>
+                        <VideoPlayerView videoUrl={msg.image_url} style={{ width: 220, height: 180 }} />
+                        <Text style={[styles.messageTime, styles.imageTime]}>
+                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </Text>
+                      </View>
+                    ) : (
+                      <TouchableOpacity
+                        style={[styles.imageWrapper, isMine ? { borderBottomRightRadius: 4 } : { borderBottomLeftRadius: 4 }]}
+                        onPress={() => setPreviewImage(msg.image_url!)}
+                        activeOpacity={0.9}
+                      >
+                        <Image source={{ uri: msg.image_url }} style={styles.chatImage} contentFit="cover" />
+                        <Text style={[styles.messageTime, styles.imageTime]}>
+                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </Text>
+                      </TouchableOpacity>
+                    )
                   ) : msg.audio_url ? (
+
                     <LinearGradient
                       colors={isMine ? [colors.primary, darkenHex(colors.primary)] : [bubbleBg, bubbleBg]}
                       start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
@@ -473,13 +515,18 @@ export default function ChatModal() {
         onClose={() => setAvatarVisible(false)}
       />
 
-      {/* Beautiful Photo Source Modal */}
-      <PhotoSourceModal
+      {/* Beautiful Media Source Modal */}
+      <MediaPickerModal
         visible={photoSourceVisible}
-        onSelectCamera={handlePickFromCamera}
-        onSelectGallery={handlePickFromGallery}
         onClose={() => setPhotoSourceVisible(false)}
+        onTakePhoto={handlePickFromCamera}
+        onRecordVideo={handleRecordVideo}
+        onSelectLibrary={handlePickFromGallery}
+        onSelectAudio={handlePickAudio}
+        title={t('chat.sendMediaTitle', 'Enviar Multimedia')}
+        subtitle={t('chat.sendMediaSub', 'Elige una foto, graba un video o selecciona desde la galería')}
       />
+
 
       {/* Image Preview Modal */}
       <Modal visible={!!previewImage} transparent animationType="fade" statusBarTranslucent onRequestClose={() => setPreviewImage(null)}>
@@ -489,8 +536,13 @@ export default function ChatModal() {
               <X size={20} color="#fff" />
             </TouchableOpacity>
             {previewImage && (
-              <Image source={{ uri: previewImage }} style={styles.previewImage} contentFit="contain" />
+              previewImage.toLowerCase().includes('.mp4') || previewImage.toLowerCase().includes('.mov') || previewImage.includes('video') ? (
+                <VideoPlayerView videoUrl={previewImage} style={{ width: 320, height: 380, borderRadius: 16 }} />
+              ) : (
+                <Image source={{ uri: previewImage }} style={styles.previewImage} contentFit="contain" />
+              )
             )}
+
             {/* Only show send button for newly picked images (not received ones) */}
             {previewImage && !messages.some(m => m.image_url === previewImage) && (
               <TouchableOpacity style={[styles.previewSendBtn, { backgroundColor: colors.primary }]} onPress={handleSendPreviewImage}>

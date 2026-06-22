@@ -1,26 +1,34 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Share, Modal } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
+import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Search, Trophy, Users, Plus, Check, X, MessageSquare, Heart, Share2, Send, Trash2, Camera, Pencil } from 'lucide-react-native';
+import { Search, Trophy, Users, Plus, Check, X, MessageSquare, Heart, Share2, Send, Trash2, Camera, Pencil, Filter } from 'lucide-react-native';
 import * as LucideIcons from 'lucide-react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import { getNameStyle } from '../../utils/styles';
 import { useTheme } from '../../hooks/useTheme';
 import { Radius, Spacing } from '../../constants';
 import { GlassCard } from '../../components/GlassCard';
 import { useSocialStore, useAuthStore, useSettingsStore, usePurchaseStore } from '../../store';
-import { ImagePickerModal } from '../../components/ImagePickerModal';
 import { ImageViewerModal } from '../../components/ImageViewerModal';
 import { CustomAlert } from '../../components/CustomAlert';
 import { AvatarViewerModal } from '../../components/AvatarViewerModal';
 import { supabase } from '../../services/supabase';
 import { useAchievements, ALL_BADGES } from '../../hooks/useAchievements';
+import { parsePostContent, formatPostContent } from '../../utils/language';
+import { MediaPickerModal } from '../MediaPickerModal';
+import { CommentList } from './modal/CommentList';
+import { PostCard, PostAudioPlayer } from './modal/PostCard';
+import { VideoPlayerView } from './VideoPlayerView';
+
+
 
 type TabType = 'you' | 'feed' | 'friends' | 'ranking' | 'challenges';
 
@@ -221,7 +229,18 @@ export default function FitGOSocial({
   
   const [newPostContent, setNewPostContent] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  const [selectedAudio, setSelectedAudio] = useState<string | null>(null);
   const [isPosting, setIsPosting] = useState(false);
+
+
+  // Feed Filter States
+  const [feedSearchQuery, setFeedSearchQuery] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('recent');
+  const [contentFilter, setContentFilter] = useState<string>('all');
+  const [showFilters, setShowFilters] = useState(false);
+
 
   // Comments state
   const [expandedComments, setExpandedComments] = useState<string | null>(null);
@@ -281,7 +300,7 @@ export default function FitGOSocial({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expandedComments]);
 
-    const handleCamera = async () => {
+  const handleCamera = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
       alert(t('social.cameraPermission', 'Se necesita permiso para acceder a la cámara.'));
@@ -289,16 +308,36 @@ export default function FitGOSocial({
     }
 
     const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
       allowsEditing: false,
-      quality: 0.2,
+      quality: 0.8,
     });
 
-    if (!result.canceled) {
+    if (!result.canceled && result.assets?.[0]) {
       setSelectedImage(result.assets[0].uri);
+      setSelectedVideo(null);
     }
   };
 
-    const handleGallery = async () => {
+  const handleRecordVideo = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      alert(t('social.cameraPermission', 'Se necesita permiso para acceder a la cámara.'));
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['videos'],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets?.[0]) {
+      setSelectedVideo(result.assets[0].uri);
+      setSelectedImage(null);
+    }
+  };
+
+  const handleGallery = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       alert(t('social.galleryPermission', 'Se necesita permiso para acceder a la galería.'));
@@ -306,16 +345,40 @@ export default function FitGOSocial({
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
+      mediaTypes: ['images', 'videos'],
       quality: 0.8,
     });
 
-    if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri);
+    if (!result.canceled && result.assets?.[0]) {
+      const asset = result.assets[0];
+      if (asset.type === 'video') {
+        setSelectedVideo(asset.uri);
+        setSelectedImage(null);
+        setSelectedAudio(null);
+      } else {
+        setSelectedImage(asset.uri);
+        setSelectedVideo(null);
+        setSelectedAudio(null);
+      }
     }
   };
+
+  const handleSelectAudio = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'audio/*',
+        copyToCacheDirectory: true,
+      });
+      if (!result.canceled && result.assets?.[0]) {
+        setSelectedAudio(result.assets[0].uri);
+        setSelectedImage(null);
+        setSelectedVideo(null);
+      }
+    } catch (error) {
+      console.warn('Error selecting audio:', error);
+    }
+  };
+
 
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) {
@@ -338,25 +401,32 @@ export default function FitGOSocial({
   }, [profile?.id, socialStore]);
 
   const handleCreatePost = useCallback(async () => {
-    if (!newPostContent.trim() && !selectedImage || !profile?.id) return;
+    if (!newPostContent.trim() && !selectedImage && !selectedVideo && !selectedAudio || !profile?.id) return;
     setIsPosting(true);
-    
     let imageUrl = null;
-    if (selectedImage) {
+    let audioUrl = null;
+    if (selectedVideo) {
+      imageUrl = await socialStore.uploadPostVideo(selectedVideo);
+    } else if (selectedImage) {
       imageUrl = await socialStore.uploadPostImage(selectedImage);
+    } else if (selectedAudio) {
+      audioUrl = await socialStore.uploadPostAudio(selectedAudio);
     }
 
     await socialStore.createPost({
       user_id: profile.id,
-      content: newPostContent,
+      content: formatPostContent(newPostContent),
       image_url: imageUrl || undefined,
+      audio_url: audioUrl || undefined,
     });
     
     setNewPostContent('');
     setSelectedImage(null);
+    setSelectedVideo(null);
+    setSelectedAudio(null);
     setIsPosting(false);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
-  }, [newPostContent, selectedImage, profile?.id, socialStore]);
+  }, [newPostContent, selectedImage, selectedVideo, selectedAudio, profile?.id, socialStore]);
 
   const handleLike = useCallback(async (postId: string, isLiked: boolean) => {
     if (!profile?.id) return;
@@ -420,6 +490,55 @@ export default function FitGOSocial({
     const updatedComments = await socialStore.fetchComments(postId);
     setPostComments(prev => ({ ...prev, [postId]: updatedComments }));
   };
+
+  const filteredAndSortedPosts = useMemo(() => {
+    let result = [...socialStore.posts];
+
+    // 1. Filter by search query
+    if (feedSearchQuery.trim()) {
+      const query = feedSearchQuery.toLowerCase();
+      result = result.filter(post => {
+        const { cleanContent } = parsePostContent(post.content);
+        const name = post.user_profile?.name?.toLowerCase() || '';
+        return cleanContent.toLowerCase().includes(query) || name.includes(query);
+      });
+    }
+
+    // 2. Filter by language
+    if (selectedLanguage !== 'all') {
+      const KNOWN_LANGS = ['es', 'en', 'pt', 'fr', 'de', 'it', 'ru'];
+      result = result.filter(post => {
+        const { language } = parsePostContent(post.content);
+        if (selectedLanguage === 'other') {
+          return !KNOWN_LANGS.includes(language);
+        }
+        return language === selectedLanguage;
+      });
+    }
+
+    // 3. Filter by content type
+    if (contentFilter === 'images') {
+      result = result.filter(post => !!post.image_url && !post.image_url.toLowerCase().includes('.mp4') && !post.image_url.toLowerCase().includes('.mov'));
+    } else if (contentFilter === 'text') {
+      result = result.filter(post => !post.image_url && !post.audio_url);
+    } else if (contentFilter === 'audio') {
+      result = result.filter(post => !!post.audio_url);
+    }
+
+    // 4. Sort
+    if (sortBy === 'recent') {
+      result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    } else if (sortBy === 'oldest') {
+      result.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    } else if (sortBy === 'popular') {
+      result.sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0));
+    } else if (sortBy === 'commented') {
+      result.sort((a, b) => (b.comments_count || 0) - (a.comments_count || 0));
+    }
+
+    return result;
+  }, [socialStore.posts, feedSearchQuery, selectedLanguage, contentFilter, sortBy]);
+
 
   const renderYou = () => {
     const acceptedFriends = socialStore.friends.filter(f => f.status === 'accepted');
@@ -623,11 +742,18 @@ export default function FitGOSocial({
                     <Trash2 size={16} color={colors.error} />
                   </TouchableOpacity>
                 </View>
-                <Text style={[s.postContent, { color: colors.textPrimary }]}>{post.content}</Text>
+                <Text style={[s.postContent, { color: colors.textPrimary }]}>{parsePostContent(post.content).cleanContent}</Text>
                 {post.image_url && (
-                  <TouchableOpacity onPress={() => setViewingImage(post.image_url!)} activeOpacity={0.8}>
-                    <Image source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
-                  </TouchableOpacity>
+                  post.image_url.toLowerCase().includes('.mp4') || post.image_url.toLowerCase().includes('.mov') || post.image_url.includes('posts/17') || post.image_url.includes('video') ? (
+                    <VideoPlayerView videoUrl={post.image_url} style={s.postImage} />
+                  ) : (
+                    <TouchableOpacity onPress={() => setViewingImage(post.image_url!)} activeOpacity={0.8}>
+                      <Image source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
+                    </TouchableOpacity>
+                  )
+                )}
+                {post.audio_url && (
+                  <PostAudioPlayer audioUrl={post.audio_url} colors={colors} />
                 )}
               </View>
               <View style={[s.postFooter, { borderTopColor: colors.border + '33' }]}>
@@ -684,33 +810,295 @@ export default function FitGOSocial({
         </View>
       )}
 
+      {selectedVideo && (
+        <View style={{ position: 'relative', marginBottom: 12 }}>
+          <VideoPlayerView videoUrl={selectedVideo} style={s.imagePreview} />
+          <TouchableOpacity 
+            style={s.removeImageBtn} 
+            onPress={() => setSelectedVideo(null)}
+          >
+            <X size={16} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      )}
+
       <View style={s.postActions}>
         <TouchableOpacity style={s.postTool} onPress={() => setIsImageModalVisible(true)}>
           <Camera size={18} color={colors.textSecondary} />
-          <Text style={{ color: colors.textSecondary, fontSize: 12, marginLeft: 4 }}>{t('social.feed.photo')}</Text>
+          <Text style={{ color: colors.textSecondary, fontSize: 12, marginLeft: 4 }}>{t('social.feed.photo', 'Multimedia')}</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[s.sendBtn, { backgroundColor: (newPostContent.trim() || selectedImage) ? colors.primary : colors.surfaceAlt }]}
+          style={[s.sendBtn, { backgroundColor: (newPostContent.trim() || selectedImage || selectedVideo) ? colors.primary : colors.surfaceAlt }]}
           onPress={handleCreatePost}
-          disabled={(!newPostContent.trim() && !selectedImage) || isPosting}
+          disabled={(!newPostContent.trim() && !selectedImage && !selectedVideo) || isPosting}
         >
+
           {isPosting ? <ActivityIndicator size="small" color="#fff" /> : <Send size={16} color="#fff" />}
         </TouchableOpacity>
       </View>
     </GlassCard>
-  ), [newPostContent, selectedImage, isPosting, profile?.avatarUrl, profile?.name, colors.primary, colors.surfaceAlt, colors.textPrimary, colors.textMuted, colors.textSecondary, handleCreatePost, t]);
+  ), [newPostContent, selectedImage, selectedVideo, isPosting, profile?.avatarUrl, profile?.name, colors.primary, colors.surfaceAlt, colors.textPrimary, colors.textMuted, colors.textSecondary, handleCreatePost, t]);
+
+  const feedHeader = useMemo(() => {
+    const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
+    const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
+    const isPremiumCustom = (isPro || profile?.isPro) && isValidHex;
+    const accentColor = isPremiumCustom ? safePremiumColor : colors.primary;
+
+    // Count active filters (excluding defaults)
+    const activeFilterCount = [
+      selectedLanguage !== 'all',
+      sortBy !== 'recent',
+      contentFilter !== 'all'
+    ].filter(Boolean).length;
+
+    const LANGUAGES = [
+      { key: 'all', flag: '🌐', label: t('common.all', 'Todos') },
+      { key: 'es', flag: '🇪🇸', label: 'Español' },
+      { key: 'en', flag: '🇺🇸', label: 'English' },
+      { key: 'pt', flag: '🇧🇷', label: 'Português' },
+      { key: 'fr', flag: '🇫🇷', label: 'Français' },
+      { key: 'de', flag: '🇩🇪', label: 'Deutsch' },
+      { key: 'it', flag: '🇮🇹', label: 'Italiano' },
+      { key: 'ru', flag: '🇷🇺', label: 'Русский' },
+    ];
+
+    const SORT_OPTIONS = [
+      { key: 'recent', icon: '⏱️', label: t('social.feed.sortRecent', 'Más recientes') },
+      { key: 'oldest', icon: '⏳', label: t('social.feed.sortOldest', 'Más antiguos') },
+      { key: 'popular', icon: '🔥', label: t('social.feed.sortPopular', 'Más populares') },
+      { key: 'commented', icon: '💬', label: t('social.feed.sortCommented', 'Más comentados') },
+    ];
+
+    const CONTENT_OPTIONS = [
+      { key: 'all', icon: '📱', label: t('common.all', 'Todos') },
+      { key: 'images', icon: '🖼️', label: t('social.feed.filterImages', 'Con imágenes') },
+      { key: 'text', icon: '📝', label: t('social.feed.filterText', 'Solo texto') },
+      { key: 'audio', icon: '🎵', label: t('social.feed.filterAudio', 'Con audio') },
+    ];
+
+    const renderChip = (item: { key: string; icon?: string; flag?: string; label: string }, isActive: boolean, onPress: () => void) => (
+      <TouchableOpacity
+        key={item.key}
+        onPress={onPress}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 5,
+          paddingHorizontal: 12,
+          paddingVertical: 7,
+          borderRadius: Radius.full,
+          backgroundColor: isActive ? accentColor : colors.surfaceAlt,
+          borderWidth: isActive ? 0 : 1,
+          borderColor: colors.border + '25',
+          shadowColor: isActive ? accentColor : 'transparent',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: isActive ? 0.35 : 0,
+          shadowRadius: 6,
+          elevation: isActive ? 4 : 0,
+        }}
+      >
+        {(item.flag || item.icon) && (
+          <Text style={{ fontSize: 13 }}>{item.flag || item.icon}</Text>
+        )}
+        <Text style={{ fontSize: 12, fontWeight: '700', color: isActive ? '#fff' : colors.textSecondary }}>
+          {item.label}
+        </Text>
+      </TouchableOpacity>
+    );
+
+    return (
+      <View style={{ marginBottom: 12 }}>
+        {postHeader}
+
+        {/* Search and Filters Toggle Bar */}
+        <View style={{ flexDirection: 'row', gap: 10, marginBottom: showFilters ? 10 : 12, alignItems: 'center' }}>
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surfaceAlt, borderRadius: Radius.full, paddingHorizontal: 14, height: 46, borderWidth: 1, borderColor: colors.border + '20' }}>
+            <Search size={17} color={colors.textSecondary} />
+            <TextInput
+              style={{ flex: 1, marginLeft: 8, color: colors.textPrimary, fontSize: 14, fontWeight: '500' }}
+              placeholder={t('social.feed.searchPostsPlaceholder', 'Buscar publicaciones...')}
+              placeholderTextColor={colors.textMuted}
+              value={feedSearchQuery}
+              onChangeText={setFeedSearchQuery}
+            />
+            {feedSearchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setFeedSearchQuery('')}>
+                <X size={16} color={colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <TouchableOpacity
+            style={{
+              width: 46,
+              height: 46,
+              borderRadius: 23,
+              backgroundColor: showFilters ? accentColor : colors.surfaceAlt,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: showFilters ? 0 : 1,
+              borderColor: colors.border + '25',
+              shadowColor: showFilters ? accentColor : 'transparent',
+              shadowOffset: { width: 0, height: 3 },
+              shadowOpacity: showFilters ? 0.4 : 0,
+              shadowRadius: 8,
+              elevation: showFilters ? 6 : 0,
+            }}
+            onPress={() => {
+              Haptics.selectionAsync();
+              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+              setShowFilters(!showFilters);
+            }}
+          >
+            <Filter size={18} color={showFilters ? '#fff' : colors.textSecondary} />
+            {activeFilterCount > 0 && !showFilters && (
+              <View style={{
+                position: 'absolute', top: -3, right: -3,
+                backgroundColor: accentColor, borderRadius: 10,
+                minWidth: 18, height: 18, alignItems: 'center', justifyContent: 'center',
+                paddingHorizontal: 4, borderWidth: 2, borderColor: colors.background,
+              }}>
+                <Text style={{ color: '#fff', fontSize: 10, fontWeight: '900' }}>{activeFilterCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Collapsible Filter Panel */}
+        {showFilters && (
+          <View style={{
+            backgroundColor: colors.surface,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: isPremiumCustom ? safePremiumColor + '30' : colors.border + '30',
+            marginBottom: 12,
+            overflow: 'hidden',
+          }}>
+            {/* Premium accent top border */}
+            {isPremiumCustom && (
+              <LinearGradient
+                colors={[safePremiumColor + 'CC', safePremiumColor + '00'] as [string, string]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{ height: 2, width: '100%' }}
+              />
+            )}
+
+            <View style={{ padding: 14, gap: 16 }}>
+              {/* Header row */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Filter size={14} color={accentColor} />
+                  <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textPrimary, letterSpacing: 0.2 }}>
+                    {t('social.feed.filters', 'Filtros')}
+                  </Text>
+                  {activeFilterCount > 0 && (
+                    <View style={{ backgroundColor: accentColor + '20', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 }}>
+                      <Text style={{ color: accentColor, fontSize: 11, fontWeight: '800' }}>
+                        {activeFilterCount} {t('social.feed.filtersActive', 'activos')}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                {activeFilterCount > 0 && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      Haptics.selectionAsync();
+                      setSelectedLanguage('all');
+                      setSortBy('recent');
+                      setContentFilter('all');
+                    }}
+                    style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, backgroundColor: colors.surfaceAlt }}
+                  >
+                    <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700' }}>
+                      {t('social.feed.clearFilters', 'Limpiar')}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Divider */}
+              <View style={{ height: 1, backgroundColor: colors.border + '25' }} />
+
+              {/* Language filter */}
+              <View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                  <Text style={{ fontSize: 11, fontWeight: '800', color: accentColor, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                    {t('social.feed.filterLanguage', 'Idioma')}
+                  </Text>
+                  {selectedLanguage !== 'all' && (
+                    <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: accentColor }} />
+                  )}
+                </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 2 }}>
+                  {LANGUAGES.map(item => renderChip(item, selectedLanguage === item.key, () => {
+                    Haptics.selectionAsync();
+                    setSelectedLanguage(item.key);
+                  }))}
+                </ScrollView>
+              </View>
+
+              {/* Divider */}
+              <View style={{ height: 1, backgroundColor: colors.border + '25' }} />
+
+              {/* Sort order filter */}
+              <View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                  <Text style={{ fontSize: 11, fontWeight: '800', color: accentColor, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                    {t('social.feed.sortBy', 'Ordenar por')}
+                  </Text>
+                  {sortBy !== 'recent' && (
+                    <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: accentColor }} />
+                  )}
+                </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 2 }}>
+                  {SORT_OPTIONS.map(item => renderChip({ ...item, flag: item.icon }, sortBy === item.key, () => {
+                    Haptics.selectionAsync();
+                    setSortBy(item.key);
+                  }))}
+                </ScrollView>
+              </View>
+
+              {/* Divider */}
+              <View style={{ height: 1, backgroundColor: colors.border + '25' }} />
+
+              {/* Content Type Filter */}
+              <View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                  <Text style={{ fontSize: 11, fontWeight: '800', color: accentColor, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                    {t('social.feed.filterContentType', 'Tipo de contenido')}
+                  </Text>
+                  {contentFilter !== 'all' && (
+                    <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: accentColor }} />
+                  )}
+                </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 2 }}>
+                  {CONTENT_OPTIONS.map(item => renderChip({ ...item, flag: item.icon }, contentFilter === item.key, () => {
+                    Haptics.selectionAsync();
+                    setContentFilter(item.key);
+                  }))}
+                </ScrollView>
+              </View>
+            </View>
+          </View>
+        )}
+      </View>
+    );
+  }, [postHeader, feedSearchQuery, showFilters, selectedLanguage, sortBy, contentFilter, colors, t, premiumColor, isPro, profile?.isPro]);
+
 
   const renderFeed = () => (
     <View style={s.tabContent}>
       <FlashList
-        data={socialStore.posts}
+        data={filteredAndSortedPosts}
         // @ts-ignore
         estimatedItemSize={200}
         keyExtractor={post => post.id}
         contentContainerStyle={{ paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        ListHeaderComponent={postHeader}
+        ListHeaderComponent={feedHeader}
         ListEmptyComponent={() => (
           socialStore.isPostsLoading && socialStore.posts.length === 0 ? (
             <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} />
@@ -747,12 +1135,17 @@ export default function FitGOSocial({
                   </TouchableOpacity>
                 )}
               </View>
-              <Text style={[s.postContent, { color: colors.textPrimary }]}>{post.content}</Text>
+              <Text style={[s.postContent, { color: colors.textPrimary }]}>{parsePostContent(post.content).cleanContent}</Text>
               {post.image_url && (
-                <TouchableOpacity onPress={() => setViewingImage(post.image_url!)} activeOpacity={0.8}>
-                  <Image source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
-                </TouchableOpacity>
+                post.image_url.toLowerCase().includes('.mp4') || post.image_url.toLowerCase().includes('.mov') || post.image_url.includes('posts/17') || post.image_url.includes('video') ? (
+                  <VideoPlayerView videoUrl={post.image_url} style={s.postImage} />
+                ) : (
+                  <TouchableOpacity onPress={() => setViewingImage(post.image_url!)} activeOpacity={0.8}>
+                    <Image source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
+                  </TouchableOpacity>
+                )
               )}
+
             </View>
             <View style={[s.postFooter, { borderTopColor: colors.border + '33' }]}>
               <TouchableOpacity style={s.postAction} onPress={() => handleLike(post.id, post.is_liked)}>
@@ -1302,12 +1695,14 @@ export default function FitGOSocial({
 
 
 
-      <ImagePickerModal
+      <MediaPickerModal
         visible={isImageModalVisible}
         onClose={() => setIsImageModalVisible(false)}
-        onCamera={handleCamera}
-        onGallery={handleGallery}
+        onTakePhoto={handleCamera}
+        onRecordVideo={handleRecordVideo}
+        onSelectLibrary={handleGallery}
       />
+
       
       <ImageViewerModal
         visible={!!viewingImage}

@@ -16,6 +16,7 @@ interface SocialFeedTabProps {
   premiumColor?: string;
   newPostContent: string;
   selectedImage: string | null;
+  selectedAudio?: string | null;
   isPosting: boolean;
   expandedComments: string | null;
   postComments: Record<string, any[]>;
@@ -24,6 +25,7 @@ interface SocialFeedTabProps {
   editingCommentText: string;
   onNewPostContentChange: (text: string) => void;
   onSelectImage: () => void;
+  onSelectAudio?: () => void;
   onRemoveImage: () => void;
   onCreatePost: () => void;
   onLike: (postId: string, isLiked: boolean) => void;
@@ -42,10 +44,10 @@ interface SocialFeedTabProps {
 
 export default function SocialFeedTab({
   profile, socialStore, colors, t, getNameStyle, premiumColor,
-  newPostContent, selectedImage, isPosting,
+  newPostContent, selectedImage, selectedAudio, isPosting,
   expandedComments, postComments, newComment,
   editingCommentId, editingCommentText,
-  onNewPostContentChange, onSelectImage, onRemoveImage, onCreatePost,
+  onNewPostContentChange, onSelectImage, onSelectAudio, onRemoveImage, onCreatePost,
   onLike, onToggleComments, onDelete, onShare, onUserPress,
   onNewCommentChange, onAddComment,
   onStartEditComment, onCancelCommentEdit, onSaveCommentEdit,
@@ -79,15 +81,23 @@ export default function SocialFeedTab({
             </TouchableOpacity>
           </View>
         )}
+        {selectedAudio && (
+          <View style={{ position: 'relative', marginBottom: 12, backgroundColor: colors.surfaceAlt, padding: 12, borderRadius: Radius.md, flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={{ color: colors.textPrimary, flex: 1 }}>🎵 Audio seleccionado</Text>
+            <TouchableOpacity onPress={onRemoveImage}>
+              <X size={18} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        )}
         <View style={s.postActions}>
           <TouchableOpacity style={s.postTool} onPress={onSelectImage}>
             <Camera size={18} color={colors.textSecondary} />
             <Text style={{ color: colors.textSecondary, fontSize: 12, marginLeft: 4 }}>{t('social.feed.photo')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[s.sendBtn, { backgroundColor: (newPostContent.trim() || selectedImage) ? colors.primary : colors.surfaceAlt }]}
+            style={[s.sendBtn, { backgroundColor: (newPostContent.trim() || selectedImage || selectedAudio) ? colors.primary : colors.surfaceAlt }]}
             onPress={onCreatePost}
-            disabled={(!newPostContent.trim() && !selectedImage) || isPosting}
+            disabled={(!newPostContent.trim() && !selectedImage && !selectedAudio) || isPosting}
           >
             {isPosting ? <ActivityIndicator size="small" color="#fff" /> : <Send size={16} color="#fff" />}
           </TouchableOpacity>

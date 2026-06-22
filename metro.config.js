@@ -1,4 +1,5 @@
 // Learn more https://docs.expo.io/guides/customizing-metro
+const path = require('path');
 const { getDefaultConfig } = require('expo/metro-config');
 
 /** @type {import('expo/metro-config').MetroConfig} */
@@ -12,6 +13,12 @@ config.resolver.blockList = [
 ];
 
 config.resolver.assetExts.push('tflite');
+
+// Polyfill Node.js built-ins used by 'xlsx' (EventEmitter etc.)
+config.resolver.extraNodeModules = {
+  ...config.resolver.extraNodeModules,
+  events: path.resolve(__dirname, 'shims/events.js'),
+};
 
 config.transformer = {
   ...config.transformer,

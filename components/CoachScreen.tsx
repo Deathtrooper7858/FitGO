@@ -53,7 +53,10 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
     const isBullet = line.trim().startsWith('* ') || line.trim().startsWith('- ');
     const isNumberList = /^\d+\.\s/.test(line.trim());
     const isDisclaimer = !isUser && (
-      line.toLowerCase().includes('recuerda que') ||
+      line.toLowerCase().includes('esta información no') ||
+      line.toLowerCase().includes('consulta a tu médico') ||
+      line.toLowerCase().includes('no reemplaza la consulta') ||
+      line.toLowerCase().includes('no soy médico') ||
       line.toLowerCase().includes('profesional certificado') ||
       line.toLowerCase().includes('disclaimer') ||
       line.toLowerCase().includes('not a certified professional') ||
@@ -76,7 +79,7 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
       return (
         <Text key={partIdx} style={{
           fontWeight: isBold ? '800' : (isDisclaimer ? '400' : '500'),
-          color: isBold ? boldColor : (isDisclaimer ? colors.textMuted : textColor),
+          color: isBold ? boldColor : (isDisclaimer ? colors.textSecondary : textColor),
           fontStyle: isDisclaimer && !isBold ? 'italic' : 'normal',
         }}>
           {part}
@@ -99,7 +102,7 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
         <Text style={{
           fontSize: isOnlyEmoji ? 26 : (isDisclaimer ? 13 : 15),
           lineHeight: isOnlyEmoji ? 32 : (isDisclaimer ? 20 : 24),
-          color: isDisclaimer ? colors.textMuted : textColor,
+          color: isDisclaimer ? colors.textSecondary : textColor,
           flexShrink: 1,
           letterSpacing: 0.15
         }}>
@@ -259,7 +262,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
     if (config.useParamPrompt && params.prompt) {
       setInput(params.prompt as string);
     }
-  }, config.useParamPrompt ? [params.prompt] : []);
+  }, [config.useParamPrompt, params.prompt]);
 
   const loadSessions = async () => {
     if (!profile?.id) return;

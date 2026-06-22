@@ -67,7 +67,8 @@ export interface Post {
   id: string;
   user_id: string;
   content: string;
-  image_url: string;
+  image_url?: string;
+  audio_url?: string;
   created_at: string;
   user_profile?: {
     name: string;
@@ -161,8 +162,12 @@ interface SocialState {
   editComment: (commentId: string, content: string) => Promise<void>;
   fetchComments: (postId: string) => Promise<PostComment[]>;
   uploadPostImage: (uri: string) => Promise<string | null>;
+  uploadPostVideo: (uri: string) => Promise<string | null>;
+  uploadPostAudio: (uri: string) => Promise<string | null>;
   uploadChatImage: (uri: string) => Promise<string | null>;
+  uploadChatVideo: (uri: string) => Promise<string | null>;
   uploadChatAudio: (uri: string) => Promise<string | null>;
+
   
   // Direct Messages
   fetchDirectMessages: (userId: string, friendId: string) => Promise<DirectMessage[]>;
@@ -879,8 +884,12 @@ export const useSocialStore = create<SocialState>((set, get) => ({
   },
 
   uploadPostImage: (uri: string) => uploadToSocialStorage(uri, 'posts', 'image/jpeg'),
+  uploadPostVideo: (uri: string) => uploadToSocialStorage(uri, 'posts', 'video/mp4'),
+  uploadPostAudio: (uri: string) => uploadToSocialStorage(uri, 'posts', `audio/${uri.split('.').pop() || 'm4a'}`),
   uploadChatImage: (uri: string) => uploadToSocialStorage(uri, 'chat_media', 'image/jpeg'),
+  uploadChatVideo: (uri: string) => uploadToSocialStorage(uri, 'chat_media', 'video/mp4'),
   uploadChatAudio: (uri: string) => uploadToSocialStorage(uri, 'chat_media', `audio/${uri.split('.').pop() || 'm4a'}`),
+
 
   fetchDirectMessages: async (userId: string, friendId: string) => {
     try {

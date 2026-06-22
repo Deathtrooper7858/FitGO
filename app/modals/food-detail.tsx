@@ -6,13 +6,12 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Crypto from 'expo-crypto';
 import { useTranslation } from 'react-i18next';
-import { Spacing, Radius } from '../../constants';
+import { Spacing } from '../../constants';
 import { FoodItem } from '../../services/foodDatabase';
 import { useSettingsStore, useAuthStore, useNutritionStore } from '../../store';
 import { useTheme } from '../../hooks/useTheme';
 import { convertEnergy } from '../../utils/units';
 import { parseVoiceLog } from '../../services/groq';
-import { getLocalDateString } from '../../utils/date';
 import { CustomAlert, AlertType } from '../../components/CustomAlert';
 
 const MEALS = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
@@ -98,7 +97,6 @@ export default function FoodDetailModal() {
   const addLog = useNutritionStore(s => s.addLog);
   const updateLog = useNutritionStore(s => s.updateLog);
   const removeLog = useNutritionStore(s => s.removeLog);
-  const { profile } = useAuthStore();
 
   const g      = parseFloat(grams) || 0;
   const factor = g / 100;
