@@ -2,7 +2,7 @@
   "expo": {
     "name": "FitGO",
     "slug": "fitgo",
-    "owner": "elubiz",
+    "owner": "deathtrooper",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -133,7 +133,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "c7070968-231a-43c2-a62e-37108264a8db"
+        "projectId": "b322d830-a5f8-4c68-83b5-8686ce3d38f3"
       }
     },
     "runtimeVersion": {

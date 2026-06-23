@@ -39,7 +39,7 @@ const isRomanceLang = (lang: string) => ['Spanish', 'French', 'Portuguese', 'Ita
 // ─── Model IDs ────────────────────────────────────────────────────────────────
 const CHAT_MODEL   = 'llama-3.3-70b-versatile'; //no cambiar en proximos
 const FAST_MODEL   = 'llama-3.1-8b-instant'; // Modelo rápido con límites de cuota mucho más altos (~100,000 TPM)
-const VISION_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct'; // No cambiar en proximos!!
+const VISION_MODEL = 'qwen/qwen3.6-27b'; // Modelo de visión Qwen en Groq (soporta imágenes)
 const AUDIO_MODEL  = 'whisper-large-v3';
 
 /**
