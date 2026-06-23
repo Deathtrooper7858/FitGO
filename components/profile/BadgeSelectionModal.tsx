@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { X, Check } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
-import { ALL_BADGES } from '../../hooks/useAchievements';
+import { useTranslatedBadges } from '../../hooks/useAchievements';
 
 interface BadgeSelectionModalProps {
   visible: boolean;
@@ -19,6 +19,7 @@ export function BadgeSelectionModal({
 }: BadgeSelectionModalProps) {
   const colors = useTheme();
   const { t } = useTranslation();
+  const allBadges = useTranslatedBadges();
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -42,7 +43,7 @@ export function BadgeSelectionModal({
 
           <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
             {availableBadges.map(badgeId => {
-              const badge = ALL_BADGES[badgeId];
+              const badge = allBadges[badgeId];
               if (!badge) return null;
               const isSelected = selectedBadge === badgeId;
               return (

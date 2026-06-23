@@ -27,7 +27,7 @@ import {
 import { supabase } from '../../../services/supabase';
 import { calculateTDEE, calculateMacros, resolveActivityLevel } from '../../../services/foodDatabase';
 import { useTheme } from '../../../hooks/useTheme';
-import { useAchievements, ALL_BADGES } from '../../../hooks/useAchievements';
+import { useAchievements, ALL_BADGES, useTranslatedBadge } from '../../../hooks/useAchievements';
 import LanguageModal from '../../../components/LanguageModal';
 import { Spacing } from '../../../constants';
 import { convertMass, convertLength } from '../../../utils/units';
@@ -97,7 +97,7 @@ export default function ProfileScreen() {
   }, [profile]);
 
   const currentBadgeId = profile?.selectedBadge || (profile?.role === 'owner' ? 'owner' : profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
-  const currentBadge = ALL_BADGES[currentBadgeId] || ALL_BADGES.verified;
+  const currentBadge = useTranslatedBadge(currentBadgeId) || ALL_BADGES.verified;
   const toggleSection = (setter: any, current: boolean) => { (LayoutAnimation as any).configureNext((LayoutAnimation as any).Presets.easeInEaseOut); setter(!current); };
 
   const openEdit = (field: string, title: string, placeholder: string, keyboardType: 'numeric' | 'default' = 'default') => {
@@ -536,7 +536,7 @@ export default function ProfileScreen() {
                 <SettingsItem icon={Camera} label={t('about.instagram', 'Instagram')} indent onPress={() => Linking.openURL('https://www.instagram.com/fit___go/')} iconColor="#E1306C" />
                 <SettingsItem icon={Mail} label={t('about.email', 'Email')} value="fitgoenterprise@gmail.com" indent onPress={() => Linking.openURL('mailto:fitgoenterprise@gmail.com')} iconColor="#EA4335" />
                 <SettingsItem icon={MessageSquare} label={t('profile.sendFeedback', 'Enviar Sugerencia')} indent onPress={() => Linking.openURL('mailto:fitgoenterprise@gmail.com')} iconColor="#10B981" />
-                <SettingsItem icon={Heart} label={t('about.credits', 'Créditos')} indent onPress={() => showAlert('info', 'Créditos', 'Las animaciones (GIFs) del directorio de ejercicios son propiedad y cortesía de ExerciseDB API.', () => {}, undefined, 'Entendido')} iconColor="#EF4444" />
+                <SettingsItem icon={Heart} label={t('about.credits', 'Créditos')} indent onPress={() => showAlert('info', t('about.creditsTitle', 'Créditos'), t('about.creditsMessage', 'Las animaciones (GIFs) del directorio de ejercicios son propiedad y cortesía de ExerciseDB API.'), () => {}, undefined, t('about.creditsOk', 'Entendido'))} iconColor="#EF4444" />
                 <SettingsItem icon={Info} label={t('about.version', 'Versión')} value="v1.0.1" indent iconColor={colors.textMuted} />
               </View>
             )}

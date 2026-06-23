@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'rea
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Zap, Crown, X, PlayCircle } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
 import { useAICredits } from '../../hooks/useAICredits';
 import { AD_CONFIG } from '../../constants/adConfig';
@@ -11,6 +12,7 @@ import { MAX_AI_PHOTO_ENERGY, MAX_AI_TEXT_ENERGY } from '../../store/adStore';
 
 export default function NoCreditsModal() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const { watchAdForCredits, totalAdsWatched } = useAICredits();
   const limitReached = totalAdsWatched >= 3;
   const [loading, setLoading] = useState(false);
@@ -48,32 +50,32 @@ export default function NoCreditsModal() {
         {earned ? (
           <>
             <Text style={[s.title, { color: colors.textPrimary }]}>
-              ⚡ +{AD_CONFIG.rewardedAdCredits} créditos ganados
+              ⚡ +{AD_CONFIG.rewardedAdCredits} {t('noCredits.earned', { count: AD_CONFIG.rewardedAdCredits })}
             </Text>
             <Text style={[s.subtitle, { color: colors.textSecondary }]}>
-              ¡Gracias! Ya puedes seguir usando la IA.
+              {t('noCredits.earnedSub')}
             </Text>
           </>
         ) : (
           <>
             <Text style={[s.title, { color: colors.textPrimary }]}>
-              Sin energía IA por hoy
+              {t('noCredits.title')}
             </Text>
             <Text style={[s.subtitle, { color: colors.textSecondary }]}>
-              Usaste tus créditos diarios. Elige cómo continuar:
+              {t('noCredits.subtitle')}
             </Text>
             {/* Credit summary */}
             <View style={s.creditSummary}>
               <View style={[s.creditPill, { backgroundColor: '#F59E0B15', borderColor: '#F59E0B40' }]}>
                 <Text style={{ fontSize: 16 }}>📸</Text>
                 <Text style={{ color: '#F59E0B', fontWeight: '800', fontSize: 13 }}>
-                  {MAX_AI_PHOTO_ENERGY} foto/día
+                  {MAX_AI_PHOTO_ENERGY} {t('noCredits.photoDay')}
                 </Text>
               </View>
               <View style={[s.creditPill, { backgroundColor: '#7C5CFC15', borderColor: '#7C5CFC40' }]}>
                 <Text style={{ fontSize: 16 }}>✍️</Text>
                 <Text style={{ color: '#7C5CFC', fontWeight: '800', fontSize: 13 }}>
-                  {MAX_AI_TEXT_ENERGY} texto/día
+                  {MAX_AI_TEXT_ENERGY} {t('noCredits.textDay')}
                 </Text>
               </View>
             </View>
@@ -99,17 +101,17 @@ export default function NoCreditsModal() {
             </View>
             <View style={s.optionText}>
               <Text style={[s.optionTitle, { color: limitReached ? colors.textMuted : colors.textPrimary }]}>
-                {limitReached ? 'Límite de videos alcanzado' : 'Ver video corto'}
+                {limitReached ? t('noCredits.videoLimit') : t('noCredits.watchAd')}
               </Text>
               <Text style={[s.optionDesc, { color: limitReached ? colors.textMuted : colors.textSecondary }]}>
-                {limitReached ? 'Vuelve mañana para más créditos' : 'Gana +1 crédito IA ⚡ gratis'}
+                {limitReached ? t('noCredits.comeBack') : t('noCredits.watchAdDesc')}
               </Text>
             </View>
             {loading ? (
               <ActivityIndicator color="#10B981" />
             ) : !limitReached && (
               <View style={[s.freeTag, { backgroundColor: '#10B981' + '20' }]}>
-                <Text style={{ color: '#10B981', fontSize: 11, fontWeight: '800' }}>GRATIS</Text>
+                <Text style={{ color: '#10B981', fontSize: 11, fontWeight: '800' }}>{t('noCredits.free')}</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -117,7 +119,7 @@ export default function NoCreditsModal() {
           {/* Separator */}
           <View style={s.separator}>
             <View style={[s.separatorLine, { backgroundColor: colors.border }]} />
-            <Text style={[s.separatorText, { color: colors.textMuted }]}>o</Text>
+            <Text style={[s.separatorText, { color: colors.textMuted }]}>{t('common.or')}</Text>
             <View style={[s.separatorLine, { backgroundColor: colors.border }]} />
           </View>
 
@@ -134,12 +136,12 @@ export default function NoCreditsModal() {
               end={{ x: 1, y: 1 }}
             >
               <Crown size={20} color="#fff" />
-              <Text style={s.proBtnText}>Hacerse Pro · IA Ilimitada</Text>
+              <Text style={s.proBtnText}>{t('noCredits.goPro')}</Text>
             </LinearGradient>
           </TouchableOpacity>
 
           <Text style={[s.proPrice, { color: colors.textMuted }]}>
-            Solo $11.800 COP/mes · Cancela cuando quieras
+            {t('noCredits.price')}
           </Text>
         </View>
       )}

@@ -5,7 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Trophy, Heart, MessageSquare, Trash2 } from 'lucide-react-native';
 import { Radius, Spacing } from '../../../constants';
 import { GlassCard } from '../../../components/GlassCard';
-import { ALL_BADGES } from '../../../hooks/useAchievements';
+import { ALL_BADGES, useTranslatedBadge } from '../../../hooks/useAchievements';
 import { PostAudioPlayer } from './PostCard';
 
 interface SocialProfileTabProps {
@@ -28,7 +28,7 @@ export default function SocialProfileTab({
   const userRankIndex = socialStore.globalRanking.findIndex((u: any) => u.id === profile?.id);
   const myPosts = socialStore.posts.filter((p: any) => p.user_id === profile?.id);
   const currentBadgeId = profile?.selectedBadge || (profile?.role === 'owner' ? 'owner' : profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
-  const currentBadge = ALL_BADGES[currentBadgeId] || ALL_BADGES.verified;
+  const currentBadge = useTranslatedBadge(currentBadgeId) || ALL_BADGES.verified;
 
   const getRank = (points: number) => {
     if (points >= 10000) return { label: 'S+', color: '#FFD700', bg: '#FFD70020' };

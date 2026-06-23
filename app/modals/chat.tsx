@@ -226,21 +226,21 @@ export default function ChatModal() {
   // ── Media Picker ─────────────────────────────────────────────────────────────
   const handlePickFromCamera = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permiso requerido', 'Se necesita acceso a la cámara.'); return; }
+    if (status !== 'granted') { Alert.alert(t('chat.cameraPermissionTitle'), t('chat.cameraPermissionMsg')); return; }
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8 });
     if (!result.canceled && result.assets?.[0]) setPreviewImage(result.assets[0].uri);
   };
 
   const handleRecordVideo = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permiso requerido', 'Se necesita acceso a la cámara.'); return; }
+    if (status !== 'granted') { Alert.alert(t('chat.cameraPermissionTitle'), t('chat.cameraPermissionMsg')); return; }
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['videos'], quality: 0.8 });
     if (!result.canceled && result.assets?.[0]) setPreviewImage(result.assets[0].uri);
   };
 
   const handlePickFromGallery = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permiso requerido', 'Se necesita acceso a la galería.'); return; }
+    if (status !== 'granted') { Alert.alert(t('chat.galleryPermissionTitle'), t('chat.galleryPermissionMsg')); return; }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images', 'videos'], quality: 0.8 });
     if (!result.canceled && result.assets?.[0]) setPreviewImage(result.assets[0].uri);
   };
@@ -276,7 +276,7 @@ export default function ChatModal() {
     if (url) {
       await socialStore.sendDirectMessage(profile.id, friendId, '', url, undefined);
     } else {
-      Alert.alert('Error', 'No se pudo subir el archivo.');
+      Alert.alert(t('common.error'), t('chat.uploadFailed'));
     }
     setPreviewIsSending(false);
   };
@@ -285,7 +285,7 @@ export default function ChatModal() {
   // ── Voice Recording ──────────────────────────────────────────────────────────
   const handleStartRecording = async () => {
     const { granted } = await requestRecordingPermissionsAsync();
-    if (!granted) { Alert.alert('Permiso requerido', 'Se necesita acceso al micrófono.'); return; }
+    if (!granted) { Alert.alert(t('chat.micPermissionTitle'), t('chat.micPermissionMsg')); return; }
     try {
       await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true, interruptionMode: 'doNotMix', shouldPlayInBackground: false, shouldRouteThroughEarpiece: false });
       await recorder.prepareToRecordAsync();
@@ -309,7 +309,7 @@ export default function ChatModal() {
         if (url) {
           await socialStore.sendDirectMessage(profile.id, friendId, '', undefined, url);
         } else {
-          Alert.alert('Error', 'No se pudo enviar el audio.');
+          Alert.alert(t('common.error'), t('chat.audioSendFailed'));
         }
       }
     } catch (e) {

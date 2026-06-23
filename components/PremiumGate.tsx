@@ -4,9 +4,10 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Crown, Play, X, Clock } from 'lucide-react-native';
-import { useTheme } from '../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { RewardedAd, RewardedAdEventType } from 'react-native-google-mobile-ads';
+import { useTheme } from '../hooks/useTheme';
 import { AD_UNIT_IDS } from '../constants/adConfig';
 import { useAdStore } from '../store/adStore';
 
@@ -28,6 +29,7 @@ export function PremiumGate({
   onClose,
   onAdAccessGranted,
 }: PremiumGateProps) {
+  const { t } = useTranslation();
   const colors = useTheme();
   const { grantPremiumAdAccess } = useAdStore();
   const [loadingAd, setLoadingAd] = useState(false);
@@ -104,7 +106,7 @@ export function PremiumGate({
           </LinearGradient>
 
           <Text style={[styles.title, { color: colors.textPrimary }]}>
-            Función Premium
+            {t('paywall.premiumFeature', 'Función Premium')}
           </Text>
 
           <Text style={[styles.featureName, { color: colors.primary }]}>
@@ -112,8 +114,7 @@ export function PremiumGate({
           </Text>
 
           <Text style={[styles.desc, { color: colors.textSecondary }]}>
-            Esta función es exclusiva para usuarios Premium. Hazte Premium para acceso
-            ilimitado, o mira un anuncio corto para usarla{' '}
+            {t('paywall.premiumRequired', 'Esta función es exclusiva para usuarios Premium. Hazte Premium para acceso ilimitado, o mira un anuncio corto para usarla')}{' '}
             <Text style={{ color: '#10B981', fontWeight: '800' }}>10 minutos</Text>.
           </Text>
 

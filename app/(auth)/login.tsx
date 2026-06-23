@@ -5,17 +5,17 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Colors, Spacing, Radius } from '../../constants';
-import { supabase } from '../../services';
-import { useAuthStore } from '../../store';
-import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { makeRedirectUri } from 'expo-auth-session';
 import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import * as WebBrowser from 'expo-web-browser';
-import { CustomAlert, AlertType } from '../../components/CustomAlert';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CustomAlert, AlertType } from '../../components/CustomAlert';
+import { useTheme } from '../../hooks/useTheme';
+import { useAuthStore } from '../../store';
+import { supabase } from '../../services';
+import { Colors, Spacing, Radius } from '../../constants';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -115,19 +115,19 @@ export default function LoginScreen() {
             const session = await createSessionFromUrl(url);
             if (!session) {
               setGlobalLoading(false);
-              showAlert(t('common.error'), 'No se pudo crear la sesión. Intenta de nuevo.', 'error');
+              showAlert(t('common.error'), t('auth.sessionFailed'), 'error');
             }
           } catch (sessionError: any) {
             setGlobalLoading(false);
-            showAlert(t('common.error'), sessionError.message ?? 'Error al iniciar sesión con Google', 'error');
+            showAlert(t('common.error'), sessionError.message ?? t('auth.googleLoginFailed'), 'error');
           }
         } else if (res.type === 'dismiss' || res.type === 'cancel') {
           // User cancelled — do nothing
         } else {
-          showAlert(t('common.error'), `Resultado inesperado: ${res.type}`, 'error');
+          showAlert(t('common.error'), t('auth.unexpectedResult') + `${res.type}`, 'error');
         }
       } else {
-        showAlert(t('common.error'), 'No se pudo obtener la URL de autorización de Google.', 'error');
+        showAlert(t('common.error'), t('auth.googleAuthFailed'), 'error');
       }
     } catch (error: any) {
       showAlert(t('common.error'), error.message, 'error');

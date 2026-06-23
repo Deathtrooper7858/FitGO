@@ -304,6 +304,14 @@ export function useAchievements() {
 
   const unlockedCount = achievements.filter(a => a.unlocked).length;
 
+  const translatedAchievements = useMemo(() => {
+    return achievements.map(a => ({
+      ...a,
+      title: t(`achievements.items.${a.id}.title`, a.title),
+      description: t(`achievements.items.${a.id}.desc`, a.description),
+    }));
+  }, [achievements, t]);
+
   // Synchronize completed achievements and earned badges with profile and Supabase automatically
   useEffect(() => {
     if (!profile || !profile.id) return;
@@ -331,10 +339,10 @@ export function useAchievements() {
       const mergedAchievements = Array.from(new Set([...currentUnlockedAchievements, ...newlyUnlockedIds]));
       const mergedBadges = Array.from(new Set([...currentBadges, ...earnedBadgeIds]));
 
-      // Dispatch newly unlocked achievements to the global toast queue
+      // Dispatch newly unlocked achievements to the global toast queue (using translated titles)
       if (needsAchievementUpdate) {
         missingAchievements.forEach(id => {
-          const ach = achievements.find(a => a.id === id);
+          const ach = translatedAchievements.find(a => a.id === id);
           if (ach) {
             useToastStore.getState().addToast(ach);
           }
@@ -370,15 +378,32 @@ export function useAchievements() {
           }
         });
     }
-  }, [achievements, profile]);
-
-  const translatedAchievements = useMemo(() => {
-    return achievements.map(a => ({
-      ...a,
-      title: t(`achievements.items.${a.id}.title`, a.title),
-      description: t(`achievements.items.${a.id}.desc`, a.description),
-    }));
-  }, [achievements, t]);
+  }, [translatedAchievements, achievements, profile]);
 
   return { achievements: translatedAchievements, unlockedCount };
+}
+
+export function useTranslatedBadge(badgeId: string | undefined) {
+  const { t } = useTranslation();
+  if (!badgeId || !ALL_BADGES[badgeId]) return null;
+  const badge = ALL_BADGES[badgeId];
+  return {
+    ...badge,
+    label: t(`achievements.badges.${badgeId}.label`, badge.label),
+    description: t(`achievements.badges.${badgeId}.description`, badge.description),
+  };
+}
+
+export function useTranslatedBadges() {
+  const { t } = useTranslation();
+  return useMemo(() => {
+    return Object.entries(ALL_BADGES).reduce((acc, [id, badge]) => {
+      acc[id] = {
+        ...badge,
+        label: t(`achievements.badges.${id}.label`, badge.label),
+        description: t(`achievements.badges.${id}.description`, badge.description),
+      };
+      return acc;
+    }, {} as Record<string, typeof ALL_BADGES[string]>);
+  }, [t]);
 }

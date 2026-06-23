@@ -21,7 +21,7 @@ import { ImageViewerModal } from '../../components/ImageViewerModal';
 import { CustomAlert } from '../../components/CustomAlert';
 import { AvatarViewerModal } from '../../components/AvatarViewerModal';
 import { supabase } from '../../services/supabase';
-import { useAchievements, ALL_BADGES } from '../../hooks/useAchievements';
+import { useAchievements, ALL_BADGES, useTranslatedBadge } from '../../hooks/useAchievements';
 import { parsePostContent, formatPostContent } from '../../utils/language';
 import { MediaPickerModal } from '../MediaPickerModal';
 import { CommentList } from './modal/CommentList';
@@ -140,6 +140,9 @@ const s = StyleSheet.create({
   },
 });
 
+const TABS: TabType[] = ['you', 'feed', 'friends'];
+const FRIENDS_TABS: ('list' | 'search' | 'requests')[] = ['list', 'search', 'requests'];
+
 interface FitGOSocialProps {
   initialTab?: TabType;
   initialFriendsTab?: 'list' | 'search' | 'requests';
@@ -173,10 +176,9 @@ export default function FitGOSocial({
     }
   }, [initialFriendsTab]);
 
-  const TABS: TabType[] = ['you', 'feed', 'friends'];
-  const FRIENDS_TABS: ('list' | 'search' | 'requests')[] = ['list', 'search', 'requests'];
+
   
-  const handleSwipeTab = (direction: 1 | -1) => {
+  const handleSwipeTab = useCallback((direction: number) => {
     Haptics.selectionAsync();
     if (activeTab === 'friends') {
       const currentFriendsIdx = FRIENDS_TABS.indexOf(friendsTab);
@@ -208,19 +210,21 @@ export default function FitGOSocial({
         onNavigateToCompetitive();
       }
     }
-  };
+  }, [activeTab, friendsTab, onNavigateToCompetitive]);
 
-  const swipeGesture = Gesture.Pan()
-    .activeOffsetX([-30, 30])
-    .failOffsetY([-12, 12])
-    .runOnJS(true)
-    .onEnd((e) => {
-      if (Math.abs(e.velocityX) > 400 || Math.abs(e.translationX) > 80) {
-        // Drag right (translationX > 0) -> go to previous tab (-1)
-        // Drag left (translationX < 0) -> go to next tab (+1)
-        handleSwipeTab(e.translationX > 0 ? -1 : 1);
-      }
-    });
+  const swipeGesture = useMemo(() => {
+    return Gesture.Pan()
+      .activeOffsetX([-30, 30])
+      .failOffsetY([-12, 12])
+      .runOnJS(true)
+      .onEnd((e) => {
+        if (Math.abs(e.velocityX) > 400 || Math.abs(e.translationX) > 80) {
+          // Drag right (translationX > 0) -> go to previous tab (-1)
+          // Drag left (translationX < 0) -> go to next tab (+1)
+          handleSwipeTab(e.translationX > 0 ? -1 : 1);
+        }
+      });
+  }, [handleSwipeTab]);
   
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -271,9 +275,6 @@ export default function FitGOSocial({
   useEffect(() => {
     let unsubscribeEvents: (() => void) | null = null;
     if (profile?.id) {
-      socialStore.fetchFriends(profile.id);
-      socialStore.fetchChallenges(profile.id);
-      socialStore.fetchGlobalRanking();
       socialStore.fetchPosts();
       socialStore.fetchUnreadCounts(profile.id);
       unsubscribeEvents = socialStore.subscribeToSocialEvents(profile.id);
@@ -283,6 +284,20 @@ export default function FitGOSocial({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id]);
+
+  // Carga diferida (lazy load) de pestañas secundarias
+  useEffect(() => {
+    if (profile?.id) {
+      if (activeTab === 'friends') {
+        socialStore.fetchFriends(profile.id);
+      } else if (activeTab === 'challenges') {
+        socialStore.fetchChallenges(profile.id);
+      } else if (activeTab === 'ranking') {
+        socialStore.fetchGlobalRanking();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.id, activeTab]);
 
   useEffect(() => {
     let commentsChannel: any = null;
@@ -540,13 +555,14 @@ export default function FitGOSocial({
   }, [socialStore.posts, feedSearchQuery, selectedLanguage, contentFilter, sortBy]);
 
 
+  const currentBadgeId = profile?.selectedBadge || (profile?.role === 'owner' ? 'owner' : profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
+  const currentBadge = useTranslatedBadge(currentBadgeId) || ALL_BADGES.verified;
+
   const renderYou = () => {
     const acceptedFriends = socialStore.friends.filter(f => f.status === 'accepted');
     const userRankInfo = socialStore.globalRanking.find(u => u.id === profile?.id);
     const userRankIndex = socialStore.globalRanking.findIndex(u => u.id === profile?.id);
     const myPosts = socialStore.posts.filter(p => p.user_id === profile?.id);
-    const currentBadgeId = profile?.selectedBadge || (profile?.role === 'owner' ? 'owner' : profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
-    const currentBadge = ALL_BADGES[currentBadgeId] || ALL_BADGES.verified;
 
     return (
       <View style={s.tabContent}>

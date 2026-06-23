@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import { Reminder } from '../store/types';
+import i18n from '../i18n';
 
 // We use lazy loading for expo-notifications to avoid the "remote notifications removed" error
 // that crashes Expo Go on Android even when only using local notifications.
@@ -13,48 +14,48 @@ let notificationHandlerSet = false;
 export const CHANNELS = {
   messages: {
     id: 'messages',
-    name: '💬 Mensajes',
-    description: 'Mensajes directos de amigos',
+    name: '💬 ' + i18n.t('notifications.channels.messages'),
+    description: i18n.t('notifications.channels.messagesDesc'),
     importance: 5, // IMPORTANCE_HIGH
     lightColor: '#7C5CFC',
     vibrationPattern: [0, 100, 50, 100],
   },
   social: {
     id: 'social',
-    name: '👥 Social',
-    description: 'Solicitudes de amistad y actividad social',
+    name: '👥 ' + i18n.t('notifications.channels.social'),
+    description: i18n.t('notifications.channels.socialDesc'),
     importance: 4, // IMPORTANCE_DEFAULT
     lightColor: '#4FC3F7',
     vibrationPattern: [0, 200, 100, 200],
   },
   nutrition: {
     id: 'nutrition',
-    name: '🥗 Nutrición',
-    description: 'Recordatorios de comidas, calorías e hidratación',
+    name: '🥗 ' + i18n.t('notifications.channels.nutrition'),
+    description: i18n.t('notifications.channels.nutritionDesc'),
     importance: 3, // IMPORTANCE_LOW
     lightColor: '#81C784',
     vibrationPattern: [0, 150],
   },
   fitness: {
     id: 'fitness',
-    name: '🏋️ Fitness',
-    description: 'Entrenamientos, rachas y pasos',
+    name: '🏋️ ' + i18n.t('notifications.channels.fitness'),
+    description: i18n.t('notifications.channels.fitnessDesc'),
     importance: 4,
     lightColor: '#FFB74D',
     vibrationPattern: [0, 200, 100, 200],
   },
   achievements: {
     id: 'achievements',
-    name: '🏆 Logros',
-    description: 'Logros desbloqueados y recompensas',
+    name: '🏆 ' + i18n.t('notifications.channels.achievements'),
+    description: i18n.t('notifications.channels.achievementsDesc'),
     importance: 5,
     lightColor: '#FFD700',
     vibrationPattern: [0, 100, 80, 100, 80, 300],
   },
   reminders: {
     id: 'reminders',
-    name: '⏰ Recordatorios',
-    description: 'Recordatorios programados',
+    name: '⏰ ' + i18n.t('notifications.channels.reminders'),
+    description: i18n.t('notifications.channels.remindersDesc'),
     importance: 3,
     lightColor: '#CE93D8',
     vibrationPattern: [0, 250, 250, 250],
@@ -62,7 +63,7 @@ export const CHANNELS = {
   default: {
     id: 'default',
     name: 'FitGO',
-    description: 'Notificaciones generales de FitGO',
+    description: i18n.t('notifications.channels.defaultDesc'),
     importance: 4,
     lightColor: '#7C5CFC',
     vibrationPattern: [0, 250, 250, 250],

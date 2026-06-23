@@ -98,7 +98,7 @@ export default function RegisterScreen() {
     if (error) {
       let errorMessage = error.message;
       if (errorMessage.toLowerCase().includes('already registered')) {
-        errorMessage = 'Este correo electrónico ya está registrado en el sistema de autenticación. Intenta iniciar sesión o recuperar tu contraseña.';
+        errorMessage = t('auth.emailAlreadyRegistered');
       }
       setGlobalLoading(false);
       showAlert(t('auth.registerFailed'), errorMessage, 'error');
@@ -144,19 +144,19 @@ export default function RegisterScreen() {
             const session = await createSessionFromUrl(url);
             if (!session) {
               setGlobalLoading(false);
-              showAlert(t('common.error'), 'No se pudo crear la sesión. Intenta de nuevo.', 'error');
+              showAlert(t('common.error'), t('auth.sessionFailed'), 'error');
             }
           } catch (sessionError: any) {
             setGlobalLoading(false);
-            showAlert(t('common.error'), sessionError.message ?? 'Error al iniciar sesión con Google', 'error');
+            showAlert(t('common.error'), sessionError.message ?? t('auth.googleLoginFailed'), 'error');
           }
         } else if (res.type === 'dismiss' || res.type === 'cancel') {
           // User cancelled — do nothing
         } else {
-          showAlert(t('common.error'), `Resultado inesperado: ${res.type}`, 'error');
+          showAlert(t('common.error'), t('auth.unexpectedResult') + `${res.type}`, 'error');
         }
       } else {
-        showAlert(t('common.error'), 'No se pudo obtener la URL de autorización de Google.', 'error');
+        showAlert(t('common.error'), t('auth.googleAuthFailed'), 'error');
       }
     } catch (error: any) {
       showAlert(t('common.error'), error.message, 'error');

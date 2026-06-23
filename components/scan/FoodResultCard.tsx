@@ -143,14 +143,12 @@ export default function FoodResultCard({
         <View style={[s.disclaimerBox, { backgroundColor: colors.warning + '18', borderColor: colors.warning + '44' }]}>
           <Text style={{ fontSize: 14 }}>⚠️</Text>
           <Text style={[s.disclaimerText, { color: colors.warning }]}>
-            {language === 'es'
-              ? 'El análisis por foto es una estimación. Los valores nutricionales pueden no ser 100% precisos.'
-              : 'Photo analysis is an estimate. Nutritional values may not be 100% accurate.'}
+            {t('scan.photoDisclaimer')}
           </Text>
         </View>
         <View style={[s.timeSelector, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>
-            {language === 'es' ? 'Hora de registro' : 'Log Time'}
+            {t('scan.logTime')}
           </Text>
           <TouchableOpacity onPress={onToggleTimePicker} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 16 }}>
@@ -186,7 +184,7 @@ export default function FoodResultCard({
           >
             <Text style={{ fontSize: 18 }}>➕</Text>
             <Text style={[s.actionBtnText, { color: colors.primary }]}>
-              {language === 'es' ? 'Faltante' : 'Missing'}
+              {t('scan.missing')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -199,9 +197,7 @@ export default function FoodResultCard({
           >
             <Text style={{ fontSize: 18, color: '#fff' }}>✅</Text>
             <Text style={s.addAllText}>
-              {language === 'es'
-                ? `Registrar en ${t(`tracker.${initialMeal || getAutoMeal()}`)}`
-                : t('scan.addAll', { meal: t(`tracker.${initialMeal || getAutoMeal()}`) })}
+              {t('scan.addAll', { meal: t(`tracker.${initialMeal || getAutoMeal()}`) })}
             </Text>
           </LinearGradient>
         </TouchableOpacity>

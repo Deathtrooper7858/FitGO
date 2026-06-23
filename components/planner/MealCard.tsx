@@ -66,14 +66,14 @@ function MealCard({ name, meal, cal, protein, carbs, fat, onSwap, onConsume, onR
             style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 4, paddingHorizontal: 4 }}
             onPress={onRecipe}
           >
-            <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '800' }}>Receta ›</Text>
+            <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '800' }}>{t('planner.askRecipe', 'Receta ›')} ›</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleSwap} style={{ padding: 6, opacity: isSwapping ? 0.5 : 1 }} disabled={isSwapping}>
             {isSwapping ? <ActivityIndicator size="small" color={colors.primary} /> : <RefreshCw size={14} color={colors.primary} />}
           </TouchableOpacity>
           <TouchableOpacity onPress={onConsume} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.primary + '15', paddingHorizontal: 10, paddingVertical: 6, borderRadius: Radius.full }}>
             <CheckCircle size={12} color={colors.primary} style={{ marginRight: 4 }} />
-            <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '800' }}>Consumir</Text>
+            <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '800' }}>{t('planner.consume', 'Consumir')}</Text>
           </TouchableOpacity>
         </View>
       </View>

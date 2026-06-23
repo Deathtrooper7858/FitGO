@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
-import { useToastStore } from '../store/toastStore';
 
-import { useTheme } from '../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { X } from 'lucide-react-native';
-import { getLucideIcon } from '../constants/iconMap';
 import * as Haptics from 'expo-haptics';
+import { getLucideIcon } from '../constants/iconMap';
+import { useTheme } from '../hooks/useTheme';
+import { useToastStore } from '../store/toastStore';
 
 import { AppNotification } from '../store/types';
 
@@ -80,10 +80,10 @@ export function AppToast() {
   const isAchievement = currentToast.isAchievement !== false;
   let headerTitle = t('achievements.newAchievement', '¡NUEVO LOGRO DESBLOQUEADO!');
   if (!isAchievement) {
-    if (currentToast.tier === 'success') headerTitle = '¡REGISTRO EXITOSO!';
-    else if (currentToast.tier === 'info') headerTitle = '¡ACCIÓN COMPLETADA!';
-    else if (currentToast.tier === 'warning') headerTitle = '¡ATENCIÓN!';
-    else headerTitle = 'NOTIFICACIÓN';
+    if (currentToast.tier === 'success') headerTitle = t('toast.registrationSuccess', '¡REGISTRO EXITOSO!');
+    else if (currentToast.tier === 'info') headerTitle = t('toast.actionCompleted', '¡ACCIÓN COMPLETADA!');
+    else if (currentToast.tier === 'warning') headerTitle = t('toast.attention', '¡ATENCIÓN!');
+    else headerTitle = t('toast.notification', 'NOTIFICACIÓN');
   }
 
   return (

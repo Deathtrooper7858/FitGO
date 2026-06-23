@@ -79,6 +79,28 @@ const CATEGORIES: CategoryConfig[] = [
 ];
 
 // ─── Default reminders with categories ──────────────────────────────────────
+const DEFAULT_REMINDER_KEYS: Record<string, string> = {
+  '1': 'reminders.default.breakfast',
+  '2': 'reminders.default.lunch',
+  '3': 'reminders.default.dinner',
+  '6': 'reminders.default.snack',
+  '4': 'reminders.default.water',
+  '10': 'reminders.default.waterAfternoon',
+  '5': 'reminders.default.workout',
+  '8': 'reminders.default.walk',
+  '11': 'reminders.default.cardio',
+  '7': 'reminders.default.vitamins',
+  '9': 'reminders.default.sleep',
+  '12': 'reminders.default.log',
+  '13': 'reminders.default.league',
+  '14': 'reminders.default.dailyChallenge',
+  '15': 'reminders.default.friends',
+  '16': 'reminders.default.streak',
+  '17': 'reminders.default.achievements',
+  '18': 'reminders.default.leaderboard',
+  '19': 'reminders.default.messages',
+};
+
 const DEFAULT_REMINDERS: Reminder[] = [
   // MEAL
   { id: '1',  title: 'Desayuno',   body: '¡Hora de un desayuno saludable!',               time: '08:00', enabled: false, days: [0,1,2,3,4,5,6], type: 'meal' },
@@ -292,7 +314,7 @@ export default function RemindersModal() {
           )}
           <Bell size={14} color={activeCategory === 'all' ? '#fff' : colors.textSecondary} />
           <Text style={[s.tabText, { color: activeCategory === 'all' ? '#fff' : colors.textSecondary }]}>
-            Todos
+            {t('reminders.category.all')}
           </Text>
         </TouchableOpacity>
 
@@ -315,7 +337,7 @@ export default function RemindersModal() {
                 ? cat.icon
                 : React.cloneElement(cat.icon as React.ReactElement<any>, { color: colors.textSecondary })}
               <Text style={[s.tabText, { color: isActive ? '#fff' : colors.textSecondary }]}>
-                {cat.defaultLabel.split('  ')[1]}
+                {t(cat.labelKey)}
               </Text>
             </TouchableOpacity>
           );
@@ -340,7 +362,7 @@ export default function RemindersModal() {
                   <LinearGradient colors={group.gradient} style={s.groupHeader}>
                     <View style={s.groupHeaderInner}>
                       {group.icon}
-                      <Text style={s.groupHeaderText}>{group.defaultLabel}</Text>
+                      <Text style={s.groupHeaderText}>{t(group.labelKey)}</Text>
                     </View>
                     <View style={s.groupHeaderRight}>
                       <View style={s.groupBadge}>
@@ -458,6 +480,7 @@ interface ReminderCardProps {
 
 function ReminderCard({ reminder, colors, accent, icon, onToggle, onTimePress, onDaysChange }: ReminderCardProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const { t } = useTranslation();
 
   const handlePressIn = () =>
     Animated.spring(scaleAnim, { toValue: 0.97, useNativeDriver: true, speed: 25 }).start();
@@ -465,6 +488,8 @@ function ReminderCard({ reminder, colors, accent, icon, onToggle, onTimePress, o
     Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 25 }).start();
 
   const dayLabels = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+  const titleKey = DEFAULT_REMINDER_KEYS[reminder.id];
+  const displayTitle = titleKey ? t(titleKey, reminder.title) : reminder.title;
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }], marginBottom: 10, opacity: reminder.enabled ? 1 : 0.6 }}>
@@ -482,7 +507,7 @@ function ReminderCard({ reminder, colors, accent, icon, onToggle, onTimePress, o
 
           {/* Content */}
           <View style={s.cardContent}>
-            <Text style={[s.cardTitle, { color: colors.textPrimary }]}>{reminder.title}</Text>
+            <Text style={[s.cardTitle, { color: colors.textPrimary }]}>{displayTitle}</Text>
             <TouchableOpacity
               onPress={() => onTimePress(reminder.id)}
               onPressIn={handlePressIn}

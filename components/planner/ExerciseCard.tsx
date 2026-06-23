@@ -75,7 +75,7 @@ export default function ExerciseCard({
         </View>
         <View style={{ flexDirection: 'row', gap: 14 }}>
           <View style={[es.meta, { backgroundColor: colors.background }]}>
-            <Text style={[es.metaLabel, { color: colors.textMuted }]}>Carga (Kg)</Text>
+            <Text style={[es.metaLabel, { color: colors.textMuted }]}>{t('planner.loadKg', 'LOAD (KG)')}</Text>
             <TextInput
               style={[es.input, { color: colors.textPrimary }]}
               placeholder="--"
@@ -100,7 +100,7 @@ export default function ExerciseCard({
           </View>
         </View>
         <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 8, fontStyle: 'italic' }}>
-          * Estos valores se guardarán en tu progreso al completar el entrenamiento.
+          {t('planner.valuesSavedNotice', '* These values will be saved to your progress when you complete the workout.')}
         </Text>
       </View>
       <TouchableOpacity

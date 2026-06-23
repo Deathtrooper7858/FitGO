@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ShoppingCart, Download, X } from 'lucide-react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
 import { Spacing, Radius } from '../../constants';
 import { generateShoppingListJSON } from '../../services/groq';
@@ -24,6 +25,7 @@ interface Category {
 }
 
 export default function ShoppingListModal({ visible, onClose, mealPlans, language }: ShoppingListModalProps) {
+  const { t } = useTranslation();
   const colors = useTheme();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +59,7 @@ export default function ShoppingListModal({ visible, onClose, mealPlans, languag
         produce: '🥦', meat: '🥩', dairy: '🥛', pantry: '🥫', bebidas: '🥤',
       };
 
-      let html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>FitGO Lista de Compras</title><style>
+      let html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${t('planner.shoppingListTitle', 'Lista de Compras')}</title><style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Inter', 'Helvetica Neue', sans-serif; background: #F0F4FF; color: #1E1B4B; -webkit-print-color-adjust: exact; }
@@ -82,14 +84,14 @@ export default function ShoppingListModal({ visible, onClose, mealPlans, languag
         .price-badge { background: #F0F4FF; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #4F46E5; }
       </style></head><body><div class="page">`;
 
-      html += `<div class="header"><div><div class="header-title">🛒 Lista de Compras</div><div class="header-sub">FitGO</div></div><div class="logo-badge">🥗</div></div>`;
-      html += `<div class="summary-row"><div class="summary-card"><div class="val">${categories.length}</div><div class="lbl">Categorías</div></div><div class="summary-card"><div class="val">${totalItems}</div><div class="lbl">Productos totales</div></div></div>`;
+      html += `<div class="header"><div><div class="header-title">🛒 ${t('planner.shoppingListTitle', 'Lista de Compras')}</div><div class="header-sub">FitGO</div></div><div class="logo-badge">🥗</div></div>`;
+      html += `<div class="summary-row"><div class="summary-card"><div class="val">${categories.length}</div><div class="lbl">${t('planner.categories', 'Categorías')}</div></div><div class="summary-card"><div class="val">${totalItems}</div><div class="lbl">${t('planner.totalProducts', 'Productos totales')}</div></div></div>`;
 
       categories.forEach((cat) => {
         const key = (cat.category || '').toLowerCase();
         const color = CAT_COLORS[key] || CAT_COLORS['default'];
         const emoji = CAT_EMOJI[key] || '🛍️';
-        html += `<div class="cat-card"><div class="cat-header"><div class="cat-dot" style="background:${color}"></div><span class="cat-name">${emoji} ${cat.category}</span><span class="cat-count">${cat.items?.length ?? 0} productos</span></div>`;
+        html += `<div class="cat-card"><div class="cat-header"><div class="cat-dot" style="background:${color}"></div><span class="cat-name">${emoji} ${cat.category}</span><span class="cat-count">${cat.items?.length ?? 0} ${t('planner.products', 'productos')}</span></div>`;
         (cat.items || []).forEach((item: any) => {
           const priceStr = item.price ? `<span class="price-badge">$${Number(item.price).toFixed(2)}</span>` : '';
           html += `<div class="item-row"><div class="checkbox"></div><span class="item-name">${item.name}${item.quantity ? ` (${item.quantity})` : ''}</span>${priceStr}</div>`;
@@ -97,7 +99,7 @@ export default function ShoppingListModal({ visible, onClose, mealPlans, languag
         html += `</div>`;
       });
 
-      html += `<div class="footer">Generado por FitGO · ${today} · Marca los productos conforme los compras ✅</div></div></body></html>`;
+      html += `<div class="footer">${t('planner.generatedByFitgo', 'Generado por FitGO')} · ${today} · ${t('planner.checkProducts', 'Marca los productos conforme los compras')} ✅</div></div></body></html>`;
 
       const { uri } = await Print.printToFileAsync({ html, base64: false });
       await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf', dialogTitle: 'fitgo_lista_compras.pdf' });
@@ -118,7 +120,7 @@ export default function ShoppingListModal({ visible, onClose, mealPlans, languag
           <TouchableOpacity onPress={onClose} style={sl.closeBtn}>
             <X size={24} color={colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={[sl.title, { color: colors.textPrimary }]}>Lista de Compras</Text>
+          <Text style={[sl.title, { color: colors.textPrimary }]}>{t('planner.shoppingListTitle', 'Lista de Compras')}</Text>
           <TouchableOpacity onPress={handleExportPDF} disabled={loading || exporting}>
             {exporting ? <ActivityIndicator size="small" color={colors.primary} /> : <Download size={24} color={colors.primary} />}
           </TouchableOpacity>

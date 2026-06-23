@@ -3,10 +3,10 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ChevronLeft, CheckCircle, Circle } from 'lucide-react-native';
-import { usePlannerStore } from '../../store/plannerStore';
-import { generateShoppingListJSON } from '../../services/groq';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
+import { usePlannerStore } from '../../store/plannerStore';
+import { generateShoppingListJSON } from '../../services/groq';
 import { useTheme } from '../../hooks/useTheme';
 
 export default function ShoppingListModal() {
@@ -74,14 +74,14 @@ export default function ShoppingListModal() {
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
           <ChevronLeft size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={[s.title, { color: colors.textPrimary }]}>Lista de Compras 🛒</Text>
+        <Text style={[s.title, { color: colors.textPrimary }]}>{t('planner.shoppingListTitle', 'Lista de Compras')} 🛒</Text>
         <View style={{ width: 40 }} />
       </View>
 
       {loading ? (
         <View style={s.center}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[s.loadingText, { color: colors.textSecondary }]}>Generando lista inteligente...</Text>
+          <Text style={[s.loadingText, { color: colors.textSecondary }]}>{t('planner.generatingList', 'Generando lista inteligente...')}</Text>
         </View>
       ) : error ? (
         <View style={s.center}>

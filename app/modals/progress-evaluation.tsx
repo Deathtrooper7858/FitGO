@@ -326,12 +326,12 @@ export default function ProgressEvaluationModal() {
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.areaScroll} contentContainerStyle={s.areaScrollContent}>
               {[
-                { id: 'full', label: '🧍‍♂️ Cuerpo Completo' },
-                { id: 'upper', label: '👕 Tren Superior' },
-                { id: 'lower', label: '👖 Piernas' },
-                { id: 'back', label: '🔙 Espalda' },
-                { id: 'arms', label: '💪 Brazos' },
-                { id: 'core', label: '🍫 Abdomen' },
+                { id: 'full', label: `🧍‍♂️ ${t('evaluation.fullBody','Full Body')}` },
+                { id: 'upper', label: `👕 ${t('evaluation.upperBody','Upper Body')}` },
+                { id: 'lower', label: `👖 ${t('evaluation.lowerBody','Legs')}` },
+                { id: 'back', label: `🔙 ${t('evaluation.backBody','Back')}` },
+                { id: 'arms', label: `💪 ${t('evaluation.arms','Arms')}` },
+                { id: 'core', label: `🍫 ${t('evaluation.core','Core')}` },
               ].map(area => (
                 <TouchableOpacity 
                   key={area.id} 

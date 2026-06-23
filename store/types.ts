@@ -45,6 +45,8 @@ export interface UserProfile extends HealthProfile {
   preferences?:    string[];
   isPro:           boolean;
   role:            'user' | 'admin' | 'super_admin' | 'owner' | 'pro' | 'pro_user';
+  trialUsedAt?:    string | null;
+  trialExpiresAt?: string | null;
   onboardingDone:  boolean;
   widgetsOrder?:   string[];
   lifestyle?:      'seated' | 'standing_sometimes' | 'standing_mostly' | 'moving' | 'physical_work';

@@ -7,6 +7,7 @@ import { useAuthStore } from '../authStore';
 import { useToastStore } from '../toastStore';
 import { useLeagueStore, getStreakMultiplier } from '../leagueStore';
 import { NotificationTriggers } from '../../utils/notificationTriggers';
+import i18n from '../../i18n';
 import { memoRecalculateStreak } from './utils';
 import { selectDailyTotals } from './selectors';
 
@@ -97,9 +98,11 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
       set((s: any) => ({ todayLogs: [...s.todayLogs, safeLog] }));
       get().updateActivity(safeLog.loggedAt.split('T')[0]);
 
+      const mealNames: Record<string, string> = { breakfast: i18n.t('tracker.breakfast','Breakfast'), lunch: i18n.t('tracker.lunch','Lunch'), dinner: i18n.t('tracker.dinner','Dinner'), snack: i18n.t('tracker.snack','Snack') };
+      const mealLabel = mealNames[safeLog.meal.toLowerCase()] || i18n.t('tracker.meal','Meal');
       useToastStore.getState().addNotification({
-        title: `${({ breakfast: 'Desayuno', lunch: 'Almuerzo', dinner: 'Cena', snack: 'Snack' })[safeLog.meal.toLowerCase()] || 'Comida'} Registrada`,
-        description: `Se han añadido ${safeLog.calories} kcal a tu día.`,
+        title: `${mealLabel} ${i18n.t('tracker.registered','Registered')}`,
+        description: i18n.t('tracker.kcalAdded','{{calories}} kcal have been added to your day.').replace('{{calories}}', String(safeLog.calories)),
         icon: '🍽️', iconType: 'emoji', tier: 'success', isAchievement: false,
       });
 

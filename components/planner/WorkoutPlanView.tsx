@@ -99,7 +99,7 @@ export default function WorkoutPlanView({
 
       {!alreadyCompleted && (
         <View style={{ gap: 8, marginTop: 12, marginBottom: 8 }}>
-          <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textSecondary, marginLeft: 4 }}>Ajuste Rápido de Dificultad</Text>
+          <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textSecondary, marginLeft: 4 }}>{t('planner.quickDifficultyAdjust', 'Quick Difficulty Adjustment')}</Text>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <TouchableOpacity
               style={{ flex: 1, backgroundColor: colors.surfaceAlt, padding: 12, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
@@ -121,7 +121,7 @@ export default function WorkoutPlanView({
               disabled={isAdjustingBW}
             >
               {isAdjustingBW ? <ActivityIndicator size="small" color={colors.primary} /> : <Text style={{ fontSize: 18 }}>🏠</Text>}
-              <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, marginTop: 4, textAlign: 'center' }}>Sin Equipo</Text>
+              <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, marginTop: 4, textAlign: 'center' }}>{t('planner.noEquipment', 'No Equipment')}</Text>
             </TouchableOpacity>
           </View>
         </View>

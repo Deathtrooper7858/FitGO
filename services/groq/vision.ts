@@ -1,3 +1,4 @@
+import i18n from '../../i18n';
 import { getLang, isRomanceLang, prepareImageData, fetchGroq, VISION_MODEL } from './core';
 
 // ─── Food photo analysis ───────────────────────────────────────────────────────
@@ -22,7 +23,7 @@ export async function analyzeFoodPhoto(base64Image: string, language: string = '
   try {
     const prepared = prepareImageData(base64Image);
     if (!prepared) {
-      throw new Error('No se pudo procesar la imagen.');
+      throw new Error(i18n.t('groq.imageProcessFailed'));
     }
     
     const data = await fetchGroq({
@@ -107,7 +108,7 @@ If the image is not a physique photo, kindly mention it in the feedback but try 
   try {
     const prepared = prepareImageData(base64Image);
     if (!prepared) {
-      throw new Error('No se pudo procesar la imagen.');
+      throw new Error(i18n.t('groq.imageProcessFailed'));
     }
     
     const data = await fetchGroq({

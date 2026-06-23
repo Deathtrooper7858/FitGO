@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { BodyMeasurement } from './types';
 import { supabase } from '../services/supabase';
+import { SecureStorage } from '../utils/storage';
+import i18n from '../i18n';
+import { BodyMeasurement } from './types';
 import { useAuthStore } from './authStore';
 import { useToastStore } from './toastStore';
-import { SecureStorage } from '../utils/storage';
 
 interface BodyState {
   measurements: BodyMeasurement[];
@@ -109,8 +110,8 @@ export const useBodyStore = create<BodyState>()(
           });
 
           useToastStore.getState().addNotification({
-            title: 'Medidas Actualizadas',
-            description: `Tus registros corporales han sido guardados.`,
+            title: i18n.t('body.measurementsUpdated'),
+            description: i18n.t('body.measurementsUpdatedDesc'),
             iconType: 'lucide',
             lucideIcon: 'Ruler',
             tier: 'plata',

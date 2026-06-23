@@ -69,7 +69,7 @@ export const supabase = createClient(
       flowType:           'pkce',
     },
     realtime: {
-      timeout: 30000,
+      timeout: 10000,
       params: {
         heartbeatIntervalMs: 25000,
       },

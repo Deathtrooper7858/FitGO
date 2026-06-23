@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 import { Bot } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '../hooks/useTheme';
 import { useWorkoutHistoryStore } from '../store/workoutHistoryStore';
 import { useAuthStore } from '../store/authStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { generateDailyTip } from '../services/groq';
-import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY = 'ff-daily-tip';
 
 export function FitzDailyTip({ streakDays }: { streakDays: number }) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const workouts = useWorkoutHistoryStore(state => state.workouts);
   const profile = useAuthStore(state => state.profile);
   const language = useSettingsStore(state => state.language);
@@ -47,7 +49,7 @@ export function FitzDailyTip({ streakDays }: { streakDays: number }) {
         await AsyncStorage.setItem(storageKey, JSON.stringify({ date: today, tip: newTip }));
       } catch (err) {
         console.warn('Error fetching Fitz daily tip:', err);
-        setTip('¡A darle con todo hoy! 🔥');
+        setTip(t('dashboard.defaultTip', '¡A darle con todo hoy! 🔥'));
       } finally {
         setLoading(false);
       }

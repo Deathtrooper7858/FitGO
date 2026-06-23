@@ -284,7 +284,7 @@ function EmptySquad({ onCreate, onJoin }: { onCreate: () => void; onJoin: () => 
                         if (ok) {
                           store.fetchMySquad(profile.id);
                         } else {
-                          Alert.alert('Error', store.error || 'No se pudo unir al squad.');
+                          Alert.alert(t('common.error'), store.error || t('competitive.squads.joinFailed'));
                         }
                       }
                     }}
@@ -561,7 +561,7 @@ export default function FitGOCompetitive({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     const result = await createSquad(squadName.trim(), profile.id);
     if (!result) {
-      Alert.alert('Error', useLeagueStore.getState().error || 'Error al crear el squad.');
+      Alert.alert(t('common.error'), useLeagueStore.getState().error || t('competitive.squads.createFailed'));
       return;
     }
     setShowCreate(false);
@@ -578,7 +578,7 @@ export default function FitGOCompetitive({
       setJoinCode('');
       setActiveSection('my-squad');
     } else {
-      Alert.alert('Error', useLeagueStore.getState().error || 'Error al unirse al squad.');
+      Alert.alert(t('common.error'), useLeagueStore.getState().error || t('competitive.squads.joinFailed'));
     }
   };
 
@@ -760,7 +760,7 @@ export default function FitGOCompetitive({
                           onPress={() => setShowRanksList(true)}
                         >
                           <Trophy size={14} color={colors.primary} />
-                          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '800' }}>RANGOS</Text>
+                          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '800' }}>{t('competitive.ranks', 'RANGOS')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                           style={{ backgroundColor: '#F59E0B18', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}
@@ -882,7 +882,7 @@ export default function FitGOCompetitive({
                                 <View style={[styles.myRankBadge, { backgroundColor: rankItem.bg, width: 40, height: 40 }]}>
                                   <Text style={{ color: rankItem.color, fontSize: 16, fontWeight: '900' }}>{rankItem.label}</Text>
                                 </View>
-                                <Text style={{ flex: 1, color: colors.textPrimary, fontSize: 15, fontWeight: '700' }}>Rango {rankItem.label}</Text>
+                                <Text style={{ flex: 1, color: colors.textPrimary, fontSize: 15, fontWeight: '700' }}>{t('competitive.rankLabel', { label: rankItem.label, defaultValue: `Rank ${rankItem.label}` })}</Text>
                                 <View style={{ alignItems: 'flex-end' }}>
                                   <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 14 }}>{rankItem.pts.toLocaleString()}</Text>
                                   <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '600' }}>pts</Text>

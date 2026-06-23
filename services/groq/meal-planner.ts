@@ -1,3 +1,4 @@
+import i18n from '../../i18n';
 import { getLang, fetchGroq, CHAT_MODEL, FAST_MODEL } from './core';
 
 // ─── Generate weekly meal plan ─────────────────────────────────────────────────
@@ -117,7 +118,7 @@ Return ONLY valid JSON — no markdown, no explanation, just the JSON object:
   const requiredDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const missingDays = requiredDays.filter(d => !parsed[d] || !Array.isArray(parsed[d]) || parsed[d].length === 0);
   if (missingDays.length > 0) {
-    throw new Error(`El plan generado está incompleto (faltan: ${missingDays.join(', ')}). Por favor intenta de nuevo.`);
+    throw new Error(i18n.t('groq.incompletePlan', { days: missingDays.join(', ') }));
   }
 
   return parsed;

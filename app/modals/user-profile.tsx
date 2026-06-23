@@ -4,15 +4,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Image } from 'expo-image';
 import { ArrowLeft, UserPlus, Check, Trophy, Heart, MessageSquare, Users, Trash2 } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
 import { getNameStyle } from '../../utils/styles';
 import { getLucideIcon } from '../../constants/iconMap';
-import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../../services/supabase';
 import { useAuthStore, useSocialStore, useSettingsStore, usePurchaseStore } from '../../store';
 import { GlassCard } from '../../components/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
-import { useAchievements, ALL_BADGES } from '../../hooks/useAchievements';
-import { useTranslation } from 'react-i18next';
+import { useAchievements, useTranslatedBadge, ALL_BADGES } from '../../hooks/useAchievements';
 import { Radius } from '../../constants';
 import { CustomAlert } from '../../components/CustomAlert';
 import { AvatarViewerModal } from '../../components/AvatarViewerModal';
@@ -108,6 +108,10 @@ export default function UserProfileModal() {
     loadFriends();
   }, [userId]);
 
+  const displayUser = userProfile || { name: fallbackName, avatar_url: fallbackAvatar, unlockedAchievements: [], role: 'verified' };
+  const currentBadgeId = displayUser.selectedBadge || (displayUser.role === 'owner' ? 'owner' : displayUser.role === 'super_admin' ? 'super_admin' : displayUser.role === 'admin' ? 'admin' : displayUser.isPro ? 'pro' : 'verified');
+  const currentBadge = useTranslatedBadge(currentBadgeId) || ALL_BADGES.verified;
+
   if (loading) {
     return (
       <View style={[s.container, { backgroundColor: colors.background, justifyContent: 'center' }]}>
@@ -126,8 +130,6 @@ export default function UserProfileModal() {
       </View>
     );
   }
-
-  const displayUser = userProfile || { name: fallbackName, avatar_url: fallbackAvatar, unlockedAchievements: [], role: 'verified' };
 
   // For own profile: use premiumColor from local store.
   // For others: use their name_color from DB (visible to ALL users inspecting the profile).
@@ -156,8 +158,6 @@ export default function UserProfileModal() {
   };
 
   const userGrade = rankInfo ? getRank(rankInfo.points) : getRank(0);
-  const currentBadgeId = displayUser.selectedBadge || (displayUser.role === 'owner' ? 'owner' : displayUser.role === 'super_admin' ? 'super_admin' : displayUser.role === 'admin' ? 'admin' : displayUser.isPro ? 'pro' : 'verified');
-  const currentBadge = ALL_BADGES[currentBadgeId] || ALL_BADGES.verified;
 
   const theirUnlockedIds: string[] = Array.from(new Set(displayUser.unlocked_achievements || []));
   const theirUnlockedCount = isMe

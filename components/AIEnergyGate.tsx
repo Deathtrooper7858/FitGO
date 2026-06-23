@@ -5,16 +5,17 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RewardedAd, RewardedAdEventType, AdEventType } from 'react-native-google-mobile-ads';
+import { Zap, X, Play, Crown, Camera, FileText, Lock, CheckCircle } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
+import { router } from 'expo-router';
 import {
   useAdStore,
   MAX_AI_PHOTO_ENERGY,
   MAX_AI_TEXT_ENERGY,
   MAX_ADS_PER_DAY,
 } from '../store/adStore';
-import { Zap, X, Play, Crown, Camera, FileText, Lock, CheckCircle } from 'lucide-react-native';
 import { useTheme } from '../hooks/useTheme';
 import { AD_UNIT_IDS } from '../constants/adConfig';
-import { router } from 'expo-router';
 
 export type AIEnergyMode = 'photo' | 'text';
 
@@ -38,6 +39,7 @@ function getOrCreateRewardedAd(): RewardedAd {
 
 export const AIEnergyGate = React.memo(function AIEnergyGate({ visible, onClose, onEnergyGranted, mode = 'photo' }: AIEnergyGateProps) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const {
     aiPhotoEnergy, aiTextEnergy,
     photoAdsWatchedToday, textAdsWatchedToday,
@@ -218,27 +220,22 @@ export const AIEnergyGate = React.memo(function AIEnergyGate({ visible, onClose,
           </LinearGradient>
 
           <Text style={[styles.title, { color: colors.textPrimary }]}>
-            {canWatchAd ? '¡Sin Energía IA! 🔋' : 'Límite de anuncios alcanzado'}
+            {canWatchAd ? t('noCredits.title', 'No AI energy for today') : t('noCredits.videoLimit', 'Video limit reached')}
           </Text>
 
           <Text style={[styles.desc, { color: colors.textSecondary }]}>
             {canWatchAd ? (
               <>
-                Tienes{' '}
+                {t('noCredits.subtitle', 'You used your daily credits. Choose how to continue:')}{' '}
                 <Text style={{ color: '#F59E0B', fontWeight: '800' }}>
-                  {adsRemaining} anuncio{adsRemaining !== 1 ? 's' : ''}
+                  {adsRemaining} {t('noCredits.photoDay', 'photo/day')}
                 </Text>{' '}
-                disponibles hoy.{'\n'}Cada video te da{' '}
-                <Text style={{ color: '#10B981', fontWeight: '800' }}>+1 crédito ⚡</Text>
+                {t('common.or', 'or')}{' '}
+                <Text style={{ color: '#10B981', fontWeight: '800' }}>+1 ⚡</Text>
               </>
             ) : (
               <>
-                Viste los{' '}
-                <Text style={{ color: '#F59E0B', fontWeight: '800' }}>
-                  {MAX_ADS_PER_DAY} anuncios
-                </Text>{' '}
-                permitidos hoy para {isPhoto ? 'foto' : 'texto'}.{'\n'}
-                Vuelve mañana o hazte Pro.
+                {t('noCredits.comeBack', 'Come back tomorrow for more credits')}
               </>
             )}
           </Text>
@@ -246,13 +243,13 @@ export const AIEnergyGate = React.memo(function AIEnergyGate({ visible, onClose,
           {/* Energy dots */}
           <View style={styles.dotsRow}>{renderEnergyDots()}</View>
           <Text style={[styles.energyLabel, { color: colors.textMuted }]}>
-            {currentEnergy}/{maxEnergy} créditos {isPhoto ? '📸 foto' : '✍️ texto'} restantes
+            {currentEnergy}/{maxEnergy} {isPhoto ? '📸' : '✍️'} {t('noCredits.photoDay', 'photo/day')}
           </Text>
 
           {/* Ad slots */}
           <View style={styles.adSlotsSection}>
             <Text style={[styles.adSlotsTitle, { color: colors.textMuted }]}>
-              Anuncios vistos hoy ({adsWatched}/{MAX_ADS_PER_DAY})
+              {t('noCredits.photoDay', 'photo/day')} ({adsWatched}/{MAX_ADS_PER_DAY})
             </Text>
             <View style={styles.adSlotsRow}>{renderAdSlots()}</View>
           </View>
@@ -265,7 +262,7 @@ export const AIEnergyGate = React.memo(function AIEnergyGate({ visible, onClose,
             ]}>
               <Camera size={12} color={isPhoto ? '#F59E0B' : colors.textMuted} />
               <Text style={{ color: isPhoto ? '#F59E0B' : colors.textMuted, fontSize: 11, fontWeight: '700' }}>
-                {aiPhotoEnergy}/{MAX_AI_PHOTO_ENERGY} foto
+                {aiPhotoEnergy}/{MAX_AI_PHOTO_ENERGY} 📸
               </Text>
             </View>
             <View style={[
@@ -274,7 +271,7 @@ export const AIEnergyGate = React.memo(function AIEnergyGate({ visible, onClose,
             ]}>
               <FileText size={12} color={!isPhoto ? '#7C5CFC' : colors.textMuted} />
               <Text style={{ color: !isPhoto ? '#7C5CFC' : colors.textMuted, fontSize: 11, fontWeight: '700' }}>
-                {aiTextEnergy}/{MAX_AI_TEXT_ENERGY} texto
+                {aiTextEnergy}/{MAX_AI_TEXT_ENERGY} ✍️
               </Text>
             </View>
           </View>
@@ -299,13 +296,13 @@ export const AIEnergyGate = React.memo(function AIEnergyGate({ visible, onClose,
                   ) : showSuccess ? (
                     <>
                       <CheckCircle size={18} color="#FFF" />
-                      <Text style={styles.watchBtnText}>¡+1 crédito ganado! ⚡</Text>
+                      <Text style={styles.watchBtnText}>{t('noCredits.earned', '+1 credit earned')} ⚡</Text>
                     </>
                   ) : (
                     <>
                       <Play size={18} color="#FFF" fill="#FFF" />
                       <Text style={styles.watchBtnText}>
-                        Ver anuncio · +1 ⚡ ({adsRemaining} restante{adsRemaining !== 1 ? 's' : ''})
+                        {t('noCredits.watchAd', 'Watch short video')} · +1 ⚡ ({adsRemaining} {t('noCredits.photoDay', 'photo/day')})
                       </Text>
                     </>
                   )}
@@ -328,12 +325,12 @@ export const AIEnergyGate = React.memo(function AIEnergyGate({ visible, onClose,
             activeOpacity={0.85}
           >
             <Crown size={16} color={colors.primary} />
-            <Text style={[styles.proBtnText, { color: colors.primary }]}>Hacerse Pro · IA Ilimitada</Text>
+            <Text style={[styles.proBtnText, { color: colors.primary }]}>{t('noCredits.goPro', 'Go Pro · Unlimited AI')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={onClose} style={{ marginTop: 12 }}>
             <Text style={[styles.cancelTxt, { color: colors.textMuted }]}>
-              {canWatchAd ? 'Cancelar' : 'Cerrar'}
+              {canWatchAd ? t('noCredits.cancel', 'Cancel') : t('noCredits.close', 'Close')}
             </Text>
           </TouchableOpacity>
         </View>

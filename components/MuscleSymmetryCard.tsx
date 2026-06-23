@@ -26,11 +26,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Dumbbell, Eye, RefreshCw, X, Activity, Zap, Crown, Lock } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useWorkoutHistoryStore } from '../store/workoutHistoryStore';
 import { useAuthStore } from '../store/authStore';
 import { useSettingsStore } from '../store';
 import { useTheme } from '../hooks/useTheme';
-import { useTranslation } from 'react-i18next';
 import exercisesData from '../excercise/exercises.json';
 import { Radius } from '../constants';
 import { getLocalDateString } from '../utils/date';
@@ -117,23 +117,23 @@ const MUSCLE_MAP: Record<string, string> = {
 // ─── Levels ──────────────────────────────────────────────────────────────────────────────
 const LEVELS = [
   // Mortal — Stone gray, humble beginning
-  { min: 1,  max: 3,   color: '#A8A8B3', glowColor: 'rgba(168,168,179,0.35)', gradStart: '#D1D5DB', gradEnd: '#4B5563', name: 'Mortal',    icon: '\u2694\uFE0F' },
+  { min: 1,  max: 3,   color: '#A8A8B3', glowColor: 'rgba(168,168,179,0.35)', gradStart: '#D1D5DB', gradEnd: '#4B5563', name: 'Mortal',    nameKey: 'dashboard.levelMortal',    icon: '\u2694\uFE0F' },
   // Guerrero — Burning copper-crimson
-  { min: 4,  max: 8,   color: '#F97316', glowColor: 'rgba(249,115,22,0.5)',   gradStart: '#FDBA74', gradEnd: '#9A3412', name: 'Guerrero',  icon: '\uD83D\uDEE1\uFE0F' },
+  { min: 4,  max: 8,   color: '#F97316', glowColor: 'rgba(249,115,22,0.5)',   gradStart: '#FDBA74', gradEnd: '#9A3412', name: 'Guerrero',  nameKey: 'dashboard.levelWarrior',  icon: '\uD83D\uDEE1\uFE0F' },
   // Espartano — Arctic steel blue
-  { min: 9,  max: 16,  color: '#38BDF8', glowColor: 'rgba(56,189,248,0.5)',   gradStart: '#7DD3FC', gradEnd: '#075985', name: 'Espartano', icon: '\uD83C\uDFDB\uFE0F' },
-  // Semidi\u00f3s — Solar divine gold
-  { min: 17, max: 27,  color: '#EAB308', glowColor: 'rgba(234,179,8,0.6)',    gradStart: '#FEF08A', gradEnd: '#92400E', name: 'Semidi\u00f3s',  icon: '\u26A1' },
-  // Ol\u00edmpico — Amethyst royalty
-  { min: 28, max: 40,  color: '#A855F7', glowColor: 'rgba(168,85,247,0.6)',   gradStart: '#D8B4FE', gradEnd: '#581C87', name: 'Ol\u00edmpico',  icon: '\uD83D\uDC51' },
-  // Tit\u00e1n — Cosmic aurora (cyan \u2192 violet)
-  { min: 41, max: 999, color: '#06B6D4', glowColor: 'rgba(6,182,212,0.65)',   gradStart: '#67E8F9', gradEnd: '#6D28D9', name: 'Tit\u00e1n',     icon: '\uD83C\uDF0C' },
+  { min: 9,  max: 16,  color: '#38BDF8', glowColor: 'rgba(56,189,248,0.5)',   gradStart: '#7DD3FC', gradEnd: '#075985', name: 'Espartano', nameKey: 'dashboard.levelSpartan', icon: '\uD83C\uDFDB\uFE0F' },
+  // Semidiós — Solar divine gold
+  { min: 17, max: 27,  color: '#EAB308', glowColor: 'rgba(234,179,8,0.6)',    gradStart: '#FEF08A', gradEnd: '#92400E', name: 'Semidiós',  nameKey: 'dashboard.levelDemigod',  icon: '\u26A1' },
+  // Olímpico — Amethyst royalty
+  { min: 28, max: 40,  color: '#A855F7', glowColor: 'rgba(168,85,247,0.6)',   gradStart: '#D8B4FE', gradEnd: '#581C87', name: 'Olímpico',  nameKey: 'dashboard.levelOlympic',  icon: '\uD83D\uDC51' },
+  // Titán — Cosmic aurora (cyan → violet)
+  { min: 41, max: 999, color: '#06B6D4', glowColor: 'rgba(6,182,212,0.65)',   gradStart: '#67E8F9', gradEnd: '#6D28D9', name: 'Titán',     nameKey: 'dashboard.levelTitan',     icon: '\uD83C\uDF0C' },
 ];
 
 const FATIGUE_LEVELS = [
-  { min: 1, max: 3, color: '#10B981', glowColor: 'rgba(16,185,129,0.4)', gradStart: '#34D399', gradEnd: '#065F46', name: 'Recuperado', icon: '✅' },
-  { min: 4, max: 6, color: '#F59E0B', glowColor: 'rgba(245,158,11,0.4)', gradStart: '#FBBF24', gradEnd: '#B45309', name: 'Cansado', icon: '⚠️' },
-  { min: 7, max: 999, color: '#EF4444', glowColor: 'rgba(239,68,68,0.4)', gradStart: '#F87171', gradEnd: '#7F1D1D', name: 'Exhausto', icon: '🔥' },
+  { min: 1, max: 3, color: '#10B981', glowColor: 'rgba(16,185,129,0.4)', gradStart: '#34D399', gradEnd: '#065F46', name: 'Recuperado', nameKey: 'dashboard.fatigueRecovered', icon: '✅' },
+  { min: 4, max: 6, color: '#F59E0B', glowColor: 'rgba(245,158,11,0.4)', gradStart: '#FBBF24', gradEnd: '#B45309', name: 'Cansado', nameKey: 'dashboard.fatigueTired', icon: '⚠️' },
+  { min: 7, max: 999, color: '#EF4444', glowColor: 'rgba(239,68,68,0.4)', gradStart: '#F87171', gradEnd: '#7F1D1D', name: 'Exhausto', nameKey: 'dashboard.fatigueExhausted', icon: '🔥' },
 ];
 
 function getColorForCount(count: number, mode: 'evolution' | 'fatigue'): string {
@@ -244,6 +244,7 @@ function MedalBadge({
   isActive: boolean;
   index: number;
 }) {
+  const { t } = useTranslation();
   const glowOpacity = useSharedValue(0.3);
   const scale = useSharedValue(isActive ? 1 : 0.92);
 
@@ -305,7 +306,7 @@ function MedalBadge({
         ]}
         numberOfLines={1}
       >
-        {level.name}
+        {t(level.nameKey, level.name)}
       </Text>
       {isActive && (
         <View style={[medalSt.activeDot, { backgroundColor: level.color }]} />
@@ -373,6 +374,7 @@ function MuscleTooltip({
   mode: 'evolution' | 'fatigue';
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   const colors = useTheme();
   // isMounted tracks whether the overlay should remain in the component tree.
   // We only unmount AFTER the exit animation finishes to avoid abrupt removal.
@@ -441,7 +443,7 @@ function MuscleTooltip({
                   {muscleName}
                 </Text>
                 <Text style={[tipSt.sessionLabel, { color: colors.textSecondary }]}>
-                  {sessionCount} {sessionCount === 1 ? 'impacto' : 'impactos'} {mode === 'evolution' ? 'este mes' : 'recientes'}
+                  {sessionCount} {sessionCount === 1 ? t('dashboard.sessionImpact', 'impact') : t('dashboard.sessionImpacts', 'impacts')} {mode === 'evolution' ? t('dashboard.sessionThisMonth', 'this month') : t('dashboard.sessionRecent', 'recent')}
                 </Text>
               </View>
               <Pressable
@@ -462,7 +464,7 @@ function MuscleTooltip({
                   end={{ x: 1, y: 0 }}
                   style={tipSt.levelBadge}
                 >
-                  <Text style={tipSt.levelBadgeText}>{level.icon} {level.name}</Text>
+                  <Text style={tipSt.levelBadgeText}>{level.icon} {t(level.nameKey, level.name)}</Text>
                 </LinearGradient>
 
                 {/* Progress bar */}
@@ -707,7 +709,7 @@ export function MuscleSymmetryCard() {
                 <Dumbbell size={18} color="#fff" />
               </LinearGradient>
               <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={1}>
-                Evolución Muscular
+                {t('dashboard.muscleEvolution', 'Evolución Muscular')}
               </Text>
             </View>
             <View style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: '#FFB80020', borderWidth: 1, borderColor: '#FFB80050' }}>
@@ -739,10 +741,10 @@ export function MuscleSymmetryCard() {
             </View>
 
             <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: '900', textAlign: 'center' }}>
-              Función Premium
+              {t('paywall.premiumFeature', 'Función Premium')}
             </Text>
             <Text style={{ color: colors.textSecondary, fontSize: 13, textAlign: 'center', lineHeight: 20 }}>
-              Desbloquea la Evolución Muscular y la Fatiga para visualizar tus grupos musculares y su progreso en tiempo real.
+              {t('dashboard.muscleEvolutionDesc', 'Desbloquea la Evolución Muscular y la Fatiga para visualizar tus grupos musculares y su progreso en tiempo real.')}
             </Text>
 
             <TouchableOpacity
@@ -757,7 +759,7 @@ export function MuscleSymmetryCard() {
                 style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 20 }}
               >
                 <Crown size={18} color="#000" />
-                <Text style={{ color: '#000', fontWeight: '900', fontSize: 15 }}>Desbloquear con Pro</Text>
+                <Text style={{ color: '#000', fontWeight: '900', fontSize: 15 }}>{t('paywall.unlockNow', 'Desbloquear con Pro')}</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -795,7 +797,7 @@ export function MuscleSymmetryCard() {
               numberOfLines={1} 
               adjustsFontSizeToFit
             >
-              {viewMode === 'evolution' ? 'Evolución Muscular' : 'Fatiga y Recuperación'}
+              {viewMode === 'evolution' ? t('dashboard.muscleEvolution', 'Evolución Muscular') : t('dashboard.fatigueRecovery', 'Fatiga y Recuperación')}
             </Text>
           </View>
         </View>
@@ -809,7 +811,7 @@ export function MuscleSymmetryCard() {
           style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: viewMode === 'evolution' ? colors.primary + '20' : '#EF444420', borderWidth: 1, borderColor: viewMode === 'evolution' ? colors.primary + '40' : '#EF444440' }}
         >
           <Text style={{ fontSize: 12, fontWeight: '800', color: viewMode === 'evolution' ? colors.primary : '#EF4444' }}>
-            {viewMode === 'evolution' ? 'Ver Fatiga' : 'Ver Evolución'}
+            {viewMode === 'evolution' ? t('dashboard.viewFatigue', 'View Fatigue') : t('dashboard.viewEvolution', 'View Evolution')}
           </Text>
         </TouchableOpacity>
         
@@ -921,7 +923,7 @@ export function MuscleSymmetryCard() {
           </Text>
           {bodyData.length > 0 && (
             <Text style={[styles.bodyHint, { color: colors.textMuted }]}>
-              💡 Toca un músculo coloreado para ver detalles
+              💡 {t('dashboard.tapColoredMuscle', 'Tap a colored muscle to see details')}
             </Text>
           )}
         </Animated.View>

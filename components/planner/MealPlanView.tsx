@@ -61,7 +61,7 @@ export default function MealPlanView({
 
           {isActiveToday && plannedMacros.p > 0 && (
             <View style={[mv.macroBarsWrap, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-               <Text style={[mv.macroTitle, { color: colors.textPrimary }]}>Progreso de Macros (Hoy)</Text>
+               <Text style={[mv.macroTitle, { color: colors.textPrimary }]}>{t('tracker.macroProgressToday', 'Macro Progress (Today)')}</Text>
                <View style={mv.macroBarRow}>
                  <Text style={[mv.macroLabel, { color: colors.protein }]}>P</Text>
                  <View style={[mv.macroTrack, { backgroundColor: colors.protein + '20' }]}>
@@ -93,7 +93,7 @@ export default function MealPlanView({
                     <Droplets size={24} color="#3b82f6" />
                   </View>
                   <View>
-                    <Text style={[mv.hydroTitle, { color: colors.textPrimary }]}>Agua (Hoy)</Text>
+                    <Text style={[mv.hydroTitle, { color: colors.textPrimary }]}>{t('tracker.waterToday', 'Water (Today)')}</Text>
                     <Text style={[mv.hydroVal, { color: '#3b82f6' }]}>{waterToday} ml</Text>
                   </View>
                </View>
@@ -102,7 +102,7 @@ export default function MealPlanView({
                  onPress={onAddWater}
                >
                   <Plus size={16} color="#fff" />
-                  <Text style={mv.hydroBtnText}>Vaso (250ml)</Text>
+                   <Text style={mv.hydroBtnText}>{t('tracker.glass250ml', 'Glass (250ml)')}</Text>
                </TouchableOpacity>
             </View>
           )}

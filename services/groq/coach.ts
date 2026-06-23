@@ -1,3 +1,4 @@
+import i18n from '../../i18n';
 import { fetchGroq, prepareImageData, VISION_MODEL, CHAT_MODEL } from './core';
 
 // ─── Send coach message ───────────────────────────────────────────────────────
@@ -20,7 +21,7 @@ export async function sendCoachMessage(
   if (base64Image) {
     const prepared = prepareImageData(base64Image);
     if (!prepared) {
-      throw new Error('No se pudo procesar la imagen.');
+      throw new Error(i18n.t('groq.imageProcessFailed'));
     }
     messages.push({
       role: 'user',

@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { UserProfile } from './types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '../services/supabase';
 import { useSettingsStore } from './settingsStore';
-import { SecureStorage } from '../utils/storage';
+import { UserProfile } from './types';
 
 interface AuthState {
   session:     Session | null;
@@ -69,6 +69,8 @@ export const useAuthStore = create<AuthState>()(
                   preferences:    data.preferences,
                   isPro:          data.is_pro,
                   role:           data.role || 'user',
+                  trialUsedAt:    data.trial_used_at,
+                  trialExpiresAt: data.trial_expires_at,
                   onboardingDone: data.onboarding_done,
                   lifestyle:      data.lifestyle,
                   extraSnacks:    data.extra_snacks,
@@ -115,8 +117,8 @@ export const useAuthStore = create<AuthState>()(
       }
     }),
     {
-      name: 'ff-auth',
-      storage: createJSONStorage(() => SecureStorage),
+      name: 'ff-auth-v2',
+      storage: createJSONStorage(() => AsyncStorage),
       partialize: (s) => ({ profile: s.profile }), // only persist profile, not session
     }
   )

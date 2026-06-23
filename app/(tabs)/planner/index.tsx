@@ -258,7 +258,7 @@ export default function PlannerScreen() {
       const today = getLocalDateString();
       const ws = getStartOfWeek(new Date());
       const we = new Date(ws); we.setDate(we.getDate()+6);
-      const html = mode === 'nutrition' ? generateNutritionHTML(mealPlans, today, ws, we) : generateWorkoutHTML(workoutPlans, energyMode, today, ws, we);
+      const html = mode === 'nutrition' ? generateNutritionHTML(mealPlans, today, ws, we, language) : generateWorkoutHTML(workoutPlans, energyMode, today, ws, we, language);
       const { uri } = await Print.printToFileAsync({ html, base64: false });
       await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf', dialogTitle: `fitgo_${mode==='nutrition'?'menu':'rutina'}_${today}.pdf` });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -345,7 +345,7 @@ export default function PlannerScreen() {
       setWorkoutPlans({...workoutPlans, [activeDay]: {...workout, exercises: adjusted.exercises, name: adjusted.name}}, weekStart||getStartOfWeek(new Date()), warning||undefined, profile?.id);
       if (profile?.id) supabase.from('workout_plan_items').update({exercises: adjusted.exercises, routine_name: adjusted.name}).eq('user_id',profile.id).eq('day_of_week',activeDay).then();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_err) { showAlert('error', t('common.error'), 'No se pudo ajustar el entrenamiento.'); }
+    } catch (_err) { showAlert('error', t('common.error'), t('planner.adjustFailed')); }
     finally { setIsAdjustingBW(false); }
   };
 
@@ -417,16 +417,16 @@ export default function PlannerScreen() {
           <View style={{paddingHorizontal:16,marginTop:12}}>
             <TouchableOpacity style={[s.genBtn,{width:'100%',marginBottom:12,shadowColor:safePremiumColor}]} activeOpacity={0.8} onPress={handleGenerateDayPress} disabled={loading}>
               <LinearGradient colors={mode==='workouts'?(energyMode==='low'?['#06B6D4','#0891B2']:energyMode==='beast'?['#EF4444','#B91C1C']:(isPremiumCustom?[safePremiumColor,safePremiumColor+'CC']:colors.gradientPrimary)):(isPremiumCustom?[safePremiumColor,safePremiumColor+'CC']:colors.gradientPrimary)} style={[s.genGrad,{justifyContent:'center',paddingVertical:12}]} start={{x:0,y:0}} end={{x:1,y:1}}>
-                {loading?<ActivityIndicator size="small" color="#fff"/>:<View style={{flexDirection:'row',alignItems:'center',gap:6}}><Sparkles size={16} color="#fff"/><Text style={s.genText}>Generar {t(`planner.${activeDay.toLowerCase()}`)}</Text></View>}
+                {loading?<ActivityIndicator size="small" color="#fff"/>:<View style={{flexDirection:'row',alignItems:'center',gap:6}}><Sparkles size={16} color="#fff"/><Text style={s.genText}>{t('planner.generateShort')} {t(`planner.${activeDay.toLowerCase()}`)}</Text></View>}
               </LinearGradient>
             </TouchableOpacity>
           </View>
 
           {mode==='workouts'&&(
             <View style={{paddingHorizontal:16,marginBottom:20,marginTop:12}}>
-              <Text style={{fontSize:13,fontWeight:'700',color:colors.textSecondary,marginBottom:8}}>¿Cómo te sientes hoy?</Text>
+              <Text style={{fontSize:13,fontWeight:'700',color:colors.textSecondary,marginBottom:8}}>{t('planner.howFeelToday','How do you feel today?')}</Text>
               <View style={{flexDirection:'row',gap:8}}>
-                {[{key:'low',lbl:'Agotado',emoji:'🔋',color:'#06B6D4'},{key:'normal',lbl:'Normal',emoji:'⚡',color:colors.primary},{key:'beast',lbl:'Bestia',emoji:'🦍',color:'#EF4444'}].map(e=>{
+                {[{key:'low',lbl:t('planner.energyLow','Exhausted'),emoji:'🔋',color:'#06B6D4'},{key:'normal',lbl:t('planner.energyNormal','Normal'),emoji:'⚡',color:colors.primary},{key:'beast',lbl:t('planner.energyBeast','Beast'),emoji:'🦍',color:'#EF4444'}].map(e=>{
                   const isE=energyMode===e.key;
                   return(<TouchableOpacity key={e.key} activeOpacity={0.8} onPress={()=>{setEnergyMode(e.key as any);Haptics.impactAsync(e.key==='low'?Haptics.ImpactFeedbackStyle.Soft:e.key==='beast'?Haptics.ImpactFeedbackStyle.Heavy:Haptics.ImpactFeedbackStyle.Medium);}} style={{flex:1,paddingVertical:10,backgroundColor:isE?e.color+'20':colors.surfaceAlt,borderRadius:16,borderWidth:1,borderColor:isE?e.color:colors.border,alignItems:'center'}}><Text style={{fontSize:20}}>{e.emoji}</Text><Text style={{fontSize:12,fontWeight:'800',color:isE?e.color:colors.textMuted,marginTop:4}}>{e.lbl}</Text></TouchableOpacity>)})}
               </View>
@@ -444,15 +444,15 @@ export default function PlannerScreen() {
                   <Text style={[s.equipmentTitle,{color:colors.textPrimary}]}>{t('planner.equipmentTitle','Implementos Adicionales')}</Text>
                   <Text style={[s.equipmentSub,{color:colors.textSecondary}]}>{t('planner.equipmentSub','¿Qué equipo tienes disponible?')}</Text>
                   <View style={{marginTop:12}}>
-                    {[{id:'basics',title:'Básicos de Calistenia',items:['Barra de dominadas','Barras paralelas','Anillas de gimnasia','Chaleco lastrado']},{id:'bands',title:'Bandas y Resistencia',items:['Bandas elásticas tubulares','Bandas de resistencia (loops)','TRX / Suspensión']},{id:'accessories',title:'Accesorios Adicionales',items:['Tapete / Mat','Rueda abdominal','Cuerda para saltar','Banco ajustable']},{id:'weights',title:'Pesas y Mancuernas',items:[]}].map(cat=>{
+                    {[{id:'basics',title:t('planner.eqCatBasics','Básicos de Calistenia'),items:[t('planner.eqPullupBar','Barra de dominadas'),t('planner.eqParallelBars','Barras paralelas'),t('planner.eqGymnasticRings','Anillas de gimnasia'),t('planner.eqWeightedVest','Chaleco lastrado')]},{id:'bands',title:t('planner.eqCatBands','Bandas y Resistencia'),items:[t('planner.eqTubularBands','Bandas elásticas tubulares'),t('planner.eqLoopBands','Bandas de resistencia (loops)'),t('planner.eqTRX','TRX / Suspensión')]},{id:'accessories',title:t('planner.eqCatAccessories','Accesorios Adicionales'),items:[t('planner.eqMat','Tapete / Mat'),t('planner.eqAbWheel','Rueda abdominal'),t('planner.eqJumpRope','Cuerda para saltar'),t('planner.eqAdjustableBench','Banco ajustable')]},{id:'weights',title:t('planner.eqCatWeights','Pesas y Mancuernas'),items:[]}].map(cat=>{
                       const isExp=expandedEqCategory===cat.id;
                       return(<View key={cat.id} style={{marginBottom:8,backgroundColor:colors.background,borderRadius:12,overflow:'hidden',borderWidth:1,borderColor:colors.border}}>
                         <TouchableOpacity style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',padding:12}} onPress={()=>setExpandedEqCategory(isExp?null:cat.id)} activeOpacity={0.7}><Text style={{color:colors.textPrimary,fontWeight:'600',fontSize:14}}>{cat.title}</Text>{isExp?<ChevronUp size={16} color={colors.textMuted}/>:<ChevronDown size={16} color={colors.textMuted}/>}</TouchableOpacity>
                         {isExp&&<View style={{padding:12,paddingTop:0,borderTopWidth:1,borderTopColor:colors.border+'50',marginTop:4}}>
                           {cat.id==='weights'&&<View><View style={{flexDirection:'row',gap:8,marginBottom:12}}>
-                            {['Mancuernas','Kettlebell'].map(t=>{const isWT=weightType===t;return(<TouchableOpacity key={t} style={{flex:1,paddingVertical:8,alignItems:'center',borderRadius:8,backgroundColor:isWT?colors.primary+'20':colors.surfaceAlt,borderWidth:1,borderColor:isWT?colors.primary:colors.border}} onPress={()=>setWeightType(t as any)}><Text style={{color:isWT?colors.primary:colors.textMuted,fontWeight:'600',fontSize:13}}>{t}</Text></TouchableOpacity>)})}
+                            {(['Mancuernas','Kettlebell'] as const).map(wt=>{const isWT=weightType===wt;return(<TouchableOpacity key={wt} style={{flex:1,paddingVertical:8,alignItems:'center',borderRadius:8,backgroundColor:isWT?colors.primary+'20':colors.surfaceAlt,borderWidth:1,borderColor:isWT?colors.primary:colors.border}} onPress={()=>setWeightType(wt)}><Text style={{color:isWT?colors.primary:colors.textMuted,fontWeight:'600',fontSize:13}}>{wt==='Mancuernas'?t('planner.eqDumbbells','Mancuernas'):t('planner.eqKettlebell','Kettlebell')}</Text></TouchableOpacity>)})}
                           </View><View style={{flexDirection:'row',gap:8,marginBottom:12}}>
-                            <TextInput style={{flex:1,backgroundColor:colors.surfaceAlt,color:colors.textPrimary,borderRadius:8,paddingHorizontal:12,paddingVertical:8,borderWidth:1,borderColor:colors.border}} placeholder="Ej: 5" placeholderTextColor={colors.textMuted} keyboardType="numeric" value={customWeightInput} onChangeText={setCustomWeightInput} />
+                            <TextInput style={{flex:1,backgroundColor:colors.surfaceAlt,color:colors.textPrimary,borderRadius:8,paddingHorizontal:12,paddingVertical:8,borderWidth:1,borderColor:colors.border}} placeholder={t('planner.weightPlaceholder','Ej: 5')} placeholderTextColor={colors.textMuted} keyboardType="numeric" value={customWeightInput} onChangeText={setCustomWeightInput} />
                             {['kg','lbs'].map(u=>{const isU=weightUnit===u;return(<TouchableOpacity key={u} style={{paddingHorizontal:12,paddingVertical:8,borderRadius:8,backgroundColor:isU?colors.primary+'20':colors.surfaceAlt,borderWidth:1,borderColor:isU?colors.primary:colors.border,justifyContent:'center'}} onPress={()=>setWeightUnit(u as any)}><Text style={{color:isU?colors.primary:colors.textMuted,fontWeight:'600'}}>{u}</Text></TouchableOpacity>)})}
                             <TouchableOpacity style={{paddingHorizontal:12,paddingVertical:8,borderRadius:8,backgroundColor:colors.primary,justifyContent:'center'}} onPress={handleAddCustomWeight}><Plus size={16} color="#fff"/></TouchableOpacity>
                           </View></View>}
@@ -496,7 +496,7 @@ export default function PlannerScreen() {
 
           {hasData&&(
             <View style={{gap:12,marginHorizontal:Spacing.base,marginTop:12}}>
-              {mode==='nutrition'&&<TouchableOpacity style={[s.exportBtn,{marginHorizontal:0,marginTop:0}]} onPress={()=>setShowShoppingList(true)} activeOpacity={0.8}><LinearGradient colors={['#F59E0B','#D97706']} style={s.exportGrad} start={{x:0,y:0}} end={{x:1,y:1}}><ShoppingCart size={20} color="#fff"/><Text style={s.exportText}>Lista de Compras 🛒</Text></LinearGradient></TouchableOpacity>}
+              {mode==='nutrition'&&<TouchableOpacity style={[s.exportBtn,{marginHorizontal:0,marginTop:0}]} onPress={()=>setShowShoppingList(true)} activeOpacity={0.8}><LinearGradient colors={['#F59E0B','#D97706']} style={s.exportGrad} start={{x:0,y:0}} end={{x:1,y:1}}><ShoppingCart size={20} color="#fff"/><Text style={s.exportText}>{t('planner.shoppingListTitle', 'Lista de Compras')} 🛒</Text></LinearGradient></TouchableOpacity>}
               <TouchableOpacity style={[s.exportBtn,{marginHorizontal:0,marginTop:0}]} onPress={handleExportPDF} activeOpacity={0.8}><LinearGradient colors={['#10B981','#059669']} style={s.exportGrad} start={{x:0,y:0}} end={{x:1,y:1}}><Download size={20} color="#fff"/><Text style={s.exportText}>{mode==='nutrition'?t('planner.exportMenu','Menu PDF'):'Export PDF'}</Text></LinearGradient></TouchableOpacity>
             </View>
           )}

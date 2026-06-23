@@ -1,0 +1,382 @@
+{
+  "home": {
+    "badge": "Sua melhor versÃÆÃÂ£o",
+    "motto": "<highlight>O aplicativo de fitness mais fluido</highlight> e gamificado. Progresso, nutriÃÆÃÂ§ÃÆÃÂ£o e treinos ÃÂ¢Ãâ¬Ãâ tudo sincronizado em tempo real.",
+    "cta": {
+      "start": "ComeÃÆÃÂ§ar grÃÆÃÂ¡tis",
+      "demo": "Ver o app"
+    },
+    "features": {
+      "title": "Sua academia no seu bolso",
+      "subtitle": "TUDO O QUE VOCÃÆÃÅ  PRECISA",
+      "desc": "Projetado para ser mais rÃÆÃÂ¡pido, mais intuitivo e mais motivador do que qualquer outro aplicativo.",
+      "items": {
+        "progress": {
+          "title": "Acompanhamento de progresso",
+          "desc": "Acompanhe peso corporal, medidas e histÃÆÃÂ³rico detalhado com grÃÆÃÂ¡ficos interativos.",
+          "badge": "Mais popular"
+        },
+        "nutrition": {
+          "title": "NutriÃÆÃÂ§ÃÆÃÂ£o Completa",
+          "desc": "Banco de dados de alimentos, scanner de cÃÆÃÂ³digo de barras e rastreamento de macros em tempo real."
+        },
+        "workout": {
+          "title": "Treinos",
+          "desc": "Mapa muscular interativo, rotinas personalizadas e acompanhamento de cada sessÃÆÃÂ£o."
+        },
+        "coach": {
+          "title": "Coach com IA",
+          "desc": "Receba dicas personalizadas, ajustes de plano e motivaÃÆÃÂ§ÃÆÃÂ£o da nossa IA inteligente.",
+          "badge": "Novo"
+        },
+        "gamification": {
+          "title": "GamificaÃÆÃÂ§ÃÆÃÂ£o",
+          "desc": "Guerras de Macros, Ligas ÃÆÃâ°lite e missÃÆÃÂµes semanais para mantÃÆÃÂª-lo motivado."
+        },
+        "burn": {
+          "title": "Queima de calorias",
+          "desc": "CÃÆÃÂ¡lculo preciso de seu TDEE, NEAT e metabolismo basal para objetivos reais."
+        }
+      }
+    },
+    "stats": {
+      "users": "UsuÃÆÃÂ¡rios ativos",
+      "foods": "Alimentos no banco de dados",
+      "rating": "AvaliaÃÆÃÂ§ÃÆÃÂ£o mÃÆÃÂ©dia",
+      "satisfaction": "SatisfaÃÆÃÂ§ÃÆÃÂ£o"
+    },
+    "premium": {
+      "title": "Design Premium",
+      "heading": "RÃÆÃÂ¡pido. Fluido. Gamificado.",
+      "desc": "ConstruÃÆÃÂ­do com a mesma paixÃÆÃÂ£o que colocamos em cada treino. Supera o Fitia, MyFitnessPal e qualquer alternativa em fluidez e experiÃÆÃÂªncia."
+    },
+    "pricing": {
+      "title": "Desbloqueie todo o seu <highlight>potencial</highlight>",
+      "desc": "Acesso ilimitado ao Coach com IA, Guerras de Macros, Ligas ÃÆÃâ°lite e a todos os recursos premium.",
+      "cta": "Ver planos"
+    },
+    "featurePills": {
+      "nutrition": "NutriÃÆÃÂ§ÃÆÃÂ£o Inteligente",
+      "coach": "Coach IA",
+      "progress": "Progresso Visual",
+      "planner": "Planejador",
+      "wars": "Guerras de Macros",
+      "leagues": "Ligas de Elite"
+    },
+    "mockup": {
+      "badge": "Sua melhor versÃÆÃÂ£o",
+      "protein": "ProteÃÆÃÂ­nas",
+      "carbs": "Carboidratos",
+      "fats": "Gorduras",
+      "today": "Hoje",
+      "kcal": "kcal consumidas"
+    }
+  },
+  "nav": {
+    "home": "InÃÆÃÂ­cio",
+    "app": "O App",
+    "about": "Sobre NÃÆÃÂ³s",
+    "premium": "Premium",
+    "login": "Entrar",
+    "logout": "Sair",
+    "register": "ComeÃÆÃÂ§ar grÃÆÃÂ¡tis"
+  },
+  "footer": {
+    "desc": "Sua plataforma de fitness mais fluida e gamificada. Progresso, nutriÃÆÃÂ§ÃÆÃÂ£o e treino em um sÃÆÃÂ³ lugar.",
+    "groups": {
+      "app": "APP",
+      "account": "CONTA",
+      "legal": "LEGAL"
+    },
+    "links": {
+      "features": "Recursos",
+      "premium": "Premium",
+      "about": "Sobre nÃÆÃÂ³s",
+      "login": "Entrar",
+      "register": "Criar conta",
+      "forgotPassword": "Esqueci a senha",
+      "privacy": "Privacidade",
+      "terms": "Termos"
+    },
+    "rights": "Todos os direitos reservados.",
+    "madeWith1": "Feito com",
+    "madeWith2": "para sua melhor versÃÆÃÂ£o"
+  },
+  "aboutApp": {
+    "hero": {
+      "label": "O App",
+      "title1": "Tudo que seu",
+      "title2": "corpo precisa",
+      "desc": "FitGO reÃÆÃÂºne em um ÃÆÃÂºnico aplicativo tudo que vocÃÆÃÂª precisa para transformar seu corpo e manter a motivaÃÆÃÂ§ÃÆÃÂ£o alta, dia apÃÆÃÂ³s dia."
+    },
+    "cta": {
+      "title": "Pronto para comeÃÆÃÂ§ar?",
+      "desc": "Crie sua conta gratuita e comece hoje mesmo.",
+      "start": "ComeÃÆÃÂ§ar grÃÆÃÂ¡tis",
+      "pro": "Ver planos Pro"
+    },
+    "pillars": {
+      "progreso": {
+        "title": "Acompanhamento de progresso",
+        "subtitle": "Sua evoluÃÆÃÂ§ÃÆÃÂ£o, sempre visÃÆÃÂ­vel",
+        "desc": "FitGO transforma o acompanhamento corporal em uma experiÃÆÃÂªncia visual e motivadora.",
+        "features": [
+          "GrÃÆÃÂ¡fico de peso corporal interativo",
+          "Medidas corporais detalhadas (cintura, peito, etc.)",
+          "HistÃÆÃÂ³rico completo com filtros semana/mÃÆÃÂªs/ano",
+          "Conquistas e marcos desbloqueÃÆÃÂ¡veis"
+        ]
+      },
+      "nutricion": {
+        "title": "NutriÃÆÃÂ§ÃÆÃÂ£o inteligente",
+        "subtitle": "Coma bem, sem complicaÃÆÃÂ§ÃÆÃÂµes",
+        "desc": "Um banco de dados massivo de alimentos com scanner de cÃÆÃÂ³digo de barras e rastreamento de macros em tempo real.",
+        "features": [
+          "Scanner de cÃÆÃÂ³digo de barras",
+          "Banco de dados de alimentos e carnes",
+          "Metas de macros personalizadas (proteÃÆÃÂ­na, carboidratos, gorduras)",
+          "CÃÆÃÂ¡lculo automÃÆÃÂ¡tico de calorias queimadas"
+        ]
+      },
+      "entrenamiento": {
+        "title": "Treino",
+        "subtitle": "Cada mÃÆÃÂºsculo, sob controle",
+        "desc": "Um mapa muscular interativo 3D que permite selecionar qual mÃÆÃÂºsculo treinar e obter rotinas otimizadas instantaneamente.",
+        "features": [
+          "Mapa muscular interativo",
+          "Rotinas prÃÆÃÂ©-definidas e personalizadas",
+          "Acompanhamento de forÃÆÃÂ§a por exercÃÆÃÂ­cio",
+          "Planejador semanal de treinos"
+        ]
+      },
+      "coach": {
+        "title": "Coach com IA",
+        "subtitle": "Seu personal trainer, sempre disponÃÆÃÂ­vel",
+        "desc": "O Coach do FitGO analisa seu histÃÆÃÂ³rico, metas e progresso para dar recomendaÃÆÃÂ§ÃÆÃÂµes personalizadas.",
+        "features": [
+          "Respostas personalizadas com base no seu perfil",
+          "AnÃÆÃÂ¡lise inteligente do seu progresso",
+          "Planos nutricionais adaptativos",
+          "MotivaÃÆÃÂ§ÃÆÃÂ£o e ajustes em tempo real"
+        ]
+      },
+      "social": {
+        "title": "GamificaÃÆÃÂ§ÃÆÃÂ£o social",
+        "subtitle": "Compita, ganhe, supere-se",
+        "desc": "FitGO vai alÃÆÃÂ©m de registrar dados. Com as Guerras de Macros e as Ligas ÃÆÃâ°lite, vocÃÆÃÂª transforma sua disciplina em competiÃÆÃÂ§ÃÆÃÂ£o saudÃÆÃÂ¡vel.",
+        "features": [
+          "Guerras de Macros semanais",
+          "Ligas ÃÆÃâ°lite com ranking global",
+          "Conquistas e badges colecionÃÆÃÂ¡veis",
+          "Placar em tempo real"
+        ]
+      }
+    }
+  },
+  "aboutUs": {
+    "hero": {
+      "label": "A equipe",
+      "title1": "Por trÃÆÃÂ¡s de",
+      "desc": "Somos uma equipe pequena com uma missÃÆÃÂ£o enorme: criar a melhor experiÃÆÃÂªncia de fitness que jÃÆÃÂ¡ existiu."
+    },
+    "mission": {
+      "title": "Nossa missÃÆÃÂ£o",
+      "desc": "Tornar o fitness acessÃÆÃÂ­vel, motivador e divertido para todos. Criar uma ferramenta tÃÆÃÂ£o boa que vocÃÆÃÂª nÃÆÃÂ£o vai querer usar nenhuma outra. Superar os aplicativos existentes em velocidade, design e experiÃÆÃÂªncia do usuÃÆÃÂ¡rio."
+    },
+    "teamLabel": "Quem somos",
+    "teamTitle": "A equipe",
+    "valuesLabel": "O que nos define",
+    "valuesTitle": "Nossos valores",
+    "historyLabel": "Nossa histÃÆÃÂ³ria",
+    "historyTitle": "O caminho atÃÆÃÂ© aqui",
+    "values": {
+      "speed": {
+        "title": "Velocidade acima de tudo",
+        "desc": "Cada tela do FitGO ÃÆÃÂ© projetada para vocÃÆÃÂª registrar seu progresso em segundos, nÃÆÃÂ£o minutos."
+      },
+      "effort": {
+        "title": "Para quem se esforÃÆÃÂ§a",
+        "desc": "FitGO foi feito para pessoas que levam a sÃÆÃÂ©rio seu progresso fÃÆÃÂ­sico, independentemente do nÃÆÃÂ­vel."
+      },
+      "passion": {
+        "title": "Feito com paixÃÆÃÂ£o",
+        "desc": "Cada funcionalidade, cada animaÃÆÃÂ§ÃÆÃÂ£o, cada detalhe reflete nosso amor pelo fitness e design."
+      },
+      "improving": {
+        "title": "Sempre melhorando",
+        "desc": "LanÃÆÃÂ§amos atualizaÃÆÃÂ§ÃÆÃÂµes constantes baseadas no feedback da nossa comunidade."
+      }
+    },
+    "timeline": {
+      "2024": {
+        "title": "A ideia nasce",
+        "desc": "Frustrados com os apps de fitness existentes, comeÃÆÃÂ§amos a esboÃÆÃÂ§ar o FitGO no papel."
+      },
+      "2026": {
+        "title": "FitGO Web",
+        "desc": "LanÃÆÃÂ§amos a plataforma web para gerenciar sua conta pelo navegador."
+      },
+      "2025Q1": {
+        "title": "Primeiro protÃÆÃÂ³tipo",
+        "desc": "O primeiro build do FitGO roda em nossos telefones. O rastreador de peso funciona pela primeira vez."
+      },
+      "2025Q2": {
+        "title": "Beta privado",
+        "desc": "Convidamos os primeiros 100 usuÃÆÃÂ¡rios. O feedback muda nossa perspectiva do produto."
+      },
+      "2025Q3": {
+        "title": "LanÃÆÃÂ§amento pÃÆÃÂºblico",
+        "desc": "FitGO chega na App Store e Google Play. A comunidade cresce organicamente."
+      }
+    },
+    "team": {
+      "title": "Equipe FitGO",
+      "subtitle": "Fundadores e Desenvolvedores",
+      "desc": "Somos apaixonados por fitness e tecnologia. Criamos o FitGO porque nenhum aplicativo existente nos convenceu ÃÂ¢Ãâ¬Ãâ muito lentos, genÃÆÃÂ©ricos, sem alma. QuerÃÆÃÂ­amos mudar isso.",
+      "tags": [
+        "React Native",
+        "Supabase",
+        "TypeScript",
+        "IA"
+      ]
+    }
+  },
+  "pricingPage": {
+    "hero": {
+      "badge": "FitGO Pro",
+      "title1": "Escolha seu",
+      "title2": "plano",
+      "desc": "Comece grÃÆÃÂ¡tis. Desbloqueie tudo com o Pro."
+    },
+    "billing": {
+      "monthly": "Mensal",
+      "annual": "Anual"
+    },
+    "free": {
+      "title": "GrÃÆÃÂ¡tis",
+      "desc": "Para comeÃÆÃÂ§ar sua jornada",
+      "forever": "para sempre",
+      "btn": "Criar conta"
+    },
+    "pro": {
+      "title": "Pro",
+      "popular": "Mais popular",
+      "desc": "Desbloqueie todo o seu potencial",
+      "month": "mÃÆÃÂªs",
+      "billedAnnually": "Faturado anualmente",
+      "btn": "Obter Pro",
+      "secure": "Pagamento seguro ÃâÃÂ· Cancele a qualquer momento"
+    },
+    "faq": {
+      "label": "Perguntas frequentes",
+      "title": "FAQ",
+      "items": [
+        {
+          "q": "Posso cancelar a qualquer momento?",
+          "a": "Sim. VocÃÆÃÂª pode cancelar sua assinatura a qualquer momento pelo seu perfil. VocÃÆÃÂª continuarÃÆÃÂ¡ tendo acesso Pro atÃÆÃÂ© o fim do perÃÆÃÂ­odo pago."
+        },
+        {
+          "q": "A assinatura web funciona no app mobile?",
+          "a": "Absolutamente. Ao comprar Pro na web, sua conta ÃÆÃÂ© atualizada automaticamente no Supabase e vocÃÆÃÂª terÃÆÃÂ¡ os benefÃÆÃÂ­cios Premium imediatamente ao abrir o app."
+        },
+        {
+          "q": "Quais mÃÆÃÂ©todos de pagamento vocÃÆÃÂªs aceitam?",
+          "a": "Aceitamos todos os principais cartÃÆÃÂµes de crÃÆÃÂ©dito e dÃÆÃÂ©bito (Visa, Mastercard, AmEx) via Stripe, o processador de pagamentos mais seguro do mundo."
+        },
+        {
+          "q": "HÃÆÃÂ¡ um teste gratuito do plano Pro?",
+          "a": "O plano gratuito jÃÆÃÂ¡ inclui as funÃÆÃÂ§ÃÆÃÂµes essenciais para sempre. Atualizamos constantemente as funcionalidades disponÃÆÃÂ­veis na versÃÆÃÂ£o gratuita."
+        }
+      ]
+    },
+    "freeFeatures": [
+      "Rastreamento de peso corporal",
+      "Rastreamento bÃÆÃÂ¡sico de macros",
+      "Banco de dados de alimentos",
+      "Rotinas de treino",
+      "HistÃÆÃÂ³rico (ÃÆÃÂºltimos 30 dias)",
+      "Coach com IA",
+      "Guerras de Macros",
+      "Ligas ÃÆÃâ°lite",
+      "HistÃÆÃÂ³rico ilimitado",
+      "AnÃÆÃÂ¡lise avanÃÆÃÂ§ada de progresso"
+    ],
+    "freeIncluded": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "proFeatures": [
+      "Tudo do plano gratuito",
+      "Coach com IA ilimitado",
+      "Guerras de Macros",
+      "Ligas ÃÆÃâ°lite",
+      "HistÃÆÃÂ³rico ilimitado",
+      "AnÃÆÃÂ¡lise avanÃÆÃÂ§ada de progresso",
+      "Scanner de cÃÆÃÂ³digo de barras",
+      "Planejador nutricional com IA",
+      "Suporte prioritÃÆÃÂ¡rio",
+      "Sem anÃÆÃÂºncios"
+    ],
+    "highlights": {
+      "coach": "Coach IA",
+      "macroWars": "Guerras de Macros",
+      "leagues": "Ligas ÃÆÃâ°lite",
+      "analysis": "AnÃÆÃÂ¡lise Pro",
+      "nutrition": "NutriÃÆÃÂ§ÃÆÃÂ£o IA",
+      "unlimited": "Sem limites"
+    },
+    "secure": "Pagamento seguro ÃâÃÂ· Cancele a qualquer momento",
+    "errorMsg": "Erro ao processar pagamento. Tente novamente."
+  },
+  "auth": {
+    "login": {
+      "title": "Bem-vindo de volta ÃÆÃÂ  sua melhor versÃÆÃÂ£o.",
+      "email": "EndereÃÆÃÂ§o de e-mail",
+      "password": "Senha",
+      "forgot": "Esqueceu sua senha?",
+      "btn": "Entrar",
+      "loading": "Entrando...",
+      "noAccount": "NÃÆÃÂ£o tem uma conta?",
+      "register": "Inscreva-se"
+    },
+    "register": {
+      "title": "Comece sua transformaÃÆÃÂ§ÃÆÃÂ£o hoje.",
+      "name": "Nome completo",
+      "email": "EndereÃÆÃÂ§o de e-mail",
+      "password": "Senha",
+      "btn": "Criar conta",
+      "loading": "Criando conta...",
+      "hasAccount": "JÃÆÃÂ¡ tem uma conta?",
+      "login": "Entrar",
+      "confirmPassword": "Confirmar senha"
+    },
+    "forgot": {
+      "title": "Recupere seu acesso ao FitGO.",
+      "desc": "Digite seu endereÃÆÃÂ§o de e-mail e enviaremos um link para redefinir sua senha.",
+      "email": "EndereÃÆÃÂ§o de e-mail",
+      "btn": "Enviar link",
+      "loading": "Enviando...",
+      "back": "Voltar ao login",
+      "successMsg": "Verifique seu e-mail para o link de recuperaÃÆÃÂ§ÃÆÃÂ£o."
+    },
+    "reset": {
+      "title": "Defina sua nova senha",
+      "password": "Nova senha",
+      "confirmPassword": "Confirmar senha",
+      "btn": "Atualizar senha",
+      "loading": "Atualizando...",
+      "back": "Voltar ao login",
+      "successMsg": "Senha atualizada com sucesso.",
+      "errorMismatch": "As senhas nÃÆÃÂ£o coincidem.",
+      "errorLength": "A senha deve ter pelo menos 6 caracteres."
+    }
+  }
+}

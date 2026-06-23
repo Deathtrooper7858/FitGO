@@ -24,7 +24,6 @@ export default function FoodScanner() {
     onFrame(frame) {
       'worklet';
       if (!model) {
-        // @ts-expect-error: Frame.dispose() may not exist in this vision-camera version
         if (frame.dispose) frame.dispose();
         return;
       }
@@ -43,7 +42,6 @@ export default function FoodScanner() {
       } catch (e) {
         console.error('[FoodScanner] Frame processing error:', e);
       } finally {
-        // @ts-expect-error: Frame.dispose() may not exist in this vision-camera version
         if (frame.dispose) frame.dispose();
       }
     }

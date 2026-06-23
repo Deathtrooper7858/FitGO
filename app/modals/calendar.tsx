@@ -358,10 +358,10 @@ export default function CalendarModal() {
               <Flame size={20} color="#FF8C42" fill="#FF8C4240" strokeWidth={1.5} />
               <Text style={[s.motivationText, { color: colors.textSecondary }]}>
                 {streakDays >= 7
-                  ? `¡Increíble! ${streakDays} días consecutivos 🔥`
+                  ? t('calendar.motivation7', `¡Increíble! {{days}} días consecutivos 🔥`, { days: streakDays })
                   : streakDays >= 3
-                  ? `¡Vas muy bien! Sigue así 💪`
-                  : '¡Comienza tu racha hoy! Cada día cuenta ⚡'}
+                  ? t('calendar.motivation3', '¡Vas muy bien! Sigue así 💪')
+                  : t('calendar.motivation0', '¡Comienza tu racha hoy! Cada día cuenta ⚡')}
               </Text>
             </LinearGradient>
           </Animated.View>

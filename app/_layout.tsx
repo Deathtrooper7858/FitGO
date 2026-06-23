@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Stack, router, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { preventAutoHideAsync, hideAsync } from 'expo-splash-screen';
@@ -118,6 +118,9 @@ export default function RootLayout() {
   const { language, theme, setPremiumColor } = useSettingsStore();
   const colors = useTheme();
   const { t } = useTranslation();
+  const lastButtonStyleRef = useRef<string | null>(null);
+  const lastColorRef = useRef<string | null>(null);
+
   useAdMob(); // Initialize AdMob
 
   useEffect(() => {
@@ -131,17 +134,22 @@ export default function RootLayout() {
   // ── Android navigation styling: themed solid bar to match the app perfectly ──
   useEffect(() => {
     if (Platform.OS === 'android') {
-      // Button style (light/dark icons) is supported in both edge-to-edge and classic modes
-      NavigationBar.setButtonStyleAsync(theme === 'dark' ? 'light' : 'dark');
+      const targetButtonStyle = theme === 'dark' ? 'light' : 'dark';
+      if (lastButtonStyleRef.current !== targetButtonStyle) {
+        NavigationBar.setButtonStyleAsync(targetButtonStyle as any);
+        lastButtonStyleRef.current = targetButtonStyle;
+      }
 
-      // Only configure position/color if edge-to-edge is not active, preventing warnings on modern devices
       if (!isEdgeToEdgeActive) {
         const inTabs = segments[0] === '(tabs)';
         const targetColor = inTabs ? colors.surface : colors.background;
         
-        NavigationBar.setPositionAsync('relative');
-        NavigationBar.setBackgroundColorAsync(targetColor);
-        NavigationBar.setBorderColorAsync(targetColor);
+        if (lastColorRef.current !== targetColor) {
+          NavigationBar.setPositionAsync('relative');
+          NavigationBar.setBackgroundColorAsync(targetColor);
+          NavigationBar.setBorderColorAsync(targetColor);
+          lastColorRef.current = targetColor;
+        }
       }
     }
   }, [theme, segments, colors]);
@@ -192,17 +200,17 @@ export default function RootLayout() {
               fetchProfile(newSession.user.id),
               initPurchases(newSession.user.id)
             ]);
-            // Sync trial state and check/revoke if expired
-            await syncTrialState();
-            await checkAndRevokeExpiredTrial();
+            // Sync trial state and check/revoke if expired (using cache)
+            await syncTrialState(true);
+            await checkAndRevokeExpiredTrial(true);
           } else {
             // If not blocking (have cache), hydrate data in the background
             Promise.all([
               fetchProfile(newSession.user.id),
               initPurchases(newSession.user.id)
             ]).then(() => {
-              // Background trial check
-              syncTrialState().then(() => checkAndRevokeExpiredTrial());
+              // Background trial check (using cache)
+              syncTrialState(true).then(() => checkAndRevokeExpiredTrial(true));
             }).catch(err => console.error('Background fetch error:', err));
           }
           // Resetear créditos de IA si es un nuevo día (se llama siempre al login)

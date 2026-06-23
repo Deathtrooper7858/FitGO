@@ -26,8 +26,8 @@ interface PurchaseState {
   // Trial methods
   startTrial: () => Promise<void>;
   hasUsedTrial: () => boolean;
-  checkAndRevokeExpiredTrial: () => Promise<void>;
-  syncTrialState: () => Promise<void>;
+  checkAndRevokeExpiredTrial: (useCache?: boolean) => Promise<void>;
+  syncTrialState: (useCache?: boolean) => Promise<void>;
 }
 
 let isConfigured = false;
@@ -300,9 +300,23 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     return !!get().trialUsedAt;
   },
 
-  syncTrialState: async () => {
+  syncTrialState: async (useCache = false) => {
     const profile = useAuthStore.getState().profile;
     if (!profile?.id) return;
+
+    if (useCache && (profile.trialUsedAt !== undefined || profile.trialExpiresAt !== undefined)) {
+      const trialUsedAt = profile.trialUsedAt ?? null;
+      const trialExpiresAt = profile.trialExpiresAt ?? null;
+      const now = new Date();
+      const isTrialActive =
+        !!trialUsedAt &&
+        !!trialExpiresAt &&
+        new Date(trialExpiresAt) > now &&
+        !!profile.isPro;
+
+      set({ trialUsedAt, trialExpiresAt, isTrialActive });
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -374,23 +388,31 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     }
   },
 
-  checkAndRevokeExpiredTrial: async () => {
+  checkAndRevokeExpiredTrial: async (useCache = false) => {
     const profile = useAuthStore.getState().profile;
     if (!profile?.id) return;
 
-    // Always fetch fresh trial data from DB to avoid stale local state
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('trial_used_at, trial_expires_at, is_pro')
-        .eq('id', profile.id)
-        .single();
+      let trialUsedAt: string | null = null;
+      let trialExpiresAt: string | null = null;
+      let isProInDb = false;
 
-      if (error || !data) return;
+      if (useCache && (profile.trialUsedAt !== undefined || profile.trialExpiresAt !== undefined)) {
+        trialUsedAt = profile.trialUsedAt ?? null;
+        trialExpiresAt = profile.trialExpiresAt ?? null;
+        isProInDb = !!profile.isPro;
+      } else {
+        const { data, error } = await supabase
+          .from('users')
+          .select('trial_used_at, trial_expires_at, is_pro')
+          .eq('id', profile.id)
+          .single();
 
-      const trialUsedAt = data.trial_used_at ?? null;
-      const trialExpiresAt = data.trial_expires_at ?? null;
-      const isProInDb = !!data.is_pro;
+        if (error || !data) return;
+        trialUsedAt = data.trial_used_at ?? null;
+        trialExpiresAt = data.trial_expires_at ?? null;
+        isProInDb = !!data.is_pro;
+      }
 
       if (!trialUsedAt || !trialExpiresAt) return;
 

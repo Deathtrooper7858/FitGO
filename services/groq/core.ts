@@ -22,6 +22,7 @@
 
 import axios from 'axios';
 import { supabase } from '../supabase';
+import i18n from '../../i18n';
 
 // ─── Shared language map ──────────────────────────────────────────────────────
 /** Maps language codes to full language names used in AI prompts. */
@@ -102,11 +103,11 @@ async function fetchGroq(payload: any, retries = 2): Promise<any> {
         }
 
         if (!error.response && (error.code === 'ERR_NETWORK' || error.message === 'Network Error' || error.message?.includes('network'))) {
-          throw new Error('AI Service Error: Sin conexión a internet. Por favor verifica tu conexión.');
+          throw new Error(i18n.t('groq.noInternet'));
         }
 
         if (errorMsg.includes('does not support image input')) {
-          throw new Error('El modelo de visión no está disponible actualmente. Intenta de nuevo más tarde.');
+          throw new Error(i18n.t('groq.visionUnavailable'));
         }
         throw new Error(`AI Service Error: ${errorMsg}`);
       }
@@ -214,7 +215,7 @@ function prepareImageData(base64Image: string): { dataUrl: string; mime: string 
   // Validate base64 size (Groq limit: 4MB)
   const bytes = Math.ceil((clean.length * 3) / 4);
   if (bytes > 4 * 1024 * 1024) {
-    throw new Error('La imagen es demasiado grande. Selecciona una imagen más pequeña o reduce la calidad.');
+    throw new Error(i18n.t('groq.imageTooLarge'));
   }
 
   // Detect actual format from base64 content

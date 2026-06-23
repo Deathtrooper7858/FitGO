@@ -2,6 +2,7 @@ import type { ActivityLog } from '../types';
 import { useAuthStore } from '../authStore';
 import { useToastStore } from '../toastStore';
 import { supabase } from '../../services/supabase';
+import i18n from '../../i18n';
 import { scheduleSyncDailyMetrics } from './utils';
 
 export interface DailyMetricsSlice {
@@ -65,7 +66,7 @@ export function createDailyMetricsSlice(set: any, get: any): DailyMetricsSlice {
       set((s: any) => ({ dailyWater: { ...s.dailyWater, [s.selectedDate]: safeml } }));
       if (safeml > 0) get().updateActivity(get().selectedDate);
       useToastStore.getState().addNotification({
-        title: 'Agua Actualizada', description: `Total de hoy: ${safeml} ml.`,
+        title: i18n.t('tracker.waterUpdated'), description: i18n.t('tracker.waterTodayTotal', { ml: safeml }),
         iconType: 'lucide', lucideIcon: 'Droplets', tier: 'info', isAchievement: false,
       });
       scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
@@ -77,7 +78,7 @@ export function createDailyMetricsSlice(set: any, get: any): DailyMetricsSlice {
       const newVal = get().dailyWater[date] || 0;
       if (newVal > 0) get().updateActivity(date);
       useToastStore.getState().addNotification({
-        title: 'Agua Añadida', description: `+${ml} ml. Total de hoy: ${newVal} ml.`,
+        title: i18n.t('tracker.waterAdded'), description: i18n.t('tracker.waterAddedDesc', { ml, total: newVal }),
         iconType: 'lucide', lucideIcon: 'GlassWater', tier: 'info', isAchievement: false,
       });
       scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
@@ -96,7 +97,7 @@ export function createDailyMetricsSlice(set: any, get: any): DailyMetricsSlice {
       const newVal = get().dailySteps[date] || 0;
       if (newVal > 0) get().updateActivity(date);
       useToastStore.getState().addNotification({
-        title: 'Pasos Añadidos', description: `+${steps} pasos. Total de hoy: ${newVal}.`,
+        title: i18n.t('tracker.stepsAdded'), description: i18n.t('tracker.stepsAddedDesc', { steps, total: newVal }),
         iconType: 'lucide', lucideIcon: 'Footprints', tier: 'success', isAchievement: false,
       });
       scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
@@ -107,7 +108,7 @@ export function createDailyMetricsSlice(set: any, get: any): DailyMetricsSlice {
       set((s: any) => ({ dailySleep: { ...s.dailySleep, [date]: hours } }));
       if (hours > 0) get().updateActivity(date);
       useToastStore.getState().addNotification({
-        title: 'Sueño Registrado', description: `Has registrado ${hours} horas de sueño.`,
+        title: i18n.t('tracker.sleepRegistered'), description: i18n.t('tracker.sleepRegisteredDesc', { hours }),
         iconType: 'lucide', lucideIcon: 'Moon', tier: 'plata', isAchievement: false,
       });
       scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
@@ -119,7 +120,7 @@ export function createDailyMetricsSlice(set: any, get: any): DailyMetricsSlice {
       set((s: any) => ({ activityLogs: [...s.activityLogs, activity] }));
       get().updateActivity(activity.loggedAt.split('T')[0]);
       useToastStore.getState().addNotification({
-        title: 'Ejercicio Añadido', description: `${activity.name} (${activity.duration} min) - ${activity.calories} kcal.`,
+        title: i18n.t('tracker.exerciseAdded'), description: i18n.t('tracker.exerciseAddedDesc', { name: activity.name, duration: activity.duration, calories: activity.calories }),
         icon: activity.icon || '🔥', iconType: 'emoji', tier: 'success', isAchievement: false,
       });
       const { profile } = useAuthStore.getState();

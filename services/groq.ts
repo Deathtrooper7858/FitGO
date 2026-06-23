@@ -21,6 +21,7 @@
  */
 
 import axios from 'axios';
+import i18n from '../i18n';
 import { supabase } from './supabase';
 
 // ─── Shared language map ──────────────────────────────────────────────────────
@@ -140,7 +141,7 @@ async function fetchGroq(payload: any, retries = 2, proxyName = 'groq-proxy', or
         }
 
         if (!error.response && (error.code === 'ERR_NETWORK' || error.message === 'Network Error' || error.message?.includes('network'))) {
-          throw new Error('AI Service Error: Sin conexión a internet. Por favor verifica tu conexión.');
+          throw new Error(i18n.t('groq.noInternet'));
         }
         
         if (error.response?.status === 400 && errorMsg === 'Unknown error') {
@@ -148,7 +149,7 @@ async function fetchGroq(payload: any, retries = 2, proxyName = 'groq-proxy', or
         }
         // Catch Groq's "model does not support image input" error and show a clear message
         if (errorMsg.includes('does not support image input')) {
-          throw new Error('El modelo de visión no está disponible actualmente. Intenta de nuevo más tarde.');
+          throw new Error(i18n.t('groq.visionUnavailable'));
         }
         throw new Error(`AI Service Error: ${errorMsg}`);
       }
@@ -255,7 +256,7 @@ function prepareImageData(base64Image: string): { dataUrl: string; mime: string 
   // Validate base64 size (Groq limit: 4MB)
   const bytes = Math.ceil((clean.length * 3) / 4);
   if (bytes > 4 * 1024 * 1024) {
-    throw new Error('La imagen es demasiado grande. Selecciona una imagen más pequeña o reduce la calidad.');
+    throw new Error(i18n.t('groq.imageTooLarge'));
   }
 
   // Detect actual format from base64 content
@@ -288,7 +289,7 @@ export async function sendCoachMessage(
   if (base64Image) {
     const prepared = prepareImageData(base64Image);
     if (!prepared) {
-      throw new Error('No se pudo procesar la imagen.');
+      throw new Error(i18n.t('groq.imageProcessFailed'));
     }
     messages.push({
       role: 'user',
@@ -336,7 +337,7 @@ export async function analyzeFoodPhoto(base64Image: string, language: string = '
   try {
     const prepared = prepareImageData(base64Image);
     if (!prepared) {
-      throw new Error('No se pudo procesar la imagen.');
+      throw new Error(i18n.t('groq.imageProcessFailed'));
     }
     
     const data = await fetchGroq({
@@ -421,7 +422,7 @@ If the image is not a physique photo, kindly mention it in the feedback but try 
   try {
     const prepared = prepareImageData(base64Image);
     if (!prepared) {
-      throw new Error('No se pudo procesar la imagen.');
+      throw new Error(i18n.t('groq.imageProcessFailed'));
     }
     
     const data = await fetchGroq({
@@ -556,7 +557,7 @@ Return ONLY valid JSON — no markdown, no explanation, just the JSON object:
   const data = await fetchGroq({
     model: CHAT_MODEL,
     messages: [{ role: 'user', content: prompt }],
-    max_tokens: 11000,
+    max_tokens: 10000,
     temperature: 0.55,
     response_format: { type: 'json_object' },
   });
@@ -575,7 +576,7 @@ Return ONLY valid JSON — no markdown, no explanation, just the JSON object:
   const requiredDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const missingDays = requiredDays.filter(d => !parsed[d] || !Array.isArray(parsed[d]) || parsed[d].length === 0);
   if (missingDays.length > 0) {
-    throw new Error(`El plan generado está incompleto (faltan: ${missingDays.join(', ')}). Por favor intenta de nuevo.`);
+    throw new Error(i18n.t('groq.incompletePlan', { days: missingDays.join(', ') }));
   }
 
   return parsed;
@@ -733,7 +734,7 @@ Return ONLY valid JSON (no markdown). Use this exact structure:
   const requiredDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const missingDays = requiredDays.filter(d => !parsed[d]);
   if (missingDays.length > 0) {
-    throw new Error(`El plan de entrenamiento está incompleto (faltan: ${missingDays.join(', ')}). Por favor intenta de nuevo.`);
+    throw new Error(i18n.t('groq.incompleteWorkoutPlan', { days: missingDays.join(', ') }));
   }
 
   return parsed;

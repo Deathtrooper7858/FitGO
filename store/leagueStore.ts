@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../services/supabase';
 import { NotificationTriggers } from '../utils/notificationTriggers';
 import { getLocalDateString } from '../utils/date';
+import i18n from '../i18n';
 import { useAuthStore } from './authStore';
 
 // AsyncStorage adapter — SecureStore has a hard 2KB/key limit on Android which
@@ -310,7 +311,7 @@ export const useLeagueStore = create<LeagueStore>()(
         .maybeSingle();
 
       if (findErr || !squadData) {
-        set({ error: 'Código de squad inválido.', loading: false });
+        set({ error: i18n.t('competitive.squads.invalidCode'), loading: false });
         return false;
       }
 
@@ -320,7 +321,7 @@ export const useLeagueStore = create<LeagueStore>()(
 
       if (joinErr) {
         if (joinErr.message.includes('more than 5')) {
-          set({ error: 'Este squad ya tiene 5 miembros.', loading: false });
+          set({ error: i18n.t('competitive.squads.full'), loading: false });
         } else {
           set({ error: joinErr.message, loading: false });
         }

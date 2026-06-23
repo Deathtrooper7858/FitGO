@@ -1,3 +1,4 @@
+import i18n from '../../i18n';
 import { getLang, isRomanceLang, fetchGroq, CHAT_MODEL, FAST_MODEL } from './core';
 
 // ─── Generate weekly workout plan ─────────────────────────────────────────────
@@ -103,7 +104,7 @@ Return ONLY valid JSON (no markdown). Use this exact structure:
   const requiredDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const missingDays = requiredDays.filter(d => !parsed[d]);
   if (missingDays.length > 0) {
-    throw new Error(`El plan de entrenamiento está incompleto (faltan: ${missingDays.join(', ')}). Por favor intenta de nuevo.`);
+    throw new Error(i18n.t('groq.incompleteWorkoutPlan', { days: missingDays.join(', ') }));
   }
 
   return parsed;

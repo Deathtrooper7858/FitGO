@@ -3,12 +3,12 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from '
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
-import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { useSettingsStore, usePurchaseStore, useAuthStore } from '../../store';
-import { supabase } from '../../services/supabase';
 import { Check, X, Crown, Lock, Sparkles } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { useTheme } from '../../hooks/useTheme';
+import { useSettingsStore, usePurchaseStore, useAuthStore } from '../../store';
+import { supabase } from '../../services/supabase';
 
 const PREMIUM_COLORS = [
   { id: null,       nameKey: 'profile.colors.default', defaultName: 'Morado Clásico', hex: '#7C5CFC', isPro: false },
@@ -94,7 +94,7 @@ export default function PremiumColorsModal() {
         </TouchableOpacity>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Sparkles size={20} color={premiumColor || colors.primary} />
-          <Text style={[styles.title, { color: colors.textPrimary }]}>Color Premium</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>{t('premiumColors.title')}</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
@@ -105,22 +105,22 @@ export default function PremiumColorsModal() {
           <View style={[styles.proBanner, { backgroundColor: '#FFB80015', borderColor: '#FFB800' }]}>
             <Crown size={24} color="#FFB800" />
             <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 16 }}>Exclusivo para Pro</Text>
+              <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 16 }}>{t('premiumColors.proExclusive')}</Text>
               <Text style={{ color: colors.textSecondary, fontSize: 13, marginTop: 4 }}>
-                Mejora tu cuenta para desbloquear los colores premium y destacar en la aplicación.
+                {t('premiumColors.proDesc')}
               </Text>
             </View>
             <TouchableOpacity 
               style={{ backgroundColor: '#FFB800', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 }}
               onPress={() => router.push('/modals/paywall')}
             >
-              <Text style={{ color: '#000', fontWeight: '800', fontSize: 13 }}>Mejorar</Text>
+              <Text style={{ color: '#000', fontWeight: '800', fontSize: 13 }}>{t('premiumColors.upgrade')}</Text>
             </TouchableOpacity>
           </View>
         )}
 
         <Text style={[styles.description, { color: colors.textSecondary }]}>
-          Personaliza el aspecto de toda la aplicación eligiendo tu color de acento favorito. 
+          {t('premiumColors.description')}
         </Text>
 
         <View style={styles.colorGrid}>
@@ -149,7 +149,7 @@ export default function PremiumColorsModal() {
                   </Text>
                   {c.id === null && (
                     <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>
-                      El color por defecto
+                      {t('profile.colors.defaultSubtitle')}
                     </Text>
                   )}
                 </View>

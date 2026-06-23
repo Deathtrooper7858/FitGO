@@ -141,7 +141,7 @@ export default function GenerateConfirmModal({ visible, onConfirm, onChangeFoods
                 </View>
               )}
               <View style={[gcm.foodsBox, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, marginTop: 12 }]}>
-                <Text style={[gcm.foodsTitle, { color: colors.textPrimary, marginBottom: 8 }]}>Modo de Entrenamiento</Text>
+                <Text style={[gcm.foodsTitle, { color: colors.textPrimary, marginBottom: 8 }]}>{t('planner.workoutMode', 'Modo de Entrenamiento')}</Text>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                   {(['standard', 'express', 'heavy', 'recovery'] as const).map(m => (
                     <TouchableOpacity
@@ -150,7 +150,7 @@ export default function GenerateConfirmModal({ visible, onConfirm, onChangeFoods
                       onPress={() => setIntensityMode(m)}
                     >
                       <Text style={[gcm.modeBtnText, intensityMode === m ? { color: '#fff' } : { color: colors.textSecondary }]}>
-                        {m === 'standard' ? '🏋️ Normal' : m === 'express' ? '⚡ Rápido (25m)' : m === 'heavy' ? '🚀 Fuerza/Pesado' : '🧘 Recuperación'}
+                        {m === 'standard' ? `🏋️ ${t('planner.modeNormal', 'Normal')}` : m === 'express' ? `⚡ ${t('planner.modeExpress', 'Rápido (25m)')}` : m === 'heavy' ? `🚀 ${t('planner.modeHeavy', 'Fuerza/Pesado')}` : `🧘 ${t('planner.modeRecovery', 'Recuperación')}`}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -163,8 +163,8 @@ export default function GenerateConfirmModal({ visible, onConfirm, onChangeFoods
               >
                 <Activity size={16} color={focusSymmetry ? colors.primary : colors.textMuted} />
                 <View style={{ flex: 1 }}>
-                  <Text style={[gcm.infoText, { color: focusSymmetry ? colors.primary : colors.textPrimary, fontWeight: '700' }]}>Enfoque de Simetría</Text>
-                  <Text style={{ color: colors.textSecondary, fontSize: 12 }}>La IA priorizará tus músculos más débiles</Text>
+                  <Text style={[gcm.infoText, { color: focusSymmetry ? colors.primary : colors.textPrimary, fontWeight: '700' }]}>{t('planner.symmetryFocus', 'Enfoque de Simetría')}</Text>
+                  <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{t('planner.symmetryFocusDesc', 'La IA priorizará tus músculos más débiles')}</Text>
                 </View>
                 <Switch value={focusSymmetry} onValueChange={setFocusSymmetry} />
               </TouchableOpacity>
