@@ -285,6 +285,7 @@ export default function PlannerScreen() {
   const activeDayDate = getDayDate(activeDay);
   const todayDate = getLocalDateString();
   const isActiveToday = activeDayDate === todayDate;
+  const isFutureDay = activeDayDate > todayDate;
   const alreadyCompleted = hasCompletedWorkoutToday(activeDayDate);
   const consumedMacros = React.useMemo(() => {
     if (!isActiveToday) return { p: 0, c: 0, f: 0 };
@@ -484,7 +485,7 @@ export default function PlannerScreen() {
           {mode==='nutrition'?(
             <MealPlanView meals={meals} activeDay={activeDay} loading={loading} isProActually={isProActually} isPremiumCustom={isPremiumCustom} safePremiumColor={safePremiumColor} isActiveToday={isActiveToday} consumedMacros={consumedMacros} plannedMacros={plannedMacros} waterToday={waterToday} totalCal={totalCal} targetCalories={profile?.targetCalories??2000} analysis={analysis} analyzing={analyzing} onWeeklyAnalysis={handleWeeklyAnalysis} onAddWater={()=>{addWater(250);Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);}} onSwapMeal={handleSwapMeal} onConsumeMeal={handleConsumeMeal} />
           ):(
-            <WorkoutPlanView workout={workout} activeDay={activeDay} isAdjustingBW={isAdjustingBW} alreadyCompleted={alreadyCompleted} exerciseMetrics={exerciseMetrics} onMoveExercise={handleMoveExercise} onCompleteWorkout={handleCompleteWorkout} onAdjustWorkout={handleAdjustWorkout} onUpdateMetric={(i,f,v)=>setExerciseMetrics(p=>({...p,[i]:{...p[i],[f]:v}}))} onStartRest={(s)=>setRestTimer(s)} getPreviousRPE={getPreviousRPE} />
+            <WorkoutPlanView workout={workout} activeDay={activeDay} isFutureDay={isFutureDay} isAdjustingBW={isAdjustingBW} alreadyCompleted={alreadyCompleted} exerciseMetrics={exerciseMetrics} onMoveExercise={handleMoveExercise} onCompleteWorkout={handleCompleteWorkout} onAdjustWorkout={handleAdjustWorkout} onUpdateMetric={(i,f,v)=>setExerciseMetrics(p=>({...p,[i]:{...p[i],[f]:v}}))} onStartRest={(s)=>setRestTimer(s)} getPreviousRPE={getPreviousRPE} />
           )}
 
           {hasData&&(

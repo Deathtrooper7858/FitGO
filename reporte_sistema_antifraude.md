@@ -1,15 +1,4 @@
-# Informe de Análisis: Sistema Anti-Fraude y Moderación para FitGO
 
-Este documento presenta una evaluación exhaustiva del sistema de detección de trampas y reportes propuesto para la aplicación FitGO.
-
----
-
-## 1. Calidad General del Plan
-
-> [!TIP]
-> **Excelente nivel de detalle y lógica de negocio.** El plan está notablemente bien estructurado. Se nota que se han considerado los casos límite (falsos positivos) y se han propuesto soluciones viables para mitigarlos. El uso de un sistema de "semáforo" (Warning, Flag, Rechazo Automático) es una práctica estándar de la industria y la mejor manera de evitar la frustración de los usuarios genuinos mientras se caza a los infractores.
-
----
 
 ## 2. Análisis por Métodos (Pros, Contras y Mejoras)
 
@@ -55,31 +44,3 @@ Para implementar esto en FitGO sin afectar el rendimiento de la app móvil (Reac
 1. **Procesamiento Asíncrono:** La evaluación de los entrenamientos no debe bloquear al usuario cuando le da "Guardar". Guarda el entrenamiento y lanza un evento o "Job" en el backend que evalúe el fraude en segundo plano.
 2. **Tabla de Flags (`user_flags`):** Crea una tabla que registre: `user_id`, `workout_id`, `rule_triggered` (ej. 'MET_CALORIES'), `severity` (WARNING, FLAG), y `status` (PENDING, RESOLVED).
 3. **Panel de Admin (Dashboard):** Se necesitará construir una interfaz web simple para que tú o los administradores puedan revisar la cola de reportes y aplicar baneos.
-
----
-
-## 4. Tiempo Estimado de Implementación
-
-> [!NOTE]
-> Estas son estimaciones asumiendo un desarrollador full-stack trabajando a buen ritmo, con el backend ya estructurado.
-
-*   **Fase 1: Motor de Reglas Automáticas (Backend) - *Aprox. 1.5 a 2 Semanas***
-    *   Lógica MET y cálculo de calorías.
-    *   Lógica de tiempos y validación de 5% de fuerza.
-    *   Tests unitarios para asegurar que no hay falsos positivos masivos.
-*   **Fase 2: Frontend Móvil (Reportes y UI) - *Aprox. 3 a 5 Días***
-    *   Botón de reporte en perfiles y feeds.
-    *   Modal/Formulario para elegir la razón del reporte.
-*   **Fase 3: Panel de Administración Web - *Aprox. 1 a 1.5 Semanas***
-    *   Dashboard para ver usuarios reportados.
-    *   Botones de acción (Banear, Ignorar, Quitar Entrenamientos).
-
-**Tiempo Total Estimado:** ~3 a 4 Semanas de desarrollo continuo para tener el sistema robusto, testeado y en producción.
-
----
-
-## 5. Conclusión
-
-El plan es **excepcional** y demuestra una comprensión profunda tanto de la fisiología del fitness como del comportamiento de los usuarios en plataformas sociales/gamificadas. La división en diferentes niveles de severidad es la clave para que este sistema funcione sin destruir la retención de usuarios. 
-
-Mi recomendación principal antes de lanzar esto es **implementarlo primero en modo "Silencioso" (Shadow Mode)**. Deja que el sistema corra durante 2 semanas solo registrando los flags en la base de datos, *sin banear ni alertar a nadie*. Así podrás analizar los datos reales, ajustar tus porcentajes (ej. tal vez el 5% sea muy poco y debas subirlo al 8%) y calibrar el algoritmo sin perjudicar a usuarios reales por accidente.

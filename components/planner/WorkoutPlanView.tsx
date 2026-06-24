@@ -13,6 +13,7 @@ import ExerciseCard from './ExerciseCard';
 interface WorkoutPlanViewProps {
   workout: WorkoutRoutine | undefined;
   activeDay: string;
+  isFutureDay?: boolean;
   isAdjustingBW: boolean;
   alreadyCompleted: boolean;
   exerciseMetrics: Record<number, { weight: string; rpe: string }>;
@@ -25,7 +26,7 @@ interface WorkoutPlanViewProps {
 }
 
 export default function WorkoutPlanView({
-  workout, activeDay, isAdjustingBW, alreadyCompleted, exerciseMetrics,
+  workout, activeDay, isFutureDay, isAdjustingBW, alreadyCompleted, exerciseMetrics,
   onMoveExercise, onCompleteWorkout, onAdjustWorkout, onUpdateMetric, onStartRest,
   getPreviousRPE
 }: WorkoutPlanViewProps) {
@@ -140,20 +141,24 @@ export default function WorkoutPlanView({
 
       <TouchableOpacity
         onPress={onCompleteWorkout}
-        disabled={alreadyCompleted}
+        disabled={alreadyCompleted || isFutureDay}
         style={[
           wv.completeBtn,
           alreadyCompleted
             ? { backgroundColor: '#10B98122', borderColor: '#10B98166' }
-            : { backgroundColor: colors.primary + '18', borderColor: colors.primary + '66' }
+            : isFutureDay
+              ? { backgroundColor: colors.surfaceAlt, borderColor: colors.border, opacity: 0.5 }
+              : { backgroundColor: colors.primary + '18', borderColor: colors.primary + '66' }
         ]}
         activeOpacity={0.75}
       >
-        <CheckCircle size={20} color={alreadyCompleted ? '#10B981' : colors.primary} />
-        <Text style={[wv.completeBtnText, { color: alreadyCompleted ? '#10B981' : colors.primary }]}>
+        <CheckCircle size={20} color={alreadyCompleted ? '#10B981' : isFutureDay ? colors.textMuted : colors.primary} />
+        <Text style={[wv.completeBtnText, { color: alreadyCompleted ? '#10B981' : isFutureDay ? colors.textMuted : colors.primary }]}>
           {alreadyCompleted
             ? t('planner.workoutDone', '¡Entrenamiento Completado! ✅')
-            : t('planner.markComplete', 'Marcar como Completado')}
+            : isFutureDay
+              ? t('planner.futureWorkout', 'No puedes completar días futuros')
+              : t('planner.markComplete', 'Marcar como Completado')}
         </Text>
       </TouchableOpacity>
 
