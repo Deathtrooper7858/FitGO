@@ -42,7 +42,7 @@ export default function TextSearch({ onFoodSelected, colors, t, language }: Text
         <Text style={{ fontSize: 20, marginRight: 8 }}>🔎</Text>
         <TextInput
           style={[s.searchTextInput, { color: colors.textPrimary }]}
-          placeholder={t('scan.searchPlaceholder') || 'Buscar alimento en la base de datos...'}
+          placeholder={t('scan.searchPlaceholder') || 'Search food in database...'}
           placeholderTextColor={colors.textSecondary}
           value={query}
           onChangeText={setQuery}

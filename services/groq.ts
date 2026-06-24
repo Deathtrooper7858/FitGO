@@ -308,11 +308,14 @@ export async function sendCoachMessage(
   const data = await fetchGroq({
     model: base64Image ? VISION_MODEL : CHAT_MODEL,
     messages,
-    max_tokens: 600,
+    max_tokens: 2000,
     temperature: 0.7,
   });
-
-  return data.choices[0]?.message?.content ?? '';
+  let text = data.choices[0]?.message?.content ?? '';
+  // Remove potential <think>...</think> tags that some reasoning models output
+  text = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+  
+  return text;
 }
 
 // ─── Food photo analysis ───────────────────────────────────────────────────────
@@ -439,21 +442,31 @@ If the image is not a physique photo, kindly mention it in the feedback but try 
           ],
         },
       ],
-      max_tokens: 600,
+      max_tokens: 4000,
       temperature: 0.3,
-      response_format: { type: 'json_object' },
     });
 
     let text = (data.choices[0]?.message?.content ?? '').trim();
     
+    // Remove potential `<think>...</think>` tags that some models might output
+    text = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+
     // Robust JSON extraction
     const startIndex = text.indexOf('{');
     const endIndex = text.lastIndexOf('}');
-    if (startIndex !== -1 && endIndex !== -1) {
+    if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
       text = text.slice(startIndex, endIndex + 1);
+    } else {
+      console.warn('[Groq] No JSON found in response. Raw text:', text);
+      throw new Error(i18n.t('groq.invalidResponse', { defaultValue: 'La IA no devolvió un formato válido. Por favor, intenta con otra foto o más tarde.' }));
     }
     
-    return JSON.parse(text);
+    try {
+      return JSON.parse(text);
+    } catch (parseError) {
+      console.warn('[Groq] JSON Parse failed. Cleaned text was:', text);
+      throw new Error(i18n.t('groq.invalidResponse', { defaultValue: 'La IA no devolvió un formato válido. Por favor, intenta con otra foto o más tarde.' }));
+    }
   } catch (error: any) {
     console.warn('[Groq] Analyze physique photo error:', error);
     throw error;

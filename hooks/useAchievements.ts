@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   useAuthStore, 
@@ -6,10 +6,12 @@ import {
   useBodyStore, 
   useSocialStore, 
   useProgressStore,
+  useSettingsStore,
   selectDailyTotals 
 } from '../store';
 import { supabase } from '../services/supabase';
 import { useToastStore } from '../store/toastStore';
+import type { AppNotification } from '../store/types';
 
 export type AchievementTier = 'bronce' | 'plata' | 'oro' | 'diamante';
 export const TIER_POINTS: Record<AchievementTier, number> = { bronce: 10, plata: 25, oro: 50, diamante: 100 };
@@ -32,7 +34,7 @@ export interface Achievement {
 export interface BadgeInfo {
   id: string;
   label: string;
-  colors: string[];
+  colors: [string, string];
   icon: string;
   description: string;
 }
@@ -99,6 +101,12 @@ export function useAchievements() {
   const { measurements, latest } = useBodyStore();
   const { photos } = useProgressStore();
   const { posts, friends } = useSocialStore();
+  const isDarkMode = useSettingsStore(s => s.theme === 'dark');
+
+  // Refs to prevent infinite loops and duplicate toasts
+  const syncedIdsRef = useRef<Set<string>>(new Set());
+  const shownToastIdsRef = useRef<Set<string>>(new Set());
+  const isSyncingRef = useRef(false);
 
   const achievements: Achievement[] = useMemo(() => {
     if (!profile) return [];
@@ -127,7 +135,7 @@ export function useAchievements() {
       // ── Categoría: General ──
       { id: 'welcome', title: '¡Bienvenido!', description: 'Te has unido a la comunidad FitGO.', icon: '👋', iconType: 'lucide' as const, lucideIcon: 'HandWaving', tier: 'bronce', category: 'General', unlocked: true, rewardBadgeId: 'verified' },
       { id: 'premium_club', title: 'Miembro Pro', description: 'Eres parte del club exclusivo de FitGO.', icon: '💎', iconType: 'lucide' as const, lucideIcon: 'Crown', tier: 'plata', category: 'General', unlocked: unlockedAchievements.includes('premium_club') || !!profile.isPro, rewardBadgeId: 'pro' },
-      { id: 'dark_mode_lover', title: 'Amante de las Sombras', description: 'Activaste el Modo Oscuro.', icon: '🌙', iconType: 'lucide' as const, lucideIcon: 'Moon', tier: 'bronce', category: 'General', unlocked: unlockedAchievements.includes('dark_mode_lover') },
+      { id: 'dark_mode_lover', title: 'Amante de las Sombras', description: 'Activaste el Modo Oscuro.', icon: '🌙', iconType: 'lucide' as const, lucideIcon: 'Moon', tier: 'bronce', category: 'General', unlocked: unlockedAchievements.includes('dark_mode_lover') || isDarkMode },
       { id: 'profile_complete', title: 'Perfeccionista', description: 'Completaste todos los campos de tu perfil.', icon: '✨', iconType: 'lucide' as const, lucideIcon: 'Star', tier: 'plata', category: 'General', unlocked: unlockedAchievements.includes('profile_complete') || !!(profile?.name && profile?.goal && profile?.height && profile?.weight && profile?.avatarUrl) },
 
       // ── Categoría: Constancia ──
@@ -280,7 +288,7 @@ export function useAchievements() {
 
       // ── Nuevos Logros: General Extra ──
       { id: 'language_switcher', title: 'Políglota', description: 'Cambiaste el idioma de la app.', icon: '🌍', iconType: 'lucide' as const, lucideIcon: 'Globe', tier: 'bronce', category: 'General', unlocked: unlockedAchievements.includes('language_switcher') },
-      { id: 'night_mode', title: 'Modo Oscuro', description: 'Activaste el modo oscuro.', icon: '🌑', iconType: 'lucide' as const, lucideIcon: 'Moon', tier: 'bronce', category: 'General', unlocked: unlockedAchievements.includes('night_mode') || unlockedAchievements.includes('dark_mode_lover') },
+      { id: 'night_mode', title: 'Modo Oscuro', description: 'Activaste el modo oscuro.', icon: '🌑', iconType: 'lucide' as const, lucideIcon: 'Moon', tier: 'bronce', category: 'General', unlocked: unlockedAchievements.includes('night_mode') || unlockedAchievements.includes('dark_mode_lover') || isDarkMode },
       { id: 'first_week_user', title: 'Primera Semana', description: 'Usaste la app durante 7 días seguidos.', icon: '🗓️', iconType: 'lucide' as const, lucideIcon: 'CalendarCheck', tier: 'bronce', category: 'General', unlocked: unlockedAchievements.includes('first_week_user') || (streakDays || 0) >= 7 },
 
       // ── Nuevos Logros: Descanso Extra ──
@@ -296,25 +304,21 @@ export function useAchievements() {
       return allAchievements.map(a => ({ ...a, unlocked: true }));
     }
 
-    return allAchievements;
+    return allAchievements.map(a => ({
+      ...a,
+      title: t(`achievements.items.${a.id}.title`, a.title),
+      description: t(`achievements.items.${a.id}.description`, a.description),
+    }));
   }, [
     profile, todayLogs, dailySleep, streakDays, dailySteps, activityLogs, dailyWater,
-    measurements, latest, photos, posts, friends, totalsData
+    measurements, latest, photos, posts, friends, totalsData, isDarkMode, t
   ]);
 
   const unlockedCount = achievements.filter(a => a.unlocked).length;
 
-  const translatedAchievements = useMemo(() => {
-    return achievements.map(a => ({
-      ...a,
-      title: t(`achievements.items.${a.id}.title`, a.title),
-      description: t(`achievements.items.${a.id}.desc`, a.description),
-    }));
-  }, [achievements, t]);
-
   // Synchronize completed achievements and earned badges with profile and Supabase automatically
   useEffect(() => {
-    if (!profile || !profile.id) return;
+    if (!profile || !profile.id || isSyncingRef.current) return;
 
     // 1. Newly unlocked achievements
     const newlyUnlockedIds = achievements
@@ -336,18 +340,38 @@ export function useAchievements() {
     const needsBadgeUpdate = missingBadges.length > 0;
 
     if (needsAchievementUpdate || needsBadgeUpdate) {
+      isSyncingRef.current = true;
+
       const mergedAchievements = Array.from(new Set([...currentUnlockedAchievements, ...newlyUnlockedIds]));
       const mergedBadges = Array.from(new Set([...currentBadges, ...earnedBadgeIds]));
 
-      // Dispatch newly unlocked achievements to the global toast queue (using translated titles)
+      // Dispatch newly unlocked achievements to the global toast queue
       if (needsAchievementUpdate) {
         missingAchievements.forEach(id => {
-          const ach = translatedAchievements.find(a => a.id === id);
-          if (ach) {
-            useToastStore.getState().addToast(ach);
+          // Avoid duplicate toasts during rapid re-renders
+          if (!shownToastIdsRef.current.has(id)) {
+            shownToastIdsRef.current.add(id);
+            const ach = achievements.find(a => a.id === id);
+            if (ach) {
+              const notification: AppNotification = {
+                id: `ach_${id}_${Date.now()}`,
+                title: ach.title,
+                description: ach.description,
+                icon: ach.icon,
+                iconType: ach.iconType === 'lottie' ? 'lottie' : 'lucide',
+                lucideIcon: ach.lucideIcon,
+                lottieFile: ach.lottieFile,
+                tier: ach.tier,
+                isAchievement: true
+              };
+              useToastStore.getState().addToast(notification);
+            }
           }
         });
       }
+
+      // Track that we are syncing these so we don't sync again if the component re-renders quickly
+      missingAchievements.forEach(id => syncedIdsRef.current.add(id));
 
       // Update local Zustand store
       useAuthStore.getState().setProfile({
@@ -366,21 +390,29 @@ export function useAchievements() {
       }
 
       // Update Supabase in background
-      supabase
-        .from('users')
-        .update(dbUpdatePayload)
-        .eq('id', profile.id)
-        .then(({ error }) => {
+      (async () => {
+        try {
+          const { error } = await supabase
+            .from('users')
+            .update(dbUpdatePayload)
+            .eq('id', profile.id);
+          
+          isSyncingRef.current = false;
           if (error) {
             console.error('[useAchievements] Failed to sync progress to Supabase:', error);
           } else {
             console.log('[useAchievements] Progress synced successfully to Supabase:', dbUpdatePayload);
           }
-        });
+        } catch (err) {
+          isSyncingRef.current = false;
+          console.error('[useAchievements] Exception syncing progress to Supabase:', err);
+        }
+      })();
     }
-  }, [translatedAchievements, achievements, profile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [achievements]); // deliberately excluding profile to avoid infinite sync loops
 
-  return { achievements: translatedAchievements, unlockedCount };
+  return { achievements, unlockedCount };
 }
 
 export function useTranslatedBadge(badgeId: string | undefined) {

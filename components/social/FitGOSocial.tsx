@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Share, Modal } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { BlurView } from 'expo-blur';
@@ -6,12 +6,13 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Search, Trophy, Users, Plus, Check, X, MessageSquare, Heart, Share2, Send, Trash2, Camera, Pencil, Filter } from 'lucide-react-native';
+import { Search, Trophy, Users, Plus, Check, X, MessageSquare, Heart, Share2, Send, Trash2, Camera, Pencil, Filter, Mic, StopCircle } from 'lucide-react-native';
 import * as LucideIcons from 'lucide-react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
+import { useAudioRecorder, RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync } from 'expo-audio';
 import { getNameStyle } from '../../utils/styles';
 import { useTheme } from '../../hooks/useTheme';
 import { Radius, Spacing } from '../../constants';
@@ -76,6 +77,10 @@ const s = StyleSheet.create({
   
   imagePreview: { width: '100%', height: 200, borderRadius: Radius.lg },
   removeImageBtn: { position: 'absolute', top: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.5)', width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  recordingBar: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: Radius.md, borderWidth: 1, marginBottom: 8 },
+  recordingDot: { width: 8, height: 8, borderRadius: 4 },
+  recordingText: { flex: 1, fontSize: 13, fontWeight: '600' },
+  stopRecBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 5, borderRadius: Radius.full },
 
   postHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   postContent: { fontSize: 15, lineHeight: 22, marginBottom: 12 },
@@ -237,6 +242,12 @@ export default function FitGOSocial({
   const [selectedAudio, setSelectedAudio] = useState<string | null>(null);
   const [isPosting, setIsPosting] = useState(false);
 
+  // Voice recording state
+  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingElapsed, setRecordingElapsed] = useState(0);
+  const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
 
   // Feed Filter States
   const [feedSearchQuery, setFeedSearchQuery] = useState('');
@@ -392,6 +403,52 @@ export default function FitGOSocial({
     } catch (error) {
       console.warn('Error selecting audio:', error);
     }
+  };
+
+  const handleStartRecording = async () => {
+    try {
+      const { granted } = await requestRecordingPermissionsAsync();
+      if (!granted) {
+        alert('Se necesita permiso para grabar audio.');
+        return;
+      }
+      await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
+      await recorder.prepareToRecordAsync();
+      recorder.record();
+      setIsRecording(true);
+      setRecordingElapsed(0);
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingElapsed(prev => prev + 1);
+      }, 1000);
+    } catch (e) {
+      console.warn('Error starting recording:', e);
+    }
+  };
+
+  const handleStopRecording = async () => {
+    try {
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+      }
+      await recorder.stop();
+      setIsRecording(false);
+      const uri = recorder.uri;
+      if (uri) {
+        setSelectedAudio(uri);
+        setSelectedImage(null);
+        setSelectedVideo(null);
+      }
+      await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: false }).catch(() => {});
+    } catch (e) {
+      console.warn('Error stopping recording:', e);
+    }
+  };
+
+  const formatRecordingTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${String(s).padStart(2, '0')}`;
   };
 
 
@@ -838,22 +895,56 @@ export default function FitGOSocial({
         </View>
       )}
 
+      {selectedAudio && (
+        <View style={{ position: 'relative', marginBottom: 12 }}>
+          <PostAudioPlayer audioUrl={selectedAudio} colors={colors} />
+          <TouchableOpacity 
+            style={[s.removeImageBtn, { right: 0, top: -10 }]} 
+            onPress={() => setSelectedAudio(null)}
+          >
+            <X size={16} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {isRecording && (
+        <View style={[s.recordingBar, { backgroundColor: colors.error + '22', borderColor: colors.error + '44' }]}>
+          <View style={[s.recordingDot, { backgroundColor: colors.error }]} />
+          <Text style={[s.recordingText, { color: colors.error }]}>{t('social.feed.recording', 'Recording...')} {formatRecordingTime(recordingElapsed)}</Text>
+          <TouchableOpacity onPress={handleStopRecording} style={[s.stopRecBtn, { backgroundColor: colors.error }]}>
+            <StopCircle size={16} color="#fff" />
+            <Text style={{ color: '#fff', fontSize: 12, marginLeft: 4, fontWeight: '700' }}>{t('social.feed.stop', 'Stop')}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <View style={s.postActions}>
         <TouchableOpacity style={s.postTool} onPress={() => setIsImageModalVisible(true)}>
           <Camera size={18} color={colors.textSecondary} />
-          <Text style={{ color: colors.textSecondary, fontSize: 12, marginLeft: 4 }}>{t('social.feed.photo', 'Multimedia')}</Text>
+          <Text style={{ color: colors.textSecondary, fontSize: 12, marginLeft: 4 }}>{t('social.feed.photo', 'Photo')}</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[s.sendBtn, { backgroundColor: (newPostContent.trim() || selectedImage || selectedVideo) ? colors.primary : colors.surfaceAlt }]}
-          onPress={handleCreatePost}
-          disabled={(!newPostContent.trim() && !selectedImage && !selectedVideo) || isPosting}
+          style={s.postTool} 
+          onPress={isRecording ? handleStopRecording : handleStartRecording}
+          disabled={!!selectedAudio && !isRecording}
         >
-
+          {isRecording 
+            ? <StopCircle size={18} color={colors.error} />
+            : <Mic size={18} color={selectedAudio ? colors.textMuted : colors.textSecondary} />}
+          <Text style={{ color: isRecording ? colors.error : (selectedAudio ? colors.textMuted : colors.textSecondary), fontSize: 12, marginLeft: 4 }}>
+            {isRecording ? t('social.feed.stop', 'Stop') : t('social.feed.voice', 'Voice')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[s.sendBtn, { backgroundColor: (newPostContent.trim() || selectedImage || selectedVideo || selectedAudio) ? colors.primary : colors.surfaceAlt }]}
+          onPress={handleCreatePost}
+          disabled={(!newPostContent.trim() && !selectedImage && !selectedVideo && !selectedAudio) || isPosting || isRecording}
+        >
           {isPosting ? <ActivityIndicator size="small" color="#fff" /> : <Send size={16} color="#fff" />}
         </TouchableOpacity>
       </View>
     </GlassCard>
-  ), [newPostContent, selectedImage, selectedVideo, isPosting, profile?.avatarUrl, profile?.name, colors.primary, colors.surfaceAlt, colors.textPrimary, colors.textMuted, colors.textSecondary, handleCreatePost, t]);
+  ), [newPostContent, selectedImage, selectedVideo, selectedAudio, isPosting, isRecording, recordingElapsed, profile?.avatarUrl, profile?.name, colors.primary, colors.surfaceAlt, colors.textPrimary, colors.textMuted, colors.textSecondary, colors.error, handleCreatePost, handleStartRecording, handleStopRecording, formatRecordingTime, t]);
 
   const feedHeader = useMemo(() => {
     const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
@@ -1160,6 +1251,9 @@ export default function FitGOSocial({
                     <Image source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
                   </TouchableOpacity>
                 )
+              )}
+              {post.audio_url && (
+                <PostAudioPlayer audioUrl={post.audio_url} colors={colors} />
               )}
 
             </View>
@@ -1717,6 +1811,7 @@ export default function FitGOSocial({
         onTakePhoto={handleCamera}
         onRecordVideo={handleRecordVideo}
         onSelectLibrary={handleGallery}
+        onSelectAudio={handleSelectAudio}
       />
 
       

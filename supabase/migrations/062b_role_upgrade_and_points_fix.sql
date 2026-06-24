@@ -94,6 +94,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Create the new role change trigger
+DROP TRIGGER IF EXISTS on_role_change ON public.users;
 CREATE TRIGGER on_role_change
   BEFORE UPDATE ON public.users
   FOR EACH ROW

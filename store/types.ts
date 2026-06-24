@@ -183,7 +183,7 @@ export interface AppNotification {
   title: string;
   description: string;
   icon?: string;
-  iconType: 'emoji' | 'lucide' | 'lottie';
+  iconType: 'lucide' | 'lottie';
   lucideIcon?: string;
   lottieFile?: string;
   tier: 'bronce' | 'plata' | 'oro' | 'diamante' | 'success' | 'info' | 'warning';

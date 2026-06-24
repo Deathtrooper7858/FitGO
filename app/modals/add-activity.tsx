@@ -476,12 +476,12 @@ export default function AddActivityModal() {
               <View style={s.sectionHeader}>
                 <Sparkles size={16} color={colors.primary} />
                 <Text style={[s.sectionLabel, { color: colors.textSecondary }]}>
-                  {t('activities.whatDidYouDo', '¿Qué actividad hiciste?').toUpperCase()}
+                  {t('activities.whatDidYouDo', 'What activity did you do?').toUpperCase()}
                 </Text>
               </View>
 
               <Text style={[s.instructionsText, { color: colors.textMuted }]}>
-                {t('activities.aiInstructions', 'Toca el micrófono para dictar con tu voz (ej: "Trotemos 40 minutos en el parque") o descríbelo en el campo de texto.')}
+                {t('activities.aiInstructions', 'Tap the microphone to dictate with your voice (e.g. "Let\'s jog 40 minutes in the park") or describe it in the text field.')}
               </Text>
 
               {/* Voice mic record visual feedback */}
@@ -575,10 +575,10 @@ export default function AddActivityModal() {
                   { color: isRecording ? colors.error : isTranscribing ? colors.primary : colors.textSecondary }
                 ]}>
                   {isRecording
-                    ? `🔴 ${t('scan.recording', 'Grabando... toca para detener')}`
+                    ? `🔴 ${t('scan.recording', 'Recording... tap to stop')}`
                     : isTranscribing
-                    ? `⏳ ${t('scan.transcribing', 'Transcribiendo audio...')}`
-                    : t('scan.tapToRecord', 'Toca el micrófono para dictar con voz')}
+                    ? `⏳ ${t('scan.transcribing', 'Transcribing audio...')}`
+                    : t('scan.tapToRecord', 'Tap the microphone to dictate by voice')}
                 </Text>
               </View>
 

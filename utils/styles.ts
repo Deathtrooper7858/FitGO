@@ -6,8 +6,8 @@ export const getNameStyle = (
   premiumColor?: string | null,
 ): { color: string; textShadowColor?: string; textShadowOffset?: { width: number; height: number }; textShadowRadius?: number } => {
   const isMe = userId && userId === currentUserId;
-  const color = isMe ? (currentUserColor || nameColor) : nameColor;
-  const resolvedColor = color || premiumColor;
+  const color = isMe ? (currentUserColor || nameColor || premiumColor) : nameColor;
+  const resolvedColor = color;
 
   if (resolvedColor === 'admin_glow') {
     return {

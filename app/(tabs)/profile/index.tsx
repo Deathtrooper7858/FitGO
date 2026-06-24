@@ -525,17 +525,17 @@ export default function ProfileScreen() {
           </SettingsSection>
 
           <SettingsSection title={t('about.title', 'SOBRE FITGO')} accentColor="#8B5CF6" opacity={0.4}>
-            <SettingsItem icon={Share2} label={t('profile.inviteFriends', 'Invitar Amigos')} onPress={handleInviteFriends} iconColor="#10B981" />
-            <SettingsItem icon={FileText} label={t('profile.terms', 'Términos y Condiciones')} onPress={() => router.push({ pathname: '/modals/terms', params: { tab: 'terms' } } as any)} iconColor="#6366F1" />
-            <SettingsItem icon={ShieldCheck} label={t('profile.privacy', 'Política de Privacidad')} onPress={() => router.push({ pathname: '/modals/terms', params: { tab: 'privacy' } } as any)} iconColor="#10B981" />
-            <SettingsItem icon={Info} label={t('about.moreInfo', 'Más sobre FitGO')} rightIcon={showAbout ? '▼' : '›'} onPress={() => toggleSection(setShowAbout, showAbout)} iconColor="#3B82F6" />
+            <SettingsItem icon={Share2} label={t('profile.inviteFriends', 'Invite Friends')} onPress={handleInviteFriends} iconColor="#10B981" />
+            <SettingsItem icon={FileText} label={t('profile.terms', 'Terms and Conditions')} onPress={() => router.push({ pathname: '/modals/terms', params: { tab: 'terms' } } as any)} iconColor="#6366F1" />
+            <SettingsItem icon={ShieldCheck} label={t('profile.privacy', 'Privacy Policy')} onPress={() => router.push({ pathname: '/modals/terms', params: { tab: 'privacy' } } as any)} iconColor="#10B981" />
+            <SettingsItem icon={Info} label={t('about.moreInfo', 'More about FitGO')} rightIcon={showAbout ? '▼' : '›'} onPress={() => toggleSection(setShowAbout, showAbout)} iconColor="#3B82F6" />
             {showAbout && (
               <View style={{ backgroundColor: colors.surfaceAlt + '10', borderTopWidth: 1, borderTopColor: colors.border + '10' }}>
-                <SettingsItem icon={Globe} label={t('about.website', 'Sitio Web')} value="FitGO" indent onPress={() => Linking.openURL('https://fit-go-page.vercel.app/es')} iconColor="#3B82F6" />
+                <SettingsItem icon={Globe} label={t('about.website', 'Website')} value="FitGO" indent onPress={() => Linking.openURL('https://fit-go-page.vercel.app/es')} iconColor="#3B82F6" />
                 <SettingsItem icon={Smartphone} label={t('about.tiktok', 'TikTok')} indent onPress={() => Linking.openURL('https://www.tiktok.com/@fit_go?is_from_webapp=1&sender_device=pc')} iconColor="#FF0050" />
                 <SettingsItem icon={Camera} label={t('about.instagram', 'Instagram')} indent onPress={() => Linking.openURL('https://www.instagram.com/fit___go/')} iconColor="#E1306C" />
                 <SettingsItem icon={Mail} label={t('about.email', 'Email')} value="fitgoenterprise@gmail.com" indent onPress={() => Linking.openURL('mailto:fitgoenterprise@gmail.com')} iconColor="#EA4335" />
-                <SettingsItem icon={MessageSquare} label={t('profile.sendFeedback', 'Enviar Sugerencia')} indent onPress={() => Linking.openURL('mailto:fitgoenterprise@gmail.com')} iconColor="#10B981" />
+                <SettingsItem icon={MessageSquare} label={t('profile.sendFeedback', 'Send Feedback')} indent onPress={() => Linking.openURL('mailto:fitgoenterprise@gmail.com')} iconColor="#10B981" />
                 <SettingsItem icon={Heart} label={t('about.credits', 'Créditos')} indent onPress={() => showAlert('info', t('about.creditsTitle', 'Créditos'), t('about.creditsMessage', 'Las animaciones (GIFs) del directorio de ejercicios son propiedad y cortesía de ExerciseDB API.'), () => {}, undefined, t('about.creditsOk', 'Entendido'))} iconColor="#EF4444" />
                 <SettingsItem icon={Info} label={t('about.version', 'Versión')} value="v1.0.1" indent iconColor={colors.textMuted} />
               </View>

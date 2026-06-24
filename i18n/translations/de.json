@@ -38,6 +38,8 @@
     "send": "Senden",
     "noResults": "Keine Ergebnisse",
     "tryAnotherTerm": "Anderen Begriff versuchen",
+    "searchFood": "Essen suchen...",
+    "enterFoodName": "Essensname eingeben...",
     "camera": "Kamera",
     "gallery": "Galerie",
     "cameraPermissionDenied": "Kameraberechtigung ist erforderlich.",
@@ -538,7 +540,10 @@
     "sessionImpacts": "Einflüsse",
     "sessionThisMonth": "diesen Monat",
     "sessionRecent": "kürzlich",
-    "dailyTipFallback": "Geben wir heute alles! 🔥"
+    "dailyTipFallback": "Geben wir heute alles! 🔥",
+    "kcalConsumed": "kcal verbraucht",
+    "remaining": "übrig",
+    "overGoal": "über Ziel"
   },
   "tracker": {
     "title": "Heute",
@@ -1243,6 +1248,7 @@
     "detectedFoods": "Erkannte Speisen",
     "totalCalories": "Kalorien gesamt",
     "retake": "Neu aufnehmen",
+    "missing": "Fehlendes hinzufügen",
     "addAll": "Alle zu {{meal}} hinzufügen",
     "barcodeScanned": "Gescannt",
     "analysisFailed": "Fehlgeschlagen",
@@ -2936,7 +2942,10 @@
       "searchPostsPlaceholder": "Beiträge suchen...",
       "filtersActive": "Aktive Filter",
       "clearFilters": "Filter löschen",
-      "filterLanguage": "Sprache"
+      "filterLanguage": "Sprache",
+      "stop": "Stopp",
+      "voice": "Stimme",
+      "recording": "Aufnahme..."
     },
     "friends": {
       "addFriends": "Freunde hinzufügen",
@@ -3025,6 +3034,18 @@
       "pendingRequest": "Ausstehende Anfrage",
       "addFriend": "Freund hinzufügen",
       "class": "Klasse"
+    },
+    "picker": {
+      "title": "Medien teilen",
+      "subtitle": "Was möchtest du heute teilen?",
+      "takePhoto": "Foto aufnehmen",
+      "takePhotoDesc": "Nutze deine Kamera für ein Foto",
+      "recordVideo": "Video aufnehmen",
+      "recordVideoDesc": "Nimm ein kurzes Video mit deiner Kamera auf",
+      "gallery": "Aus Galerie auswählen",
+      "galleryDesc": "Vorhandene Fotos oder Videos auswählen",
+      "audio": "Audiodatei auswählen",
+      "audioDesc": "MP3- oder andere Audiodatei auswählen"
     },
     "headers": {
       "socialSubtitle": "Verbinde dich mit deiner Community",
@@ -4319,7 +4340,11 @@
     "micPermissionTitle": "Berechtigung erforderlich",
     "micPermissionMsg": "Mikrofonzugriff ist erforderlich.",
     "uploadFailed": "Datei konnte nicht hochgeladen werden.",
-    "audioSendFailed": "Audio konnte nicht gesendet werden."
+    "audioSendFailed": "Audio konnte nicht gesendet werden.",
+    "sendMediaTitle": "Medien senden",
+    "sendMediaSub": "Wähle ein Foto, nimm ein Video auf oder wähle aus der Galerie",
+    "recording": "Aufnahme...",
+    "messagePlaceholder": "Nachricht eingeben..."
   },
   "body": {
     "measurementsUpdated": "Messungen aktualisiert",

@@ -40,24 +40,45 @@ const darkenHex = (hex: string, amount = 0.22): string => {
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
 };
 
-// ── Voice Note Player ─────────────────────────────────────────────────────────
 function VoiceNotePlayer({ audioUrl, isMine, colors }: { audioUrl: string; isMine: boolean; colors: any }) {
   const player = useAudioPlayer(audioUrl);
   const status = useAudioPlayerStatus(player);
+  const [trackWidth, setTrackWidth] = useState(0);
 
   const formatTime = (seconds: number) => {
+    if (isNaN(seconds)) return '0:00';
     const s = Math.floor(seconds);
     return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   };
 
   const progress = status.duration > 0 ? status.currentTime / status.duration : 0;
 
-  const handleToggle = () => {
+  const handleToggle = async () => {
+    try {
+      await setAudioModeAsync({ 
+        playsInSilentMode: true, 
+        allowsRecording: false, 
+        interruptionMode: 'mixWithOthers', 
+        shouldPlayInBackground: false, 
+        shouldRouteThroughEarpiece: false 
+      });
+    } catch (e) {
+      console.warn('Audio mode error:', e);
+    }
+
     if (status.playing) {
       player.pause();
     } else {
       if (status.didJustFinish) player.seekTo(0);
       player.play();
+    }
+  };
+
+  const handleSeek = (e: any) => {
+    if (trackWidth > 0 && status.duration > 0) {
+      const x = e.nativeEvent.locationX;
+      const percent = Math.max(0, Math.min(1, x / trackWidth));
+      player.seekTo(percent * status.duration);
     }
   };
 
@@ -72,8 +93,16 @@ function VoiceNotePlayer({ audioUrl, isMine, colors }: { audioUrl: string; isMin
           : <Play size={16} color={isMine ? '#fff' : colors.primary} />}
       </TouchableOpacity>
       <View style={vStyles.progressWrapper}>
-        <View style={[vStyles.progressTrack, { backgroundColor: isMine ? 'rgba(255,255,255,0.3)' : colors.border }]}>
-          <View style={[vStyles.progressFill, { width: `${progress * 100}%`, backgroundColor: isMine ? '#fff' : colors.primary }]} />
+        <View 
+          style={{ height: 20, justifyContent: 'center' }}
+          onLayout={e => setTrackWidth(e.nativeEvent.layout.width)}
+          onStartShouldSetResponder={() => true}
+          onResponderGrant={handleSeek}
+          onResponderMove={handleSeek}
+        >
+          <View style={[vStyles.progressTrack, { backgroundColor: isMine ? 'rgba(255,255,255,0.3)' : colors.border }]}>
+            <View style={[vStyles.progressFill, { width: `${progress * 100}%`, backgroundColor: isMine ? '#fff' : colors.primary }]} />
+          </View>
         </View>
         <Text style={[vStyles.timeText, { color: isMine ? 'rgba(255,255,255,0.75)' : colors.textMuted }]}>
           {status.playing
@@ -459,7 +488,7 @@ export default function ChatModal() {
               <View style={styles.recordingInfo}>
                 <Animated.View style={[styles.recordingDot, { transform: [{ scale: pulseAnim }] }]} />
                 <Text style={[styles.recordingLabel, { color: colors.textPrimary }]}>
-                  Grabando... {formatDuration(recordingDuration)}
+                  {t('chat.recording', 'Recording...')} {formatDuration(recordingDuration)}
                 </Text>
               </View>
               <TouchableOpacity onPress={handleStopAndSendRecording} style={[styles.sendBtn, { backgroundColor: colors.primary }]}>
@@ -482,7 +511,7 @@ export default function ChatModal() {
 
               <TextInput
                 style={[styles.input, { backgroundColor: colors.background, color: colors.textPrimary }]}
-                placeholder="Escribe un mensaje..."
+                placeholder={t('chat.messagePlaceholder', 'Write a message...')}
                 placeholderTextColor={colors.textMuted}
                 value={newMessage}
                 onChangeText={handleTyping}

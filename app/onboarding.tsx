@@ -384,7 +384,7 @@ export default function OnboardingScreen() {
             {saving ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <ActivityIndicator color="#fff" />
-                <Text style={s.nextText}>{currentStep === STEPS.length - 1 ? t('onboarding.creatingPlan', 'Creando plan...') : t('common.loading', 'Cargando...')}</Text>
+                <Text style={s.nextText}>{currentStep === STEPS.length - 1 ? t('onboarding.creatingPlan', 'Creating plan...') : t('common.loading', 'Loading...')}</Text>
               </View>
             ) : (
               <View style={s.nextContent}>

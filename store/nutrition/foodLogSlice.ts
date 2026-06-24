@@ -287,9 +287,19 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
       try {
         const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         const startDate = thirtyDaysAgo.toISOString().split('T')[0];
-        const { data, error } = await supabase.from('food_logs').select('*').eq('user_id', userId).gte('logged_at', startDate);
-        if (error) throw error;
-        if (data) {
+        
+        const [foodRes, actRes] = await Promise.all([
+          supabase.from('food_logs').select('*').eq('user_id', userId).gte('logged_at', startDate),
+          supabase.from('activity_logs').select('*').eq('user_id', userId).gte('logged_at', startDate)
+        ]);
+        
+        if (foodRes.error) throw foodRes.error;
+        if (actRes.error) throw actRes.error;
+
+        const data = foodRes.data || [];
+        const actData = actRes.data || [];
+
+        if (data || actData) {
           const formattedLogs = data.map(mapSupabaseRowToFoodLog);
           set((s: any) => {
             const remoteMap = new Map(formattedLogs.map((l: any) => [l.id, l]));
@@ -299,6 +309,7 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
           });
           const historyActiveDays: Record<string, boolean> = {};
           data.forEach((log: any) => { historyActiveDays[log.logged_at.split('T')[0]] = true; });
+          actData.forEach((log: any) => { historyActiveDays[log.logged_at.split('T')[0]] = true; });
           set((s: any) => {
             const mergedDays = { ...s.activeDays, ...historyActiveDays };
             return { activeDays: mergedDays, plannedDays: Object.keys(mergedDays).length, streakDays: memoRecalculateStreak(mergedDays) };

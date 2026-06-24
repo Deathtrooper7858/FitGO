@@ -178,7 +178,7 @@ export default function SocialModal() {
   const handleCamera = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      alert(t('social.cameraPermission', 'Se necesita permiso para acceder a la cámara.'));
+      alert(t('social.cameraPermission', 'Camera permission is required.'));
       return;
     }
     const result = await ImagePicker.launchCameraAsync({ allowsEditing: false, quality: 0.2 });
@@ -190,7 +190,7 @@ export default function SocialModal() {
   const handleGallery = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      alert(t('social.galleryPermission', 'Se necesita permiso para acceder a la galería.'));
+      alert(t('social.galleryPermission', 'Gallery permission is required.'));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.8 });
@@ -261,7 +261,7 @@ export default function SocialModal() {
 
   const handleShare = async (content: string) => {
     try {
-      await Share.share({ message: `${content}\n\n${t('social.sharedFrom', 'Compartido desde FitGo')}` });
+      await Share.share({ message: `${content}\n\n${t('social.sharedFrom', 'Shared from FitGo')}` });
     } catch (error) {
       console.warn(error);
     }
@@ -437,7 +437,7 @@ export default function SocialModal() {
                   </TouchableOpacity>
                   <View style={{ alignItems: 'flex-end' }}>
                     <Text style={{ fontWeight: '800', color: colors.primary, fontSize: 14 }}>{Math.round(user.points)}</Text>
-                    <Text style={{ fontSize: 10, color: colors.textMuted }}>{t('profile.points', 'Puntos')}</Text>
+                    <Text style={{ fontSize: 10, color: colors.textMuted }}>{t('profile.points', 'Points')}</Text>
                   </View>
                 </View>
               );
@@ -476,11 +476,11 @@ export default function SocialModal() {
           <GlassCard accentColor={colors.error} style={{ marginBottom: 20 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
               <Sword size={24} color={colors.error} />
-              <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>{t('social.fitgoChallenges', 'Retos FitGo')}</Text>
+              <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>{t('social.fitgoChallenges', 'FitGo Challenges')}</Text>
             </View>
             <TouchableOpacity style={[s.aiBtn, { backgroundColor: colors.surfaceAlt }]} onPress={generateAIChallenge}>
               <Bot size={20} color={colors.primary} />
-              <Text style={{ color: colors.textPrimary, fontWeight: '700', flex: 1 }}>{t('social.challenges.aiSuggestion', 'Sugerencia de Fitz (IA)')}</Text>
+              <Text style={{ color: colors.textPrimary, fontWeight: '700', flex: 1 }}>{t('social.challenges.aiSuggestion', "Fitz Suggestion (AI)")}</Text>
             </TouchableOpacity>
             {aiLoading && <ActivityIndicator color={colors.primary} style={{ marginVertical: 15 }} />}
             {aiRecommendation && !aiLoading && (
@@ -500,50 +500,50 @@ export default function SocialModal() {
               style={[s.mainBtn, { backgroundColor: colors.primary, marginTop: 15 }]}
               onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setIsCreatingChallenge(true); }}
             >
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{t('social.challenges.newCustomChallenge', 'Nuevo Reto Personalizado')}</Text>
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{t('social.challenges.newCustomChallenge', 'New Custom Challenge')}</Text>
             </TouchableOpacity>
           </GlassCard>
         ) : (
           <GlassCard accentColor={colors.primary} style={{ marginBottom: 20 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>{t('social.challenges.createNew', 'Crear Nuevo Reto')}</Text>
+              <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>{t('social.challenges.createNew', 'Create New Challenge')}</Text>
               <TouchableOpacity onPress={() => setIsCreatingChallenge(false)}><X size={24} color={colors.textSecondary} /></TouchableOpacity>
             </View>
-            <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.challengeTitle', 'Título del Reto')}</Text>
+            <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.challengeTitle', 'Challenge Title')}</Text>
             <TextInput style={[s.inputField, { backgroundColor: colors.surfaceAlt, color: colors.textPrimary }]} placeholder={t('social.challenges.titlePlaceholder')} placeholderTextColor={colors.textMuted} value={challengeForm.title} onChangeText={t => setChallengeForm({...challengeForm, title: t})} />
-            <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.description', 'Descripción')}</Text>
+            <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.description', 'Description')}</Text>
             <TextInput style={[s.inputField, { backgroundColor: colors.surfaceAlt, color: colors.textPrimary, height: 80 }]} placeholder={t('social.challenges.descPlaceholder')} placeholderTextColor={colors.textMuted} multiline value={challengeForm.description} onChangeText={t => setChallengeForm({...challengeForm, description: t})} />
             <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
               <View style={{ flex: 1 }}>
-                <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.type', 'Tipo')}</Text>
+                <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.type', 'Type')}</Text>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                   {(['steps', 'calories', 'physical'] as const).map(type => (
                     <TouchableOpacity key={type} style={[s.typeBtn, { backgroundColor: challengeForm.type === type ? colors.primary : colors.surfaceAlt }]} onPress={() => setChallengeForm({...challengeForm, type})}>
                       <Text style={{ color: challengeForm.type === type ? '#fff' : colors.textPrimary, fontSize: 12, fontWeight: '700' }}>
-                        {type === 'steps' ? `🚶 ${t('social.challenges.steps', 'Pasos')}` : type === 'calories' ? `🔥 ${t('social.challenges.calories', 'Calorías')}` : `💪 ${t('social.challenges.physical', 'Físico')}`}
+                        {type === 'steps' ? `🚶 ${t('social.challenges.steps', 'Steps')}` : type === 'calories' ? `🔥 ${t('social.challenges.calories', 'Calories')}` : `💪 ${t('social.challenges.physical', 'Physical')}`}
                       </Text>
                     </TouchableOpacity>
                   ))}
                 </View>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.days', 'Días')}</Text>
+                <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.days', 'Days')}</Text>
                 <TextInput style={[s.inputField, { backgroundColor: colors.surfaceAlt, color: colors.textPrimary, marginBottom: 0 }]} keyboardType="numeric" value={challengeForm.duration_days} onChangeText={t => setChallengeForm({...challengeForm, duration_days: t})} />
               </View>
             </View>
             {challengeForm.type === 'physical' ? (
               <View>
-                <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.customGoalLabel', 'Objetivo personalizado')}</Text>
-                <TextInput style={[s.inputField, { backgroundColor: colors.surfaceAlt, color: colors.textPrimary, height: 80 }]} placeholder="Ej. Hacer 100 flexiones en total, completar 5 km..." placeholderTextColor={colors.textMuted} multiline value={challengeForm.custom_goal} onChangeText={t => setChallengeForm({...challengeForm, custom_goal: t})} />
+                <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.customGoalLabel', 'Custom goal')}</Text>
+                <TextInput style={[s.inputField, { backgroundColor: colors.surfaceAlt, color: colors.textPrimary, height: 80 }]} placeholder={t('social.challenges.customGoalPlaceholder', 'e.g. 100 pushups...')} placeholderTextColor={colors.textMuted} multiline value={challengeForm.custom_goal} onChangeText={t => setChallengeForm({...challengeForm, custom_goal: t})} />
               </View>
             ) : (
               <View>
-                <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.goalTitle', 'Objetivo')} ({challengeForm.type === 'steps' ? t('social.challenges.stepsPerDay', 'Pasos por día') : t('social.challenges.caloriesPerDay', 'Calorías por día')})</Text>
+                <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.goalTitle', 'Goal')} ({challengeForm.type === 'steps' ? t('social.challenges.stepsPerDay', 'Steps per day') : t('social.challenges.caloriesPerDay', 'Calories per day')})</Text>
                 <TextInput style={[s.inputField, { backgroundColor: colors.surfaceAlt, color: colors.textPrimary }]} keyboardType="numeric" value={challengeForm.target_value} onChangeText={t => setChallengeForm({...challengeForm, target_value: t})} />
               </View>
             )}
-            <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.whoParticipates', '¿Quiénes participan?')}</Text>
-            <Text style={{ color: colors.textMuted, fontSize: 12, marginBottom: 10 }}>{t('social.challenges.tapToSelect', 'Toca para seleccionar. Puedes incluirte a ti y a varios amigos.')}</Text>
+            <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.whoParticipates', 'Who participates?')}</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 12, marginBottom: 10 }}>{t('social.challenges.tapToSelect', 'Tap to select. You can include yourself and multiple friends.')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }}>
               <TouchableOpacity style={[s.friendSelectCard, { backgroundColor: challengeForm.includeSelf ? colors.primary + '20' : colors.surfaceAlt, borderColor: challengeForm.includeSelf ? colors.primary : 'transparent', borderWidth: 2 }]} onPress={() => setChallengeForm({...challengeForm, includeSelf: !challengeForm.includeSelf})}>
                 {profile?.avatarUrl ? (
@@ -553,7 +553,7 @@ export default function SocialModal() {
                     <Text style={[s.avatarInitials, { fontSize: 16 }]}>{profile?.name?.[0]}</Text>
                   </View>
                 )}
-                <Text style={{ color: colors.textPrimary, fontSize: 12, marginTop: 8, fontWeight: '600', textAlign: 'center' }} numberOfLines={1}>{t('social.challenges.me', 'Yo')}</Text>
+                <Text style={{ color: colors.textPrimary, fontSize: 12, marginTop: 8, fontWeight: '600', textAlign: 'center' }} numberOfLines={1}>{t('social.challenges.me', 'Me')}</Text>
                 {challengeForm.includeSelf && <View style={{ position: 'absolute', top: -4, right: -4, width: 16, height: 16, borderRadius: 8, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 10, fontWeight: '900' }}>✓</Text></View>}
               </TouchableOpacity>
               {acceptedFriends.map((friend: any) => {
@@ -577,19 +577,19 @@ export default function SocialModal() {
             <TouchableOpacity style={[s.mainBtn, { backgroundColor: challengeForm.title ? colors.primary : colors.surfaceAlt }]} onPress={() => handleCreateChallenge()} disabled={!challengeForm.title}>
               <Text style={{ color: challengeForm.title ? '#fff' : colors.textMuted, fontWeight: 'bold', fontSize: 16 }}>
                 {challengeForm.selectedFriendIds.length === 0 && challengeForm.includeSelf
-                  ? `🎯 ${t('social.challenges.startSolo', 'Comenzar (solo yo)')}`
+                   ? `🎯 ${t('social.challenges.startSolo', 'Start (only me)')}`
                   : challengeForm.selectedFriendIds.length > 0 && challengeForm.includeSelf
-                  ? `⚔️ ${t('social.challenges.meAndFriends', 'Yo + {{count}} amigos', { count: challengeForm.selectedFriendIds.length })}`
+                   ? `⚔️ ${t('social.challenges.meAndFriends', 'Me + {{count}} friends', { count: challengeForm.selectedFriendIds.length })}`
                   : challengeForm.selectedFriendIds.length > 0
-                  ? `⚔️ ${t('social.challenges.challengeFriends', 'Retar a {{count}} amigos', { count: challengeForm.selectedFriendIds.length })}`
-                  : `🎯 ${t('social.challenges.start', 'Comenzar')}`
+                   ? `⚔️ ${t('social.challenges.challengeFriends', 'Challenge {{count}} friends', { count: challengeForm.selectedFriendIds.length })}`
+                   : `🎯 ${t('social.challenges.start', 'Start')}`
                 }
               </Text>
             </TouchableOpacity>
           </GlassCard>
         )}
 
-        <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>{t('social.activeChallenges', 'Retos Activos')}</Text>
+        <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>{t('social.activeChallenges', 'Active Challenges')}</Text>
         {socialStore.challenges.length === 0 ? (
           <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10 }}>No hay retos activos.</Text>
         ) : (
@@ -633,7 +633,7 @@ export default function SocialModal() {
                           >
                             <Check size={18} color={isFullyCompleted || challenge.type === 'physical' ? '#fff' : colors.textPrimary} />
                             <Text style={{ color: isFullyCompleted || challenge.type === 'physical' ? '#fff' : colors.textPrimary, fontSize: 14, fontWeight: '700' }}>
-                              {t('social.challenges.markAsCompleted', 'Marcar como completado')}
+                              {t('social.challenges.markAsCompleted', 'Mark as completed')}
                             </Text>
                           </TouchableOpacity>
                         )}
@@ -799,11 +799,11 @@ export default function SocialModal() {
                   <View style={{ flexDirection: 'row', gap: 20, marginTop: 10, marginBottom: 4 }}>
                     <View style={{ alignItems: 'center' }}><Text style={{ color: colors.textPrimary, fontWeight: '900', fontSize: 16 }}>#{rankIndex + 1}</Text><Text style={{ color: colors.textMuted, fontSize: 10 }}>{t('competitive.ranking', 'Ranking')}</Text></View>
                     <View style={{ width: 1, backgroundColor: colors.border + '40' }} />
-                    <View style={{ alignItems: 'center' }}><Text style={{ color: colors.primary, fontWeight: '900', fontSize: 16 }}>{Math.round(rankInfo.points)}</Text><Text style={{ color: colors.textMuted, fontSize: 10 }}>{t('profile.points', 'Puntos')}</Text></View>
+                    <View style={{ alignItems: 'center' }}><Text style={{ color: colors.primary, fontWeight: '900', fontSize: 16 }}>{Math.round(rankInfo.points)}</Text><Text style={{ color: colors.textMuted, fontSize: 10 }}>{t('profile.points', 'Points')}</Text></View>
                     <View style={{ width: 1, backgroundColor: colors.border + '40' }} />
                     <View style={{ alignItems: 'center' }}>
                       <View style={{ backgroundColor: grade.bg, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}><Text style={{ color: grade.color, fontWeight: '900', fontSize: 14 }}>{grade.label}</Text></View>
-                      <Text style={{ color: colors.textMuted, fontSize: 10, marginTop: 2 }}>{t('competitive.class', 'Clase')}</Text>
+                      <Text style={{ color: colors.textMuted, fontSize: 10, marginTop: 2 }}>{t('competitive.class', 'Class')}</Text>
                     </View>
                   </View>
                 );
@@ -821,16 +821,16 @@ export default function SocialModal() {
                       onPress={() => { router.push({ pathname: '/modals/user-profile', params: { userId: inspectingUser.id, name: inspectingUser.name, avatarUrl: inspectingUser.avatar_url } }); setInspectingUser(null); }}
                     >
                       <Users size={16} color={colors.textPrimary} />
-                      <Text style={{ color: colors.textPrimary, fontWeight: '700', fontSize: 14 }}>{t('social.viewFullProfile', 'Ver Perfil Completo')}</Text>
+                      <Text style={{ color: colors.textPrimary, fontWeight: '700', fontSize: 14 }}>{t('social.viewFullProfile', 'View Full Profile')}</Text>
                     </TouchableOpacity>
                     {friendStatus?.status === 'accepted' ? (
                       <View style={{ height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.success + '20', flexDirection: 'row', gap: 8 }}>
                         <Check size={16} color={colors.success} />
-                        <Text style={{ color: colors.success, fontWeight: '700', fontSize: 14 }}>{t('social.friends.alreadyFriends', 'Son Amigos')}</Text>
+                        <Text style={{ color: colors.success, fontWeight: '700', fontSize: 14 }}>{t('social.friends.alreadyFriends', 'Already Friends')}</Text>
                       </View>
                     ) : friendStatus?.status === 'pending' ? (
                       <View style={{ height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt, flexDirection: 'row', gap: 8 }}>
-                        <Text style={{ color: colors.textMuted, fontWeight: '700', fontSize: 14 }}>{t('social.pendingRequest', 'Solicitud Pendiente')}</Text>
+                        <Text style={{ color: colors.textMuted, fontWeight: '700', fontSize: 14 }}>{t('social.pendingRequest', 'Pending Request')}</Text>
                       </View>
                     ) : (
                       <TouchableOpacity
@@ -839,7 +839,7 @@ export default function SocialModal() {
                       >
                         <LinearGradient colors={[colors.primary, colors.secondary || '#A855F7']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                           <Plus size={18} color="#fff" />
-                          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>{t('social.friends.add', 'Añadir Amigo')}</Text>
+                          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>{t('social.friends.add', 'Add Friend')}</Text>
                         </LinearGradient>
                       </TouchableOpacity>
                     )}
@@ -855,8 +855,8 @@ export default function SocialModal() {
         <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end', zIndex: 1000 }]}>
           <View style={{ backgroundColor: colors.surface, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 40 }}>
             <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: 'center', marginBottom: 20 }} />
-            <Text style={{ color: colors.textPrimary, fontSize: 20, fontWeight: '900', marginBottom: 4 }}>{t('social.challenges.whoParticipates', '¿Quiénes participan?')}</Text>
-            <Text style={{ color: colors.textSecondary, fontSize: 13, marginBottom: 20 }}>{t('social.challenges.tapToSelect', 'Toca para seleccionar. Puedes incluirte a ti y a varios amigos.')}</Text>
+            <Text style={{ color: colors.textPrimary, fontSize: 20, fontWeight: '900', marginBottom: 4 }}>{t('social.challenges.whoParticipates', 'Who participates?')}</Text>
+            <Text style={{ color: colors.textSecondary, fontSize: 13, marginBottom: 20 }}>{t('social.challenges.tapToSelect', 'Tap to select. You can include yourself and multiple friends.')}</Text>
             <ScrollView style={{ maxHeight: 280 }} showsVerticalScrollIndicator={false}>
               <TouchableOpacity
                 style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 14, marginBottom: 10, backgroundColor: aiChallengeIncludeSelf ? colors.primary + '20' : colors.surfaceAlt, borderWidth: 1.5, borderColor: aiChallengeIncludeSelf ? colors.primary : 'transparent' }}
@@ -870,8 +870,8 @@ export default function SocialModal() {
                   </View>
                 )}
                 <View style={{ flex: 1, marginLeft: 14 }}>
-                  <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{t('social.challenges.me', 'Yo')} ({profile?.name})</Text>
-                  <Text style={{ color: colors.textMuted, fontSize: 12 }}>{t('social.challenges.participate', 'Participar en el reto')}</Text>
+                  <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{t('social.challenges.me', 'Me')} ({profile?.name})</Text>
+                  <Text style={{ color: colors.textMuted, fontSize: 12 }}>{t('social.challenges.participate', 'Participate in the challenge')}</Text>
                 </View>
                 <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: aiChallengeIncludeSelf ? colors.primary : colors.border + '50', alignItems: 'center', justifyContent: 'center', borderWidth: aiChallengeIncludeSelf ? 0 : 1.5, borderColor: colors.border }}>
                   {aiChallengeIncludeSelf && <Text style={{ color: '#fff', fontSize: 13, fontWeight: '900' }}>✓</Text>}
@@ -895,7 +895,7 @@ export default function SocialModal() {
                     )}
                     <View style={{ flex: 1, marginLeft: 14 }}>
                       <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{friend.friend_profile?.name}</Text>
-                      <Text style={{ color: colors.textMuted, fontSize: 12 }}>{t('social.friend', 'Amigo')}</Text>
+                      <Text style={{ color: colors.textMuted, fontSize: 12 }}>{t('social.friend', 'Friend')}</Text>
                     </View>
                     <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: isSelected ? colors.primary : colors.border + '50', alignItems: 'center', justifyContent: 'center', borderWidth: isSelected ? 0 : 1.5, borderColor: colors.border }}>
                       {isSelected && <Text style={{ color: '#fff', fontSize: 13, fontWeight: '900' }}>✓</Text>}
@@ -906,7 +906,7 @@ export default function SocialModal() {
             </ScrollView>
             <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
               <TouchableOpacity style={{ flex: 1, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt }} onPress={() => setAiChallengeParticipantModal(false)}>
-                <Text style={{ color: colors.textSecondary, fontWeight: '700', fontSize: 15 }}>{t('common.cancel', 'Cancelar')}</Text>
+                <Text style={{ color: colors.textSecondary, fontWeight: '700', fontSize: 15 }}>{t('common.cancel', 'Cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={{ flex: 2, height: 52, borderRadius: 16, overflow: 'hidden' }} onPress={() => handleCreateChallenge(aiChallengeTitle, aiChallengeSelectedFriends, aiChallengeIncludeSelf)}>
                 <LinearGradient colors={[colors.primary, colors.secondary || '#A855F7']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>

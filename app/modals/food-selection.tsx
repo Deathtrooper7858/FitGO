@@ -142,7 +142,7 @@ export default function FoodSelectionModal() {
           <Search size={18} color={searchQuery ? colors.primary : colors.textSecondary} />
           <TextInput
             style={[s.searchInput, { color: colors.textPrimary }]}
-            placeholder="Buscar alimento..."
+            placeholder={t('common.searchFood', 'Search food...')}
             placeholderTextColor={colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -158,8 +158,8 @@ export default function FoodSelectionModal() {
         {searchQuery.trim() && filteredCategories.length === 0 && (
           <View style={s.noResultsWrap}>
             <Text style={{ fontSize: 32, marginBottom: 12 }}>🔍</Text>
-            <Text style={[s.noResultsText, { color: colors.textPrimary }]}>{t('common.noResults', 'Sin resultados')}</Text>
-            <Text style={[s.noResultsSub, { color: colors.textSecondary }]}>{t('common.tryAnotherTerm', 'Intenta con otro término')}</Text>
+            <Text style={[s.noResultsText, { color: colors.textPrimary }]}>{t('common.noResults', 'No results')}</Text>
+            <Text style={[s.noResultsSub, { color: colors.textSecondary }]}>{t('common.tryAnotherTerm', 'Try another term')}</Text>
           </View>
         )}
 

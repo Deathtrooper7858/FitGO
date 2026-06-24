@@ -52,7 +52,7 @@ const BadgeCard = memo(({ badge, owned }: { badge: typeof ALL_BADGES[string]; ow
       !owned ? { opacity: 0.45 } : {}
     ]}>
       <LinearGradient
-        colors={owned ? badge.colors as [string, string] : [colors.surfaceAlt, colors.surfaceAlt]}
+        colors={owned ? badge.colors : [colors.surfaceAlt, colors.surfaceAlt]}
         style={bs.badgeIconWrap}
       >
         <Text style={{ fontSize: 22 }}>{badge.icon}</Text>

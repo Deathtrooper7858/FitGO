@@ -89,8 +89,8 @@ export function DietStep({ value: data, onChange }: StepProps) {
       {searchQuery.trim() && filteredCategories.length === 0 && (
         <View style={{ alignItems: 'center', paddingVertical: 40 }}>
           <Text style={{ fontSize: 32, marginBottom: 10 }}>🔍</Text>
-          <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 17 }}>{t('common.noResults', 'Sin resultados')}</Text>
-          <Text style={{ color: colors.textSecondary, marginTop: 4 }}>{t('common.tryAnotherTerm', 'Intenta con otro término')}</Text>
+          <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 17 }}>{t('common.noResults', 'No results')}</Text>
+          <Text style={{ color: colors.textSecondary, marginTop: 4 }}>{t('common.tryAnotherTerm', 'Try another term')}</Text>
         </View>
       )}
 

@@ -243,7 +243,7 @@ export default function FoodDetailModal() {
               onFocus={() => setNameEditing(true)}
               onBlur={() => setNameEditing(false)}
               multiline
-              placeholder="Escribe el alimento..."
+              placeholder={t('common.enterFoodName', 'Enter food name...')}
               placeholderTextColor={colors.textMuted}
             />
             {isRecalculating ? (

@@ -109,7 +109,7 @@ export default function RegisterScreen() {
     if (data?.user && !data?.session) {
       showAlert(
         t('common.success'), 
-        t('auth.checkEmailSignup', 'Registro exitoso. Por favor revisa tu correo para verificar tu cuenta antes de iniciar sesión.'),
+        t('auth.checkEmailSignup', 'Registration successful. Please check your email to verify your account before logging in.'),
         'success'
       );
       return;

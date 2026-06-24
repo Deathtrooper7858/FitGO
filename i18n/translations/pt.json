@@ -38,6 +38,8 @@
     "send": "Enviar",
     "noResults": "Sem resultados",
     "tryAnotherTerm": "Tente outro termo",
+    "searchFood": "Pesquisar alimento...",
+    "enterFoodName": "Digite o nome do alimento...",
     "camera": "Câmera",
     "gallery": "Galeria",
     "cameraPermissionDenied": "A permissão da câmera é necessária.",
@@ -541,7 +543,10 @@
     "sessionImpacts": "impactos",
     "sessionThisMonth": "este mês",
     "sessionRecent": "recentes",
-    "dailyTipFallback": "Vamos dar o nosso hoje! 🔥"
+    "dailyTipFallback": "Vamos dar o nosso hoje! 🔥",
+    "kcalConsumed": "kcal consumidas",
+    "remaining": "restantes",
+    "overGoal": "acima do objetivo"
   },
   "tracker": {
     "title": "Hoje",
@@ -1246,6 +1251,7 @@
     "detectedFoods": "Alimentos Detectados",
     "totalCalories": "Calorias Totais",
     "retake": "Retirar",
+    "missing": "Adicionar faltante",
     "addAll": "Adicionar tudo a {{meal}}",
     "barcodeScanned": "Escaneado",
     "analysisFailed": "Análise Falhou",
@@ -2939,7 +2945,10 @@
       "searchPostsPlaceholder": "Buscar publicações...",
       "filtersActive": "Filtros ativos",
       "clearFilters": "Limpar filtros",
-      "filterLanguage": "Idioma"
+      "filterLanguage": "Idioma",
+      "stop": "Parar",
+      "voice": "Voz",
+      "recording": "Gravando..."
     },
     "friends": {
       "addFriends": "Adicionar Amigos",
@@ -3028,6 +3037,18 @@
       "pendingRequest": "Solicitação Pendente",
       "addFriend": "Adicionar Amigo",
       "class": "Classe"
+    },
+    "picker": {
+      "title": "Compartilhar mídia",
+      "subtitle": "O que você gostaria de compartilhar hoje?",
+      "takePhoto": "Tirar foto",
+      "takePhotoDesc": "Use a câmera do seu dispositivo",
+      "recordVideo": "Gravar vídeo",
+      "recordVideoDesc": "Grave um vídeo curto com sua câmera",
+      "gallery": "Escolher da galeria",
+      "galleryDesc": "Selecionar fotos ou vídeos existentes",
+      "audio": "Escolher arquivo de áudio",
+      "audioDesc": "Selecionar um arquivo MP3 ou outro áudio"
     },
     "headers": {
       "socialSubtitle": "Conecte-se com sua comunidade",
@@ -4334,7 +4355,11 @@
     "micPermissionTitle": "Permissão necessária",
     "micPermissionMsg": "Acesso ao microfone necessário.",
     "uploadFailed": "Não foi possível enviar o arquivo.",
-    "audioSendFailed": "Não foi possível enviar o áudio."
+    "audioSendFailed": "Não foi possível enviar o áudio.",
+    "sendMediaTitle": "Enviar mídia",
+    "sendMediaSub": "Escolha uma foto, grave um vídeo ou selecione da galeria",
+    "recording": "Gravando...",
+    "messagePlaceholder": "Escreva uma mensagem..."
   },
   "body": {
     "measurementsUpdated": "Medidas atualizadas",

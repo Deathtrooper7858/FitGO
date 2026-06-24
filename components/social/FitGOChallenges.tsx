@@ -263,10 +263,10 @@ const generateAIChallenge = async () => {
 
             {challengeForm.type === 'physical' ? (
               <View>
-                <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.customGoal', 'Objetivo personalizado')}</Text>
+                <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.customGoal', 'Custom goal')}</Text>
                 <TextInput
                   style={[s.inputField, { backgroundColor: colors.surface, color: colors.textPrimary, height: 80, borderWidth: 1, borderColor: colors.border + '50', borderRadius: Radius.lg, textAlignVertical: 'top', paddingTop: 12 }]}
-                  placeholder={t('social.challenges.customGoalPlaceholder', 'Ej. Hacer 100 flexiones en total, completar 5 km...')}
+                  placeholder={t('social.challenges.customGoalPlaceholder', 'e.g. 100 pushups...')}
                   placeholderTextColor={colors.textMuted}
                   multiline
                   value={challengeForm.custom_goal}
@@ -275,7 +275,7 @@ const generateAIChallenge = async () => {
               </View>
             ) : (
               <View>
-                <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.goal', 'Objetivo')} ({challengeForm.type === 'steps' ? t('social.challenges.stepsPerDay', 'Pasos por día') : t('social.challenges.calsPerDay', 'Calorías por día')})</Text>
+                <Text style={[s.label, { color: colors.textSecondary }]}>{t('social.challenges.goal', 'Goal')} ({challengeForm.type === 'steps' ? t('social.challenges.stepsPerDay', 'Steps per day') : t('social.challenges.calsPerDay', 'Calories per day')})</Text>
                 <TextInput
                   style={[s.inputField, { backgroundColor: colors.surface, color: colors.textPrimary, borderWidth: 1, borderColor: colors.border + '50', borderRadius: Radius.lg }]}
                   keyboardType="numeric"

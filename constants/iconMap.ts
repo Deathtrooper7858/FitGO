@@ -30,5 +30,6 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 export function getLucideIcon(name: string): LucideIcon {
+  if (name === 'HandWaving') return Hand;
   return iconMap[name] || Star;
 }

@@ -74,10 +74,10 @@ export function SexSelectionModal({
           <View style={styles.header}>
             <View style={styles.headerTextContainer}>
               <Text style={[styles.title, { color: colors.textPrimary }]}>
-                {t('profile.sex', 'Sexo')}
+                {t('profile.sex', 'Sex')}
               </Text>
               <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-                {t('profile.bmrQuest', 'Se usa para calcular tu tasa metabólica basal:')}
+                {t('profile.bmrQuest', 'Used to calculate your basal metabolic rate:')}
               </Text>
             </View>
             <TouchableOpacity onPress={onClose} style={[styles.closeBtn, { backgroundColor: colors.surfaceAlt }]}>

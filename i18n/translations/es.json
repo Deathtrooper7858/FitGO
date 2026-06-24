@@ -116,6 +116,8 @@
     "send": "Enviar",
     "noResults": "Sin resultados",
     "tryAnotherTerm": "Intenta con otro término",
+    "searchFood": "Buscar alimento...",
+    "enterFoodName": "Escribe el alimento...",
     "camera": "Cámara",
     "gallery": "Galería",
     "cameraPermissionDenied": "Se necesita permiso para la cámara.",
@@ -299,7 +301,10 @@
     "sessionImpacts": "impactos",
     "sessionThisMonth": "este mes",
     "sessionRecent": "recientes",
-    "dailyTipFallback": "¡A darle con todo hoy! 🔥"
+    "dailyTipFallback": "¡A darle con todo hoy! 🔥",
+    "kcalConsumed": "kcal consumidas",
+    "remaining": "restantes",
+    "overGoal": "sobre meta"
   },
   "tracker": {
     "title": "Registro",
@@ -1308,6 +1313,7 @@
     "detectedFoods": "Alimentos Detectados",
     "totalCalories": "Calorías Totales",
     "retake": "Repetir",
+    "missing": "Agregar faltante",
     "addAll": "Añadir Todo a {{meal}}",
     "barcodeScanned": "Escaneado",
     "analysisFailed": "Análisis Fallido",
@@ -3124,7 +3130,10 @@
       "searchPostsPlaceholder": "Buscar publicaciones...",
       "filtersActive": "Filtros activos",
       "clearFilters": "Limpiar filtros",
-      "filterLanguage": "Idioma"
+      "filterLanguage": "Idioma",
+      "stop": "Detener",
+      "voice": "Voz",
+      "recording": "Grabando..."
     },
     "friends": {
       "addFriends": "Añadir Amigos",
@@ -3214,9 +3223,21 @@
       "addFriend": "Añadir Amigo",
       "class": "Clase"
     },
+    "picker": {
+      "title": "Compartir Multimedia",
+      "subtitle": "¿Qué te gustaría compartir hoy?",
+      "takePhoto": "Tomar foto",
+      "takePhotoDesc": "Usa la cámara para capturar una foto",
+      "recordVideo": "Grabar video",
+      "recordVideoDesc": "Graba un video corto con tu cámara",
+      "gallery": "Elegir de la galería",
+      "galleryDesc": "Selecciona fotos o videos existentes",
+      "audio": "Elegir archivo de audio",
+      "audioDesc": "Selecciona un archivo MP3 u otro audio"
+    },
     "headers": {
-      "socialSubtitle": "Conecta con tu comunidad",
-      "compSubtitle": "Compite y sube en el ranking",
+      "socialSubtitle": "Connect with your community",
+      "compSubtitle": "Compete and climb the ranking",
       "socialTab": "Social",
       "compTab": "Competitive"
     },
@@ -4519,7 +4540,11 @@
     "micPermissionTitle": "Permiso requerido",
     "micPermissionMsg": "Se necesita acceso al micrófono.",
     "uploadFailed": "No se pudo subir el archivo.",
-    "audioSendFailed": "No se pudo enviar el audio."
+    "audioSendFailed": "No se pudo enviar el audio.",
+    "sendMediaTitle": "Enviar Multimedia",
+    "sendMediaSub": "Elige una foto, graba un video o selecciona desde la galería",
+    "recording": "Grabando...",
+    "messagePlaceholder": "Escribe un mensaje..."
   },
   "body": {
     "measurementsUpdated": "Medidas Actualizadas",

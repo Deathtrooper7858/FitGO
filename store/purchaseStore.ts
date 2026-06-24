@@ -86,51 +86,70 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
 
     // Sync state locally with authStore and database
     const profile = useAuthStore.getState().profile;
-    if (profile) {
-      if (isProActive && !profile.isPro) {
-        console.log('RevenueCat entitlement is active but database says not Pro. Upgrading in database...');
-        get().grantPro();
-      } else if (!isProActive && profile.isPro) {
-        // If we already know the trial is active in our store state, do not downgrade
-        if (get().isTrialActive) {
-          console.log('[PurchaseStore] RevenueCat is inactive, but local trial is active. Skipping downgrade.');
-          return;
-        }
+    if (!profile) return;
 
-        // Fetch from database to ensure we aren't in a race condition during initialization
-        (async () => {
-          try {
-            const { data, error } = await supabase
-              .from('users')
-              .select('trial_expires_at')
-              .eq('id', profile.id)
-              .single();
+    // NEVER let RevenueCat downgrade privileged roles
+    const isPrivileged = ['owner', 'super_admin', 'admin'].includes(profile.role ?? '');
 
-            if (!error && data?.trial_expires_at) {
-              const expires = new Date(data.trial_expires_at);
-              if (expires > new Date()) {
-                console.log('[PurchaseStore] RevenueCat is inactive, but user has an active database-backed trial until', expires);
-                set({ isTrialActive: true, trialExpiresAt: data.trial_expires_at });
-                return; // Do NOT downgrade
-              }
-            }
-
-            console.log('RevenueCat entitlement is inactive but database says Pro. Downgrading in database...');
-            await get().cancelPro();
-          } catch (err) {
-            console.error('Error verifying trial during updateCustomerInfo:', err);
-            // Fallback: downgrade if check failed
-            await get().cancelPro();
-          }
-        })();
-      } else if (profile.isPro !== isProActive) {
-        useAuthStore.getState().setProfile({
-          ...profile,
-          isPro: isProActive,
-          role: isProActive ? 'pro_user' : 'user',
-          nameColor: isProActive ? '#EAB308' : undefined,
-        });
+    if (isProActive && !profile.isPro) {
+      console.log('[PurchaseStore] RevenueCat entitlement active. Upgrading in database...');
+      get().grantPro();
+    } else if (!isProActive && profile.isPro && !isPrivileged) {
+      // If we already know the trial is active in our store state, do not downgrade
+      if (get().isTrialActive) {
+        console.log('[PurchaseStore] RevenueCat inactive, but local trial is active. Skipping downgrade.');
+        return;
       }
+
+      // Fetch from database to ensure we aren't in a race condition during initialization
+      (async () => {
+        try {
+          const { data, error } = await supabase
+            .from('users')
+            .select('trial_expires_at, role, pro_expires_at')
+            .eq('id', profile.id)
+            .single();
+
+          if (error) throw error;
+
+          // Re-check role from DB — may have been updated since profile loaded
+          const dbRole = data?.role ?? 'user';
+          if (['owner', 'super_admin', 'admin'].includes(dbRole)) {
+            console.log('[PurchaseStore] DB role is privileged. Skipping downgrade.');
+            return;
+          }
+
+          // Check if premium subscription is still valid in DB
+          if (data?.pro_expires_at) {
+            const expires = new Date(data.pro_expires_at);
+            if (expires > new Date()) {
+              console.log('[PurchaseStore] pro_expires_at is still in the future. Skipping downgrade.');
+              return;
+            }
+          }
+
+          if (data?.trial_expires_at) {
+            const expires = new Date(data.trial_expires_at);
+            if (expires > new Date()) {
+              console.log('[PurchaseStore] Active trial until', expires, '. Skipping downgrade.');
+              set({ isTrialActive: true, trialExpiresAt: data.trial_expires_at });
+              return;
+            }
+          }
+
+          console.log('[PurchaseStore] RevenueCat inactive, trial/sub expired. Downgrading...');
+          await get().cancelPro();
+        } catch (err) {
+          console.error('[PurchaseStore] Error verifying trial during updateCustomerInfo:', err);
+        }
+      })();
+    } else if (profile.isPro !== isProActive && !isPrivileged) {
+      useAuthStore.getState().setProfile({
+        ...profile,
+        isPro: isProActive,
+        role: isProActive ? 'pro_user' : 'user',
+        nameColor: isProActive ? '#EAB308' : undefined,
+      });
     }
   },
 
@@ -214,14 +233,21 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       set({ isLoading: true });
       const { error } = await supabase.rpc('upgrade_to_pro_user', { target_user_id: profile.id });
       if (error) {
-        console.error('Error upgrading to pro via RPC:', error);
+        console.error('[PurchaseStore] Error upgrading to pro via RPC:', error);
         set({ isLoading: false });
         return;
       }
       
       set({ isPro: true, isLoading: false });
-      useAuthStore.getState().setProfile({ ...profile, isPro: true, role: 'pro_user', nameColor: '#EAB308' });
-      await supabase.auth.updateUser({ data: { name_color: '#EAB308' } });
+
+      // If user is owner/admin/super_admin, keep their role — just mark isPro
+      const isPrivileged = ['owner', 'super_admin', 'admin'].includes(profile.role ?? '');
+      if (isPrivileged) {
+        useAuthStore.getState().setProfile({ ...profile, isPro: true });
+      } else {
+        useAuthStore.getState().setProfile({ ...profile, isPro: true, role: 'pro_user', nameColor: '#EAB308' });
+        await supabase.auth.updateUser({ data: { name_color: '#EAB308' } });
+      }
     } catch (err) {
       console.error(err);
       set({ isLoading: false });
@@ -234,15 +260,37 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
 
     try {
       set({ isLoading: true });
+
+      // Read current role from DB to be safe
+      const { data: dbUser } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', profile.id)
+        .single();
+
+      const dbRole = dbUser?.role ?? profile.role ?? 'user';
+      const isPrivileged = ['owner', 'super_admin', 'admin'].includes(dbRole);
+
+      if (isPrivileged) {
+        // Privileged roles: only clear Pro flag & dates, keep role
+        await supabase
+          .from('users')
+          .update({ is_pro: false, pro_will_renew: false, pro_expires_at: null })
+          .eq('id', profile.id);
+        set({ isPro: false, isLoading: false });
+        useAuthStore.getState().setProfile({ ...profile, isPro: false });
+        return;
+      }
+
       const { error } = await supabase.rpc('downgrade_from_pro', { target_user_id: profile.id });
       if (error) {
-        console.error('Error downgrading from pro via RPC:', error);
+        console.error('[PurchaseStore] Error downgrading from pro via RPC:', error);
         set({ isLoading: false });
         return;
       }
       
       set({ isPro: false, isLoading: false });
-      // Clear nameColor as well so trial/pro perks are fully revoked locally
+      // Clear nameColor so trial/pro perks are fully revoked locally
       useAuthStore.getState().setProfile({ ...profile, isPro: false, role: 'user', nameColor: undefined });
       await supabase.auth.updateUser({ data: { name_color: null } });
     } catch (err) {
@@ -255,15 +303,26 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     const profile = useAuthStore.getState().profile;
     if (!profile?.id) return false;
 
+    // Privileged roles are always considered Pro
+    const isPrivileged = ['owner', 'super_admin', 'admin'].includes(profile.role ?? '');
+    if (isPrivileged) {
+      set({ isPro: true });
+      return true;
+    }
+
     // Check with RevenueCat first if on mobile device
     if (Platform.OS !== 'web') {
       try {
         const info = await Purchases.getCustomerInfo();
         const isProActive = typeof info.entitlements.active['pro'] !== 'undefined';
-        set({ customerInfo: info, isPro: isProActive });
-        return isProActive;
+        set({ customerInfo: info });
+
+        if (isProActive) {
+          set({ isPro: true });
+          return true;
+        }
       } catch (err) {
-        console.error('Error verifying Pro status via RevenueCat:', err);
+        console.error('[PurchaseStore] Error verifying Pro status via RevenueCat:', err);
       }
     }
 
@@ -272,23 +331,49 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       set({ isLoading: true });
       const { data, error } = await supabase
         .from('users')
-        .select('is_pro, role')
+        .select('is_pro, role, pro_expires_at, trial_expires_at')
         .eq('id', profile.id)
         .single();
 
       if (error) throw error;
 
-      const isProNow = !!data.is_pro;
+      const dbRole = data.role ?? 'user';
+
+      // Re-check privileged from DB (may differ from cached profile)
+      if (['owner', 'super_admin', 'admin'].includes(dbRole)) {
+        set({ isPro: true, isLoading: false });
+        useAuthStore.getState().setProfile({ ...profile, isPro: true, role: dbRole as any });
+        return true;
+      }
+
+      // Check premium subscription expiry
+      let isProNow = false;
+      if (data.is_pro) {
+        if (data.pro_expires_at && new Date(data.pro_expires_at) < new Date()) {
+          // Subscription expired — trigger downgrade
+          console.log('[PurchaseStore] pro_expires_at has passed. Downgrading...');
+          await get().cancelPro();
+          isProNow = false;
+        } else if (data.trial_expires_at && new Date(data.trial_expires_at) < new Date()) {
+          // Trial expired — trigger downgrade
+          console.log('[PurchaseStore] Trial expired. Downgrading...');
+          await get().cancelPro();
+          isProNow = false;
+        } else {
+          isProNow = true;
+        }
+      }
+
       set({ isPro: isProNow, isLoading: false });
       useAuthStore.getState().setProfile({ 
         ...profile, 
         isPro: isProNow, 
-        role: data.role as any || profile.role 
+        role: isProNow ? (dbRole as any) : 'user',
       });
       
       return isProNow;
     } catch (err) {
-      console.error('Error verifying Pro status via Database:', err);
+      console.error('[PurchaseStore] Error verifying Pro status via Database:', err);
       set({ isLoading: false });
       return false;
     }

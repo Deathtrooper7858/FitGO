@@ -885,10 +885,18 @@ export const useSocialStore = create<SocialState>((set, get) => ({
 
   uploadPostImage: (uri: string) => uploadToSocialStorage(uri, 'posts', 'image/jpeg'),
   uploadPostVideo: (uri: string) => uploadToSocialStorage(uri, 'posts', 'video/mp4'),
-  uploadPostAudio: (uri: string) => uploadToSocialStorage(uri, 'posts', `audio/${uri.split('.').pop() || 'm4a'}`),
+  uploadPostAudio: (uri: string) => {
+    const ext = uri.includes('.') ? uri.split('.').pop()?.split('?')[0] : '';
+    const safeExt = (ext && ext.length <= 4 && !ext.includes(':')) ? ext : 'mp3';
+    return uploadToSocialStorage(uri, 'posts', `audio/${safeExt}`);
+  },
   uploadChatImage: (uri: string) => uploadToSocialStorage(uri, 'chat_media', 'image/jpeg'),
   uploadChatVideo: (uri: string) => uploadToSocialStorage(uri, 'chat_media', 'video/mp4'),
-  uploadChatAudio: (uri: string) => uploadToSocialStorage(uri, 'chat_media', `audio/${uri.split('.').pop() || 'm4a'}`),
+  uploadChatAudio: (uri: string) => {
+    const ext = uri.includes('.') ? uri.split('.').pop()?.split('?')[0] : '';
+    const safeExt = (ext && ext.length <= 4 && !ext.includes(':')) ? ext : 'mp3';
+    return uploadToSocialStorage(uri, 'chat_media', `audio/${safeExt}`);
+  },
 
 
   fetchDirectMessages: async (userId: string, friendId: string) => {

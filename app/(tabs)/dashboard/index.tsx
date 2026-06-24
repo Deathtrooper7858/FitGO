@@ -105,16 +105,16 @@ const ScoreRing = React.memo(function ScoreRing({ consumed, target, dateLabel, c
 
       <View style={ring.textWrap}>
         <Text style={[ring.consumed, { color: colors.textPrimary }]}>{consumed}</Text>
-        <Text style={[ring.unitLabel, { color: colors.textMuted }]}>kcal consumidas</Text>
+        <Text style={[ring.unitLabel, { color: colors.textMuted }]}>{t('dashboard.kcalConsumed', 'kcal consumed')}</Text>
         <View style={[ring.statusPill, { 
           backgroundColor: isOver ? colors.error + '20' : (isWarning ? '#FFB80020' : (customColor ? customColor + '15' : colors.primary + '15')), 
           borderColor: isOver ? colors.error + '40' : (isWarning ? '#FFB80040' : (customColor ? customColor + '30' : colors.primary + '30')) 
         }]}>
           <Text style={[ring.label, { color: isOver ? colors.error : (isWarning ? '#F59E0B' : (customColor || colors.primary)) }]}>
             {isOver
-              ? `+${Math.round(consumed - target)} sobre meta`
+              ? `+${Math.round(consumed - target)} ${t('dashboard.overGoal', 'over goal')}`
               : remaining > 0
-                ? `${Math.round(remaining)} restantes`
+                ? `${Math.round(remaining)} ${t('dashboard.remaining', 'remaining')}`
                 : t('dashboard.medium', 'En meta')}
           </Text>
         </View>

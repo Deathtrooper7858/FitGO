@@ -38,6 +38,8 @@
     "send": "Отправить",
     "noResults": "Нет результатов",
     "tryAnotherTerm": "Попробуйте другой термин",
+    "searchFood": "Поиск еды...",
+    "enterFoodName": "Введите название еды...",
     "camera": "Камера",
     "gallery": "Галерея",
     "cameraPermissionDenied": "Требуется разрешение на камеру.",
@@ -541,7 +543,10 @@
     "sessionImpacts": "влияния",
     "sessionThisMonth": "в этом месяце",
     "sessionRecent": "недавние",
-    "dailyTipFallback": "Давайте сегодня все! 🔥"
+    "dailyTipFallback": "Давайте сегодня все! 🔥",
+    "kcalConsumed": "ккал потреблено",
+    "remaining": "осталось",
+    "overGoal": "выше цели"
   },
   "tracker": {
     "title": "Сегодня",
@@ -1246,6 +1251,7 @@
     "detectedFoods": "Найдено",
     "totalCalories": "Всего калорий",
     "retake": "Переснять",
+    "missing": "Добавить недостающее",
     "addAll": "Добавить всё в {{meal}}",
     "barcodeScanned": "Сканировано",
     "analysisFailed": "Ошибка анализа",
@@ -2939,7 +2945,10 @@
       "searchPostsPlaceholder": "Поиск публикаций...",
       "filtersActive": "Активные фильтры",
       "clearFilters": "Сбросить фильтры",
-      "filterLanguage": "Язык"
+      "filterLanguage": "Язык",
+      "stop": "Стоп",
+      "voice": "Голос",
+      "recording": "Запись..."
     },
     "friends": {
       "addFriends": "Добавить друзей",
@@ -3028,6 +3037,18 @@
       "pendingRequest": "Запрос в ожидании",
       "addFriend": "Добавить друга",
       "class": "Класс"
+    },
+    "picker": {
+      "title": "Поделиться медиа",
+      "subtitle": "Чем вы хотели бы поделиться сегодня?",
+      "takePhoto": "Сделать фото",
+      "takePhotoDesc": "Используйте камеру вашего устройства",
+      "recordVideo": "Записать видео",
+      "recordVideoDesc": "Запишите короткое видео с вашей камеры",
+      "gallery": "Выбрать из галереи",
+      "galleryDesc": "Выбрать существующие фото или видео",
+      "audio": "Выбрать аудиофайл",
+      "audioDesc": "Выбрать MP3 или другой аудиофайл"
     },
     "headers": {
       "socialSubtitle": "Связывайтесь с сообществом",
@@ -4334,7 +4355,11 @@
     "micPermissionTitle": "Требуется разрешение",
     "micPermissionMsg": "Необходим доступ к микрофону.",
     "uploadFailed": "Не удалось загрузить файл.",
-    "audioSendFailed": "Не удалось отправить аудио."
+    "audioSendFailed": "Не удалось отправить аудио.",
+    "sendMediaTitle": "Отправить медиа",
+    "sendMediaSub": "Выберите фото, запишите видео или выберите из галереи",
+    "recording": "Запись...",
+    "messagePlaceholder": "Напишите сообщение..."
   },
   "body": {
     "measurementsUpdated": "Измерения обновлены",

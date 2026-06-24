@@ -39,19 +39,19 @@ export default function VerifyEmailScreen() {
         <>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={[styles.text, { color: colors.textPrimary }]}>
-            {t('auth.verifyingEmail', 'Verificando tu correo electrónico...')}
+            {t('auth.verifyingEmail', 'Verifying your email...')}
           </Text>
         </>
       ) : (
         <>
           <Text style={[styles.text, { color: colors.textPrimary, marginBottom: 20 }]}>
-            {t('auth.verifyLinkInvalid', 'Enlace de verificación inválido o expirado.')}
+            {t('auth.verifyLinkInvalid', 'Invalid or expired verification link.')}
           </Text>
           <Text 
             style={[styles.link, { color: colors.primary }]}
             onPress={() => router.replace('/(auth)/login')}
           >
-            {t('auth.backToLogin', 'Volver al inicio de sesión')}
+            {t('auth.backToLogin', 'Back to login')}
           </Text>
         </>
       )}

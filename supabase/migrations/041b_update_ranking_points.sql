@@ -1,6 +1,8 @@
 -- Migration 041: Update ranking points logic
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS achievement_points INT DEFAULT 0;
 
+DROP FUNCTION IF EXISTS get_global_ranking(int);
+
 CREATE OR REPLACE FUNCTION get_global_ranking(limit_val int DEFAULT 50)
 RETURNS TABLE(id uuid, name text, avatar_url text, points numeric)
 LANGUAGE plpgsql

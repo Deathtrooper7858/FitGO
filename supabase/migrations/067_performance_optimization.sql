@@ -45,9 +45,9 @@ CREATE INDEX IF NOT EXISTS idx_squad_members_user
 CREATE INDEX IF NOT EXISTS idx_coach_conversations_user_type
   ON public.coach_conversations (user_id, coach_type);
 
--- Index for coach_sessions by conversation
-CREATE INDEX IF NOT EXISTS idx_coach_sessions_conversation
-  ON public.coach_sessions (conversation_id, created_at DESC);
+-- Index for coach_conversations by session
+CREATE INDEX IF NOT EXISTS idx_coach_conversations_session
+  ON public.coach_conversations (session_id, created_at DESC);
 
 -- Index for posts feed ordering
 CREATE INDEX IF NOT EXISTS idx_posts_feed

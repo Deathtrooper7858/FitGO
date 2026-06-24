@@ -131,6 +131,8 @@
     "send": "Send",
     "noResults": "No results",
     "tryAnotherTerm": "Try another term",
+    "searchFood": "Search food...",
+    "enterFoodName": "Enter food name...",
     "camera": "Camera",
     "gallery": "Gallery",
     "cameraPermissionDenied": "Camera permission is required.",
@@ -299,7 +301,10 @@
     "sessionImpacts": "impacts",
     "sessionThisMonth": "this month",
     "sessionRecent": "recent",
-    "dailyTipFallback": "Let's give it our all today! 🔥"
+    "dailyTipFallback": "Let's give it our all today! 🔥",
+    "kcalConsumed": "kcal consumed",
+    "remaining": "remaining",
+    "overGoal": "over goal"
   },
   "tracker": {
     "title": "Tracker",
@@ -1308,6 +1313,7 @@
     "detectedFoods": "Detected Foods",
     "totalCalories": "Total Calories",
     "retake": "Retake",
+    "missing": "Add Missing Food",
     "addAll": "Add All to {{meal}}",
     "barcodeScanned": "Scanned",
     "analysisFailed": "Analysis Failed",
@@ -1598,7 +1604,10 @@
       "searchPostsPlaceholder": "Search posts...",
       "filtersActive": "Active Filters",
       "clearFilters": "Clear Filters",
-      "filterLanguage": "Language"
+      "filterLanguage": "Language",
+      "stop": "Stop",
+      "voice": "Voice",
+      "recording": "Recording..."
     },
     "friends": {
       "addFriends": "Add Friends",
@@ -1687,6 +1696,18 @@
       "pendingRequest": "Pending Request",
       "addFriend": "Add Friend",
       "class": "Class"
+    },
+    "picker": {
+      "title": "Share Media",
+      "subtitle": "What would you like to share today?",
+      "takePhoto": "Take photo",
+      "takePhotoDesc": "Use your device camera",
+      "recordVideo": "Record video",
+      "recordVideoDesc": "Record a short video with your camera",
+      "gallery": "Choose from gallery",
+      "galleryDesc": "Select existing photos or videos",
+      "audio": "Choose audio file",
+      "audioDesc": "Select an MP3 or other audio file"
     },
     "headers": {
       "socialSubtitle": "Connect with your community",
@@ -4519,7 +4540,11 @@
     "micPermissionTitle": "Permission Required",
     "micPermissionMsg": "Microphone access is needed.",
     "uploadFailed": "Could not upload the file.",
-    "audioSendFailed": "Could not send the audio."
+    "audioSendFailed": "Could not send the audio.",
+    "sendMediaTitle": "Send Media",
+    "sendMediaSub": "Choose a photo, record a video or select from gallery",
+    "recording": "Recording...",
+    "messagePlaceholder": "Write a message..."
   },
   "body": {
     "measurementsUpdated": "Measurements Updated",

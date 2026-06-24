@@ -192,7 +192,7 @@ export default function ProgressEvaluationModal() {
       addEvaluation(newEvaluation);
     } catch (error) {
       console.error(error);
-      alert(t('evaluation.error', 'Ocurrió un error al analizar la imagen.'));
+      alert(t('evaluation.error', 'An error occurred while analyzing the image.'));
     } finally {
       setIsAnalyzing(false);
     }
@@ -394,10 +394,10 @@ export default function ProgressEvaluationModal() {
             {!result && !isAnalyzing && (
               <View style={{ width: '100%' }}>
                 <View style={{ width: '100%', marginTop: Spacing.lg }}>
-                  <Text style={[s.statLabel, { color: colors.textSecondary, marginBottom: 8 }]}>{t('evaluation.optionalContext', 'Contexto opcional (ej: "Es mi brazo derecho haciendo flexión")')}</Text>
+                  <Text style={[s.statLabel, { color: colors.textSecondary, marginBottom: 8 }]}>{t('evaluation.optionalContext', 'Optional context (e.g. "It\'s my right arm doing a curl")')}</Text>
                   <TextInput
                     style={[s.contextInput, { backgroundColor: colors.surface, color: colors.textPrimary, borderColor: colors.border }]}
-                    placeholder={t('evaluation.contextPlaceholder', 'Escribe detalles aquí...')}
+                    placeholder={t('evaluation.contextPlaceholder', 'Enter details here...')}
                     placeholderTextColor={colors.textSecondary}
                     value={userContext}
                     onChangeText={setUserContext}
@@ -405,7 +405,7 @@ export default function ProgressEvaluationModal() {
                 </View>
                 <View style={s.buttonRowImage}>
                   <TouchableOpacity style={[s.secondaryBtn, { backgroundColor: colors.surface }]} onPress={() => { setImageUri(null); setResult(null); setUserContext(''); }}>
-                  <Text style={[s.secondaryBtnText, { color: colors.textPrimary }]}>{t('common.retake', 'Cambiar')}</Text>
+                  <Text style={[s.secondaryBtnText, { color: colors.textPrimary }]}>{t('common.retake', 'Change')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[s.primaryBtn, { backgroundColor: colors.primary }]} onPress={handleAnalyze}>
                   <Brain size={20} color="#FFF" />

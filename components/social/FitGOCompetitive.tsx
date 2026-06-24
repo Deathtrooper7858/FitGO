@@ -178,27 +178,38 @@ function MemberRow({ member, rank, onRemove, isMe, onInspect, onMakeLeader, stre
           <Text style={{ fontSize: 18, color: colors.textPrimary }}>{member.name?.[0]?.toUpperCase() ?? '?'}</Text>
         )}
       </View>
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, justifyContent: 'center' }}>
         <Text style={[styles.memberName, { color: colors.textPrimary }, getNameStyle(member.name_color, member.user_id, profile?.id, profile?.nameColor, premiumColor)]} numberOfLines={1}>{member.name}</Text>
-        <Text style={[styles.memberSub, { color: colors.textSecondary }]}>
+        <Text style={[styles.memberSub, { color: colors.textSecondary, marginTop: 2 }]}>
           🔥 {displayStreak} {t('competitive.squads.days', 'días')}
         </Text>
       </View>
-      <View style={[styles.pointsBadge, { backgroundColor: colors.primary + '20' }]}>
-        <Text style={[styles.pointsBadgeText, { color: colors.primary }]}>
-          {member.league_points.toLocaleString()} pts
-        </Text>
+      
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View style={{ alignItems: 'flex-end', justifyContent: 'center' }}>
+          <Text style={{ color: colors.primary, fontWeight: '900', fontSize: 15 }}>
+            {member.league_points.toLocaleString()}
+          </Text>
+          <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '700', marginTop: -2 }}>
+            pts
+          </Text>
+        </View>
+
+        {((onMakeLeader || onRemove) && !isMe) && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingLeft: 12, borderLeftWidth: 1, borderLeftColor: colors.border + '60' }}>
+            {onMakeLeader && (
+              <TouchableOpacity style={{ padding: 6, backgroundColor: '#F59E0B15', borderRadius: 8 }} onPress={onMakeLeader}>
+                <Crown size={16} color="#F59E0B" />
+              </TouchableOpacity>
+            )}
+            {onRemove && (
+              <TouchableOpacity style={{ padding: 6, backgroundColor: '#EF444415', borderRadius: 8 }} onPress={onRemove}>
+                <X size={16} color="#EF4444" />
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </View>
-      {onMakeLeader && !isMe && (
-        <TouchableOpacity style={{ marginLeft: 8, padding: 6, backgroundColor: '#F59E0B15', borderRadius: 8 }} onPress={onMakeLeader}>
-          <Crown size={16} color="#F59E0B" />
-        </TouchableOpacity>
-      )}
-      {onRemove && !isMe && (
-        <TouchableOpacity style={{ marginLeft: 8, padding: 6, backgroundColor: '#EF444415', borderRadius: 8 }} onPress={onRemove}>
-          <X size={16} color="#EF4444" />
-        </TouchableOpacity>
-      )}
     </TouchableOpacity>
   );
 }

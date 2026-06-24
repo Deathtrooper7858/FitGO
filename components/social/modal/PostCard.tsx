@@ -1,27 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation } from 'react-native';
 import { Image } from 'expo-image';
 import { Heart, MessageSquare, Share2, Trash2 } from 'lucide-react-native';
-import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from 'expo-audio';
 import { Radius, Spacing } from '../../../constants';
 import { GlassCard } from '../../../components/GlassCard';
 
 export function PostAudioPlayer({ audioUrl, colors }: { audioUrl: string; colors: any }) {
   const player = useAudioPlayer(audioUrl);
   const status = useAudioPlayerStatus(player);
+  const [trackWidth, setTrackWidth] = useState(0);
 
   const formatTime = (seconds: number) => {
+    if (isNaN(seconds)) return '0:00';
     const s = Math.floor(seconds);
     return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   };
 
   const progress = status.duration > 0 ? status.currentTime / status.duration : 0;
 
-  const handleToggle = () => {
+  const handleToggle = async () => {
+    try {
+      await setAudioModeAsync({ 
+        playsInSilentMode: true, 
+        allowsRecording: false, 
+        interruptionMode: 'mixWithOthers', 
+        shouldPlayInBackground: false, 
+        shouldRouteThroughEarpiece: false 
+      });
+    } catch (e) {
+      console.warn('Audio mode error:', e);
+    }
+    
     if (status.playing) player.pause();
     else {
       if (status.didJustFinish) player.seekTo(0);
       player.play();
+    }
+  };
+
+  const handleSeek = (e: any) => {
+    if (trackWidth > 0 && status.duration > 0) {
+      const x = e.nativeEvent.locationX;
+      const percent = Math.max(0, Math.min(1, x / trackWidth));
+      player.seekTo(percent * status.duration);
     }
   };
 
@@ -33,8 +55,16 @@ export function PostAudioPlayer({ audioUrl, colors }: { audioUrl: string; colors
         </Text>
       </TouchableOpacity>
       <View style={audioStyles.progressWrapper}>
-        <View style={[audioStyles.progressTrack, { backgroundColor: colors.border }]}>
-          <View style={[audioStyles.progressFill, { width: `${progress * 100}%`, backgroundColor: colors.primary }]} />
+        <View 
+          style={{ height: 24, justifyContent: 'center' }}
+          onLayout={e => setTrackWidth(e.nativeEvent.layout.width)}
+          onStartShouldSetResponder={() => true}
+          onResponderGrant={handleSeek}
+          onResponderMove={handleSeek}
+        >
+          <View style={[audioStyles.progressTrack, { backgroundColor: colors.border }]}>
+            <View style={[audioStyles.progressFill, { width: `${progress * 100}%`, backgroundColor: colors.primary }]} />
+          </View>
         </View>
         <Text style={[audioStyles.timeText, { color: colors.textMuted }]}>
           {status.playing ? formatTime(status.currentTime) : status.duration > 0 ? formatTime(status.duration) : '0:00'}
