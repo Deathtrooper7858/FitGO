@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { supabase } from '../../services';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '../../services';
 import { useTheme } from '../../hooks/useTheme';
 
 export default function VerifyEmailScreen() {

@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { SecureStorage } from '../utils/storage';
 import { ThemeMode, AppLanguage, MassUnit, VolumeUnit, LengthUnit, EnergyUnit, TempUnit, Reminder } from './types';
 import { useRecipesStore } from './recipesStore';
-import { SecureStorage } from '../utils/storage';
 
 interface SettingsState {
   theme: ThemeMode;
