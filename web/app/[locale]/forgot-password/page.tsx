@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-fitgo-dark flex flex-col justify-center items-center px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-fitgo-dark flex flex-col justify-center items-center px-6 relative overflow-hidden" suppressHydrationWarning>
       {/* Background elements */}
       <div
         className="absolute inset-0 z-0"
@@ -43,6 +43,15 @@ export default function ForgotPasswordPage() {
       />
       
       <div className="relative z-10 w-full max-w-md">
+        {/* Back to home */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-text-muted hover:text-text-primary transition-colors text-sm font-semibold mb-8"
+        >
+          <ArrowLeft size={16} />
+          Volver al inicio
+        </Link>
+
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex flex-col items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-gradient-btn glow-primary flex items-center justify-center">

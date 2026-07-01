@@ -15,14 +15,14 @@ import {
   Medal,
   ChevronRight,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "La App — FitGO",
+  title: "La App",
   description:
-    "Descubre todas las funcionalidades de FitGO: progreso, nutrición, entrenamientos y coach con IA.",
+    "Descubre todas las funcionalidades de FitGO: progreso, nutrición, entrenamientos y coach con IA. Tu gimnasio en tu bolsillo.",
 };
 
 const pillarsIcons = {
@@ -70,7 +70,7 @@ export default function AboutPage() {
   const pillarsKeys = ["progreso", "nutricion", "entrenamiento", "coach", "social"];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" suppressHydrationWarning>
       <Navbar />
 
       {/* Hero */}

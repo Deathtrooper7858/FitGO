@@ -3,7 +3,7 @@ import { Zap, ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 relative overflow-hidden" suppressHydrationWarning>
       <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #0A0512 0%, #24124D 100%)", opacity: 0.8 }} />
       <div className="orb w-96 h-96 bg-primary" style={{ top: "10%", left: "5%", opacity: 0.15 }} />
       <div className="orb w-64 h-64 bg-secondary" style={{ bottom: "20%", right: "8%", opacity: 0.1 }} />

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Zap, Lock, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { useTranslations } from "next-intl";
@@ -43,12 +44,21 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-fitgo-dark flex flex-col justify-center items-center px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-fitgo-dark flex flex-col justify-center items-center px-6 relative overflow-hidden" suppressHydrationWarning>
       <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(135deg, #0A0512 0%, #24124D 100%)", opacity: 0.8 }} />
       <div className="orb w-96 h-96 bg-primary z-0" style={{ top: "-10%", left: "-10%", opacity: 0.15 }} />
       <div className="orb w-64 h-64 bg-secondary z-0" style={{ bottom: "-10%", right: "-10%", opacity: 0.1 }} />
 
       <div className="relative z-10 w-full max-w-md">
+        {/* Back to home */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-text-muted hover:text-text-primary transition-colors text-sm font-semibold mb-8"
+        >
+          <ArrowLeft size={16} />
+          Volver al inicio
+        </Link>
+
         <div className="text-center mb-8">
           <div className="inline-flex flex-col items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-gradient-btn glow-primary flex items-center justify-center">

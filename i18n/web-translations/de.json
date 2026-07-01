@@ -70,12 +70,90 @@
       "planner": "Planer",
       "wars": "Makro-Kriege",
       "leagues": "Elite-Ligen"
+    },
+    "extraFeatures": {
+      "subtitle": "MEHR FEATURES",
+      "title": "Alles was du brauchst, und mehr",
+      "items": {
+        "barcode": {
+          "title": "Barcode-Scanner",
+          "desc": "Scanne jedes Lebensmittel sofort"
+        },
+        "photoScan": {
+          "title": "KI-Fotoanalyse",
+          "desc": "Lade ein Foto hoch und KI erkennt deine Mahlzeit"
+        },
+        "voiceInput": {
+          "title": "Spracheingabe",
+          "desc": "Diktiere Mahlzeiten und Übungen mit Whisper"
+        },
+        "squads": {
+          "title": "Squads",
+          "desc": "Bilde ein Team mit Freunden und kompetiert zusammen"
+        },
+        "macroWars": {
+          "title": "Macro-Wars",
+          "desc": "Wöchentlicher Wettbewerb um die besten Makros"
+        },
+        "leagues": {
+          "title": "Elite-Ligen",
+          "desc": "10 Competitive Ränge von Bronze bis Diamant"
+        },
+        "sleep": {
+          "title": "Schlaf-Tracking",
+          "desc": "Erfasse deine Ruhezeiten für bessere Erholung"
+        },
+        "notifications": {
+          "title": "Intelligente Benachrichtigungen",
+          "desc": "Mahlzeiten-Erinnerungen und Erfolgsbenachrichtigungen"
+        },
+        "languages": {
+          "title": "7 Sprachen",
+          "desc": "EN, ES, FR, PT, IT, DE, RU"
+        }
+      }
+    },
+    "howItWorks": {
+      "subtitle": "SO FUNKTIONIERT ES",
+      "title": "3 Schritte zum Start",
+      "desc": "Starte in wenigen Minuten mit der Transformation deines Körpers.",
+      "steps": {
+        "1": {
+          "title": "Lade FitGO herunter",
+          "desc": "Kostenlos im App Store und Google Play. Erstelle dein Konto in Sekunden."
+        },
+        "2": {
+          "title": "Richte dein Profil ein",
+          "desc": "Gib deine Daten, Ziele und Präferenzen ein. Die KI personalisiert alles für dich."
+        },
+        "3": {
+          "title": "Starte das Training",
+          "desc": "Erfasse Mahlzeiten, trainiere mit der Muskellandkarte und compete in Ligen."
+        }
+      }
+    },
+    "testimonials": {
+      "subtitle": "KUNDENBEWERTUNGEN",
+      "title": "Was unsere Community sagt",
+      "items": {
+        "maria": {
+          "text": "FitGO hat meine Art zu essen verändert. Der Barcode-Scanner ist unglaublich und der KI-Coach hilft mir, diszipliniert zu bleiben."
+        },
+        "carlos": {
+          "text": "Die Elite-Ligen motivieren mich jeden Tag zu trainieren. Ich war noch nie so konsequent im Fitnessstudio. Gamification funktioniert!"
+        },
+        "laura": {
+          "text": "Ich habe MyFitnessPal und Fitia ausprobiert, aber FitGO ist viel flüssiger. Die Muskellandkarte und das Macro-Tracking sind perfekt."
+        }
+      }
     }
   },
   "nav": {
     "home": "Startseite",
     "app": "Die App",
     "about": "Über uns",
+    "ranking": "Rangliste",
+    "squadsRanking": "Squads",
     "premium": "Premium",
     "login": "Anmelden",
     "logout": "Abmelden",
@@ -264,6 +342,7 @@
       "desc": "Schalte dein ganzes Potenzial frei",
       "month": "Monat",
       "billedAnnually": "Jährlich abgerechnet",
+      "was": "vorher",
       "btn": "Pro holen",
       "secure": "Sichere Zahlung · Jederzeit kündbar"
     },
@@ -290,16 +369,17 @@
       ]
     },
     "freeFeatures": [
-      "Körpergewichts-Tracking",
+      "Gewichts- & Maßverfolgung",
       "Basis-Makro-Tracking",
       "Lebensmitteldatenbank",
       "Trainingsroutinen",
-      "Verlauf (letzte 30 Tage)",
-      "KI-Coach",
-      "Makro-Kriege",
-      "Elite-Ligen",
-      "Unbegrenzter Verlauf",
-      "Erweiterte Fortschrittsanalyse"
+      "KI-Coach (3 Scans/Tag)",
+      "Barcode-Scanner",
+      "Basis-Ernährungsplaner",
+      "Basis-Übungsverzeichnis",
+      "Standard-Name-Farbe",
+      "Verlauf (7 Tage)",
+      "Werbung"
     ],
     "freeIncluded": [
       true,
@@ -307,34 +387,126 @@
       true,
       true,
       true,
-      false,
-      false,
-      false,
-      false,
-      false
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
     ],
     "proFeatures": [
       "Alles aus dem kostenlosen Plan",
-      "Unbegrenzter KI-Coach",
-      "Makro-Kriege",
-      "Elite-Ligen",
+      "Unbegrenzter KI-Coach mit Sprache",
+      "KI-Lebensmittelscanner (Foto)",
+      "Wöchentlicher KI-Ernährungsplan",
+      "Spracheingabe",
+      "Vollständiges Übungsverzeichnis",
+      "Premium-Name-Farben",
+      "Elite-Ligen & Squads",
+      "Wöchentliche Macro-Wars",
+      "KI-generierte Herausforderungen",
       "Unbegrenzter Verlauf",
-      "Erweiterte Fortschrittsanalyse",
-      "Barcode-Scanner",
-      "KI-Ernährungsplaner",
-      "Prioritätssupport",
       "Keine Werbung"
     ],
     "highlights": {
-      "coach": "KI-Coach",
-      "macroWars": "Makro-Kriege",
-      "leagues": "Elite-Ligen",
-      "analysis": "Pro-Analyse",
-      "nutrition": "KI-Ernährung",
-      "unlimited": "Keine Limits"
+      "coach": "Unbegrenzter KI-Coach",
+      "planner": "KI-Ernährungsplaner",
+      "scanner": "KI-Scanner",
+      "voice": "Spracheingabe",
+      "directory": "Übungsverzeichnis",
+      "colors": "Premium-Farben",
+      "leagues": "Ligen & Squads",
+      "history": "Unbegrenzter Verlauf",
+      "ads": "Werbefrei"
     },
     "secure": "Sichere Zahlung · Jederzeit kündbar",
-    "errorMsg": "Fehler bei der Zahlungsverarbeitung. Bitte versuche es erneut."
+    "errorMsg": "Fehler bei der Zahlungsverarbeitung. Bitte versuche es erneut.",
+    "compare": {
+      "label": "Vergleich",
+      "title": "Kostenlos vs Pro",
+      "coach": "KI-Coach",
+      "coachFree": "3 Scans/Tag",
+      "coachPro": "Unbegrenzt + Stimme",
+      "scanner": "Lebensmittel-Scanner",
+      "scannerFree": "Nur Barcode",
+      "scannerPro": "KI-Foto-Scan",
+      "planner": "Planer",
+      "plannerFree": "Basis",
+      "plannerPro": "Wöchentlicher KI-Plan",
+      "voice": "Spracheingabe",
+      "voiceFree": "Nicht verfügbar",
+      "voicePro": "Unbegrenzt",
+      "directory": "Übungsverzeichnis",
+      "directoryFree": "Basis",
+      "directoryPro": "Vollständig",
+      "wars": "Macro-Wars",
+      "warsFree": "Nicht verfügbar",
+      "warsPro": "Wöchentlich",
+      "squads": "Squads",
+      "squadsFree": "Nicht verfügbar",
+      "squadsPro": "Unbegrenzt",
+      "challenges": "KI-Herausforderungen",
+      "challengesFree": "Nicht verfügbar",
+      "challengesPro": "Personalisiert",
+      "history": "Verlauf",
+      "historyFree": "7 Tage",
+      "historyPro": "Unbegrenzt",
+      "colors": "Name-Farbe",
+      "colorsFree": "Standard",
+      "colorsPro": "11 Premium",
+      "ads": "Werbung",
+      "adsFree": "Ja",
+      "adsPro": "Werbefrei"
+    }
+  },
+  "ranking": {
+    "badge": "Globale Rangliste",
+    "individualTitle": "Einzel-Rangliste",
+    "global": "Global",
+    "desc": "Top FitGO-Benutzer nach Liga-Punkten geordnet. Kämpfe um die Spitze und verdiene dir deinen Platz in der Elite.",
+    "live": "Live",
+    "users": "Benutzer",
+    "howPoints": "Wie sammle ich Punkte?",
+    "refresh": "Aktualisieren",
+    "pointsInfo": "Punktesystem",
+    "actions": "Aktionen",
+    "mealLog": "Mahlzeit erfassen",
+    "macroPerfect": "Perfekte Makros (5% Toleranz)",
+    "challenge": "Herausforderung abschließen",
+    "activity": "Aktivität erfassen",
+    "achievement": "Erfolg freischalten",
+    "streakMulti": "Serien-Multiplikator",
+    "streak0": "0-2 Tage",
+    "streak3": "3-7 Tage",
+    "streak8": "8-14 Tage",
+    "streak15": "15+ Tage",
+    "streak": "Serie",
+    "days": "Tage",
+    "grades": "Rang-Tabelle",
+    "anonymous": "Anonym",
+    "errorMsg": "Fehler beim Laden der Rangliste",
+    "serverInfo": "Server-Status",
+    "serverOnline": "Online",
+    "totalUsers": "Benutzer",
+    "totalSquads": "Squads",
+    "totalLogs": "Mahlzeiten protokolliert",
+    "proUsers": "Pro",
+    "topUser": "Bester Benutzer",
+    "topSquad": "Bestes Squad",
+    "loading": "Rangliste wird geladen...",
+    "empty": "Noch keine Benutzer in der Rangliste"
+  },
+  "squadsRanking": {
+    "badge": "Squad-Rangliste",
+    "title": "Squad-Rangliste",
+    "global": "Global",
+    "desc": "Die besten FitGO-Squads in den Elite-Ligen. Bilde dein Team und dominiere die Rangliste.",
+    "live": "Live",
+    "squads": "Squads",
+    "members": "Mitglieder",
+    "noSquads": "Noch keine Squads. Sei der Erste, der einen aus der App erstellt!",
+    "errorMsg": "Fehler beim Laden der Squad-Rangliste",
+    "loading": "Squads werden geladen..."
   },
   "auth": {
     "login": {

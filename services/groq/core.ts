@@ -39,7 +39,7 @@ const isRomanceLang = (lang: string) => ['Spanish', 'French', 'Portuguese', 'Ita
 
 // ─── Model IDs ────────────────────────────────────────────────────────────────
 const CHAT_MODEL   = 'llama-3.3-70b-versatile'; //no cambiar en proximos
-const FAST_MODEL   = 'llama-3.1-8b-instant'; // Modelo rápido con límites de cuota mucho más altos (~100,000 TPM)
+const FAST_MODEL   = 'openai/gpt-oss-20b'; // Modelo rápido de reemplazo
 const VISION_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct'; // No cambiar en proximos!!
 const AUDIO_MODEL  = 'whisper-large-v3';
 
@@ -52,65 +52,51 @@ const AUDIO_MODEL  = 'whisper-large-v3';
 
 // Helper to use Supabase Edge Function as a proxy
 async function fetchGroq(payload: any, retries = 2): Promise<any> {
-  const origModel = payload.model;
   const timeoutPromise = new Promise<never>((_, reject) => {
     setTimeout(() => reject(new Error('AI Service Error: Request timed out. Please try again.')), 45000);
   });
 
   const doFetch = async (): Promise<any> => {
-    let currentModel = payload.model;
-    for (let attempt = 0; attempt <= retries; attempt++) {
-      const attemptPayload = { ...payload, model: currentModel };
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
-        const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
-        const token = session?.access_token || supabaseAnonKey;
+    let modelsArray = [payload.model];
+    
+    if (payload.model === CHAT_MODEL) {
+      modelsArray = [CHAT_MODEL, 'openai/gpt-oss-120b', FAST_MODEL];
+    } else if (payload.model === FAST_MODEL) {
+      modelsArray = [FAST_MODEL, 'openai/gpt-oss-120b', CHAT_MODEL];
+    }
 
-        const res = await axios.post(`${supabaseUrl}/functions/v1/groq-proxy`, attemptPayload, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        return res.data;
-      } catch (error: any) {
-        let errorMsg = error.response?.data?.error || error.message || 'Unknown error';
-        if (typeof errorMsg === 'object') errorMsg = errorMsg.message || JSON.stringify(errorMsg);
+    const attemptPayload = { ...payload, models: modelsArray, model: undefined };
 
-        if (error.response?.status === 429 || errorMsg.includes('Rate limit') || errorMsg.includes('tokens per day')) {
-          if (attempt < retries) {
-            let waitTimeMs = 5000;
-            const timeMatch = errorMsg.match(/try again in ([0-9hm\.s]+)/);
-            if (timeMatch) {
-              const timeStr = timeMatch[1];
-              waitTimeMs = (timeStr.includes('h') || timeStr.includes('m')) ? 999999 : parseFloat(timeStr) * 1000;
-            } else if (errorMsg.includes('tokens per day')) {
-              waitTimeMs = 999999;
-            }
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+      const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+      const token = session?.access_token || supabaseAnonKey;
 
-            if (waitTimeMs > 10000 && currentModel === CHAT_MODEL) {
-              currentModel = FAST_MODEL;
-              continue;
-            }
+      const res = await axios.post(`${supabaseUrl}/functions/v1/groq-proxy`, attemptPayload, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return res.data;
+    } catch (error: any) {
+      let errorMsg = error.response?.data?.error || error.message || 'Unknown error';
+      if (typeof errorMsg === 'object') errorMsg = errorMsg.message || JSON.stringify(errorMsg);
 
-            console.warn(`[Groq] Rate limit retry ${attempt + 1}/${retries} in ${waitTimeMs}ms`);
-            await new Promise(r => setTimeout(r, Math.min(waitTimeMs, 10000) + 500));
-            continue;
-          }
-          console.error(`[Groq] All retries exhausted.`);
-          throw new Error(`AI Service Error: All APIs are rate limited.`);
-        }
-
-        if (!error.response && (error.code === 'ERR_NETWORK' || error.message === 'Network Error' || error.message?.includes('network'))) {
-          throw new Error(i18n.t('groq.noInternet'));
-        }
-
-        if (errorMsg.includes('does not support image input')) {
-          throw new Error(i18n.t('groq.visionUnavailable'));
-        }
-        throw new Error(`AI Service Error: ${errorMsg}`);
+      if (error.response?.status === 429 || errorMsg.includes('Rate limit') || errorMsg.includes('tokens per day')) {
+        console.error(`[Groq] All proxy models and keys exhausted.`);
+        throw new Error(`AI Service Error: All APIs are rate limited.`);
       }
+
+      if (!error.response && (error.code === 'ERR_NETWORK' || error.message === 'Network Error' || error.message?.includes('network'))) {
+        throw new Error(i18n.t('groq.noInternet'));
+      }
+
+      if (errorMsg.includes('does not support image input')) {
+        throw new Error(i18n.t('groq.visionUnavailable'));
+      }
+      throw new Error(`AI Service Error: ${errorMsg}`);
     }
   };
 

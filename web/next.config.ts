@@ -3,6 +3,8 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
+const isDev = process.env.NODE_ENV === "development";
+
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["192.168.18.6"],
   images: {
@@ -26,7 +28,7 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-               "script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com",
+               `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://js.stripe.com https://www.googletagmanager.com`,
               "frame-src https://js.stripe.com",
               "img-src 'self' data: blob: https://*.supabase.co https://fonts.gstatic.com",
               "connect-src 'self' https://*.supabase.co https://api.stripe.com https://fonts.googleapis.com",

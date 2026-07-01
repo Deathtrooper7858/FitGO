@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Zap, Mail, Lock, AlertCircle, ArrowRight } from "lucide-react";
+import { Zap, Mail, Lock, AlertCircle, ArrowRight, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { useTranslations } from "next-intl";
 
@@ -55,6 +55,15 @@ export default function LoginPage() {
       />
 
       <div className="relative z-10 w-full max-w-md">
+        {/* Back to home */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-text-muted hover:text-text-primary transition-colors text-sm font-semibold mb-8"
+        >
+          <ArrowLeft size={16} />
+          {t("back") || "Volver al inicio"}
+        </Link>
+
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex flex-col items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-gradient-btn glow-primary flex items-center justify-center">
@@ -72,7 +81,7 @@ export default function LoginPage() {
         <div className="glass rounded-3xl p-8 shadow-card border border-white/10">
           <form onSubmit={handleLogin} className="space-y-5">
             {error && (
-              <div className="p-4 rounded-xl bg-error/10 border border-error/20 flex items-start gap-3">
+              <div className="p-4 rounded-xl bg-error/10 border border-error/20 flex items-start gap-3 animate-fade-in">
                 <AlertCircle size={18} className="text-error shrink-0 mt-0.5" />
                 <p className="text-sm text-error/90 leading-tight">{error}</p>
               </div>
@@ -90,6 +99,7 @@ export default function LoginPage() {
                   className="input-dark pl-11"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
                 />
               </div>
 
@@ -104,6 +114,7 @@ export default function LoginPage() {
                   className="input-dark pl-11"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
                 />
               </div>
             </div>

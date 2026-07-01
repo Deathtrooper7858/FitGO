@@ -3,13 +3,13 @@ import Footer from "@/components/Footer";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Términos de Servicio — FitGO",
+  title: "Términos de Servicio",
   description: "Términos y condiciones de uso de FitGO.",
 };
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" suppressHydrationWarning>
       <Navbar />
       <section className="relative pt-40 pb-24 px-6">
         <div className="max-w-3xl mx-auto">

@@ -3,13 +3,13 @@ import Footer from "@/components/Footer";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Política de Privacidad — FitGO",
+  title: "Política de Privacidad",
   description: "Política de privacidad de FitGO. Cómo gestionamos tus datos personales.",
 };
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" suppressHydrationWarning>
       <Navbar />
       <section className="relative pt-40 pb-24 px-6">
         <div className="max-w-3xl mx-auto">
