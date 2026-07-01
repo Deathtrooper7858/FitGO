@@ -12,6 +12,7 @@ import {
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../hooks/useTheme';
+import { useLocalPrice } from '../../hooks/useLocalPrice';
 import { usePurchaseStore } from '../../store';
 import { Spacing, Radius } from '../../constants';
 import { useToastStore } from '../../store/toastStore';
@@ -149,28 +150,7 @@ export default function PaywallModal() {
     { feature: t('paywall.rows.ads'), free: t('paywall.rows.adsFree'), pro: t('paywall.rows.adsPro') },
   ];
 
-  const formatPrice = (usdAmount: number, lang: string) => {
-    const normalizedLang = lang.toLowerCase();
-    const baseLang = normalizedLang.split('-')[0];
-    
-    // Check if the locale specifies Spain or if it is a European country language
-    if (normalizedLang === 'es-es' || ['de', 'fr', 'it'].includes(baseLang)) {
-      return `${usdAmount.toFixed(2).replace('.', ',')} €`;
-    }
-    
-    switch (baseLang) {
-      case 'es':
-        return `US$ ${usdAmount.toFixed(2).replace('.', ',')}`;
-      case 'pt':
-        // Convert to Brazilian Real (R$) using approximate exchange rate (approx 5.0x)
-        return `R$ ${(usdAmount * 5).toFixed(2).replace('.', ',')}`;
-      case 'ru':
-        // Convert to Russian Ruble (₽) using approximate exchange rate (approx 90x)
-        return `${Math.round(usdAmount * 90)} ₽`;
-      default:
-        return `$${usdAmount.toFixed(2)}`;
-    }
-  };
+  const localPrice = useLocalPrice();
 
   const getMonthSuffix = (lang: string) => {
     const baseLang = lang.toLowerCase().split('-')[0];
@@ -186,29 +166,42 @@ export default function PaywallModal() {
   };
 
   const lang = i18n.language || 'en';
-  let displayPrice = formatPrice(4.99, lang);
-  let displayOldPrice = formatPrice(9.99, lang);
+  
+  // By default, if we don't have RevenueCat (dev/sandbox) we use our live converted local prices!
+  let displayPrice = localPrice.formatPrice(4.99, lang);
+  let displayOldPrice = localPrice.formatPrice(9.99, lang);
 
+  // If RevenueCat returns a valid localized package, we can still use it.
+  // However, if the user's IP-detected currency differs from RevenueCat's currency (often happens in dev),
+  // we might want to prioritize our live conversion for display if we are forcing it, but usually RC is correct.
   if (monthlyPackage) {
     const rcPrice = monthlyPackage.product.price;
     const currencyCode = monthlyPackage.product.currencyCode;
-    try {
-      const formatter = new Intl.NumberFormat(lang === 'es' ? 'es-ES' : lang, {
-        style: 'currency',
-        currency: currencyCode,
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-      if (rcPrice > 7) {
-        displayOldPrice = monthlyPackage.product.priceString;
-        displayPrice = formatter.format(rcPrice * (4.99 / 9.99));
-      } else {
-        displayPrice = monthlyPackage.product.priceString;
-        displayOldPrice = formatter.format(rcPrice * (9.99 / 4.99));
+    
+    // Check if RevenueCat is giving us USD but the user's real currency is something else
+    // This happens frequently in sandbox testing. If so, we can let our local converter handle it.
+    if (currencyCode === 'USD' && localPrice.currency !== 'USD') {
+      displayPrice = localPrice.formatPrice(4.99, lang);
+      displayOldPrice = localPrice.formatPrice(9.99, lang);
+    } else {
+      try {
+        const formatter = new Intl.NumberFormat(undefined, {
+          style: 'currency',
+          currency: currencyCode,
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        });
+        if (rcPrice > 7) {
+          displayOldPrice = formatter.format(localPrice.roundNice(rcPrice));
+          displayPrice = formatter.format(localPrice.roundNice(rcPrice * (4.99 / 9.99)));
+        } else {
+          displayPrice = formatter.format(localPrice.roundNice(rcPrice));
+          displayOldPrice = formatter.format(localPrice.roundNice(rcPrice * (9.99 / 4.99)));
+        }
+      } catch {
+        displayPrice = localPrice.formatPrice(4.99, lang);
+        displayOldPrice = localPrice.formatPrice(9.99, lang);
       }
-    } catch {
-      displayPrice = formatPrice(4.99, lang);
-      displayOldPrice = formatPrice(9.99, lang);
     }
   }
 
