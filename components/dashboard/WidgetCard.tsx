@@ -2,17 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Radius, Spacing } from '../../constants';
-import { useAuthStore } from '../../store/authStore';
 import { useAdStore } from '../../store/adStore';
 import { useTheme } from '../../hooks/useTheme';
+import { useIsPro } from '../../hooks/useIsPro';
 import { AnimatedCard } from '../AnimatedCard';
 
 export function WidgetAdTimer({ featureId }: { featureId: string }) {
-  const { profile } = useAuthStore();
   const { premiumAdRemainingSeconds, hasPremiumAdAccess } = useAdStore();
   const [timeLeft, setTimeLeft] = useState(premiumAdRemainingSeconds(featureId));
 
-  const isPro = !!profile?.isPro;
+  const isPro = useIsPro();
   const colors = useTheme();
 
   useEffect(() => {

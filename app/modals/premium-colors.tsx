@@ -7,7 +7,9 @@ import { useTranslation } from 'react-i18next';
 import { Check, X, Crown, Lock, Sparkles } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../hooks/useTheme';
-import { useSettingsStore, usePurchaseStore, useAuthStore } from '../../store';
+import { useSettingsStore, useAuthStore } from '../../store';
+import { usePurchaseStore } from '../../store/purchaseStore';
+import { useIsPro } from '../../hooks/useIsPro';
 import { supabase } from '../../services/supabase';
 
 const PREMIUM_COLORS = [
@@ -29,13 +31,12 @@ export default function PremiumColorsModal() {
   const colors = useTheme();
   const { t } = useTranslation();
   const { premiumColor, setPremiumColor } = useSettingsStore();
-  const { isPro, verifyProStatus } = usePurchaseStore();
+  const { verifyProStatus } = usePurchaseStore();
   const { profile, setProfile } = useAuthStore();
-  
-  const hasProRole = !!(profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin' || profile?.isPro);
+  const hasProRole = useIsPro();
 
   const [loading, setLoading] = useState(!hasProRole);
-  const [actualIsPro, setActualIsPro] = useState(isPro || hasProRole);
+  const [actualIsPro, setActualIsPro] = useState(hasProRole);
 
   useEffect(() => {
     if (hasProRole) {

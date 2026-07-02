@@ -9,6 +9,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import * as NavigationBar from 'expo-navigation-bar';
+import * as Sentry from '@sentry/react-native';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../store/authStore';
 import { useSettingsStore } from '../store/settingsStore';
@@ -24,7 +25,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useAdMob } from '../hooks/useAdMob';
 import { AppToast } from '../components/AppToast';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import * as Sentry from '@sentry/react-native';
+
 
 Sentry.init({
   dsn: 'https://839443385437a525f24520ae8ed30e60@o4511663065661440.ingest.us.sentry.io/4511663106752512',
@@ -151,7 +152,7 @@ function RootLayout() {
     });
 
     return () => {
-      unsubscribeNetwork();
+      unsubscribeNetwork?.();
       unsubscribeSync();
     };
   }, []);
@@ -444,4 +445,4 @@ const styles = StyleSheet.create({
 // - The RootLayout initializes auth state from Supabase and listens for changes, updating the global store accordingly.
 // - Splash screen is shown until we determine the user's session and profile, preventing any flicker of the wrong screens.
 
-export default Sentry.wrap(RootLayout);
+export default RootLayout;

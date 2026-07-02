@@ -11,12 +11,13 @@ import { Download, Sparkles, Utensils, Dumbbell, Activity, ShoppingCart, AlertTr
 import { useAuthStore } from '../../../store/authStore';
 import { useNutritionStore, selectDailyTotals } from '../../../store/nutritionStore';
 import { useSettingsStore } from '../../../store/settingsStore';
-import { usePurchaseStore } from '../../../store/purchaseStore';
 import { usePlannerStore } from '../../../store/plannerStore';
+
 import { useWorkoutHistoryStore } from '../../../store/workoutHistoryStore';
 import { generateMealPlan, generateWorkoutPlan, generateDailyMealPlan, generateDailyWorkoutPlan, generateWeeklyAnalysis, generateMealSwap, adjustWorkoutToBodyweight } from '../../../services/groq';
 import { supabase } from '../../../services/supabase';
 import { useTheme } from '../../../hooks/useTheme';
+import { useIsPro } from '../../../hooks/useIsPro';
 import { SuccessModal } from '../../../components/SuccessModal';
 import { CustomAlert, AlertType } from '../../../components/CustomAlert';
 import { GlobalBackground } from '../../../components/GlobalBackground';
@@ -93,13 +94,12 @@ export default function PlannerScreen() {
   const { mealPlans, workoutPlans, weeklyAnalysis: analysis, weekStart, warning, setMealPlans, setWorkoutPlans, setWeeklyAnalysis: setAnalysis, clearPlans, clearMealPlans, clearWorkoutPlans } = usePlannerStore();
   const { addWorkout, hasCompletedWorkoutToday } = useWorkoutHistoryStore();
   const { profile } = useAuthStore();
-  const { isPro } = usePurchaseStore();
   const streakDays = useNutritionStore(s => s.streakDays);
   const dailyWater = useNutritionStore(s => s.dailyWater);
   const todayLogs = useNutritionStore(s => s.todayLogs);
   const addWater = useNutritionStore(s => s.addWater);
 
-  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = useIsPro();
   const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
   const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
   const isPremiumCustom = !!(isProActually && isValidHex);

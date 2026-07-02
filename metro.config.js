@@ -1,15 +1,23 @@
 // Learn more https://docs.expo.io/guides/customizing-metro
 const path = require('path');
+const os = require('os');
 const { getDefaultConfig } = require('expo/metro-config');
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
 
-// Prevenir caídas del vigilante de archivos (ENOENT) en Windows
-// Solo bloquear las carpetas raíz de Android/iOS, no las de node_modules
+// ── Fix EMFILE: «too many open files» en Windows ──────────────────────────────
+// Limitar workers adicional para reducir presión sobre el sistema de archivos
+const cpuCount = os.cpus().length;
+config.maxWorkers = Math.min(2, Math.max(1, Math.floor(cpuCount / 2)));
+
+
+// Prevenir caídas del vigilante de archivos (ENOENT / EMFILE) en Windows
+// Bloquear carpetas innecesarias para reducir la cantidad de archivos observados
 config.resolver.blockList = [
   ...Array.from(config.resolver.blockList || []),
-  new RegExp(`${__dirname.replace(/\\/g, '/')}/(android|ios)/.*`),
+  /.*[\/\\](android|ios)[\/\\].*/,
+  /.*[\/\\]\.git[\/\\].*/,
 ];
 
 config.resolver.assetExts.push('tflite');

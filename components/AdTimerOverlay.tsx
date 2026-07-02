@@ -2,18 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Clock } from 'lucide-react-native';
 import { useAdStore } from '../store/adStore';
-import { useAuthStore } from '../store/authStore';
+import { useIsPro } from '../hooks/useIsPro';
 
 interface AdTimerOverlayProps {
   featureId: string;
 }
 
 export function AdTimerOverlay({ featureId }: AdTimerOverlayProps) {
-  const { profile } = useAuthStore();
   const { hasPremiumAdAccess, premiumAdRemainingSeconds } = useAdStore();
   const [timeLeft, setTimeLeft] = useState(premiumAdRemainingSeconds(featureId));
 
-  const isPro = !!profile?.isPro;
+  const isPro = useIsPro();
 
   useEffect(() => {
     if (isPro) return;

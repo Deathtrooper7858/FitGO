@@ -17,9 +17,11 @@ export function recalculateStreak(activeDays: Record<string, boolean>): number {
   if (!activeDays[todayStr]) {
     checkDate.setDate(checkDate.getDate() - 1);
   }
-  let safety = 0;
-  while (safety < 365) {
-    safety++;
+  
+  const maxPossibleStreak = Object.keys(activeDays).length;
+  if (maxPossibleStreak === 0) return 0;
+  
+  for (let i = 0; i <= maxPossibleStreak; i++) {
     const dateStr = getLocalDateString(checkDate);
     if (!activeDays[dateStr]) break;
     streak++;

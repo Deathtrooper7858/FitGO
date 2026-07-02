@@ -100,6 +100,13 @@ export default function CalendarModal() {
   const pMedium = hexToRgba(p, 0.25);
   const pGlow   = hexToRgba(p, 0.4);
 
+  // Mini-Rachas Milestones logic
+  const MILESTONES = [3, 7, 14, 21, 30, 50, 100, 365, 500, 1000];
+  const nextMilestone = MILESTONES.find(m => m > streakDays) || MILESTONES[MILESTONES.length - 1];
+  const prevMilestone = [...MILESTONES].reverse().find(m => m <= streakDays) || 0;
+  const progressToNext = streakDays >= nextMilestone ? 100 : ((streakDays - prevMilestone) / (nextMilestone - prevMilestone)) * 100;
+
+
   return (
     <View style={{ flex: 1 }}>
       {/* Full-screen background gradient driven by premium color */}
@@ -234,6 +241,28 @@ export default function CalendarModal() {
                 <Text style={[s.statLbl, { color: colors.textSecondary }]}>🏆 {t('calendar.recordShort', 'Récord')}</Text>
               </View>
             </LinearGradient>
+          </Animated.View>
+
+          {/* ─── Mini-Racha Milestone Bar ─── */}
+          <Animated.View entering={FadeInUp.delay(160).duration(400).springify()}>
+            <View style={[s.milestoneContainer, { borderColor: hexToRgba(p, 0.2), backgroundColor: colors.surface }]}>
+              <View style={s.milestoneHeader}>
+                <Text style={[s.milestoneTitle, { color: colors.textPrimary }]}>
+                  {t('calendar.nextMilestone', 'Próxima Mini-Racha')}
+                </Text>
+                <Text style={[s.milestoneTarget, { color: p }]}>
+                  {streakDays} / {nextMilestone} {t('calendar.days', 'días')}
+                </Text>
+              </View>
+              <View style={[s.progressBarBg, { backgroundColor: hexToRgba(p, 0.1) }]}>
+                <LinearGradient
+                  colors={[p, hexToRgba(p, 0.6)]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={[s.progressBarFill, { width: `${progressToNext}%` }]}
+                />
+              </View>
+            </View>
           </Animated.View>
 
           {/* ─── Calendar Card ─── */}
@@ -473,6 +502,37 @@ const s = StyleSheet.create({
   statNum: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5 },
   statLbl: { fontSize: 11, fontWeight: '600', letterSpacing: 0.2 },
   statDivider: { width: 1, marginVertical: 6 },
+
+  // Milestone Bar
+  milestoneContainer: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 16,
+    marginTop: 4,
+  },
+  milestoneHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 10,
+  },
+  milestoneTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  milestoneTarget: {
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  progressBarBg: {
+    height: 10,
+    borderRadius: 5,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 5,
+  },
 
   // Calendar Card
   calCard: {

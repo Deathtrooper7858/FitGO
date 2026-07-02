@@ -4,14 +4,15 @@ import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { Search } from 'lucide-react-native';
 import { Spacing, Radius, Shadow } from '../../constants';
 import { useAuthStore, useRecipesStore, Recipe, useSettingsStore } from '../../store';
 import { useAdStore } from '../../store/adStore';
 import { AdTimerOverlay } from '../../components/AdTimerOverlay';
 import { generateRecipes } from '../../services/groq';
 import { useTheme } from '../../hooks/useTheme';
-import { useTranslation } from 'react-i18next';
-import { Search } from 'lucide-react-native';
+import { useIsPro } from '../../hooks/useIsPro';
 
 export default function RecipesModal() {
   const { t } = useTranslation();
@@ -23,7 +24,7 @@ export default function RecipesModal() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'search' | 'pinned'>('search');
-  const isPro = profile?.isPro ?? false;
+  const isPro = useIsPro();
   const featureId = 'recipes';
   const hasAccess = isPro || hasPremiumAdAccess(featureId);
 

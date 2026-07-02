@@ -11,8 +11,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../hooks/useTheme';
 import { Spacing, Radius, Shadow } from '../../constants';
 import { analyzePhysiquePhoto } from '../../services/groq';
-import { useSettingsStore, useProgressStore, useAuthStore, usePurchaseStore } from '../../store';
+import { useSettingsStore, useProgressStore, useAuthStore } from '../../store';
+import { waitForProgressHydration } from '../../store/progressStore';
 import { useAdStore } from '../../store/adStore';
+import { useIsPro } from '../../hooks/useIsPro';
 import { AdTimerOverlay } from '../../components/AdTimerOverlay';
 import { getLocalDateString } from '../../utils/date';
 
@@ -97,10 +99,8 @@ export default function ProgressEvaluationModal() {
 
   const [showHistory, setShowHistory] = useState(false);
 
-  const { isPro } = usePurchaseStore();
+  const isProActually = useIsPro();
   const { hasPremiumAdAccess } = useAdStore();
-
-  const isProActually = isPro || profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
   const featureId = 'evaluation';
   const hasAccess = isProActually || hasPremiumAdAccess(featureId);
 
@@ -137,7 +137,7 @@ export default function ProgressEvaluationModal() {
           return;
         }
         result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          mediaTypes: ImagePicker.MediaTypeOptions ? ImagePicker.MediaTypeOptions.Images : ['images'],
           allowsEditing: false,
           aspect: [3, 4],
           quality: 0.8,
@@ -150,7 +150,7 @@ export default function ProgressEvaluationModal() {
           return;
         }
         result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          mediaTypes: ImagePicker.MediaTypeOptions ? ImagePicker.MediaTypeOptions.Images : ['images'],
           allowsEditing: false,
           aspect: [3, 4],
           quality: 0.8,
@@ -178,7 +178,29 @@ export default function ProgressEvaluationModal() {
       // Save image to filesystem for persistence
       const fileName = `eval_${Date.now()}.jpg`;
       const localUri = `${FileSystem.documentDirectory}${fileName}`;
-      await FileSystem.copyAsync({ from: imageUri, to: localUri });
+
+      // On Android, gallery URIs can be content:// scheme which copyAsync
+      // may not handle directly. Write the base64 data instead for reliability.
+      try {
+        if (imageUri.startsWith('content://') || imageUri.startsWith('ph://')) {
+          // Use base64 data we already have for maximum compatibility
+          await FileSystem.writeAsStringAsync(localUri, base64Image, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+        } else {
+          await FileSystem.copyAsync({ from: imageUri, to: localUri });
+        }
+      } catch (copyErr) {
+        console.warn('[Evaluation] Image copy failed, using base64 fallback:', copyErr);
+        // Final fallback: write from base64
+        await FileSystem.writeAsStringAsync(localUri, base64Image, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+      }
+
+      // Ensure the store has finished loading from AsyncStorage before writing
+      // to prevent the rehydration overwriting the new evaluation.
+      await waitForProgressHydration();
 
       const newEvaluation = {
         id: Math.random().toString(36).substring(7),

@@ -59,7 +59,7 @@ Return ONLY valid JSON (no markdown). Structure:
 IMPORTANT: All text MUST be in ${targetLang}.`;
 
   const data = await fetchGroq({
-    model: CHAT_MODEL,
+    model: FAST_MODEL,
     messages: [{ role: 'user', content: prompt }],
     max_tokens: 1000,
     temperature: 0.7,

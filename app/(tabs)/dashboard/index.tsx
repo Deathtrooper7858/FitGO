@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Platform, RefreshControl
+  TouchableOpacity, Platform, RefreshControl, ActivityIndicator
 } from 'react-native';
 import { router, useNavigation } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,7 +19,6 @@ import { useBodyStore } from '../../../store/bodyStore';
 
 import { useTheme } from '../../../hooks/useTheme';
 import { supabase } from '../../../services/supabase';
-const MuscleSymmetryCard = React.lazy(() => import('../../../components/MuscleSymmetryCard').then(m => ({ default: m.MuscleSymmetryCard })));
 import { getLocalDateString } from '../../../utils/date';
 import { GlobalBackground } from '../../../components/GlobalBackground';
 import { getNameStyle } from '../../../utils/styles';
@@ -30,8 +29,10 @@ import { useAdStore } from '../../../store/adStore';
 import { CustomAlert, AlertType } from '../../../components/CustomAlert';
 import { calculateProgressPct, handleGoalSave } from '../../../hooks/useDashboardLogic';
 import { renderDashboardWidget } from '../../../components/dashboard/WidgetRenderer';
+import { useIsPro } from '../../../hooks/useIsPro';
 
 import { FitzDailyTip } from '../../../components/FitzDailyTip';
+const MuscleSymmetryCard = React.lazy(() => import('../../../components/MuscleSymmetryCard'));
 
 const RING_SIZE     = 180;
 const STROKE_WIDTH  = 15;
@@ -232,7 +233,7 @@ export default function DashboardScreen() {
     }
   }
 
-  const isPro = !!profile?.isPro;
+  const isPro = useIsPro();
   const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
   const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
   const isPremiumCustom = (isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin') && isValidHex;
@@ -517,7 +518,7 @@ export default function DashboardScreen() {
             onMoveRight: () => moveWidget(index, 1),
             onLongPress: () => { setIsEditing(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); },
             currentWeight, sleepHours, calories, bodyFat, totalsData,
-            isPro: !!profile?.isPro, colors, t: t as any, router,
+            isPro, colors, t: t as any, router,
             hasPremiumAdAccess, handlePremiumFeaturePress
           }))}
         </View>

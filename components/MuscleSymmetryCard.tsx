@@ -30,6 +30,7 @@ import { useTranslation } from 'react-i18next';
 import { useWorkoutHistoryStore } from '../store/workoutHistoryStore';
 import { useAuthStore } from '../store/authStore';
 import { useSettingsStore } from '../store';
+import { useIsPro } from '../hooks/useIsPro';
 import { useTheme } from '../hooks/useTheme';
 import exercisesData from '../excercise/exercises.json';
 import { Radius } from '../constants';
@@ -594,7 +595,7 @@ const tipSt = StyleSheet.create({
 });
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export function MuscleSymmetryCard() {
+export default function MuscleSymmetryCard() {
   const { t } = useTranslation();
   const colors = useTheme();
   const { width } = useWindowDimensions();
@@ -611,7 +612,7 @@ export function MuscleSymmetryCard() {
   const profile = useAuthStore(state => state.profile);
   const userId = profile?.id;
   const { premiumColor } = useSettingsStore();
-  const isPro = !!profile?.isPro;
+  const isPro = useIsPro();
   const hasProAccess = isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin';
   const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
   const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';

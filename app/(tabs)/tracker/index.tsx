@@ -5,7 +5,6 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, G, Polygon, Line, Text as SvgText } from 'react-native-svg';
-const BarChart = React.lazy(() => import('react-native-gifted-charts').then(m => ({ default: m.BarChart })));
 import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
 import { Radius } from '../../../constants';
@@ -26,6 +25,8 @@ import { StepsWidget } from '../../../components/tracker/StepsWidget';
 import { ConsistencyHeatmap } from '../../../components/tracker/ConsistencyHeatmap';
 import { DateNavigator } from '../../../components/tracker/DateNavigator';
 import { SocialBadge } from '../../../components/tracker/SocialBadge';
+import { useIsPro } from '../../../hooks/useIsPro';
+const BarChart = React.lazy(() => import('react-native-gifted-charts').then(m => ({ default: m.BarChart })));
 
 const MEALS = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 type Meal = typeof MEALS[number];
@@ -71,6 +72,7 @@ export default function TrackerScreen() {
   const calories = Math.round(convertEnergy(rawCalories, 'kcal', energyUnit));
   const target = Math.round(convertEnergy(profile?.targetCalories || 2000, 'kcal', energyUnit));
   const energyLabel = energyUnit.toUpperCase();
+  const isPro = useIsPro();
   const steps = dailySteps[selectedDate] || 0;
   const rawWater = dailyWater[selectedDate] || 0;
   const currentNeat = dailyNeat[selectedDate] || profile?.lifestyle || 'standing_sometimes';
@@ -265,7 +267,7 @@ export default function TrackerScreen() {
                       {[{ label: t('tracker.sugar'), val: `${Math.round(sugar)} g` }, { label: t('tracker.fiber'), val: `${Math.round(fiber)} g` }, { label: t('tracker.saturatedFat'), val: `${Math.round(saturatedFat)} g` }, { label: t('tracker.sodium'), val: `${Math.round(sodium)} mg` }, { label: t('tracker.iron'), val: `${Math.round(iron)} mg` }, { label: t('tracker.calcium', 'Calcio'), val: `${Math.round(calcium)} mg` }].map(nut => (
                         <View key={nut.label} style={[s.nutrientRow, { borderBottomColor: colors.border }]}>
                           <Text style={[s.nutrientLabel, { color: colors.textPrimary }]}>🔹 {nut.label}</Text>
-                          <Text style={{ color: colors.textMuted }}>{profile?.isPro ? nut.val : '🔒'}</Text>
+                          <Text style={{ color: colors.textMuted }}>{isPro ? nut.val : '🔒'}</Text>
                         </View>
                       ))}
                     </View>
@@ -386,7 +388,7 @@ export default function TrackerScreen() {
                 </View>
               </GlassCard>
 
-              <ConsistencyHeatmap heatmapDays={heatmapDays} isPro={!!profile?.isPro} onUpgrade={() => router.push('/modals/paywall')} colors={colors} t={t} />
+              <ConsistencyHeatmap heatmapDays={heatmapDays} isPro={isPro} onUpgrade={() => router.push('/modals/paywall')} colors={colors} t={t} />
               <WaterTracker waterMl={rawWater} onAddWater={addWater} onCustomWaterPress={handleCustomWater} colors={colors} t={t} volumeUnit={volumeUnit} />
               <StepsWidget steps={currentSteps} onAddSteps={addSteps} colors={colors} t={t} />
             </ScrollView>

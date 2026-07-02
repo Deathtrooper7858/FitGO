@@ -1,4 +1,5 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.0";
 
 const ALLOWED_ORIGINS = new Set([
   "https://www.fitgo.app",
@@ -308,7 +309,7 @@ Deno.serve(async (req) => {
     console.error("[Groq Proxy] Internal Error:", error);
     return new Response(
       JSON.stringify({
-        error: "Internal server error",
+        error: "Internal server error: " + (error instanceof Error ? error.message : String(error)),
         details: error instanceof Error ? error.message : String(error),
       }),
       { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }

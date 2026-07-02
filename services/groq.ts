@@ -78,7 +78,7 @@ async function fetchGroq(payload: any, retries = 2, proxyName = 'groq-proxy', or
           errorMsg = errorMsg.message || JSON.stringify(errorMsg);
         }
         
-        if (error.response?.status === 429 || errorMsg.includes('Rate limit') || errorMsg.includes('tokens per day')) {
+        if (error.response?.status === 429 || error.response?.status >= 500 || errorMsg.includes('Rate limit') || errorMsg.includes('tokens per day') || errorMsg.includes('Internal server error') || errorMsg.includes('overloaded') || errorMsg.includes('failed to fetch')) {
           if (attempt < retries) {
             attempt++;
             
@@ -93,9 +93,11 @@ async function fetchGroq(payload: any, retries = 2, proxyName = 'groq-proxy', or
               }
             } else if (errorMsg.includes('tokens per day')) {
               waitTimeMs = 999999;
+            } else if (error.response?.status >= 500 || errorMsg.includes('Internal server error')) {
+              waitTimeMs = 999999; // Force fallback immediately for 500s
             }
 
-            // If the wait time is huge (like daily quota hit), fallback to the FAST_MODEL
+            // If the wait time is huge (like daily quota hit or 500 error), fallback to the FAST_MODEL
             if (waitTimeMs > 10000) {
               if (payload.model === CHAT_MODEL && origModel === CHAT_MODEL) {
                 console.warn(`[Groq Rate Limit] Wait time is too long on ${proxyName}. Falling back to ${FAST_MODEL}.`);

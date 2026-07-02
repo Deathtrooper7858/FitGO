@@ -4,7 +4,7 @@ import NetInfo from '@react-native-community/netinfo';
 interface NetworkState {
   isConnected: boolean;
   isInternetReachable: boolean | null;
-  initNetworkListener: () => void;
+  initNetworkListener: () => () => void;
 }
 
 export const useNetworkStore = create<NetworkState>((set) => ({
