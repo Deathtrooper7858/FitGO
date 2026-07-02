@@ -36,7 +36,7 @@ export function CommentList({
       {comments?.map(comment => (
         <View key={comment.id} style={s.commentRow}>
           {comment.user_profile?.avatar_url ? (
-            <Image source={{ uri: comment.user_profile.avatar_url }} style={s.commentAvatar} />
+            <Image cachePolicy="memory-disk" source={{ uri: comment.user_profile.avatar_url }} style={s.commentAvatar} />
           ) : (
             <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 24, height: 24 }]}>
               <Text style={{ fontSize: 10, color: '#fff' }}>{comment.user_profile?.name?.[0]}</Text>

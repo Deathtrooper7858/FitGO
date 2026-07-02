@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import Purchases, { CustomerInfo, PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from './authStore';
+import { reportError, reportEvent } from '../utils/errorReporter';
 
 interface PurchaseState {
   isPro: boolean;
@@ -76,7 +77,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
         currentUserId = null;
       }
     } catch (err) {
-      console.error('Error initializing RevenueCat:', err);
+      reportError(err, { module: 'PurchaseStore', action: 'initialize', severity: 'error' });
     }
   },
 
@@ -140,7 +141,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
           console.log('[PurchaseStore] RevenueCat inactive, trial/sub expired. Downgrading...');
           await get().cancelPro();
         } catch (err) {
-          console.error('[PurchaseStore] Error verifying trial during updateCustomerInfo:', err);
+          reportError(err, { module: 'PurchaseStore', action: 'updateCustomerInfo.verifyTrial', severity: 'error' });
         }
       })();
     } else if (profile.isPro !== isProActive && !isPrivileged) {
@@ -165,7 +166,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
         set({ offering: null, isLoading: false });
       }
     } catch (err) {
-      console.error('Error fetching offerings:', err);
+      reportError(err, { module: 'PurchaseStore', action: 'fetchOfferings' });
       set({ isLoading: false });
     }
   },
@@ -177,7 +178,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       const info = await Purchases.getCustomerInfo();
       get().updateCustomerInfo(info);
     } catch (err) {
-      console.error('Error refreshing subscription status:', err);
+      reportError(err, { module: 'PurchaseStore', action: 'refreshStatus' });
     }
   },
 
@@ -204,7 +205,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     } catch (err: any) {
       set({ isLoading: false });
       if (!err.userCancelled) {
-        console.error('Purchase error:', err);
+        reportError(err, { module: 'PurchaseStore', action: 'purchasePackage', severity: 'fatal', tags: { flow: 'payment' } });
         throw err;
       }
     }
@@ -219,7 +220,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       get().updateCustomerInfo(info);
       set({ isLoading: false });
     } catch (err) {
-      console.error('Error restoring purchases:', err);
+      reportError(err, { module: 'PurchaseStore', action: 'restorePurchases', tags: { flow: 'payment' } });
       set({ isLoading: false });
       throw err;
     }
@@ -233,7 +234,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       set({ isLoading: true });
       const { error } = await supabase.rpc('upgrade_to_pro_user', { target_user_id: profile.id });
       if (error) {
-        console.error('[PurchaseStore] Error upgrading to pro via RPC:', error);
+        reportError(error, { module: 'PurchaseStore', action: 'grantPro', severity: 'fatal', tags: { flow: 'payment' } });
         set({ isLoading: false });
         return;
       }
@@ -249,7 +250,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
         await supabase.auth.updateUser({ data: { name_color: '#EAB308' } });
       }
     } catch (err) {
-      console.error(err);
+      reportError(err, { module: 'PurchaseStore', action: 'grantPro.updateUser' });
       set({ isLoading: false });
     }
   },
@@ -284,7 +285,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
 
       const { error } = await supabase.rpc('downgrade_from_pro', { target_user_id: profile.id });
       if (error) {
-        console.error('[PurchaseStore] Error downgrading from pro via RPC:', error);
+        reportError(error, { module: 'PurchaseStore', action: 'cancelPro', severity: 'fatal', tags: { flow: 'payment' } });
         set({ isLoading: false });
         return;
       }
@@ -294,7 +295,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       useAuthStore.getState().setProfile({ ...profile, isPro: false, role: 'user', nameColor: undefined });
       await supabase.auth.updateUser({ data: { name_color: null } });
     } catch (err) {
-      console.error(err);
+      reportError(err, { module: 'PurchaseStore', action: 'cancelPro.updateUser' });
       set({ isLoading: false });
     }
   },
@@ -322,7 +323,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
           return true;
         }
       } catch (err) {
-        console.error('[PurchaseStore] Error verifying Pro status via RevenueCat:', err);
+        reportError(err, { module: 'PurchaseStore', action: 'verifyProStatus.revenueCat' });
       }
     }
 
@@ -373,7 +374,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       
       return isProNow;
     } catch (err) {
-      console.error('[PurchaseStore] Error verifying Pro status via Database:', err);
+      reportError(err, { module: 'PurchaseStore', action: 'verifyProStatus.database' });
       set({ isLoading: false });
       return false;
     }

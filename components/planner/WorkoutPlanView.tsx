@@ -25,7 +25,7 @@ interface WorkoutPlanViewProps {
   getPreviousRPE: (exerciseName: string) => number | null;
 }
 
-export default function WorkoutPlanView({
+function WorkoutPlanView({
   workout, activeDay, isFutureDay, isAdjustingBW, alreadyCompleted, exerciseMetrics,
   onMoveExercise, onCompleteWorkout, onAdjustWorkout, onUpdateMetric, onStartRest,
   getPreviousRPE
@@ -175,6 +175,8 @@ export default function WorkoutPlanView({
     </View>
   );
 }
+
+export default React.memo(WorkoutPlanView);
 
 const wv = StyleSheet.create({
   contentList: {},

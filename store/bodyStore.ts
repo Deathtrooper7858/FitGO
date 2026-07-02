@@ -6,6 +6,7 @@ import i18n from '../i18n';
 import { BodyMeasurement } from './types';
 import { useAuthStore } from './authStore';
 import { useToastStore } from './toastStore';
+import { reportError } from '../utils/errorReporter';
 
 interface BodyState {
   measurements: BodyMeasurement[];
@@ -55,7 +56,7 @@ export const useBodyStore = create<BodyState>()(
           if (error?.name === 'AbortError' || error?.message?.includes('AbortError')) {
             return; // Ignore normal request cancellations
           }
-          console.error('[BodyStore] Fetch error:', error);
+          reportError(error, { module: 'BodyStore', action: 'fetchMeasurements' });
         } finally {
           set({ isLoading: false });
         }
@@ -118,7 +119,7 @@ export const useBodyStore = create<BodyState>()(
             isAchievement: false
           });
         } catch (error) {
-          console.error('[BodyStore] Add/Upsert error:', error);
+          reportError(error, { module: 'BodyStore', action: 'addMeasurement' });
         }
       },
 
@@ -130,7 +131,7 @@ export const useBodyStore = create<BodyState>()(
           const { error } = await supabase.from('body_measurements').delete().eq('id', id);
           if (error) throw error;
         } catch (error) {
-          console.error('[BodyStore] Delete error:', error);
+          reportError(error, { module: 'BodyStore', action: 'deleteMeasurement', extra: { id } });
         }
       },
 
@@ -154,7 +155,7 @@ export const useBodyStore = create<BodyState>()(
             measurements: state.measurements.map(m => m.id === id ? { ...m, ...updates } : m)
           }));
         } catch (error) {
-          console.error('[BodyStore] Update error:', error);
+          reportError(error, { module: 'BodyStore', action: 'updateMeasurement', extra: { id } });
         }
       },
       

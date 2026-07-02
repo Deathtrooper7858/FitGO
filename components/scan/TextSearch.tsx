@@ -58,7 +58,7 @@ export default function TextSearch({ onFoodSelected, colors, t, language }: Text
             activeOpacity={0.7}
           >
             {item.imageUrl ? (
-              <Image source={{ uri: item.imageUrl }} style={s.searchResultImage} />
+              <Image cachePolicy="memory-disk" source={{ uri: item.imageUrl }} style={s.searchResultImage} />
             ) : (
               <View style={[s.searchResultImage, { backgroundColor: colors.surfaceAlt, justifyContent: 'center', alignItems: 'center' }]}>
                 <Text style={{ fontSize: 24 }}>🍽️</Text>

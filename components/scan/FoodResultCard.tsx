@@ -75,7 +75,7 @@ export default function FoodResultCard({
       </View>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: Spacing.base, paddingBottom: 160 }}>
         {capturedUri && capturedUri !== 'text' && (
-          <Image source={{ uri: capturedUri }} style={s.capturedImage} contentFit="cover" />
+          <Image cachePolicy="memory-disk" source={{ uri: capturedUri }} style={s.capturedImage} contentFit="cover" />
         )}
         <View style={[s.confidenceBadge, { borderColor: confidenceColor }]}>
           <View style={[s.confidenceDot, { backgroundColor: confidenceColor }]} />

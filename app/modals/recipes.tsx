@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Keyboard } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -104,45 +105,36 @@ export default function RecipesModal() {
       );
     }
 
-    if (activeTab === 'search') {
+    const currentData = activeTab === 'search' ? recipes : pinnedRecipes;
+
+    if (activeTab === 'pinned' && pinnedRecipes.length === 0) {
       return (
-        <View style={s.list}>
-          {recipes.map((recipe, index) => (
+        <View style={s.center}>
+          <Text style={{ fontSize: 40, marginBottom: 10 }}>📌</Text>
+          <Text style={[s.loadingText, { color: colors.textSecondary }]}>{t('recipes.noPinned', 'No tienes recetas fijadas aún.')}</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={{ flex: 1, paddingHorizontal: Spacing.lg }}>
+        <FlashList
+          data={currentData}
+          renderItem={({ item: recipe, index }) => (
             <RecipeCard
-              key={recipe.id}
               recipe={recipe}
               isFav={pinnedRecipes.some(r => r.id === recipe.id)}
               onFav={() => togglePin(recipe)}
               index={index}
             />
-          ))}
-        </View>
-      );
-    }
-
-    if (activeTab === 'pinned') {
-      if (pinnedRecipes.length === 0) {
-        return (
-          <View style={s.center}>
-            <Text style={{ fontSize: 40, marginBottom: 10 }}>📌</Text>
-            <Text style={[s.loadingText, { color: colors.textSecondary }]}>{t('recipes.noPinned', 'No tienes recetas fijadas aún.')}</Text>
-          </View>
-        );
-      }
-      return (
-        <View style={s.list}>
-          {pinnedRecipes.map((recipe, index) => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-              isFav={true}
-              onFav={() => togglePin(recipe)}
-              index={index}
-            />
-          ))}
-        </View>
-      );
-    }
+          )}
+          keyExtractor={(item) => item.id}
+          estimatedItemSize={250}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+        />
+      </View>
+    );
   };
 
   return (
@@ -196,9 +188,9 @@ export default function RecipesModal() {
         </View>
       )}
 
-      <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
+      <View style={s.scroll}>
         {renderContent()}
-      </ScrollView>
+      </View>
 
       <AdTimerOverlay featureId="recipes" />
     </SafeAreaView>

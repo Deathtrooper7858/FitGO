@@ -295,7 +295,7 @@ export default function ProgressEvaluationModal() {
                userEvaluations.map(e => (
                  <View key={e.id} style={[s.historyItem, { backgroundColor: colors.surface, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center' }]}>
                    <TouchableOpacity style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }} onPress={() => viewHistoryItem(e)}>
-                     <Image source={{ uri: e.fileName ? `${FileSystem.documentDirectory}${e.fileName}` : e.uri }} style={s.historyThumb} />
+                     <Image cachePolicy="memory-disk" source={{ uri: e.fileName ? `${FileSystem.documentDirectory}${e.fileName}` : e.uri }} style={s.historyThumb} />
                      <View style={s.historyInfo}>
                        <Text style={[s.historyDate, { color: colors.textPrimary }]}>{e.date}</Text>
                        <Text style={[s.historyFat, { color: colors.textSecondary }]}>{t('evaluation.fatLabel', 'Grasa')}: {e.estimatedFatPercentage}</Text>
@@ -389,7 +389,7 @@ export default function ProgressEvaluationModal() {
           </View>
         ) : (
           <View style={s.imageSection}>
-            <Image source={{ uri: imageUri }} style={s.previewImage} contentFit="cover" />
+            <Image cachePolicy="memory-disk" source={{ uri: imageUri }} style={s.previewImage} contentFit="cover" />
             
             {!result && !isAnalyzing && (
               <View style={{ width: '100%' }}>

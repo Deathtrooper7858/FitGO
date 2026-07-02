@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import * as Sentry from "@sentry/nextjs";
 
 export const revalidate = 30;
 
@@ -11,7 +11,7 @@ export async function GET() {
     if (!supabaseUrl || !serviceKey || serviceKey === "your_service_role_key_here") {
       return NextResponse.json(
         { ranking: [], total: 0, error: "API not configured" },
-        { status: 200 }
+        { status: 503 }
       );
     }
 
@@ -50,10 +50,10 @@ export async function GET() {
 
     return NextResponse.json({ ranking: mapped, total: mapped.length });
   } catch (err) {
-    console.error("[Ranking API]", err);
+    Sentry.captureException(err);
     return NextResponse.json(
       { ranking: [], total: 0, error: "Failed to fetch ranking" },
-      { status: 200 }
+      { status: 500 }
     );
   }
 }

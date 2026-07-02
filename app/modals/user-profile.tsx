@@ -212,7 +212,7 @@ export default function UserProfileModal() {
               }}
             >
               {displayUser.avatar_url ? (
-                <Image source={{ uri: displayUser.avatar_url }} style={{ width: 82, height: 82, borderRadius: 41 }} />
+                <Image cachePolicy="memory-disk" source={{ uri: displayUser.avatar_url }} style={{ width: 82, height: 82, borderRadius: 41 }} />
               ) : (
                 <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 82, height: 82, borderRadius: 41 }]}>
                   <Text style={{ fontSize: 32, color: '#fff', fontWeight: 'bold' }}>{displayUser.name?.[0]}</Text>
@@ -568,7 +568,7 @@ export default function UserProfileModal() {
                       onPress={() => router.push({ pathname: '/modals/user-profile', params: { userId: fp.id, name: fp.name, avatarUrl: fp.avatar_url || '' } })}
                     >
                       {fp.avatar_url ? (
-                        <Image source={{ uri: fp.avatar_url }} style={{ width: 52, height: 52, borderRadius: 26, marginBottom: 6 }} />
+                        <Image cachePolicy="memory-disk" source={{ uri: fp.avatar_url }} style={{ width: 52, height: 52, borderRadius: 26, marginBottom: 6 }} />
                       ) : (
                         <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}>
                           <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 20 }}>{fp.name?.[0]}</Text>
@@ -603,7 +603,7 @@ export default function UserProfileModal() {
                   <View style={{ padding: 14 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                       {displayUser.avatar_url ? (
-                        <Image source={{ uri: displayUser.avatar_url }} style={{ width: 32, height: 32, borderRadius: 16 }} />
+                        <Image cachePolicy="memory-disk" source={{ uri: displayUser.avatar_url }} style={{ width: 32, height: 32, borderRadius: 16 }} />
                       ) : (
                         <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}>
                           <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>{displayUser.name?.[0]}</Text>
@@ -618,7 +618,7 @@ export default function UserProfileModal() {
                     </View>
                     <Text style={{ color: colors.textPrimary, fontSize: 14, lineHeight: 20 }}>{post.content}</Text>
                     {post.image_url && (
-                      <Image source={{ uri: post.image_url }} style={{ width: '100%', height: 180, borderRadius: 10, marginTop: 10 }} contentFit="cover" />
+                      <Image cachePolicy="memory-disk" source={{ uri: post.image_url }} style={{ width: '100%', height: 180, borderRadius: 10, marginTop: 10 }} contentFit="cover" />
                     )}
                   </View>
                   <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.border + '33', paddingVertical: 10 }}>

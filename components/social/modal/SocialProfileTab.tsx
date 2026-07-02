@@ -47,7 +47,7 @@ export default function SocialProfileTab({
       <GlassCard style={{ marginBottom: 16, padding: 20 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
           {profile?.avatarUrl ? (
-            <Image source={{ uri: profile.avatarUrl }} style={{ width: 64, height: 64, borderRadius: 32 }} />
+            <Image cachePolicy="memory-disk" source={{ uri: profile.avatarUrl }} style={{ width: 64, height: 64, borderRadius: 32 }} />
           ) : (
             <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 64, height: 64, borderRadius: 32 }]}>
               <Text style={[s.avatarInitials, { fontSize: 24 }]}>{profile?.name?.[0]}</Text>
@@ -109,7 +109,7 @@ export default function SocialProfileTab({
               <View style={s.postHeader}>
                 <TouchableOpacity style={s.userInfo} onPress={() => onUserPress({ ...post.user_profile, id: post.user_id })}>
                   {post.user_profile?.avatar_url ? (
-                    <Image source={{ uri: post.user_profile.avatar_url }} style={s.avatarSmall} />
+                    <Image cachePolicy="memory-disk" source={{ uri: post.user_profile.avatar_url }} style={s.avatarSmall} />
                   ) : (
                     <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
                       <Text style={[s.avatarInitials, { fontSize: 14 }]}>{post.user_profile?.name?.[0]}</Text>
@@ -128,7 +128,7 @@ export default function SocialProfileTab({
               </View>
               <Text style={[s.postContent, { color: colors.textPrimary }]}>{post.content}</Text>
               {post.image_url && (
-                <Image source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
+                <Image cachePolicy="memory-disk" source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
               )}
               {post.audio_url && (
                 <PostAudioPlayer audioUrl={post.audio_url} colors={colors} />

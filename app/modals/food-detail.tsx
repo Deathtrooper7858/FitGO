@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, ActivityIndicator } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { PieChart } from 'react-native-gifted-charts';
+const PieChart = React.lazy(() => import('react-native-gifted-charts').then(m => ({ default: m.PieChart })));
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Crypto from 'expo-crypto';
@@ -307,18 +307,20 @@ export default function FoodDetailModal() {
             </View>
             <View style={s.pieWrap}>
               {pieData.length > 0 ? (
-                <PieChart
-                  data={pieData}
-                  donut
-                  radius={44}
-                  innerRadius={32}
-                  innerCircleColor={colors.surface}
-                  centerLabelComponent={() => (
-                    <Text style={{ color: colors.textPrimary, fontSize: 11, fontWeight: '800' }}>
-                      {totalMacroG > 0 ? `${Math.round((proToSave / totalMacroG) * 100)}%` : '—'}
-                    </Text>
-                  )}
-                />
+                  <React.Suspense fallback={<View style={{ height: 160, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator color={colors.primary} /></View>}>
+                    <PieChart
+                      data={pieData}
+                      donut
+                      radius={44}
+                      innerRadius={32}
+                      innerCircleColor={colors.surface}
+                      centerLabelComponent={() => (
+                        <Text style={{ color: colors.textPrimary, fontSize: 11, fontWeight: '800' }}>
+                          {totalMacroG > 0 ? `${Math.round((proToSave / totalMacroG) * 100)}%` : '—'}
+                        </Text>
+                      )}
+                    />
+                  </React.Suspense>
               ) : (
                 <View style={[s.emptyPie, { borderColor: colors.border }]} />
               )}

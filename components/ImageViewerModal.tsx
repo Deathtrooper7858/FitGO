@@ -21,7 +21,7 @@ export function ImageViewerModal({ visible, imageUri, onClose }: ImageViewerModa
           </TouchableOpacity>
         </View>
         <View style={styles.imageContainer}>
-          <Image
+          <Image cachePolicy="memory-disk"
             source={{ uri: imageUri }}
             style={styles.image}
             contentFit="contain"

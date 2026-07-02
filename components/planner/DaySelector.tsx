@@ -17,7 +17,7 @@ interface DaySelectorProps {
   premiumColor?: string | null;
 }
 
-export default function DaySelector({ active, onSelect, isPremiumCustom, premiumColor }: DaySelectorProps) {
+function DaySelector({ active, onSelect, isPremiumCustom, premiumColor }: DaySelectorProps) {
   const { t } = useTranslation();
   const colors = useTheme();
   const scrollRef = useRef<any>(null);
@@ -60,6 +60,8 @@ export default function DaySelector({ active, onSelect, isPremiumCustom, premium
     </ScrollView>
   );
 }
+
+export default React.memo(DaySelector);
 
 const dp = StyleSheet.create({
   scroll:   { marginBottom: 24 },

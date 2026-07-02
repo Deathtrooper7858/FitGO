@@ -31,7 +31,7 @@ interface MealPlanViewProps {
   onConsumeMeal: (meal: PlanItem) => void;
 }
 
-export default function MealPlanView({
+function MealPlanView({
   meals, activeDay, loading, isProActually, isPremiumCustom, safePremiumColor,
   isActiveToday, consumedMacros, plannedMacros, waterToday, totalCal, targetCalories,
   analysis, analyzing, onWeeklyAnalysis, onAddWater, onSwapMeal, onConsumeMeal
@@ -160,6 +160,8 @@ export default function MealPlanView({
     </>
   );
 }
+
+export default React.memo(MealPlanView);
 
 const mv = StyleSheet.create({
   contentList: { paddingHorizontal: Spacing.base },

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation, Platform, ScrollView, Modal, Pressable, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
-import Body from 'react-native-body-highlighter';
+const Body = React.lazy(() => import('react-native-body-highlighter').then(m => ({ default: m.default })));
 import { supabase } from '../../services/supabase';
 import { translateExerciseDetails } from '../../services/groq';
 import { useTranslation } from 'react-i18next';
@@ -209,18 +209,20 @@ export default function MuscleDirectoryModal() {
       <ScrollView ref={scrollRef} style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.introWrap}>
           <View style={styles.bodyDiagramsContainer}>
-            <Body 
-              data={BODY_DATA}
-              side="front"
-              scale={0.8}
-              onBodyPartPress={handleBodyPartPress}
-            />
-            <Body 
-              data={BODY_DATA}
-              side="back"
-              scale={0.8}
-              onBodyPartPress={handleBodyPartPress}
-            />
+            <React.Suspense fallback={<View style={{ height: 200, width: '100%', justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator color={colors.primary} /></View>}>
+              <Body 
+                data={BODY_DATA}
+                side="front"
+                scale={0.8}
+                onBodyPartPress={handleBodyPartPress}
+              />
+              <Body 
+                data={BODY_DATA}
+                side="back"
+                scale={0.8}
+                onBodyPartPress={handleBodyPartPress}
+              />
+            </React.Suspense>
           </View>
           <Text style={[styles.introSub, { color: colors.textSecondary }]}>
             {t('dashboard.muscleDirectorySub', 'Toca un grupo muscular en la figura para ver los ejercicios o encuéntralos en la lista.')}
@@ -347,7 +349,7 @@ export default function MuscleDirectoryModal() {
                 </Text>
                 
                 <View style={[styles.gifContainer, { backgroundColor: colors.background }]}>
-                  <Image
+                  <Image cachePolicy="memory-disk"
                     source={{ 
                       uri: supabase.storage
                         .from('excercises')

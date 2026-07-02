@@ -134,7 +134,7 @@ const MessageBubble = React.memo(function MessageBubble({ msg, isLastUser, onEdi
         >
           {msg.imageUrl && (
             <TouchableOpacity onPress={() => onImagePress?.(msg.imageUrl!)} activeOpacity={0.8}>
-              <Image source={{ uri: msg.imageUrl }} style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }} contentFit="cover" />
+              <Image cachePolicy="memory-disk" source={{ uri: msg.imageUrl }} style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }} contentFit="cover" />
             </TouchableOpacity>
           )}
           {renderFormattedContent(msg.content, true, colors)}
@@ -165,7 +165,7 @@ const MessageBubble = React.memo(function MessageBubble({ msg, isLastUser, onEdi
       }]}>
         {msg.imageUrl && (
           <TouchableOpacity onPress={() => onImagePress?.(msg.imageUrl!)} activeOpacity={0.8}>
-            <Image source={{ uri: msg.imageUrl }} style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }} contentFit="cover" />
+            <Image cachePolicy="memory-disk" source={{ uri: msg.imageUrl }} style={{ width: 180, height: 180, borderRadius: 12, marginBottom: 8 }} contentFit="cover" />
           </TouchableOpacity>
         )}
         {renderFormattedContent(msg.content, false, colors)}
@@ -181,7 +181,7 @@ const MessageBubble = React.memo(function MessageBubble({ msg, isLastUser, onEdi
     <View style={[bubble.row, isUser && bubble.rowUser]}>
       {!isUser && (
         <View style={[bubble.avatarContainer, { borderColor: colors.primary + '30' }]}>
-          <Image source={badgeImage} style={bubble.avatar} contentFit="cover" />
+          <Image cachePolicy="memory-disk" source={badgeImage} style={bubble.avatar} contentFit="cover" />
         </View>
       )}
       {renderBubbleBody()}
@@ -203,7 +203,7 @@ const TypingIndicator = React.memo(function TypingIndicator({ badgeImage }: { ba
   return (
     <View style={[bubble.row, { paddingHorizontal: Spacing.base, marginTop: 6 }]}>
       <View style={[bubble.avatarContainer, { borderColor: colors.primary + '30' }]}>
-        <Image source={badgeImage} style={bubble.avatar} contentFit="cover" />
+        <Image cachePolicy="memory-disk" source={badgeImage} style={bubble.avatar} contentFit="cover" />
       </View>
       <View style={[bubble.box, {
         backgroundColor: colors.surface,
@@ -582,7 +582,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
               <Animated.View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.primary, borderRadius: 24, transform: [{ scale: 1.2 }], opacity: 0.4 }]} />
             )}
             <View style={[s.headerAvatarContainer, { borderColor: config.hasAnimatedPulse && isTyping ? colors.primary : colors.primary + '40' }]}>
-              <Image source={config.badgeImage} style={s.headerAvatar} contentFit="cover" />
+              <Image cachePolicy="memory-disk" source={config.badgeImage} style={s.headerAvatar} contentFit="cover" />
               <View style={[s.headerOnlineDot, { backgroundColor: config.hasAnimatedPulse && isTyping ? colors.primary : colors.success }]} />
             </View>
           </View>
@@ -655,7 +655,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
           {selectedImage && (
             <View style={s.imagePreviewContainer}>
               <View style={[s.imagePreviewWrapper, { borderColor: colors.border }]}>
-                <Image source={{ uri: `data:image/jpeg;base64,${selectedImage}` }} style={s.imagePreview} contentFit="cover" />
+                <Image cachePolicy="memory-disk" source={{ uri: `data:image/jpeg;base64,${selectedImage}` }} style={s.imagePreview} contentFit="cover" />
                 <TouchableOpacity onPress={() => setSelectedImage(null)} style={s.removeImageBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                   <Text style={s.removeImageText}>✕</Text>
                 </TouchableOpacity>

@@ -418,7 +418,7 @@ export default function SocialModal() {
                     <Text style={{ fontSize: 16, fontWeight: 'bold', color: index < 3 ? '#F59E0B' : colors.textMuted, width: 24 }}>{index + 1}</Text>
                     <View style={{ position: 'relative' }}>
                       {user.avatar_url ? (
-                        <Image source={{ uri: user.avatar_url }} style={s.avatarSmall} />
+                        <Image cachePolicy="memory-disk" source={{ uri: user.avatar_url }} style={s.avatarSmall} />
                       ) : (
                         <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
                           <Text style={[s.avatarInitials, { fontSize: 14 }]}>{user.name?.[0]}</Text>
@@ -547,7 +547,7 @@ export default function SocialModal() {
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }}>
               <TouchableOpacity style={[s.friendSelectCard, { backgroundColor: challengeForm.includeSelf ? colors.primary + '20' : colors.surfaceAlt, borderColor: challengeForm.includeSelf ? colors.primary : 'transparent', borderWidth: 2 }]} onPress={() => setChallengeForm({...challengeForm, includeSelf: !challengeForm.includeSelf})}>
                 {profile?.avatarUrl ? (
-                  <Image source={{ uri: profile.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                  <Image cachePolicy="memory-disk" source={{ uri: profile.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} />
                 ) : (
                   <View style={[s.avatarPlaceholder, { width: 40, height: 40, backgroundColor: colors.primary }]}>
                     <Text style={[s.avatarInitials, { fontSize: 16 }]}>{profile?.name?.[0]}</Text>
@@ -562,7 +562,7 @@ export default function SocialModal() {
                 return (
                   <TouchableOpacity key={fid} style={[s.friendSelectCard, { backgroundColor: isSelected ? colors.primary + '20' : colors.surfaceAlt, borderColor: isSelected ? colors.primary : 'transparent', borderWidth: 2 }]} onPress={() => { const current = challengeForm.selectedFriendIds; const updated = current.includes(fid) ? current.filter((id: string) => id !== fid) : [...current, fid]; setChallengeForm({...challengeForm, selectedFriendIds: updated}); }}>
                     {friend.friend_profile?.avatar_url ? (
-                      <Image source={{ uri: friend.friend_profile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                      <Image cachePolicy="memory-disk" source={{ uri: friend.friend_profile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20 }} />
                     ) : (
                       <View style={[s.avatarPlaceholder, { width: 40, height: 40, backgroundColor: colors.primary }]}>
                         <Text style={[s.avatarInitials, { fontSize: 16 }]}>{friend.friend_profile?.name?.[0]}</Text>
@@ -782,7 +782,7 @@ export default function SocialModal() {
               </TouchableOpacity>
               <View style={{ width: 90, height: 90, borderRadius: 45, marginBottom: 14, marginTop: 8, shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8, borderWidth: 3, borderColor: colors.primary + '60' }}>
                 {inspectingUser?.avatar_url ? (
-                  <Image source={{ uri: inspectingUser.avatar_url }} style={{ width: 84, height: 84, borderRadius: 42 }} />
+                  <Image cachePolicy="memory-disk" source={{ uri: inspectingUser.avatar_url }} style={{ width: 84, height: 84, borderRadius: 42 }} />
                 ) : (
                   <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 84, height: 84, borderRadius: 42 }]}>
                     <Text style={[s.avatarInitials, { fontSize: 32 }]}>{inspectingUser?.name?.[0]}</Text>
@@ -863,7 +863,7 @@ export default function SocialModal() {
                 onPress={() => setAiChallengeIncludeSelf(v => !v)}
               >
                 {profile?.avatarUrl ? (
-                  <Image source={{ uri: profile.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                  <Image cachePolicy="memory-disk" source={{ uri: profile.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} />
                 ) : (
                   <View style={[s.avatarPlaceholder, { width: 40, height: 40, backgroundColor: colors.primary }]}>
                     <Text style={[s.avatarInitials, { fontSize: 16 }]}>{profile?.name?.[0]}</Text>
@@ -887,7 +887,7 @@ export default function SocialModal() {
                     onPress={() => { const updated = isSelected ? aiChallengeSelectedFriends.filter((id: string) => id !== fid) : [...aiChallengeSelectedFriends, fid]; setAiChallengeSelectedFriends(updated); }}
                   >
                     {friend.friend_profile?.avatar_url ? (
-                      <Image source={{ uri: friend.friend_profile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                      <Image cachePolicy="memory-disk" source={{ uri: friend.friend_profile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20 }} />
                     ) : (
                       <View style={[s.avatarPlaceholder, { width: 40, height: 40, backgroundColor: colors.primary }]}>
                         <Text style={[s.avatarInitials, { fontSize: 16 }]}>{friend.friend_profile?.name?.[0]}</Text>

@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, G, Polygon, Line, Text as SvgText } from 'react-native-svg';
-import { BarChart } from 'react-native-gifted-charts';
+const BarChart = React.lazy(() => import('react-native-gifted-charts').then(m => ({ default: m.BarChart })));
 import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
 import { Radius } from '../../../constants';
@@ -229,7 +229,7 @@ export default function TrackerScreen() {
           {/* Header */}
           <View style={s.header}>
             <TouchableOpacity style={[s.avatarWrap, { borderColor: colors.border, backgroundColor: colors.surface }]} onPress={() => router.push('/(tabs)/profile' as any)} activeOpacity={0.7}>
-              {profile?.avatarUrl ? <Image source={{ uri: profile.avatarUrl }} style={s.avatarImage} /> : (
+              {profile?.avatarUrl ? <Image cachePolicy="memory-disk" source={{ uri: profile.avatarUrl }} style={s.avatarImage} /> : (
                 <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary + '20' }]}>
                   <Text style={[s.avatarText, { color: colors.primary }]}>{profile?.name?.[0]?.toUpperCase()}</Text>
                 </View>
@@ -279,7 +279,9 @@ export default function TrackerScreen() {
                         <Text style={{ color: colors.textMuted, fontSize: 12 }}>{energyLabel}</Text>
                       </View>
                       <View style={{ alignItems: 'center', marginTop: 10 }}>
-                        <BarChart stackData={stackData} barWidth={22} spacing={18} roundedTop roundedBottom hideRules xAxisThickness={0} yAxisThickness={0} yAxisTextStyle={{ color: colors.textMuted, fontSize: 10 }} noOfSections={4} maxValue={Number.isFinite(target) && target > 0 ? target * 1.2 : 2400} isAnimated animationDuration={800} />
+                        <React.Suspense fallback={<View style={{ height: 180, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator color={colors.primary} /></View>}>
+                          <BarChart stackData={stackData} barWidth={22} spacing={18} roundedTop roundedBottom hideRules xAxisThickness={0} yAxisThickness={0} yAxisTextStyle={{ color: colors.textMuted, fontSize: 10 }} noOfSections={4} maxValue={Number.isFinite(target) && target > 0 ? target * 1.2 : 2400} isAnimated animationDuration={800} />
+                        </React.Suspense>
                       </View>
                       <View style={s.chartLegend}>{MEALS.map(m => (
                         <View key={m} style={s.legendItem}>

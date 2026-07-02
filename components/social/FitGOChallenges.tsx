@@ -302,7 +302,7 @@ const generateAIChallenge = async () => {
                 onPress={() => setChallengeForm({...challengeForm, includeSelf: !challengeForm.includeSelf})}
               >
                 {profile?.avatarUrl ? (
-                  <Image source={{ uri: profile.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                  <Image cachePolicy="memory-disk" source={{ uri: profile.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} />
                 ) : (
                   <View style={[s.avatarPlaceholder, { width: 40, height: 40, backgroundColor: colors.primary }]}>
                     <Text style={[s.avatarInitials, { fontSize: 16 }]}>{profile?.name?.[0]}</Text>
@@ -341,7 +341,7 @@ const generateAIChallenge = async () => {
                     }}
                   >
                     {friend.friend_profile?.avatar_url ? (
-                      <Image source={{ uri: friend.friend_profile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                      <Image cachePolicy="memory-disk" source={{ uri: friend.friend_profile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20 }} />
                     ) : (
                       <View style={[s.avatarPlaceholder, { width: 40, height: 40, backgroundColor: colors.primary }]}>
                         <Text style={[s.avatarInitials, { fontSize: 16 }]}>{friend.friend_profile?.name?.[0]}</Text>
@@ -551,7 +551,7 @@ const generateAIChallenge = async () => {
                 onPress={() => setAiChallengeIncludeSelf(v => !v)}
               >
                 {profile?.avatarUrl ? (
-                  <Image source={{ uri: profile.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                  <Image cachePolicy="memory-disk" source={{ uri: profile.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20 }} />
                 ) : (
                   <View style={[s.avatarPlaceholder, { width: 40, height: 40, backgroundColor: colors.primary }]}>
                     <Text style={[s.avatarInitials, { fontSize: 16 }]}>{profile?.name?.[0]}</Text>
@@ -592,7 +592,7 @@ const generateAIChallenge = async () => {
                     }}
                   >
                     {friend.friend_profile?.avatar_url ? (
-                      <Image source={{ uri: friend.friend_profile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                      <Image cachePolicy="memory-disk" source={{ uri: friend.friend_profile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20 }} />
                     ) : (
                       <View style={[s.avatarPlaceholder, { width: 40, height: 40, backgroundColor: colors.primary }]}>
                         <Text style={[s.avatarInitials, { fontSize: 16 }]}>{friend.friend_profile?.name?.[0]}</Text>
@@ -729,7 +729,7 @@ const generateAIChallenge = async () => {
                 {selectedChallengeParticipants.map(p => (
                   <View key={p.id} style={{ flexDirection: 'row', alignItems: 'center', padding: 12, backgroundColor: colors.surfaceAlt, borderRadius: 12, marginBottom: 8 }}>
                     {p.user_profile?.avatar_url ? (
-                      <Image source={{ uri: p.user_profile.avatar_url }} style={{ width: 36, height: 36, borderRadius: 18 }} />
+                      <Image cachePolicy="memory-disk" source={{ uri: p.user_profile.avatar_url }} style={{ width: 36, height: 36, borderRadius: 18 }} />
                     ) : (
                       <View style={[s.avatarPlaceholder, { width: 36, height: 36, backgroundColor: colors.primary }]}>
                         <Text style={[s.avatarInitials, { fontSize: 14 }]}>{p.user_profile?.name?.[0]}</Text>

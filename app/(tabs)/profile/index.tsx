@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import {
   View, ScrollView, Alert, Linking,
   LayoutAnimation, useWindowDimensions, Share,
-  Text, TouchableOpacity
+  Text, TouchableOpacity, ActivityIndicator
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import * as ImagePicker from 'expo-image-picker';
@@ -40,7 +40,7 @@ import { GlobalBackground } from '../../../components/GlobalBackground';
 import { GoalWizardModal, ACTIVITY_TO_EXERCISE } from '../../../components/GoalWizardModal';
 
 import { ProfileHeader } from '../../../components/profile/ProfileHeader';
-import { WeightChart } from '../../../components/profile/WeightChart';
+const WeightChart = React.lazy(() => import('../../../components/profile/WeightChart').then(m => ({ default: m.WeightChart })));
 import { SettingsSection } from '../../../components/profile/SettingsSection';
 import { SettingsItem } from '../../../components/profile/SettingsItem';
 import { GoalsSection } from '../../../components/profile/GoalsSection';
@@ -512,7 +512,9 @@ export default function ProfileScreen() {
 
           <VitrinaTrofeos pinnedAchievements={profile?.pinnedAchievements} achievements={achievements} onEdit={() => router.push('/modals/achievements')} premiumColor={premiumColor || undefined} isPro={isPro || profile?.isPro || isAdminRole} />
 
-          <WeightChart profile={profile} measurements={measurements} massUnit={massUnit} language={language} isPremiumCustom={isPremiumCustom} safePremiumColor={safePremiumColor} SCREEN_WIDTH={SCREEN_WIDTH} onHistoryPress={() => router.push('/modals/body-measurements' as any)} onAddMeasurement={() => router.push('/modals/body-measurements' as any)} />
+          <React.Suspense fallback={<View style={{ height: 180, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator color={colors.primary} size="large" /></View>}>
+            <WeightChart profile={profile} measurements={measurements} massUnit={massUnit} language={language} isPremiumCustom={isPremiumCustom} safePremiumColor={safePremiumColor} SCREEN_WIDTH={SCREEN_WIDTH} onHistoryPress={() => router.push('/modals/body-measurements' as any)} onAddMeasurement={() => router.push('/modals/body-measurements' as any)} />
+          </React.Suspense>
 
           <SettingsSection title={t('profile.settings', 'Configuración')}>
             <GoalsSection onEditPress={() => setGoalModalVisible(true)} />

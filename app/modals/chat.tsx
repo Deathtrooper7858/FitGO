@@ -376,7 +376,7 @@ export default function ChatModal() {
           <View style={styles.headerInfo}>
             <TouchableOpacity onPress={() => friendAvatar ? setAvatarVisible(true) : null} activeOpacity={0.85}>
               {friendAvatar ? (
-                <Image source={{ uri: friendAvatar }} style={styles.avatar} />
+                <Image cachePolicy="memory-disk" source={{ uri: friendAvatar }} style={styles.avatar} />
               ) : (
                 <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}>
                   <Text style={styles.avatarInitials}>{friendName?.charAt(0) || '?'}</Text>
@@ -429,7 +429,7 @@ export default function ChatModal() {
                         onPress={() => setPreviewImage(msg.image_url!)}
                         activeOpacity={0.9}
                       >
-                        <Image source={{ uri: msg.image_url }} style={styles.chatImage} contentFit="cover" />
+                        <Image cachePolicy="memory-disk" source={{ uri: msg.image_url }} style={styles.chatImage} contentFit="cover" />
                         <Text style={[styles.messageTime, styles.imageTime]}>
                           {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </Text>
@@ -568,7 +568,7 @@ export default function ChatModal() {
               previewImage.toLowerCase().includes('.mp4') || previewImage.toLowerCase().includes('.mov') || previewImage.includes('video') ? (
                 <VideoPlayerView videoUrl={previewImage} style={{ width: 320, height: 380, borderRadius: 16 }} />
               ) : (
-                <Image source={{ uri: previewImage }} style={styles.previewImage} contentFit="contain" />
+                <Image cachePolicy="memory-disk" source={{ uri: previewImage }} style={styles.previewImage} contentFit="contain" />
               )
             )}
 

@@ -58,7 +58,7 @@ export default function SocialFriendsTab({
           <View key={user.id} style={[s.userRow, { borderBottomColor: colors.border + '33' }]}>
             <TouchableOpacity style={s.userInfo} onPress={() => onUserPress(user)}>
               {user.avatar_url ? (
-                <Image source={{ uri: user.avatar_url }} style={s.avatar} />
+                <Image cachePolicy="memory-disk" source={{ uri: user.avatar_url }} style={s.avatar} />
               ) : (
                 <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary }]}>
                   <Text style={s.avatarInitials}>{user.name?.[0]}</Text>
@@ -85,7 +85,7 @@ export default function SocialFriendsTab({
               <View style={s.userRow}>
                 <TouchableOpacity style={s.userInfo} onPress={() => onUserPress(req.friend_profile)}>
                   {req.friend_profile?.avatar_url ? (
-                    <Image source={{ uri: req.friend_profile.avatar_url }} style={s.avatarSmall} />
+                    <Image cachePolicy="memory-disk" source={{ uri: req.friend_profile.avatar_url }} style={s.avatarSmall} />
                   ) : (
                     <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
                       <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
@@ -117,7 +117,7 @@ export default function SocialFriendsTab({
               <View style={s.userRow}>
                 <TouchableOpacity style={s.userInfo} onPress={() => onUserPress(req.friend_profile)}>
                   {req.friend_profile?.avatar_url ? (
-                    <Image source={{ uri: req.friend_profile.avatar_url }} style={s.avatarSmall} />
+                    <Image cachePolicy="memory-disk" source={{ uri: req.friend_profile.avatar_url }} style={s.avatarSmall} />
                   ) : (
                     <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
                       <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
@@ -148,7 +148,7 @@ export default function SocialFriendsTab({
             <View style={s.userRow}>
               <TouchableOpacity style={s.userInfo} onPress={() => onUserPress(friend.friend_profile)}>
                 {friend.friend_profile?.avatar_url ? (
-                  <Image source={{ uri: friend.friend_profile.avatar_url }} style={s.avatarSmall} />
+                  <Image cachePolicy="memory-disk" source={{ uri: friend.friend_profile.avatar_url }} style={s.avatarSmall} />
                 ) : (
                   <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
                     <Text style={[s.avatarInitials, { fontSize: 14 }]}>{friend.friend_profile?.name?.[0]}</Text>

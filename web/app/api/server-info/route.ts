@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import * as Sentry from "@sentry/nextjs";
 
 export const revalidate = 60;
 
@@ -48,7 +48,7 @@ export async function GET() {
       },
     });
   } catch (err) {
-    console.error("[Server Info API]", err);
+    Sentry.captureException(err);
     return NextResponse.json({ status: "error", error: "Failed to fetch server info" }, { status: 500 });
   }
 }

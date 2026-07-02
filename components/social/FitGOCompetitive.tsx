@@ -173,7 +173,7 @@ function MemberRow({ member, rank, onRemove, isMe, onInspect, onMakeLeader, stre
       <Text style={[styles.rankText, { color: rankColor }]}>#{rank}</Text>
       <View style={[styles.avatarCircle, { backgroundColor: colors.primary + '30', overflow: 'hidden' }]}>
         {member.avatar_url ? (
-          <Image source={{ uri: member.avatar_url }} style={{ width: '100%', height: '100%' }} />
+          <Image cachePolicy="memory-disk" source={{ uri: member.avatar_url }} style={{ width: '100%', height: '100%' }} />
         ) : (
           <Text style={{ fontSize: 18, color: colors.textPrimary }}>{member.name?.[0]?.toUpperCase() ?? '?'}</Text>
         )}
@@ -274,7 +274,7 @@ function EmptySquad({ onCreate, onJoin }: { onCreate: () => void; onJoin: () => 
             return (
               <View key={inv.id} style={{ width: '100%', backgroundColor: colors.surfaceAlt, padding: 14, borderRadius: 16, marginBottom: 10, flexDirection: 'row', alignItems: 'center' }}>
                 {inv.sender?.avatar_url ? (
-                  <Image source={{ uri: inv.sender.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                  <Image cachePolicy="memory-disk" source={{ uri: inv.sender.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20 }} />
                 ) : (
                   <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primary + '30', alignItems: 'center', justifyContent: 'center' }}>
                     <Text style={{ color: colors.primary, fontWeight: 'bold' }}>{inv.sender?.name?.[0]?.toUpperCase()}</Text>
@@ -832,7 +832,7 @@ export default function FitGOCompetitive({
                             </Text>
                             <View style={{ position: 'relative' }}>
                               {user.avatar_url ? (
-                                <Image source={{ uri: user.avatar_url }} style={styles.rankAvatar} />
+                                <Image cachePolicy="memory-disk" source={{ uri: user.avatar_url }} style={styles.rankAvatar} />
                               ) : (
                                 <View style={[styles.rankAvatarPlaceholder, { backgroundColor: isMe ? colors.primary : colors.surfaceAlt }]}>
                                   <Text style={{ color: isMe ? '#fff' : colors.textSecondary, fontWeight: 'bold', fontSize: 14 }}>
@@ -1395,7 +1395,7 @@ export default function FitGOCompetitive({
                     return (
                       <View key={f.id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surfaceAlt, padding: 12, borderRadius: 16 }}>
                         {friendProfile.avatar_url ? (
-                          <Image source={{ uri: friendProfile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                          <Image cachePolicy="memory-disk" source={{ uri: friendProfile.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20 }} />
                         ) : (
                           <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primary + '30', alignItems: 'center', justifyContent: 'center' }}>
                             <Text style={{ color: colors.primary, fontWeight: 'bold' }}>{friendProfile.name?.[0]?.toUpperCase()}</Text>
@@ -1465,7 +1465,7 @@ export default function FitGOCompetitive({
                 <View style={{ marginTop: -55, marginBottom: 16 }}>
                   <View style={{ width: 110, height: 110, borderRadius: 55, borderWidth: 4, borderColor: userColor, padding: 3, backgroundColor: colors.surface, shadowColor: userColor, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 15, elevation: 10 }}>
                     {inspectingUser.avatar_url ? (
-                      <Image source={{ uri: inspectingUser.avatar_url }} style={{ width: '100%', height: '100%', borderRadius: 50 }} />
+                      <Image cachePolicy="memory-disk" source={{ uri: inspectingUser.avatar_url }} style={{ width: '100%', height: '100%', borderRadius: 50 }} />
                     ) : (
                       <View style={{ flex: 1, borderRadius: 50, backgroundColor: isMe ? colors.primary : colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' }}>
                         <Text style={{ color: isMe ? '#fff' : colors.textSecondary, fontWeight: 'bold', fontSize: 36 }}>

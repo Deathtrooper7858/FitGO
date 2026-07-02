@@ -6,6 +6,7 @@ import { NotificationTriggers } from '../utils/notificationTriggers';
 import { getLocalDateString } from '../utils/date';
 import i18n from '../i18n';
 import { useAuthStore } from './authStore';
+import { reportError } from '../utils/errorReporter';
 
 // AsyncStorage adapter — SecureStore has a hard 2KB/key limit on Android which
 // causes silent persist failures when leagueStore data grows (members list etc.)
@@ -293,7 +294,7 @@ export const useLeagueStore = create<LeagueStore>()(
       
       return data as Squad;
     } catch (err: any) {
-      console.error('[LeagueStore] Error creating squad:', err);
+      reportError(err, { module: 'LeagueStore', action: 'createSquad' });
       set({ error: err.message, loading: false });
       return null;
     }
@@ -385,7 +386,7 @@ export const useLeagueStore = create<LeagueStore>()(
             myPoints: freshStats?.league_points ?? get().myPoints,
             myStreak: freshStats?.current_streak ?? get().myStreak });
     } catch (err: any) {
-      console.error('[LeagueStore] Error leaving squad:', err);
+      reportError(err, { module: 'LeagueStore', action: 'leaveSquad' });
       set({ error: err.message });
     } finally {
       set({ loading: false });
@@ -418,7 +419,7 @@ export const useLeagueStore = create<LeagueStore>()(
       
       return true;
     } catch (err: any) {
-      console.error('[LeagueStore] Error removing member:', err);
+      reportError(err, { module: 'LeagueStore', action: 'removeMember', extra: { squadId, memberId } });
       set({ error: err.message, loading: false });
       return false;
     }
@@ -454,7 +455,7 @@ export const useLeagueStore = create<LeagueStore>()(
       set({ squad: null, members: [], mySquadPoints: 0, todayPointsEarned: 0, loading: false });
       return true;
     } catch (err: any) {
-      console.error('[LeagueStore] Error deleting squad:', err);
+      reportError(err, { module: 'LeagueStore', action: 'deleteSquad', extra: { squadId } });
       set({ error: err.message, loading: false });
       return false;
     }
@@ -473,7 +474,7 @@ export const useLeagueStore = create<LeagueStore>()(
       if (profile?.id) await get().fetchMySquad(profile.id);
       return true;
     } catch (err: any) {
-      console.error('[LeagueStore] Error transferring leadership:', err);
+      reportError(err, { module: 'LeagueStore', action: 'transferLeadership', extra: { squadId, newOwnerId } });
       set({ error: err.message, loading: false });
       return false;
     }

@@ -44,7 +44,7 @@ export function AvatarViewerModal({ visible, avatarUrl, name, onClose }: AvatarV
 
           {/* Avatar */}
           <View style={styles.avatarRing}>
-            <Image
+            <Image cachePolicy="memory-disk"
               source={{ uri: avatarUrl }}
               style={styles.avatar}
               contentFit="cover"

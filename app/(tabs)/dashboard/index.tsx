@@ -19,7 +19,7 @@ import { useBodyStore } from '../../../store/bodyStore';
 
 import { useTheme } from '../../../hooks/useTheme';
 import { supabase } from '../../../services/supabase';
-import { MuscleSymmetryCard } from '../../../components/MuscleSymmetryCard';
+const MuscleSymmetryCard = React.lazy(() => import('../../../components/MuscleSymmetryCard').then(m => ({ default: m.MuscleSymmetryCard })));
 import { getLocalDateString } from '../../../utils/date';
 import { GlobalBackground } from '../../../components/GlobalBackground';
 import { getNameStyle } from '../../../utils/styles';
@@ -489,7 +489,9 @@ export default function DashboardScreen() {
 
         {/* Muscle Symmetry Section */}
         <View style={{ paddingHorizontal: Spacing.lg }}>
-          <MuscleSymmetryCard />
+          <React.Suspense fallback={<View style={{ height: 350, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator color={colors.primary} size="large" /></View>}>
+            <MuscleSymmetryCard />
+          </React.Suspense>
         </View>
 
         {/* Statistics Grid */}

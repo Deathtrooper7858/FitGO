@@ -58,7 +58,7 @@ export default function SocialFeedTab({
       <GlassCard style={{ marginBottom: 20, padding: 12 }}>
         <View style={s.postInputRow}>
           {profile?.avatarUrl ? (
-            <Image source={{ uri: profile.avatarUrl }} style={s.avatarSmall} />
+            <Image cachePolicy="memory-disk" source={{ uri: profile.avatarUrl }} style={s.avatarSmall} />
           ) : (
             <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
               <Text style={[s.avatarInitials, { fontSize: 14 }]}>{profile?.name?.[0]}</Text>
@@ -75,7 +75,7 @@ export default function SocialFeedTab({
         </View>
         {selectedImage && (
           <View style={{ position: 'relative', marginBottom: 12 }}>
-            <Image source={{ uri: selectedImage }} style={s.imagePreview} />
+            <Image cachePolicy="memory-disk" source={{ uri: selectedImage }} style={s.imagePreview} />
             <TouchableOpacity style={s.removeImageBtn} onPress={onRemoveImage}>
               <X size={16} color="#fff" />
             </TouchableOpacity>

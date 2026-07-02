@@ -626,7 +626,7 @@ export default function FitGOSocial({
         <GlassCard style={{ marginBottom: 16, padding: 20 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
             {profile?.avatarUrl ? (
-              <Image source={{ uri: profile.avatarUrl }} style={{ width: 64, height: 64, borderRadius: 32 }} />
+              <Image cachePolicy="memory-disk" source={{ uri: profile.avatarUrl }} style={{ width: 64, height: 64, borderRadius: 32 }} />
             ) : (
               <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 64, height: 64, borderRadius: 32 }]}>
                 <Text style={[s.avatarInitials, { fontSize: 24 }]}>{profile?.name?.[0]}</Text>
@@ -798,7 +798,7 @@ export default function FitGOSocial({
                 <View style={s.postHeader}>
                   <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser({ ...post.user_profile, id: post.user_id })}>
                     {post.user_profile?.avatar_url ? (
-                      <Image source={{ uri: post.user_profile.avatar_url }} style={s.avatarSmall} />
+                      <Image cachePolicy="memory-disk" source={{ uri: post.user_profile.avatar_url }} style={s.avatarSmall} />
                     ) : (
                       <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
                         <Text style={[s.avatarInitials, { fontSize: 14 }]}>{post.user_profile?.name?.[0]}</Text>
@@ -821,7 +821,7 @@ export default function FitGOSocial({
                     <VideoPlayerView videoUrl={post.image_url} style={s.postImage} />
                   ) : (
                     <TouchableOpacity onPress={() => setViewingImage(post.image_url!)} activeOpacity={0.8}>
-                      <Image source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
+                      <Image cachePolicy="memory-disk" source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
                     </TouchableOpacity>
                   )
                 )}
@@ -855,7 +855,7 @@ export default function FitGOSocial({
     <GlassCard style={{ marginBottom: 20, padding: 12 }}>
       <View style={s.postInputRow}>
         {profile?.avatarUrl ? (
-          <Image source={{ uri: profile.avatarUrl }} style={s.avatarSmall} />
+          <Image cachePolicy="memory-disk" source={{ uri: profile.avatarUrl }} style={s.avatarSmall} />
         ) : (
           <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
             <Text style={[s.avatarInitials, { fontSize: 14 }]}>{profile?.name?.[0]}</Text>
@@ -873,7 +873,7 @@ export default function FitGOSocial({
       
       {selectedImage && (
         <View style={{ position: 'relative', marginBottom: 12 }}>
-          <Image source={{ uri: selectedImage }} style={s.imagePreview} />
+          <Image cachePolicy="memory-disk" source={{ uri: selectedImage }} style={s.imagePreview} />
           <TouchableOpacity 
             style={s.removeImageBtn} 
             onPress={() => setSelectedImage(null)}
@@ -1223,7 +1223,7 @@ export default function FitGOSocial({
               <View style={s.postHeader}>
                 <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser({ ...post.user_profile, id: post.user_id })}>
                   {post.user_profile?.avatar_url ? (
-                    <Image source={{ uri: post.user_profile.avatar_url }} style={s.avatarSmall} />
+                    <Image cachePolicy="memory-disk" source={{ uri: post.user_profile.avatar_url }} style={s.avatarSmall} />
                   ) : (
                     <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
                       <Text style={[s.avatarInitials, { fontSize: 14 }]}>{post.user_profile?.name?.[0]}</Text>
@@ -1248,7 +1248,7 @@ export default function FitGOSocial({
                   <VideoPlayerView videoUrl={post.image_url} style={s.postImage} />
                 ) : (
                   <TouchableOpacity onPress={() => setViewingImage(post.image_url!)} activeOpacity={0.8}>
-                    <Image source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
+                    <Image cachePolicy="memory-disk" source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
                   </TouchableOpacity>
                 )
               )}
@@ -1282,7 +1282,7 @@ export default function FitGOSocial({
                 {postComments[post.id]?.map(comment => (
                   <View key={comment.id} style={s.commentRow}>
                     {comment.user_profile?.avatar_url ? (
-                      <Image source={{ uri: comment.user_profile.avatar_url }} style={s.commentAvatar} />
+                      <Image cachePolicy="memory-disk" source={{ uri: comment.user_profile.avatar_url }} style={s.commentAvatar} />
                     ) : (
                       <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 24, height: 24 }]}>
                         <Text style={{ fontSize: 10, color: '#fff' }}>{comment.user_profile?.name?.[0]}</Text>
@@ -1428,7 +1428,7 @@ export default function FitGOSocial({
               <View key={user.id} style={[s.userRow, { borderBottomColor: colors.border + '33' }]}>
                 <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(user)}>
                   {user.avatar_url ? (
-                    <Image source={{ uri: user.avatar_url }} style={s.avatar} />
+                    <Image cachePolicy="memory-disk" source={{ uri: user.avatar_url }} style={s.avatar} />
                   ) : (
                     <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary }]}>
                       <Text style={s.avatarInitials}>{user.name?.[0]}</Text>
@@ -1463,7 +1463,7 @@ export default function FitGOSocial({
                     <View style={s.userRow}>
                       <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(req.friend_profile)}>
                         {req.friend_profile?.avatar_url ? (
-                          <Image source={{ uri: req.friend_profile.avatar_url }} style={s.avatarSmall} />
+                          <Image cachePolicy="memory-disk" source={{ uri: req.friend_profile.avatar_url }} style={s.avatarSmall} />
                         ) : (
                           <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
                             <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
@@ -1501,7 +1501,7 @@ export default function FitGOSocial({
                     <View style={s.userRow}>
                       <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(req.friend_profile)}>
                         {req.friend_profile?.avatar_url ? (
-                          <Image source={{ uri: req.friend_profile.avatar_url }} style={s.avatarSmall} />
+                          <Image cachePolicy="memory-disk" source={{ uri: req.friend_profile.avatar_url }} style={s.avatarSmall} />
                         ) : (
                           <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
                             <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
@@ -1534,7 +1534,7 @@ export default function FitGOSocial({
                   <View style={s.userRow}>
                     <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(friend.friend_profile)}>
                       {friend.friend_profile?.avatar_url ? (
-                        <Image source={{ uri: friend.friend_profile.avatar_url }} style={s.avatarSmall} />
+                        <Image cachePolicy="memory-disk" source={{ uri: friend.friend_profile.avatar_url }} style={s.avatarSmall} />
                       ) : (
                         <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
                           <Text style={[s.avatarInitials, { fontSize: 14 }]}>{friend.friend_profile?.name?.[0]}</Text>
@@ -1689,7 +1689,7 @@ export default function FitGOSocial({
                 }}
               >
                 {inspectingUser?.avatar_url ? (
-                  <Image source={{ uri: inspectingUser.avatar_url }} style={{ width: 84, height: 84, borderRadius: 42 }} />
+                  <Image cachePolicy="memory-disk" source={{ uri: inspectingUser.avatar_url }} style={{ width: 84, height: 84, borderRadius: 42 }} />
                 ) : (
                   <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 84, height: 84, borderRadius: 42 }]}>
                     <Text style={[s.avatarInitials, { fontSize: 32 }]}>{inspectingUser?.name?.[0]}</Text>

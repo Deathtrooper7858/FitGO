@@ -16,12 +16,23 @@ import { usePurchaseStore } from '../store/purchaseStore';
 import { useSocialStore } from '../store/socialStore';
 import { useAICreditsStore } from '../store/aiCreditsStore';
 import { usePlannerStore } from '../store/plannerStore';
+import { useNetworkStore } from '../store/networkStore';
+import { useSyncStore } from '../store/syncStore';
 
 import i18n from '../i18n';
 import { useTheme } from '../hooks/useTheme';
 import { useAdMob } from '../hooks/useAdMob';
 import { AppToast } from '../components/AppToast';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import * as Sentry from '@sentry/react-native';
+
+Sentry.init({
+  dsn: 'https://839443385437a525f24520ae8ed30e60@o4511663065661440.ingest.us.sentry.io/4511663106752512',
+  tracesSampleRate: 1.0,
+  _experiments: {
+    profilesSampleRate: 1.0,
+  },
+});
 
 if (__DEV__) {
   const originalWarn = console.warn;
@@ -112,7 +123,7 @@ function NavigationGuard() {
   return null;
 }
 
-export default function RootLayout() {
+function RootLayout() {
   const { setSession, setLoading, fetchProfile, clearAuth, isLoading } = useAuthStore();
   const { initialize: initPurchases, syncTrialState, checkAndRevokeExpiredTrial } = usePurchaseStore();
   const { language, theme, setPremiumColor } = useSettingsStore();
@@ -128,6 +139,22 @@ export default function RootLayout() {
       i18n.changeLanguage(language);
     }
   }, [language]);
+
+  useEffect(() => {
+    const unsubscribeNetwork = useNetworkStore.getState().initNetworkListener();
+    
+    // Suscribirse a cambios en el estado de la red para disparar la cola
+    const unsubscribeSync = useNetworkStore.subscribe((state, prevState) => {
+      if (state.isInternetReachable && !prevState.isInternetReachable) {
+        useSyncStore.getState().processQueue();
+      }
+    });
+
+    return () => {
+      unsubscribeNetwork();
+      unsubscribeSync();
+    };
+  }, []);
 
   const segments = useSegments();
 
@@ -261,7 +288,7 @@ export default function RootLayout() {
         <StatusBar style="light" backgroundColor="#0D0F14" />
         
         <Animated.View entering={FadeIn.duration(800).springify()} style={{ alignItems: 'center' }}>
-          <Image 
+          <Image cachePolicy="memory-disk" 
             source={require('../assets/icon.png')} 
             style={{ width: 120, height: 120, borderRadius: 24, marginBottom: 24 }} 
             contentFit="contain" 
@@ -416,3 +443,5 @@ const styles = StyleSheet.create({
 // - The NavigationGuard component ensures users are always on the correct flow based on their auth and onboarding status.
 // - The RootLayout initializes auth state from Supabase and listens for changes, updating the global store accordingly.
 // - Splash screen is shown until we determine the user's session and profile, preventing any flicker of the wrong screens.
+
+export default Sentry.wrap(RootLayout);
