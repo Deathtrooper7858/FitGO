@@ -10,6 +10,7 @@ import { Spacing, Radius, Shadow } from '../../constants';
 import { useAuthStore, useRecipesStore, Recipe, useSettingsStore } from '../../store';
 import { useAdStore } from '../../store/adStore';
 import { AdTimerOverlay } from '../../components/AdTimerOverlay';
+import { RewardedAdGate } from '../../components/RewardedAdGate';
 import { generateRecipes } from '../../services/groq';
 import { useTheme } from '../../hooks/useTheme';
 import { useIsPro } from '../../hooks/useIsPro';
@@ -20,10 +21,11 @@ export default function RecipesModal() {
   const { language } = useSettingsStore();
   const { profile } = useAuthStore();
   const { recipes, pinnedRecipes, setRecipes, togglePin } = useRecipesStore();
-  const { hasPremiumAdAccess } = useAdStore();
+  const { hasPremiumAdAccess, grantPremiumAdAccess } = useAdStore();
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'search' | 'pinned'>('search');
+  const [showAdGate, setShowAdGate] = useState(false);
   const isPro = useIsPro();
   const featureId = 'recipes';
   const hasAccess = isPro || hasPremiumAdAccess(featureId);
@@ -82,16 +84,46 @@ export default function RecipesModal() {
   if (!hasAccess) {
     return (
       <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
+        <LinearGradient
+          colors={[`${colors.primary}35`, colors.background]}
+          style={StyleSheet.absoluteFillObject}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 0.8 }}
+        />
         <View style={s.paywallContainer}>
-          <Text style={s.paywallEmoji}>🔒</Text>
+          <Text style={s.paywallEmoji}>🍳</Text>
           <Text style={[s.paywallTitle, { color: colors.textPrimary }]}>{t('recipes.proTitle')}</Text>
           <Text style={[s.paywallSub, { color: colors.textSecondary }]}>{t('recipes.proSub')}</Text>
+
+          {/* Ver ad para desbloquear temporalmente */}
+          <TouchableOpacity
+            style={[s.proBtn, { marginBottom: 12 }]}
+            onPress={() => setShowAdGate(true)}
+          >
+            <LinearGradient colors={['#10B981', '#059669']} style={s.proGrad}>
+              <Text style={s.proText}>▶ Ver video · Desbloquear gratis</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
           <TouchableOpacity style={s.proBtn} onPress={() => router.push('/modals/paywall')}>
             <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.proGrad}>
               <Text style={s.proText}>{t('recipes.unlockNow')}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
+
+        <RewardedAdGate
+          visible={showAdGate}
+          onClose={() => setShowAdGate(false)}
+          onRewarded={() => {
+            setShowAdGate(false);
+            grantPremiumAdAccess(featureId);
+          }}
+          emoji="🍳"
+          title="Recetas Premium"
+          subtitle="Ve un breve video y accede a recetas de IA personalizadas a tu objetivo"
+          watchLabel="▶ Ver video · Desbloquear recetas"
+        />
       </SafeAreaView>
     );
   }
@@ -130,6 +162,7 @@ export default function RecipesModal() {
             />
           )}
           keyExtractor={(item) => item.id}
+          // @ts-ignore - The property exists at runtime and is required by FlashList but types are failing
           estimatedItemSize={250}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 40 }}

@@ -16,6 +16,7 @@ import { waitForProgressHydration } from '../../store/progressStore';
 import { useAdStore } from '../../store/adStore';
 import { useIsPro } from '../../hooks/useIsPro';
 import { AdTimerOverlay } from '../../components/AdTimerOverlay';
+import { RewardedAdGate } from '../../components/RewardedAdGate';
 import { getLocalDateString } from '../../utils/date';
 
 const Accordion = ({ title, icon, color, defaultExpanded = false, children, colors }: any) => {
@@ -100,9 +101,10 @@ export default function ProgressEvaluationModal() {
   const [showHistory, setShowHistory] = useState(false);
 
   const isProActually = useIsPro();
-  const { hasPremiumAdAccess } = useAdStore();
+  const { hasPremiumAdAccess, grantPremiumAdAccess } = useAdStore();
   const featureId = 'evaluation';
   const hasAccess = isProActually || hasPremiumAdAccess(featureId);
+  const [showAdGate, setShowAdGate] = useState(false);
 
   if (!hasAccess) {
     return (
@@ -117,12 +119,36 @@ export default function ProgressEvaluationModal() {
           <Text style={s.paywallEmoji}>📸</Text>
           <Text style={[s.paywallTitle, { color: colors.textPrimary }]}>{t('evaluation.proTitle', 'Evaluación Física IA')}</Text>
           <Text style={[s.paywallSub, { color: colors.textSecondary }]}>{t('evaluation.proSub', 'Desbloquea el análisis detallado de tu progreso físico y porcentaje de grasa con FitGO Pro.')}</Text>
+
+          {/* Desbloquear con ad */}
+          <TouchableOpacity
+            style={[s.proBtn, { marginBottom: 12 }]}
+            onPress={() => setShowAdGate(true)}
+          >
+            <LinearGradient colors={['#10B981', '#059669']} style={s.proGrad}>
+              <Text style={s.proText}>▶ Ver video · Desbloquear análisis</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
           <TouchableOpacity style={s.proBtn} onPress={() => router.push('/modals/paywall')}>
             <LinearGradient colors={[colors.primary, colors.primary + 'C0']} style={s.proGrad}>
               <Text style={s.proText}>{t('recipes.unlockNow', 'Desbloquear Ahora')}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
+
+        <RewardedAdGate
+          visible={showAdGate}
+          onClose={() => setShowAdGate(false)}
+          onRewarded={() => {
+            setShowAdGate(false);
+            grantPremiumAdAccess(featureId);
+          }}
+          emoji="📸"
+          title="Análisis Físico IA"
+          subtitle="Ve un breve video y obtiene tu evaluación detallada de grasa, postura y simetría muscular"
+          watchLabel="▶ Ver video · Analizar mi cuerpo"
+        />
       </SafeAreaView>
     );
   }

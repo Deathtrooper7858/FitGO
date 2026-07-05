@@ -23,6 +23,8 @@ import { useSyncStore } from '../store/syncStore';
 import i18n from '../i18n';
 import { useTheme } from '../hooks/useTheme';
 import { useAdMob } from '../hooks/useAdMob';
+import { useInterstitialAd } from '../hooks/useInterstitialAd';
+import { useIsPro } from '../hooks/useIsPro';
 import { AppToast } from '../components/AppToast';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 
@@ -132,8 +134,11 @@ function RootLayout() {
   const { t } = useTranslation();
   const lastButtonStyleRef = useRef<string | null>(null);
   const lastColorRef = useRef<string | null>(null);
+  const isPro = useIsPro();
 
   useAdMob(); // Initialize AdMob
+  // Mostrar anuncios intersticiales periódicamente solo a usuarios Free
+  useInterstitialAd(!isPro);
 
   useEffect(() => {
     if (i18n.isInitialized) {
