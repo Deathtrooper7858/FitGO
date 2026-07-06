@@ -64,7 +64,7 @@ export default function Navbar() {
   ];
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full px-4 md:w-[90%] max-w-5xl transition-all duration-300">
+    <div suppressHydrationWarning className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full px-4 md:w-[90%] max-w-5xl transition-all duration-300">
       <nav
         className={`rounded-2xl transition-all duration-500 ${
           scrolled

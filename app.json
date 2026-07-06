@@ -83,6 +83,7 @@
         }
       ],
       "react-native-fast-tflite",
+      "react-native-purchases",
       "expo-image",
       [
         "react-native-google-mobile-ads",

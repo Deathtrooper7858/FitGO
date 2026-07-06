@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 import createNextIntlPlugin from "next-intl/plugin";
 import { withSentryConfig } from "@sentry/nextjs";
 
@@ -14,7 +15,7 @@ const nextConfig: NextConfig = {
     ],
   },
   turbopack: {
-    root: "..",
+    root: path.resolve(__dirname, ".."),
   },
   async headers() {
     return [
@@ -49,7 +50,7 @@ export default withSentryConfig(withNextIntl(nextConfig), {
   silent: !process.env.CI,
   widenClientFileUpload: true,
   tunnelRoute: "/monitoring",
-  hideSourceMaps: true,
-  disableLogger: true,
-  automaticVercelMonitors: true,
+  sourcemaps: {
+    disable: true,
+  },
 });
