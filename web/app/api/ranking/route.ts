@@ -2,6 +2,17 @@ import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import * as Sentry from "@sentry/nextjs";
 
+interface UserRow {
+  id: string;
+  name: string | null;
+  avatar_url: string | null;
+  name_color: string | null;
+  is_pro: boolean | null;
+  league_points: number | null;
+  current_streak: number | null;
+  role: string | null;
+}
+
 export const revalidate = 30;
 
 export async function GET() {
@@ -26,8 +37,8 @@ export async function GET() {
 
     if (error) throw error;
 
-    const mapped = (data || []).map((u: any) => {
-      const hasPremiumAccess = u.is_pro || ["owner", "admin", "super_admin"].includes(u.role);
+    const mapped = (data as UserRow[] || []).map((u) => {
+      const hasPremiumAccess = u.is_pro || ["owner", "admin", "super_admin"].includes(u.role ?? "");
       let validNameColor = u.name_color;
 
       if (!hasPremiumAccess && validNameColor && ["#EAB308", "#FFD700", "#F59E0B"].includes(validNameColor.toUpperCase())) {
