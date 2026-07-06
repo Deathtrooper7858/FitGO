@@ -13,6 +13,8 @@ import { useTheme } from '../../hooks/useTheme';
 import { convertEnergy } from '../../utils/units';
 import { parseVoiceLog } from '../../services/groq';
 import { CustomAlert, AlertType } from '../../components/CustomAlert';
+import { useIsPro } from '../../hooks/useIsPro';
+import { tryShowInterstitialAd } from '../../hooks/useInterstitialAd';
 
 const MEALS = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 type Meal = typeof MEALS[number];
@@ -59,6 +61,7 @@ export default function FoodDetailModal() {
   const [meal, setMeal]         = useState<Meal>(initialMeal || getAutoMeal());
   const [isSaving, setIsSaving] = useState(false);
   const isSavingRef             = useRef(false);
+  const isPro = useIsPro();
   const [logTime, setLogTime]   = useState<Date>(new Date());
   const [showTimePicker, setShowTimePicker] = useState(false);
   const { energyUnit }          = useSettingsStore();
@@ -205,6 +208,8 @@ export default function FoodDetailModal() {
       setIsSaving(false);
     }
     if (saveSucceeded) {
+      // Mostrar intersticial para usuarios Free en momentos naturales (con cooldown)
+      if (!isPro) tryShowInterstitialAd();
       if (router.canGoBack()) router.back();
       else router.replace('/(tabs)/tracker');
     }

@@ -21,10 +21,10 @@ import { TestIds } from 'react-native-google-mobile-ads';
 // ══════════════════════════════════════════════════════════════
 const PROD_IDS = {
   /** ID del anuncio a pantalla completa (Interstitial) */
-  interstitial: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+  interstitial: 'ca-app-pub-6675982933894700/4679709085',
 
   /** ID del video de recompensa (Rewarded) — para recargar créditos IA */
-  rewarded: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+  rewarded: 'ca-app-pub-6675982933894700/5399939989',
 };
 
 // ══════════════════════════════════════════════════════════════

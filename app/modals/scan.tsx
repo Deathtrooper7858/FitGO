@@ -16,7 +16,9 @@ import { SuccessModal } from '../../components/SuccessModal';
 import { getLocalDateString } from '../../utils/date';
 import { CustomAlert, AlertType } from '../../components/CustomAlert';
 import { AIEnergyGate, useAIEnergy, AIEnergyMode } from '../../components/AIEnergyGate';
+
 import { useAdStore, MAX_AI_PHOTO_ENERGY, MAX_AI_TEXT_ENERGY } from '../../store/adStore';
+import { tryShowInterstitialAd } from '../../hooks/useInterstitialAd';
 
 
 const BarcodeScanner = React.lazy(() => import('../../components/scan/BarcodeScanner'));
@@ -637,7 +639,12 @@ export default function ScanModal() {
         visible={showSuccess}
         title={t('common.success')}
         message={`${editedFoods.length} ${t('scan.itemsAdded')} ${t(`tracker.${initialMeal || getAutoMeal()}`)}.`}
-        onClose={() => { setShowSuccess(false); router.back(); }}
+        onClose={() => {
+          setShowSuccess(false);
+          // Intersticial al cerrar el modal de éxito — momento natural
+          if (!isProActually) tryShowInterstitialAd();
+          router.back();
+        }}
       />
       <AIEnergyGate
         visible={gateVisible}

@@ -3,7 +3,7 @@
     "name": "FitGO",
     "slug": "fitgo",
     "owner": "deathtrooper",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -31,7 +31,7 @@
     },
     "android": {
       "package": "com.fitgo.app",
-      "versionCode": 11,
+      "versionCode": 15,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0D0F14"
@@ -88,7 +88,7 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "androidAppId": "ca-app-pub-6675982933894700~4114813863",
           "iosAppId": "ca-app-pub-3940256099942544~1458002511"
         }
       ],
@@ -150,7 +150,7 @@
     }
   },
   "react-native-google-mobile-ads": {
-    "android_app_id": "ca-app-pub-3940256099942544~3347511713",
+    "android_app_id": "ca-app-pub-6675982933894700~4114813863",
     "ios_app_id": "ca-app-pub-3940256099942544~1458002511"
   }
 }
