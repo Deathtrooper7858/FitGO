@@ -83,7 +83,6 @@
         }
       ],
       "react-native-fast-tflite",
-      "react-native-purchases",
       "expo-image",
       [
         "react-native-google-mobile-ads",
@@ -148,9 +147,5 @@
     "runtimeVersion": {
       "policy": "appVersion"
     }
-  },
-  "react-native-google-mobile-ads": {
-    "android_app_id": "ca-app-pub-6675982933894700~4114813863",
-    "ios_app_id": "ca-app-pub-3940256099942544~1458002511"
   }
 }
