@@ -14,10 +14,14 @@ config.maxWorkers = Math.min(2, Math.max(1, Math.floor(cpuCount / 2)));
 
 // Prevenir caídas del vigilante de archivos (ENOENT / EMFILE) en Windows
 // Bloquear carpetas innecesarias para reducir la cantidad de archivos observados
+// IMPORTANTE: No bloquear carpetas 'android'/'ios' dentro de node_modules
+// (p.ej. expo-symbols/build/android/index.js lo necesita Metro)
+const projectRoot = __dirname.replace(/\\/g, '/');
 config.resolver.blockList = [
   ...Array.from(config.resolver.blockList || []),
-  /.*[\/\\](android|ios)[\/\\].*/,
-  /.*[\/\\]\.git[\/\\].*/,
+  // Solo bloquea android/ e ios/ en la raíz del proyecto, no en node_modules
+  new RegExp(`^${projectRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\/\\\\](android|ios)[\\/\\\\]`),
+  /.*[\\/\\\\]\.git[\\/\\\\].*/,
 ];
 
 config.resolver.assetExts.push('tflite');
