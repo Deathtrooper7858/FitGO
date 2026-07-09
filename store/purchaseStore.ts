@@ -2,8 +2,8 @@ import { create } from 'zustand';
 import { Platform } from 'react-native';
 import Purchases, { CustomerInfo, PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
 import { supabase } from '../services/supabase';
-import { useAuthStore } from './authStore';
 import { reportError, reportEvent } from '../utils/errorReporter';
+import { useAuthStore } from './authStore';
 
 interface PurchaseState {
   isPro: boolean;
@@ -155,7 +155,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   },
 
   fetchOfferings: async () => {
-    if (Platform.OS === 'web') return;
+    if (Platform.OS === 'web' || !isConfigured) return;
 
     try {
       set({ isLoading: true });
@@ -165,14 +165,19 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       } else {
         set({ offering: null, isLoading: false });
       }
-    } catch (err) {
-      reportError(err, { module: 'PurchaseStore', action: 'fetchOfferings' });
+    } catch (err: any) {
+      // Ignore ConfigurationError which happens when there are no products in RevenueCat yet
+      if (err?.code === 'ConfigurationError' || err?.message?.includes('ConfigurationError')) {
+        console.log('[PurchaseStore] RevenueCat offerings not configured yet. Skipping...');
+      } else {
+        reportError(err, { module: 'PurchaseStore', action: 'fetchOfferings' });
+      }
       set({ isLoading: false });
     }
   },
 
   refreshStatus: async () => {
-    if (Platform.OS === 'web') return;
+    if (Platform.OS === 'web' || !isConfigured) return;
 
     try {
       const info = await Purchases.getCustomerInfo();
@@ -183,7 +188,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   },
 
   purchasePackage: async (pkg: PurchasesPackage) => {
-    if (Platform.OS === 'web') return;
+    if (Platform.OS === 'web' || !isConfigured) return;
 
     try {
       set({ isLoading: true });
@@ -212,7 +217,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   },
 
   restorePurchases: async () => {
-    if (Platform.OS === 'web') return;
+    if (Platform.OS === 'web' || !isConfigured) return;
 
     try {
       set({ isLoading: true });
@@ -312,7 +317,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     }
 
     // Check with RevenueCat first if on mobile device
-    if (Platform.OS !== 'web') {
+    if (Platform.OS !== 'web' && isConfigured) {
       try {
         const info = await Purchases.getCustomerInfo();
         const isProActive = typeof info.entitlements.active['pro'] !== 'undefined';
