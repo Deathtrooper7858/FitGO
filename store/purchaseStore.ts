@@ -195,14 +195,16 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       const { customerInfo } = await Purchases.purchasePackage(pkg);
       get().updateCustomerInfo(customerInfo);
       
-      // Force grantPro in test environment or if entitlement synchronization fails in sandbox
+      // Force grantPro in test environment ONLY with test API keys (NOT __DEV__ to prevent abuse)
       const isProActive = typeof customerInfo.entitlements.active['pro'] !== 'undefined';
       const apiKey = Platform.OS === 'ios'
         ? process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_IOS
         : process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID;
       
-      if (!isProActive && (apiKey?.startsWith('test_') || __DEV__)) {
-        console.log('Test environment detected. Explicitly granting Pro status...');
+      // ONLY grant Pro in sandbox/test environments (test_ prefix), NEVER based on __DEV__
+      // __DEV__ can be true in development builds distributed to testers, which would be abuse
+      if (!isProActive && apiKey?.startsWith('test_')) {
+        console.log('[PurchaseStore] Test environment detected. Explicitly granting Pro status...');
         await get().grantPro();
       }
       

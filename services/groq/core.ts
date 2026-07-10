@@ -91,10 +91,6 @@ async function fetchGroq(payload: any, retries = 2): Promise<any> {
 
       if (!error.response && (error.code === 'ERR_NETWORK' || error.message === 'Network Error' || error.message?.includes('network'))) {
         throw new Error(i18n.t('groq.noInternet'));
-      } else if (errorMsg.includes('tokens per day')) {
-        let waitTimeMs = 999999;
-      } else if (error.response?.status >= 500 || errorMsg.includes('Internal server error')) {
-        let waitTimeMs = 999999; // Force fallback immediately for 500s
       }
 
       if (errorMsg.includes('does not support image input')) {
