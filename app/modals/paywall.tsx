@@ -58,19 +58,24 @@ export default function PaywallModal() {
     try {
       if (monthlyPackage) {
         await purchasePackage(monthlyPackage);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        useToastStore.getState().addNotification({
+          title: t('paywall.successTitle', '¡Suscripción Activa!'),
+          description: t('paywall.successDesc', '¡Bienvenido a FitGO Pro! Ya tienes acceso ilimitado.'),
+          iconType: 'emoji',
+          icon: '👑',
+          tier: 'success',
+        });
+        router.back();
       } else {
-        // Fallback for testing / admin bypass
-        await grantPro();
+        useToastStore.getState().addNotification({
+          title: t('common.error', 'Error'),
+          description: t('paywall.noPackagesError', 'No se pudieron cargar los paquetes de suscripción.'),
+          tier: 'danger',
+          iconType: 'emoji',
+          icon: '⚠️'
+        });
       }
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      useToastStore.getState().addNotification({
-        title: t('paywall.successTitle', '¡Suscripción Activa!'),
-        description: t('paywall.successDesc', '¡Bienvenido a FitGO Pro! Ya tienes acceso ilimitado.'),
-        iconType: 'emoji',
-        icon: '👑',
-        tier: 'success',
-      });
-      router.back();
     } catch (err) {
       console.warn('Purchase failed or was cancelled', err);
     }
