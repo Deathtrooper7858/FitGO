@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Camera, Plus } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
@@ -35,7 +36,7 @@ export function ProfileHeader({
           style={styles.avatar}
         >
           {profile?.avatarUrl ? (
-            <Image source={{ uri: profile.avatarUrl }} style={styles.avatarImage} />
+            <Image cachePolicy="memory-disk" source={{ uri: profile.avatarUrl }} style={styles.avatarImage} />
           ) : (
             <Text style={styles.avatarText}>{profile?.name?.[0]?.toUpperCase() ?? '?'}</Text>
           )}
