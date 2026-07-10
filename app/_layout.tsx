@@ -450,4 +450,4 @@ const styles = StyleSheet.create({
 // - The RootLayout initializes auth state from Supabase and listens for changes, updating the global store accordingly.
 // - Splash screen is shown until we determine the user's session and profile, preventing any flicker of the wrong screens.
 
-export default RootLayout;
+export default Sentry.wrap(RootLayout);

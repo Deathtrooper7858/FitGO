@@ -437,44 +437,32 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     const profile = useAuthStore.getState().profile;
     if (!profile?.id) throw new Error('Not authenticated');
 
-    // Prevent double usage — check DB
-    const { data: existing } = await supabase
-      .from('users')
-      .select('trial_used_at')
-      .eq('id', profile.id)
-      .single();
-
-    if (existing?.trial_used_at) {
-      throw new Error('TRIAL_ALREADY_USED');
-    }
-
     try {
       set({ isLoading: true });
+      
+      // Llamar al RPC para que el backend asigne las fechas seguras
+      const { error } = await supabase.rpc('start_free_trial');
+      if (error) throw error;
+
       const now = new Date();
-      const expiresAt = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000); // +3 days
+      const expiresAt = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
 
-      // Set trial timestamps in DB
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({
-          trial_used_at: now.toISOString(),
-          trial_expires_at: expiresAt.toISOString(),
-        })
-        .eq('id', profile.id);
-
-      if (updateError) throw updateError;
-
-      // Grant pro access temporarily
-      await get().grantPro();
-
+      // Sincronizamos el estado local (asumiendo que el server hizo exactamente lo mismo)
       set({
         trialUsedAt: now.toISOString(),
         trialExpiresAt: expiresAt.toISOString(),
         isTrialActive: true,
         isLoading: false,
       });
-    } catch (err) {
+      
+      // Refrescar el perfil completo para sincronizar
+      await useAuthStore.getState().fetchProfile(profile.id);
+
+    } catch (err: any) {
       set({ isLoading: false });
+      if (err?.message?.includes('TRIAL_ALREADY_USED')) {
+        throw new Error('TRIAL_ALREADY_USED');
+      }
       throw err;
     }
   },
