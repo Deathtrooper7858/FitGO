@@ -186,7 +186,6 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({
           error: "Failed to parse request body",
-          details: e instanceof Error ? e.message : String(e),
         }),
         { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
@@ -309,8 +308,7 @@ Deno.serve(async (req) => {
     console.error("[Groq Proxy] Internal Error:", error);
     return new Response(
       JSON.stringify({
-        error: "Internal server error: " + (error instanceof Error ? error.message : String(error)),
-        details: error instanceof Error ? error.message : String(error),
+        error: "Internal server error",
       }),
       { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );

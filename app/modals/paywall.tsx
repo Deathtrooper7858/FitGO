@@ -71,7 +71,7 @@ export default function PaywallModal() {
         useToastStore.getState().addNotification({
           title: t('common.error', 'Error'),
           description: t('paywall.noPackagesError', 'No se pudieron cargar los paquetes de suscripción.'),
-          tier: 'danger',
+          tier: 'warning',
           iconType: 'emoji',
           icon: '⚠️'
         });

@@ -127,7 +127,6 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({
           error: "Invalid request body",
-          details: e instanceof Error ? e.message : String(e),
         }),
         { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
@@ -195,7 +194,6 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         error: "Internal server error",
-        details: error instanceof Error ? error.message : String(error),
       }),
       { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );

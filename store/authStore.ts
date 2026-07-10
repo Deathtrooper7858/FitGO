@@ -1,8 +1,7 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '../services/supabase';
+import { SecureStorage } from '../utils/storage';
 import { useSettingsStore } from './settingsStore';
 import { UserProfile } from './types';
 
@@ -17,17 +16,65 @@ interface AuthState {
   fetchProfile: (userId: string) => Promise<void>;
 }
 
+// Sensitive health fields that MUST be stored in SecureStore, not AsyncStorage
+const HEALTH_FIELDS = [
+  'dietaryRestrictions', 'medicalConditions', 'medicationsSupplements',
+  'sex', 'age', 'weight', 'height',
+] as const;
+
+function extractHealthData(profile: UserProfile): Record<string, any> {
+  const health: Record<string, any> = {};
+  for (const field of HEALTH_FIELDS) {
+    if (profile[field] !== undefined) {
+      health[field] = profile[field];
+    }
+  }
+  return health;
+}
+
+function mergeHealthData(profile: UserProfile, healthData: Record<string, any>): UserProfile {
+  return { ...profile, ...healthData };
+}
+
+async function persistProfile(profile: UserProfile | null): Promise<void> {
+  if (!profile) {
+    await SecureStorage.removeItem('ff-health-profile');
+    return;
+  }
+  // Store sensitive health data in SecureStore
+  const healthData = extractHealthData(profile);
+  await SecureStorage.setItem('ff-health-profile', JSON.stringify(healthData));
+}
+
+async function loadHealthData(): Promise<Record<string, any>> {
+  try {
+    const raw = await SecureStorage.getItem('ff-health-profile');
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
 export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
+  (set) => ({
       session:    null,
       profile:    null,
       isLoading:  true,
       setSession: (session) => set({ session }),
-      setProfile: (profile) => set({ profile }),
+      setProfile: async (profile) => {
+        set({ profile });
+        // Persist health data to SecureStore whenever profile changes
+        await persistProfile(profile);
+      },
       setLoading: (isLoading) => set({ isLoading }),
-      clearAuth:  () => set({ session: null, profile: null, isLoading: false }),
+      clearAuth:  async () => {
+        await SecureStorage.removeItem('ff-health-profile');
+        set({ session: null, profile: null, isLoading: false });
+      },
       fetchProfile: async (userId: string) => {
+        // Load cached health data from SecureStore first (for offline support)
+        const cachedHealth = await loadHealthData();
+        
         let retries = 3;
         while (retries > 0) {
           try {
@@ -41,13 +88,11 @@ export const useAuthStore = create<AuthState>()(
               const fetchedNameColor = (data.is_pro && !data.name_color) ? '#EAB308' : data.name_color;
               const fetchedPremiumColor = data.premium_color || null;
               
-              // Sincronizar con el store de configuraciones local
               if (fetchedPremiumColor) {
                 useSettingsStore.getState().setPremiumColor(fetchedPremiumColor);
               }
               
-              set({
-                profile: {
+              const freshProfile: UserProfile = {
                   id:             data.id,
                   email:          data.email,
                   name:           data.name,
@@ -75,29 +120,33 @@ export const useAuthStore = create<AuthState>()(
                   lifestyle:      data.lifestyle,
                   extraSnacks:    data.extra_snacks,
                   widgetsOrder:   data.widgets_order,
-                  // ── Settings & Auth ──────────────────────────────────────
                   expoPushToken:          data.expo_push_token,
                   notificationPreferences: data.notification_preferences,
-                  // ── Health Profile ────────────────────────────────────────
                   dietaryRestrictions:    data.dietary_restrictions    ?? [],
                   medicalConditions:      data.medical_conditions      ?? [],
                   medicationsSupplements: data.medications_supplements ?? [],
-                  // ── Diet type (onboarding selection) ─────────────────────
                   dietType:       data.diet_type       ?? 'recommended',
-                  // ── Gamification ─────────────────────────────────────────
                   badges:         data.badges          ?? [],
                   selectedBadge:  data.selected_badge  ?? null,
                   unlockedAchievements: data.unlocked_achievements ?? [],
                   pinnedAchievements: data.pinned_achievements ?? [],
                   achievementPoints:  data.achievement_points ?? 0,
-                }
-              });
-              return; // Success, exit retry loop
+              };
+              
+              // Persist health data to SecureStore
+              await persistProfile(freshProfile);
+              set({ profile: freshProfile });
+              return;
             } else {
               if (error?.code === 'PGRST116') {
-                // Row not found yet, likely due to DB trigger delay. Retry.
                 retries -= 1;
-                if (retries === 0) set({ profile: null });
+                if (retries === 0) {
+                  // Use cached health data even if profile fetch fails
+                  const profileWithCache = Object.keys(cachedHealth).length > 0
+                    ? mergeHealthData({} as UserProfile, cachedHealth)
+                    : null;
+                  set({ profile: profileWithCache });
+                }
                 else await new Promise(resolve => setTimeout(resolve, 500));
               } else {
                 set({ profile: null });
@@ -108,18 +157,23 @@ export const useAuthStore = create<AuthState>()(
             console.warn(`[AuthStore] Profile fetch error, retries left: ${retries - 1}`, err);
             retries -= 1;
             if (retries === 0) {
-              // Do NOT set profile to null here. Retain the cached profile for offline support.
+              // Retain cached health data for offline support
+              if (Object.keys(cachedHealth).length > 0) {
+                const currentProfile = get().profile;
+                if (currentProfile) {
+                  set({ profile: mergeHealthData(currentProfile, cachedHealth) });
+                }
+              }
             } else {
               await new Promise(resolve => setTimeout(resolve, 500));
             }
           }
         }
       }
-    }),
-    {
-      name: 'ff-auth-v2',
-      storage: createJSONStorage(() => AsyncStorage),
-      partialize: (s) => ({ profile: s.profile }), // only persist profile, not session
-    }
-  )
+    })
 );
+
+// Helper to access state outside of React hooks
+function get() {
+  return useAuthStore.getState();
+}

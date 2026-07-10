@@ -3,6 +3,7 @@ module.exports = ({ config }) => {
     return {
       ...config,
       name: 'FitGO (Dev)',
+      scheme: 'fitgo-dev',
       ios: {
         ...config.ios,
         bundleIdentifier: 'com.fitgo.app.dev',

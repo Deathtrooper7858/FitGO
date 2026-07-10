@@ -13,7 +13,28 @@ async function uploadToSocialStorage(
   mimeType: string,
 ): Promise<string | null> {
   try {
-    const extension = mimeType.split('/')[1] || 'jpg';
+    // Validate MIME type to prevent malicious file uploads
+    const ALLOWED_MIME_TYPES = [
+      'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+      'video/mp4', 'video/quicktime',
+      'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/m4a', 'audio/x-m4a',
+    ];
+    
+    const normalizedMime = mimeType.toLowerCase().split(';')[0].trim();
+    if (!ALLOWED_MIME_TYPES.includes(normalizedMime)) {
+      console.warn(`[SocialStore] Rejected upload with disallowed MIME type: ${normalizedMime}`);
+      return null;
+    }
+    
+    // Map MIME to safe extension
+    const mimeToExt: Record<string, string> = {
+      'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif',
+      'video/mp4': 'mp4', 'video/quicktime': 'mov',
+      'audio/mpeg': 'mp3', 'audio/mp3': 'mp3', 'audio/wav': 'wav',
+      'audio/m4a': 'm4a', 'audio/x-m4a': 'm4a',
+    };
+    const extension = mimeToExt[normalizedMime] || 'jpg';
+    
     const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${extension}`;
     const filePath = `${folder}/${fileName}`;
 

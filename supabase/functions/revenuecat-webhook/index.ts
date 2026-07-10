@@ -1,33 +1,88 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.0";
+import { crypto } from "https://deno.land/std@0.208.0/crypto/mod.ts";
+
+const ALLOWED_ORIGINS = new Set([
+  "https://www.fitgo.app",
+  "https://fitgo.app",
+]);
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get("origin") || "";
+  const allowed = ALLOWED_ORIGINS.has(origin) ? origin : "https://www.fitgo.app";
+  return {
+    "Access-Control-Allow-Origin": allowed,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  };
+}
+
+/**
+ * Verify RevenueCat webhook signature using HMAC-SHA256.
+ * RevenueCat signs payloads with the webhook secret and sends the signature
+ * in the X-RevenueCat-Signature header.
+ */
+async function verifyWebhookSignature(
+  body: string,
+  signatureHeader: string | null,
+  secret: string
+): Promise<boolean> {
+  if (!signatureHeader) return false;
+  
+  try {
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(body));
+    const expectedSignature = Array.from(new Uint8Array(signature))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+    
+    // RevenueCat may send multiple signatures separated by spaces
+    const signatures = signatureHeader.split(" ");
+    return signatures.some((sig) => sig === expectedSignature);
+  } catch {
+    return false;
+  }
+}
 
 Deno.serve(async (req) => {
   // CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response("ok", {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-      },
-    });
+    return new Response("ok", { headers: getCorsHeaders(req) });
   }
 
   try {
-    // 1. Verify Authorization header for RevenueCat secret
-    const authHeader = req.headers.get("Authorization");
+    // 1. Verify webhook signature (HMAC-SHA256) — FAIL CLOSED if secret not set
     const webhookSecret = Deno.env.get("REVENUECAT_WEBHOOK_SECRET");
     
-    if (webhookSecret && authHeader !== `Bearer ${webhookSecret}`) {
-      console.warn("[RevenueCat Webhook] Unauthorized attempt with header:", authHeader);
+    if (!webhookSecret) {
+      console.error("[RevenueCat Webhook] REVENUECAT_WEBHOOK_SECRET not configured. Rejecting all requests.");
+      return new Response(JSON.stringify({ error: "Server configuration error" }), {
+        status: 500,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+      });
+    }
+
+    // Read raw body for signature verification
+    const rawBody = await req.text();
+    const signatureHeader = req.headers.get("X-RevenueCat-Signature");
+    
+    const isValid = await verifyWebhookSignature(rawBody, signatureHeader, webhookSecret);
+    if (!isValid) {
+      console.warn("[RevenueCat Webhook] Invalid or missing webhook signature.");
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     // 2. Parse request body
-    const body = await req.json();
-    console.log("[RevenueCat Webhook] Received payload:", JSON.stringify(body));
+    const body = JSON.parse(rawBody);
+    console.log("[RevenueCat Webhook] Received event type:", body.event?.type);
 
     const event = body.event;
     if (!event) {
@@ -153,10 +208,10 @@ Deno.serve(async (req) => {
         .eq("id", appUserId);
 
       if (error) {
-        console.error(`[RevenueCat Webhook] Error updating user table in database:`, error);
-        return new Response(JSON.stringify({ error: "Database update error", details: error }), {
+        console.error(`[RevenueCat Webhook] Error updating user table in database:`, error.message);
+        return new Response(JSON.stringify({ error: "Database update error" }), {
           status: 500,
-          headers: { "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -173,9 +228,8 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         error: "Internal server error",
-        details: error instanceof Error ? error.message : String(error),
       }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });
