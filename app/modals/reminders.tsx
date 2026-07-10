@@ -19,10 +19,7 @@ import { GlassCard } from '../../components/GlassCard';
 import { GlobalBackground } from '../../components/GlobalBackground';
 import { scheduleReminder, cancelReminder, requestNotificationPermissions } from '../../services/notifications';
 
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-
+// LayoutAnimation config has been removed to favor React Native Reanimated
 // ─── Category config ────────────────────────────────────────────────────────
 type ReminderCategory = 'meal' | 'water' | 'workout' | 'general' | 'social';
 
