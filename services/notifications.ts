@@ -3,6 +3,7 @@ import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import { Reminder } from '../store/types';
 import i18n from '../i18n';
+import { EXPO_PUSH_URL } from '../constants/urls';
 
 // We use lazy loading for expo-notifications to avoid the "remote notifications removed" error
 // that crashes Expo Go on Android even when only using local notifications.
@@ -351,7 +352,7 @@ export async function sendRemotePushNotification(expoPushToken: string, title: s
   };
 
   try {
-    await fetch('https://exp.host/--/api/v2/push/send', {
+    await fetch(EXPO_PUSH_URL, {
       method: 'POST',
       headers: {
         Accept: 'application/json',

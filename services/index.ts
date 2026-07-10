@@ -1,3 +1,3 @@
 export { supabase } from './supabase';
-export * from './groq';
+export * from './groq/index';
 export * from './foodDatabase';

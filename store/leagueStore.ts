@@ -5,8 +5,8 @@ import { supabase } from '../services/supabase';
 import { NotificationTriggers } from '../utils/notificationTriggers';
 import { getLocalDateString } from '../utils/date';
 import i18n from '../i18n';
-import { useAuthStore } from './authStore';
 import { reportError } from '../utils/errorReporter';
+import { useAuthStore } from './authStore';
 
 // AsyncStorage adapter — SecureStore has a hard 2KB/key limit on Android which
 // causes silent persist failures when leagueStore data grows (members list etc.)
@@ -260,31 +260,14 @@ export const useLeagueStore = create<LeagueStore>()(
   createSquad: async (name: string, userId: string) => {
     set({ loading: true, error: null });
     try {
-      const { data, error } = await supabase
-        .from('squads')
-        .insert({ name, created_by: userId })
-        .select()
-        .single();
+      // Use atomic RPC — creates squad + adds creator in a single transaction
+      const { data, error } = await supabase.rpc('create_squad_atomic', {
+        p_name: name,
+        p_user_id: userId,
+      });
 
       if (error) throw error;
-
-      // Auto-join the creator
-      const { error: joinErr } = await supabase
-        .from('squad_members')
-        .insert({ squad_id: data.id, user_id: userId });
-        
-      if (joinErr) throw joinErr;
-
-      // Add squad creator achievement WITHOUT resetting points
-      const { profile } = useAuthStore.getState();
-      const currentAchievements = profile?.unlockedAchievements || [];
-      const newAchievements = currentAchievements.includes('squad_creator') 
-        ? currentAchievements 
-        : [...currentAchievements, 'squad_creator'];
-
-      await supabase.from('users').update({ 
-        unlocked_achievements: newAchievements
-      }).eq('id', userId);
+      if (!data) throw new Error('Failed to create squad');
 
       // Reset only squad contribution points, not total league_points
       set({ mySquadPoints: 0, todayPointsEarned: 0 });
@@ -440,12 +423,14 @@ export const useLeagueStore = create<LeagueStore>()(
       // Reset only squad contribution points for all members, NOT league_points
       if (members.length > 0) {
         const memberIds = members.map(m => m.user_id);
-        await supabase.from('users').update({ squad_points: 0 }).in('id', memberIds);
-
-        // Fetch tokens to notify
-        const { data: memberTokens } = await supabase.from('users').select('expo_push_token').in('id', memberIds);
-        if (memberTokens) {
-          const tokens = memberTokens.map(m => m.expo_push_token).filter(Boolean);
+        // Parallel batch operations instead of sequential
+        const [, tokenResult] = await Promise.all([
+          supabase.from('users').update({ squad_points: 0 }).in('id', memberIds),
+          supabase.from('users').select('expo_push_token').in('id', memberIds),
+        ]);
+        
+        if (tokenResult.data) {
+          const tokens = tokenResult.data.map(m => m.expo_push_token).filter(Boolean);
           if (tokens.length > 0) {
             NotificationTriggers.social.squadDeleted(tokens as string[], squad?.name || 'Squad');
           }

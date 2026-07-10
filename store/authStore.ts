@@ -80,7 +80,7 @@ export const useAuthStore = create<AuthState>()(
           try {
             const { data, error } = await supabase
               .from('users')
-              .select('*')
+              .select('id, email, name, avatar_url, name_color, premium_color, sex, age, weight, height, activity_level, goal, target_weight, starting_weight, tdee, target_calories, macros, available_foods, preferences, is_pro, role, trial_used_at, trial_expires_at, onboarding_done, lifestyle, extra_snacks, widgets_order, expo_push_token, notification_preferences, dietary_restrictions, medical_conditions, medications_supplements, diet_type, badges, selected_badge, unlocked_achievements, pinned_achievements, achievement_points, pro_expires_at, pro_will_renew')
               .eq('id', userId)
               .single();
 

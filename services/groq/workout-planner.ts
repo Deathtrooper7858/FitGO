@@ -142,7 +142,11 @@ IMPORTANT: All exercise names MUST be in ${targetLang}. Return ONLY valid JSON (
 
   let text = (data.choices[0]?.message?.content ?? '').trim();
   text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
-  return JSON.parse(text);
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error('Failed to parse daily workout plan from AI. Please try again.');
+  }
 }
 
 // ─── Adjust Workout to Bodyweight ─────────────────────────────────────────────

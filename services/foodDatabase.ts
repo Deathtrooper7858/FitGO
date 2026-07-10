@@ -2,10 +2,11 @@
  * OpenFoodFacts + Edamam food database service.
  */
 import axios from 'axios';
+import { OPEN_FOOD_FACTS_URL } from '../constants/urls';
 import { getFoodByBarcodeAI } from './groq';
 import { supabase } from './supabase';
 
-const OFF_BASE = 'https://world.openfoodfacts.org';
+const OFF_BASE = OPEN_FOOD_FACTS_URL;
 
 export interface FoodItem {
   id:       string;

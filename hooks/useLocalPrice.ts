@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-
-const IP_API_URL = 'https://ipwhois.app/json/';
-const EXCHANGE_API_URL = 'https://open.er-api.com/v6/latest/USD';
+import { IP_WHOIS_URL, EXCHANGE_RATE_URL } from '../constants/urls';
 
 interface LocalPriceData {
   currency: string;
@@ -24,7 +22,7 @@ export function useLocalPrice() {
     async function fetchLocalData() {
       try {
         // 1. Get user's local currency based on IP
-        const ipRes = await fetch(IP_API_URL);
+        const ipRes = await fetch(IP_WHOIS_URL);
         if (!ipRes.ok) throw new Error('IP API failed');
         const ipData = await ipRes.json();
         const localCurrency = ipData.currency_code || ipData.currency || 'USD';
@@ -35,7 +33,7 @@ export function useLocalPrice() {
         }
 
         // 2. Get exchange rate for USD to localCurrency
-        const exRes = await fetch(EXCHANGE_API_URL);
+        const exRes = await fetch(EXCHANGE_RATE_URL);
         if (!exRes.ok) throw new Error('Exchange API failed');
         const exData = await exRes.json();
         

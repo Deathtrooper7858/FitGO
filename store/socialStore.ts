@@ -619,42 +619,17 @@ export const useSocialStore = create<SocialState>((set, get) => ({
 
   completeChallengeAndAwardPoints: async (challengeId: string, userId: string) => {
     try {
-      // 1. Marcar al usuario como completed en participants
-      const { error: updateErr } = await supabase
-        .from('challenge_participants')
-        .update({ status: 'completed' })
-        .eq('challenge_id', challengeId)
-        .eq('user_id', userId);
-      if (updateErr) throw updateErr;
+      // Use atomic RPC to prevent race conditions (advisory lock ensures only one winner)
+      const { data, error } = await supabase.rpc('complete_challenge_atomic', {
+        p_challenge_id: challengeId,
+        p_user_id: userId,
+      });
+      if (error) throw error;
 
-      // 2. Traer a todos los participantes
-      const { data: parts, error: partsErr } = await supabase
-        .from('challenge_participants')
-        .select('*')
-        .eq('challenge_id', challengeId);
-      if (partsErr) throw partsErr;
-
-      // 3. Revisar si todos (excepto rendidos) completaron
-      const activeParts = parts.filter(p => p.status !== 'surrendered');
-      const allCompleted = activeParts.every(p => p.status === 'completed');
-
-      if (allCompleted) {
-        // Cerrar el reto
-        await supabase.from('challenges').update({ status: 'completed' }).eq('id', challengeId);
-        
-        // Repartir puntos. 500 puntos base divididos entre los participantes que completaron.
-        const basePoints = 500;
-        const rewardPoints = Math.floor(basePoints / (activeParts.length || 1));
-        
-        // ✅ Usar el import estático (eliminado el require() dinámico que causaba crash en runtime)
+      // Show reward animation if this user earned points
+      if (data?.completed && data?.reward_points > 0) {
         const leagueStore = useLeagueStore.getState();
-        for (const p of activeParts) {
-          await leagueStore.awardPoints(p.user_id, rewardPoints, 'Reto Completado');
-          // Solo mostrar la animación de recompensa al usuario actual
-          if (p.user_id === userId) {
-            leagueStore.showReward(rewardPoints);
-          }
-        }
+        leagueStore.showReward(data.reward_points);
       }
 
       get().fetchChallenges(userId); // refresh
