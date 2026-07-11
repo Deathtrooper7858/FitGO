@@ -90,9 +90,9 @@ export function useLocalPrice() {
     if (data.currency === 'COP') {
       // Hardcoded COP prices — exchange rate APIs often underestimate COP
       // Based on ~4,000 COP/USD real market rate
-      // discounted = $4.99 USD → ~20,000 COP | original = $9.99 USD → ~40,000 COP
-      const isDiscounted = usdAmount < 6.00;
-      const copVal = isDiscounted ? 19900 : 39900;
+      // discounted = $2.99 USD → ~11,800 COP | original = $7.49 USD → ~30,000 COP
+      const isDiscounted = usdAmount < 5.00;
+      const copVal = isDiscounted ? 11800 : 30000;
       try {
         return new Intl.NumberFormat('es-CO', {
           style: 'currency',
@@ -108,8 +108,9 @@ export function useLocalPrice() {
     if (data.currency === 'ARS') {
       // Hardcoded ARS prices — highly volatile currency, APIs often outdated
       // Based on ~1,100 ARS/USD market rate
-      const isDiscounted = usdAmount < 6.00;
-      const arsVal = isDiscounted ? 5500 : 10900;
+      // discounted = $2.99 USD → ~3,300 ARS | original = $7.49 USD → ~8,200 ARS
+      const isDiscounted = usdAmount < 5.00;
+      const arsVal = isDiscounted ? 3300 : 8200;
       try {
         return new Intl.NumberFormat('es-AR', {
           style: 'currency',

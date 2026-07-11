@@ -174,8 +174,8 @@ export default function PaywallModal() {
   // Always use live-converted local prices for display — RevenueCat pricing is
   // unreliable for display across currencies (sandbox mismatches, stale COP/ARS rates, etc.).
   // RevenueCat is still used to process the actual purchase transaction.
-  const displayPrice = localPrice.formatPrice(4.99, lang);
-  const displayOldPrice = localPrice.formatPrice(9.99, lang);
+  const displayPrice = localPrice.formatPrice(2.99, lang);
+  const displayOldPrice = localPrice.formatPrice(7.49, lang);
 
 
   return (

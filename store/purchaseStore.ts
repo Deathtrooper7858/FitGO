@@ -4,6 +4,7 @@ import Purchases, { CustomerInfo, PurchasesOffering, PurchasesPackage } from 're
 import { supabase } from '../services/supabase';
 import { reportError, reportEvent } from '../utils/errorReporter';
 import { useAuthStore } from './authStore';
+import { useSettingsStore } from './settingsStore';
 
 interface PurchaseState {
   isPro: boolean;
@@ -289,6 +290,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
           .eq('id', profile.id);
         set({ isPro: false, isLoading: false });
         useAuthStore.getState().setProfile({ ...profile, isPro: false });
+        useSettingsStore.getState().setPremiumColor(null);
         return;
       }
 
@@ -302,6 +304,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       set({ isPro: false, isLoading: false });
       // Clear nameColor so trial/pro perks are fully revoked locally
       useAuthStore.getState().setProfile({ ...profile, isPro: false, role: 'user', nameColor: undefined });
+      useSettingsStore.getState().setPremiumColor(null);
       await supabase.auth.updateUser({ data: { name_color: null } });
     } catch (err) {
       reportError(err, { module: 'PurchaseStore', action: 'cancelPro.updateUser' });
