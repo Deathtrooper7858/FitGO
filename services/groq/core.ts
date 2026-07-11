@@ -125,6 +125,10 @@ export function buildCoachSystemPrompt(userProfile: {
   sleepLogs?: Record<string, any>;
   workoutHistory?: any[];
   isPremium?: boolean;
+  leagueStats?: { points: number; streak: number; squadName?: string };
+  nutritionLogs?: any[];
+  waterLogs?: Record<string, number>;
+  bodyMeasurements?: any[];
 }, language: string = 'en', coachType: 'nutritionist' | 'trainer' | 'doctor' = 'nutritionist') {
   const targetLang = getLang(language);
 
@@ -152,6 +156,10 @@ ${userProfile.mealPlans && Object.keys(userProfile.mealPlans).length > 0 ? `Curr
 ${userProfile.workoutPlans && Object.keys(userProfile.workoutPlans).length > 0 ? `Current Weekly Workout Plan:\n${JSON.stringify(userProfile.workoutPlans)}` : ''}
 
 Recent App Activity & Progress (CRITICAL):
+${userProfile.leagueStats ? `- League: ${userProfile.leagueStats.points} pts, ${userProfile.leagueStats.streak} day streak${userProfile.leagueStats.squadName ? `, Squad: ${userProfile.leagueStats.squadName}` : ''}` : ''}
+${userProfile.waterLogs && Object.keys(userProfile.waterLogs).length > 0 ? `Recent Water Logs (ml per day):\n${JSON.stringify(userProfile.waterLogs)}` : 'No recent water logs.'}
+${userProfile.nutritionLogs && userProfile.nutritionLogs.length > 0 ? `Recent Nutrition Logs:\n${JSON.stringify(userProfile.nutritionLogs.slice(0, 10))}` : 'No recent nutrition logs.'}
+${userProfile.bodyMeasurements && userProfile.bodyMeasurements.length > 0 ? `Recent Body Measurements:\n${JSON.stringify(userProfile.bodyMeasurements.slice(0, 3))}` : 'No recent body measurements.'}
 ${userProfile.sleepLogs && Object.keys(userProfile.sleepLogs).length > 0 ? `Recent Sleep Logs (Hours slept per day):\n${JSON.stringify(userProfile.sleepLogs)}` : 'No recent sleep logs.'}
 ${userProfile.workoutHistory && userProfile.workoutHistory.length > 0 ? `Recent Completed Workouts (Routines actually done, muscles trained):\n${JSON.stringify(userProfile.workoutHistory.slice(0, 10))}` : 'No workouts completed recently.'}`;
 

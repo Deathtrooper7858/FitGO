@@ -44,23 +44,34 @@ BEGIN
   IF v_active_count > 0 AND v_active_count = v_completed_count THEN
     -- Close the challenge
     UPDATE challenges SET status = 'completed' WHERE id = p_challenge_id AND status = 'active';
+    
+    -- ONLY award points if this transaction was the one to actually close it
+    IF FOUND THEN
+      -- Calculate reward
+      v_reward_points := v_base_points / GREATEST(v_active_count, 1);
 
-    -- Calculate reward
-    v_reward_points := v_base_points / GREATEST(v_active_count, 1);
+      -- Award points to each participant atomically
+      FOR v_participant IN
+        SELECT user_id FROM challenge_participants
+        WHERE challenge_id = p_challenge_id AND status = 'completed'
+      LOOP
+        PERFORM award_league_points_atomic(v_participant.user_id, v_reward_points, 'challenge_completed');
+      END LOOP;
 
-    -- Award points to each participant atomically
-    FOR v_participant IN
-      SELECT user_id FROM challenge_participants
-      WHERE challenge_id = p_challenge_id AND status = 'completed'
-    LOOP
-      PERFORM award_league_points_atomic(v_participant.user_id, v_reward_points, 'challenge_completed');
-    END LOOP;
-
-    v_result := jsonb_build_object(
-      'completed', true,
-      'reward_points', v_reward_points,
-      'participants_count', v_active_count
-    );
+      v_result := jsonb_build_object(
+        'completed', true,
+        'reward_points', v_reward_points,
+        'participants_count', v_active_count
+      );
+    ELSE
+      -- Challenge was already completed, return 0 points to prevent double-awarding
+      v_result := jsonb_build_object(
+        'completed', true,
+        'reward_points', 0,
+        'participants_count', v_active_count,
+        'already_closed', true
+      );
+    END IF;
   ELSE
     v_result := jsonb_build_object(
       'completed', false,
@@ -157,9 +168,9 @@ BEGIN
   -- Award squad creator achievement
   UPDATE users SET
     unlocked_achievements = CASE
-      WHEN unlocked_achievements @> '["squad_creator"]'::jsonb
-      THEN unlocked_achievements
-      ELSE unlocked_achievements || '"squad_creator"'::jsonb
+      WHEN COALESCE(unlocked_achievements, '[]'::jsonb) @> '["squad_creator"]'::jsonb
+      THEN COALESCE(unlocked_achievements, '[]'::jsonb)
+      ELSE COALESCE(unlocked_achievements, '[]'::jsonb) || '["squad_creator"]'::jsonb
     END
   WHERE id = p_user_id;
 
@@ -241,7 +252,9 @@ BEGIN
     END IF;
   END IF;
 
-  RETURN OLD;
+  -- Silently reject the role change but allow other field updates to proceed
+  NEW.role := OLD.role;
+  RETURN NEW;
 END;
 $$;
 
