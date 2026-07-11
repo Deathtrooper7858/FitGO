@@ -6,10 +6,10 @@ export const revalidate = 60; // Cache for 60 seconds
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const squadId = params.id;
+    const { id: squadId } = await params;
     if (!squadId) {
       return NextResponse.json({ members: [], error: "Missing squad ID" }, { status: 400 });
     }
