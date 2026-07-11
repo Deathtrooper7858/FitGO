@@ -315,7 +315,7 @@ export default function ScanModal() {
         const isOffline = err?.message?.includes('Sin conexión') || err?.message?.includes('Network Error');
         showAlert('error', t('common.error'), isOffline
           ? t('scan.noInternet', 'Sin conexión a internet.')
-          : (t('scan.analysisFailed') || 'AI analysis failed.'));
+          : (err?.message || t('scan.analysisFailed') || 'AI analysis failed.'));
       } finally { setLoading(false); }
     });
   };

@@ -619,11 +619,19 @@ export default function MuscleSymmetryCard() {
   const isPremiumCustom = hasProAccess && isValidHex;
   
   const workouts = useMemo(() => {
+    if (!hasProAccess) return [];
     return allWorkouts.filter(w => !w.userId || w.userId === userId);
-  }, [allWorkouts, userId]);
+  }, [allWorkouts, userId, hasProAccess]);
 
-  const muscleCounts = useMemo(() => buildMuscleCounts(workouts, viewMode), [workouts, viewMode]);
-  const bodyData = useMemo(() => buildBodyData(muscleCounts, viewMode), [muscleCounts, viewMode]);
+  const muscleCounts = useMemo(() => {
+    if (!hasProAccess) return {};
+    return buildMuscleCounts(workouts, viewMode);
+  }, [workouts, viewMode, hasProAccess]);
+
+  const bodyData = useMemo(() => {
+    if (!hasProAccess) return [];
+    return buildBodyData(muscleCounts, viewMode);
+  }, [muscleCounts, viewMode, hasProAccess]);
   const hasHistory = bodyData.length > 0;
 
   // Determine highest active medal level

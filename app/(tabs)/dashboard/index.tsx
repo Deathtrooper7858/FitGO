@@ -234,9 +234,14 @@ export default function DashboardScreen() {
   }
 
   const isPro = useIsPro();
-  const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
-  const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
-  const isPremiumCustom = (isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin') && isValidHex;
+  const { safePremiumColor, isPremiumCustom } = useMemo(() => {
+    const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
+    const isAdmin = profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin';
+    return {
+      safePremiumColor: isValidHex ? premiumColor! : '#7C5CFC',
+      isPremiumCustom: (isPro || isAdmin) && isValidHex,
+    };
+  }, [isPro, premiumColor, profile?.role]);
   const { hasPremiumAdAccess } = useAdStore();
   const [premiumGate, setPremiumGate] = useState<{
     visible: boolean;

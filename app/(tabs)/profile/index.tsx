@@ -40,7 +40,6 @@ import { GlobalBackground } from '../../../components/GlobalBackground';
 import { GoalWizardModal, ACTIVITY_TO_EXERCISE } from '../../../components/GoalWizardModal';
 
 import { ProfileHeader } from '../../../components/profile/ProfileHeader';
-const WeightChart = React.lazy(() => import('../../../components/profile/WeightChart').then(m => ({ default: m.WeightChart })));
 import { SettingsSection } from '../../../components/profile/SettingsSection';
 import { SettingsItem } from '../../../components/profile/SettingsItem';
 import { GoalsSection } from '../../../components/profile/GoalsSection';
@@ -52,6 +51,7 @@ import { BadgeSelectionModal } from '../../../components/profile/BadgeSelectionM
 import { SexSelectionModal } from '../../../components/profile/SexSelectionModal';
 import { VitrinaTrofeos } from '../../../components/profile/VitrinaTrofeos';
 import { CustomToast } from '../../../components/profile/CustomToast';
+const WeightChart = React.lazy(() => import('../../../components/profile/WeightChart').then(m => ({ default: m.WeightChart })));
 
 
 export default function ProfileScreen() {
@@ -489,9 +489,12 @@ export default function ProfileScreen() {
   const handleLogout = () => showAlert('confirm', t('profile.signOut'), t('profile.signOutConfirm'), async () => { useNutritionStore.getState().reset(); useCoachStore.getState().resetAll(); useBodyStore.getState().reset(); useRecipesStore.getState().reset(); useSocialStore.getState().reset(); usePlannerStore.getState().clearPlans(); await supabase.auth.signOut(); }, () => {}, t('profile.signOut'), t('common.cancel'));
   const handleLanguageSelect = async (lang: string) => { setLanguage(lang as any); setLangModalVisible(false); if (profile?.id) await supabase.auth.updateUser({ data: { language: lang } }); };
 
-  const isAdminRole = profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin';
-  const safePremiumColor = premiumColor === 'admin_glow' ? '#00F0FF' : (premiumColor && premiumColor.startsWith('#') ? premiumColor : null);
-  const isPremiumCustom = (isPro || profile?.isPro || isAdminRole) && !!safePremiumColor;
+  const { isAdminRole, safePremiumColor, isPremiumCustom } = useMemo(() => {
+    const isAdmin = profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin';
+    const safeColor = premiumColor === 'admin_glow' ? '#00F0FF' : (premiumColor && premiumColor.startsWith('#') ? premiumColor : null);
+    const isCustom = (isPro || profile?.isPro || isAdmin) && !!safeColor;
+    return { isAdminRole: isAdmin, safePremiumColor: safeColor, isPremiumCustom: isCustom };
+  }, [profile?.role, profile?.isPro, isPro, premiumColor]);
 
   return (
     <View style={{ flex: 1 }}>

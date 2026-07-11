@@ -63,7 +63,6 @@ IMPORTANT: All text MUST be in ${targetLang}.`;
     messages: [{ role: 'user', content: prompt }],
     max_tokens: 1000,
     temperature: 0.7,
-    response_format: { type: 'json_object' },
   });
 
   let text = (data.choices[0]?.message?.content ?? '').trim();
@@ -114,20 +113,34 @@ Important: Group multiple units (e.g. "2 eggs") into one entry. DO NOT split mix
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 600,
       temperature: 0.1,
-      response_format: { type: 'json_object' },
     });
 
     let content = (data.choices[0]?.message?.content ?? '').trim();
     
+    // Strip markdown if present
+    content = content.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+
     // Robust JSON extraction
     const startIndex = content.indexOf('{');
     const endIndex = content.lastIndexOf('}');
-    if (startIndex !== -1 && endIndex !== -1) {
+    const arrayStartIndex = content.indexOf('[');
+    const arrayEndIndex = content.lastIndexOf(']');
+    
+    if (arrayStartIndex !== -1 && arrayEndIndex !== -1 && (startIndex === -1 || arrayStartIndex < startIndex)) {
+      content = content.slice(arrayStartIndex, arrayEndIndex + 1);
+    } else if (startIndex !== -1 && endIndex !== -1) {
       content = content.slice(startIndex, endIndex + 1);
     }
 
-    const parsed = JSON.parse(content);
-    return parsed.items || [];
+    let parsed;
+    try {
+      parsed = JSON.parse(content);
+    } catch (parseError: any) {
+      console.warn('[Groq] parseVoiceLog JSON parse error:', parseError.message, 'Content:', content);
+      throw new Error(`Invalid JSON from AI: ${parseError.message}`);
+    }
+
+    return Array.isArray(parsed) ? parsed : (parsed.items || []);
   } catch (error) {
     console.warn('[Groq] parseVoiceLog error:', error);
     throw error;
@@ -153,7 +166,6 @@ Important: Return ONLY the JSON.`;
     messages: [{ role: 'user', content: prompt }],
     max_tokens: 300,
     temperature: 0.2,
-    response_format: { type: 'json_object' },
   });
 
   let content = (data.choices[0]?.message?.content ?? '').trim();
