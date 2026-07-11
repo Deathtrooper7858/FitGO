@@ -22,24 +22,26 @@ import {
   ShieldOff,
   Trophy,
 } from "lucide-react";
-import { useState } from "react";
 
-const formatPrice = (usdAmount: number, locale: string) => {
+
+const formatPrice = (amount: number, locale: string) => {
   const baseLang = locale.toLowerCase().split("-")[0];
 
+  if (baseLang === "es") {
+    return `COP ${amount.toLocaleString("en-US")}`;
+  }
+
   if (locale.toLowerCase() === "es-es" || ["de", "fr", "it"].includes(baseLang)) {
-    return `${usdAmount.toFixed(2).replace(".", ",")} €`;
+    return `${(amount / 2400).toFixed(2).replace(".", ",")} €`;
   }
 
   switch (baseLang) {
-    case "es":
-      return `US$ ${usdAmount.toFixed(2).replace(".", ",")}`;
     case "pt":
-      return `R$ ${(usdAmount * 5).toFixed(2).replace(".", ",")}`;
+      return `R$ ${(amount / 500).toFixed(2).replace(".", ",")}`;
     case "ru":
-      return `${Math.round(usdAmount * 90)} ₽`;
+      return `${Math.round(amount / 13)} ₽`;
     default:
-      return `$${usdAmount.toFixed(2)}`;
+      return `$${(amount / 2400).toFixed(2)}`;
   }
 };
 
@@ -99,38 +101,13 @@ export default function PricingPage() {
     { feature: t("compare.ads"), free: t("compare.adsFree"), pro: t("compare.adsPro") },
   ];
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const currentPrice = 4.99;
-  const oldPrice = 9.99;
+  const currentPrice = 11800;
+  const oldPrice = 30000;
   const discount = Math.round((1 - currentPrice / oldPrice) * 100);
 
   const displayPrice = formatPrice(currentPrice, locale);
   const displayOldPrice = formatPrice(oldPrice, locale);
   const monthSuffix = getMonthSuffix(locale);
-
-  const handleCheckout = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ billing: "monthly" }),
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || t("errorMsg"));
-      }
-      const { url } = await res.json();
-      if (url) window.location.href = url;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("errorMsg"));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background" suppressHydrationWarning>
@@ -162,15 +139,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Error banner */}
-      {error && (
-        <section className="px-6">
-          <div className="max-w-5xl mx-auto mb-4 p-4 rounded-xl bg-error/10 border border-error/20 flex items-start gap-3">
-            <AlertCircle size={18} className="text-error shrink-0 mt-0.5" />
-            <p className="text-sm text-error/90 leading-tight">{error}</p>
-          </div>
-        </section>
-      )}
+
 
       {/* Pricing cards */}
       <section className="py-16 px-6">
@@ -298,20 +267,12 @@ export default function PricingPage() {
               </div>
 
               <button
-                onClick={handleCheckout}
-                disabled={loading}
-                className="btn-primary w-full justify-center mb-8 text-base"
-                style={{ opacity: loading ? 0.7 : 1 }}
+                disabled
+                className="btn-primary w-full justify-center mb-8 text-base opacity-50 cursor-not-allowed"
               >
-                {loading ? (
-                  "..."
-                ) : (
-                  <>
-                    <Zap size={18} fill="white" />
-                    {t("pro.btn")}
-                    <ChevronRight size={18} />
-                  </>
-                )}
+                <Zap size={18} fill="white" />
+                {t("pro.btn")}
+                <ChevronRight size={18} />
               </button>
 
               <ul className="space-y-3">

@@ -12,7 +12,7 @@ export async function GET() {
     if (!supabaseUrl || !serviceKey || serviceKey === "your_service_role_key_here") {
       return NextResponse.json(
         { squads: [], total: 0, error: "API not configured" },
-        { status: 503 }
+        { status: 200 }
       );
     }
 

@@ -509,6 +509,10 @@ export default function FitGOSocial({
     }
   }, [profile?.id, socialStore]);
 
+  const handleUserPress = useCallback((user: any) => {
+    setInspectingUser(user);
+  }, []);
+
   const handleShare = useCallback(async (content: string) => {
     try {
       await Share.share({
@@ -519,7 +523,7 @@ export default function FitGOSocial({
     }
   }, [t]);
 
-  const toggleComments = async (postId: string) => {
+  const toggleComments = useCallback(async (postId: string) => {
     if (expandedComments === postId) {
       setExpandedComments(null);
     } else {
@@ -528,15 +532,15 @@ export default function FitGOSocial({
       setPostComments(prev => ({ ...prev, [postId]: comments }));
     }
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-  };
+  }, [expandedComments, socialStore]);
 
-  const handleAddComment = async (postId: string) => {
+  const handleAddComment = useCallback(async (postId: string) => {
     if (!newComment.trim() || !profile?.id) return;
     await socialStore.addComment(postId, profile.id, newComment);
     setNewComment('');
     const updatedComments = await socialStore.fetchComments(postId);
     setPostComments(prev => ({ ...prev, [postId]: updatedComments }));
-  };
+  }, [newComment, profile?.id, socialStore]);
 
   const handleStartEditComment = (commentId: string, currentContent: string) => {
     setEditingCommentId(commentId);
@@ -557,11 +561,11 @@ export default function FitGOSocial({
     setPostComments(prev => ({ ...prev, [postId]: updatedComments }));
   };
 
-  const handleDeleteComment = async (commentId: string, postId: string) => {
+  const handleDeleteComment = useCallback(async (commentId: string, postId: string) => {
     await socialStore.deleteComment(commentId);
     const updatedComments = await socialStore.fetchComments(postId);
     setPostComments(prev => ({ ...prev, [postId]: updatedComments }));
-  };
+  }, [socialStore]);
 
   const filteredAndSortedPosts = useMemo(() => {
     let result = [...socialStore.posts];
@@ -796,7 +800,7 @@ export default function FitGOSocial({
             <GlassCard key={post.id} style={{ marginBottom: 16, padding: 0, overflow: 'hidden' }}>
               <View style={{ padding: 16 }}>
                 <View style={s.postHeader}>
-                  <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser({ ...post.user_profile, id: post.user_id })}>
+                  <TouchableOpacity style={s.userInfo} onPress={() => handleUserPress({ ...post.user_profile, id: post.user_id })}>
                     {post.user_profile?.avatar_url ? (
                       <Image cachePolicy="memory-disk" source={{ uri: post.user_profile.avatar_url }} style={s.avatarSmall} />
                     ) : (
@@ -1426,7 +1430,7 @@ export default function FitGOSocial({
 
             {searchResults.map(user => (
               <View key={user.id} style={[s.userRow, { borderBottomColor: colors.border + '33' }]}>
-                <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(user)}>
+                <TouchableOpacity style={s.userInfo} onPress={() => handleUserPress(user)}>
                   {user.avatar_url ? (
                     <Image cachePolicy="memory-disk" source={{ uri: user.avatar_url }} style={s.avatar} />
                   ) : (

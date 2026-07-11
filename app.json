@@ -4,6 +4,7 @@
     "slug": "fitgo",
     "owner": "deathtrooper",
     "version": "1.0.2",
+    "jsEngine": "hermes",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",

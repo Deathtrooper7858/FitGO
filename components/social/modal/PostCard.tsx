@@ -97,7 +97,7 @@ interface PostCardProps {
   onUserPress: (user: any) => void;
 }
 
-export function PostCard({
+export const PostCard = React.memo(function PostCard({
   post, currentUserId, colors, t, getNameStyle, premiumColor,
   onLike, onToggleComments, onDelete, onShare, onUserPress,
 }: PostCardProps) {
@@ -156,7 +156,7 @@ export function PostCard({
       </View>
     </GlassCard>
   );
-}
+});
 
 const s = StyleSheet.create({
   postHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
