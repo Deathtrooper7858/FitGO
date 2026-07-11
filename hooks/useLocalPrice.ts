@@ -67,10 +67,27 @@ export function useLocalPrice() {
     if (num < 10) return Math.ceil(num);
     if (num < 100) return Math.ceil(num / 10) * 10;
     if (num < 1000) return Math.ceil(num / 100) * 100;
-    return Math.ceil(num / 1000) * 1000;
+    // Round to nearest 100 for numbers >= 1000 to allow prices like 11800 or 5900
+    return Math.round(num / 100) * 100;
   };
 
   const formatPrice = (usdAmount: number, overrideLang?: string) => {
+    if (data.currency === 'COP') {
+      // Direct overrides for Colombian Pesos (COP)
+      const isDiscounted = usdAmount < 6.00;
+      const copVal = isDiscounted ? 11800 : 30000;
+      try {
+        return new Intl.NumberFormat(undefined, {
+          style: 'currency',
+          currency: 'COP',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(copVal);
+      } catch {
+        return `$ ${copVal.toLocaleString('es-CO')}`;
+      }
+    }
+
     // Convert the base USD amount to local currency
     const rawAmount = usdAmount * data.rate;
     // Round to a nice closed number based on magnitude

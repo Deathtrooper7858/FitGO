@@ -36,6 +36,8 @@ const EXERCISE_CALORIES: Record<string, number> = { none: 0, '1-2': 150, '3-4': 
 const ACTIVITY_TO_EXERCISE: Record<string, string> = { sedentary: 'none', light: '1-2', moderate: '3-4', active: '5-6', very_active: 'daily' };
 const MEAL_COLORS: Record<string, string> = { breakfast: '#7C5CFC', lunch: '#3B82F6', dinner: '#10B981', snack: '#F59E0B' };
 
+let hasShownTrialPromoSession = false;
+
 export default function TrackerScreen() {
   const { t } = useTranslation();
   const colors = useTheme();
@@ -83,6 +85,18 @@ export default function TrackerScreen() {
   const totalBurned = Math.round(convertEnergy(baselineRaw + activitiesRaw, 'kcal', energyUnit));
   const pendingRequestsCount = useMemo(() => !profile?.id ? 0 : friends.filter(f => f.status === 'pending' && f.user_id_2 === profile.id).length, [friends, profile?.id]);
   const socialNotificationCount = totalUnreadCount + pendingRequestsCount;
+
+  const [showTrialPromoAlert, setShowTrialPromoAlert] = useState(false);
+
+  useEffect(() => {
+    if (!isPro && !hasShownTrialPromoSession) {
+      const timer = setTimeout(() => {
+        setShowTrialPromoAlert(true);
+        hasShownTrialPromoSession = true;
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isPro]);
 
   const allMeals = useMemo(() => {
     const meals = [...MEALS] as string[];
@@ -298,6 +312,49 @@ export default function TrackerScreen() {
 
               <View style={s.dotsRow}>{[0, 1, 2].map(i => <View key={i} style={[s.dotIndicator, { backgroundColor: carouselIndex === i ? colors.primary : colors.border }]} />)}</View>
 
+              {/* Banner promocional de Prueba Pro */}
+              {!isPro && (
+                <TouchableOpacity
+                  onPress={() => router.push('/modals/paywall')}
+                  activeOpacity={0.8}
+                  style={{ marginTop: 8 }}
+                >
+                  <LinearGradient
+                    colors={[colors.primary + '18', colors.secondary + '18' || '#A855F718']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={{
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: colors.primary + '35',
+                      padding: 16,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 12
+                    }}
+                  >
+                    <View style={{
+                      backgroundColor: colors.primary + '25',
+                      width: 42,
+                      height: 42,
+                      borderRadius: 21,
+                      justifyContent: 'center',
+                      alignItems: 'center'
+                    }}>
+                      <Text style={{ fontSize: 20 }}>🎁</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: colors.textPrimary, fontWeight: '700', fontSize: 14 }}>
+                        {t('tracker.trialBannerTitle', 'Prueba 3 Días de Pro Gratis')}
+                      </Text>
+                      <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 2 }}>
+                        {t('tracker.trialBannerDesc', 'Prueba el planificador, Coach de Voz y más. Toca para activar.')}
+                      </Text>
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
+
               {isFetching && <View style={{ marginVertical: 20, alignItems: 'center' }}><ActivityIndicator color={colors.primary} size="small" /><Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 8 }}>{t('common.loading')}</Text></View>}
 
               {!isFetching && (
@@ -395,6 +452,21 @@ export default function TrackerScreen() {
           </View>
         </View>
       </SafeAreaView>
+
+      {/* Alerta de inicio para activar prueba de 3 días */}
+      <CustomAlert
+        visible={showTrialPromoAlert}
+        type="confirm"
+        title="🎁 ¡FitGO Pro Gratis!"
+        message="¿Quieres probar todas las funciones premium gratis durante 3 días? Sin tarjeta de crédito y sin renovación automática."
+        confirmText="Comenzar Prueba Gratis"
+        cancelText="Luego"
+        onConfirm={() => {
+          setShowTrialPromoAlert(false);
+          router.push('/modals/paywall');
+        }}
+        onCancel={() => setShowTrialPromoAlert(false)}
+      />
     </View>
   );
 }
