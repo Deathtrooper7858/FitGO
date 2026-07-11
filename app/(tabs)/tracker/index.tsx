@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, G, Polygon, Line, Text as SvgText } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Radius } from '../../../constants';
 import { useAuthStore, useNutritionStore, selectDailyTotals, useSettingsStore, useSocialStore } from '../../../store';
 import { useTheme } from '../../../hooks/useTheme';

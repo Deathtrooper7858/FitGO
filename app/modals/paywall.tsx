@@ -31,7 +31,6 @@ export default function PaywallModal() {
     purchasePackage, 
     restorePurchases, 
     isLoading,
-    grantPro,
     startTrial,
     hasUsedTrial,
     isTrialActive,
@@ -172,43 +171,11 @@ export default function PaywallModal() {
 
   const lang = i18n.language || 'en';
   
-  // By default, if we don't have RevenueCat (dev/sandbox) we use our live converted local prices!
-  let displayPrice = localPrice.formatPrice(4.99, lang);
-  let displayOldPrice = localPrice.formatPrice(9.99, lang);
-
-  // If RevenueCat returns a valid localized package, we can still use it.
-  // However, if the user's IP-detected currency differs from RevenueCat's currency (often happens in dev),
-  // we might want to prioritize our live conversion for display if we are forcing it, but usually RC is correct.
-  if (monthlyPackage) {
-    const rcPrice = monthlyPackage.product.price;
-    const currencyCode = monthlyPackage.product.currencyCode;
-    
-    // Check if RevenueCat is giving us USD but the user's real currency is something else
-    // This happens frequently in sandbox testing. If so, we can let our local converter handle it.
-    if (currencyCode === 'USD' && localPrice.currency !== 'USD') {
-      displayPrice = localPrice.formatPrice(4.99, lang);
-      displayOldPrice = localPrice.formatPrice(9.99, lang);
-    } else {
-      try {
-        const formatter = new Intl.NumberFormat(undefined, {
-          style: 'currency',
-          currency: currencyCode,
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 0,
-        });
-        if (rcPrice > 7) {
-          displayOldPrice = formatter.format(localPrice.roundNice(rcPrice));
-          displayPrice = formatter.format(localPrice.roundNice(rcPrice * (4.99 / 9.99)));
-        } else {
-          displayPrice = formatter.format(localPrice.roundNice(rcPrice));
-          displayOldPrice = formatter.format(localPrice.roundNice(rcPrice * (9.99 / 4.99)));
-        }
-      } catch {
-        displayPrice = localPrice.formatPrice(4.99, lang);
-        displayOldPrice = localPrice.formatPrice(9.99, lang);
-      }
-    }
-  }
+  // Always use live-converted local prices for display — RevenueCat pricing is
+  // unreliable for display across currencies (sandbox mismatches, stale COP/ARS rates, etc.).
+  // RevenueCat is still used to process the actual purchase transaction.
+  const displayPrice = localPrice.formatPrice(4.99, lang);
+  const displayOldPrice = localPrice.formatPrice(9.99, lang);
 
 
   return (
@@ -378,7 +345,12 @@ export default function PaywallModal() {
             <Text style={[s.oldPrice, { color: colors.textMuted }]}>{displayOldPrice}</Text>
             <View style={s.newPriceRow}>
               <Text style={[s.price, { color: colors.primary }]}>{displayPrice}</Text>
-              <Text style={[s.priceSuffix, { color: colors.textSecondary }]}>{getMonthSuffix(lang)}</Text>
+              <View style={s.priceSuffixCol}>
+                <View style={[s.currencyBadge, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
+                  <Text style={[s.currencyCode, { color: colors.primary }]}>{localPrice.currency}</Text>
+                </View>
+                <Text style={[s.priceSuffix, { color: colors.textSecondary }]}>{getMonthSuffix(lang)}</Text>
+              </View>
             </View>
           </View>
           <Text style={[s.cancelText, { color: colors.textMuted }]}>{t('paywall.cancelAnytime')}</Text>
@@ -496,9 +468,12 @@ const s = StyleSheet.create({
   ofertaText: { color: '#fff', fontSize: 9, fontWeight: '900', letterSpacing: 0.5 },
   priceRow: { marginBottom: 8 },
   oldPrice: { fontSize: 16, textDecorationLine: 'line-through', fontWeight: '600', marginBottom: -2 },
-  newPriceRow: { flexDirection: 'row', alignItems: 'baseline' },
+  newPriceRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   price: { fontSize: 42, fontWeight: '900', letterSpacing: -1 },
-  priceSuffix: { fontSize: 15, fontWeight: '600' },
+  priceSuffixCol: { flexDirection: 'column', gap: 4, justifyContent: 'center' },
+  currencyBadge: { alignSelf: 'flex-start', paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8, borderWidth: 1 },
+  currencyCode: { fontSize: 11, fontWeight: '900', letterSpacing: 0.5 },
+  priceSuffix: { fontSize: 13, fontWeight: '600' },
   cancelText: { fontSize: 13, fontWeight: '500' },
 
   // Footer
