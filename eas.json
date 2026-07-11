@@ -14,7 +14,8 @@
         "simulator": true
       },
       "env": {
-        "APP_VARIANT": "development"
+        "APP_VARIANT": "development",
+        "EAS_SKIP_AUTO_FINGERPRINT": "1"
       }
     },
     "preview": {
@@ -27,7 +28,8 @@
         "simulator": true
       },
       "env": {
-        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "EAS_SKIP_AUTO_FINGERPRINT": "1"
       }
     },
     "production": {
@@ -38,7 +40,8 @@
       "env": {
         "APP_VARIANT": "production",
         "NODE_OPTIONS": "--max-old-space-size=4096",
-        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "EAS_SKIP_AUTO_FINGERPRINT": "1"
       }
     }
   },
