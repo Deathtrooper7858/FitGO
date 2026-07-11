@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions, TouchableOpacity } from 'react-native';
-import { useToastStore } from '../store/toastStore';
-import { Achievement } from '../hooks/useAchievements';
-import { useTheme } from '../hooks/useTheme';
-import { useTranslation } from 'react-i18next';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import * as LucideIcons from 'lucide-react-native';
 import { X } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '../hooks/useTheme';
+import { useToastStore } from '../store/toastStore';
+import { AppNotification } from '../store/types';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+type LucideIconsType = typeof LucideIcons;
 
 function getTierColor(tier: string) {
   switch (tier) {
@@ -27,8 +27,8 @@ export function AchievementToast() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(-50)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
-  
-  const [currentToast, setCurrentToast] = useState<Achievement | undefined>(toastQueue[0]);
+
+  const [currentToast, setCurrentToast] = useState<AppNotification | undefined>(toastQueue[0]);
 
   useEffect(() => {
     if (toastQueue.length > 0 && !currentToast) {
@@ -36,10 +36,21 @@ export function AchievementToast() {
     }
   }, [toastQueue, currentToast]);
 
+  const closeToast = useCallback(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: -50, duration: 300, useNativeDriver: true }),
+      Animated.timing(scaleAnim, { toValue: 0.9, duration: 300, useNativeDriver: true }),
+    ]).start(() => {
+      setCurrentToast(undefined);
+      showNext();
+    });
+  }, [fadeAnim, slideAnim, scaleAnim, showNext]);
+
   useEffect(() => {
     if (currentToast) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      
+
       Animated.parallel([
         Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
         Animated.spring(slideAnim, { toValue: 0, friction: 6, tension: 40, useNativeDriver: true }),
@@ -52,18 +63,7 @@ export function AchievementToast() {
 
       return () => clearTimeout(timer);
     }
-  }, [currentToast]);
-
-  const closeToast = () => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: -50, duration: 300, useNativeDriver: true }),
-      Animated.timing(scaleAnim, { toValue: 0.9, duration: 300, useNativeDriver: true }),
-    ]).start(() => {
-      setCurrentToast(undefined);
-      showNext();
-    });
-  };
+  }, [currentToast, closeToast, fadeAnim, scaleAnim, slideAnim]);
 
   if (!currentToast) return null;
 
@@ -73,11 +73,15 @@ export function AchievementToast() {
     ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5'] as const
     : ['transparent', 'transparent'] as const;
 
+  const IconComponent = currentToast.lucideIcon
+    ? ((LucideIcons as LucideIconsType)[currentToast.lucideIcon as keyof LucideIconsType] as React.ComponentType<{ size: number; color: string; strokeWidth: number }> | undefined) ?? LucideIcons.Star
+    : LucideIcons.Star;
+
   return (
-    <Animated.View 
+    <Animated.View
       style={[
-        styles.container, 
-        { 
+        styles.container,
+        {
           backgroundColor: colors.surface,
           borderColor: isHolo ? tierColor + '50' : colors.border,
           shadowColor: isHolo ? tierColor : '#000',
@@ -91,15 +95,12 @@ export function AchievementToast() {
         style={[styles.iconWrapper, { backgroundColor: isHolo ? 'transparent' : colors.surfaceAlt }]}
       >
         {currentToast.iconType === 'lucide' && currentToast.lucideIcon ? (
-          // @ts-ignore
-          React.createElement(LucideIcons[currentToast.lucideIcon] || LucideIcons.Star, {
-            size: 28, color: isHolo ? '#FFF' : tierColor, strokeWidth: 2.5
-          })
+          <IconComponent size={28} color={isHolo ? '#FFF' : tierColor} strokeWidth={2.5} />
         ) : (
           <Text style={{ fontSize: 28 }}>{currentToast.icon}</Text>
         )}
       </LinearGradient>
-      
+
       <View style={styles.content}>
         <Text style={[styles.headerText, { color: tierColor }]}>{t('achievements.newAchievement', '¡NUEVO LOGRO DESBLOQUEADO!')}</Text>
         <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={1}>{currentToast.title}</Text>
@@ -116,7 +117,7 @@ export function AchievementToast() {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 60, // under the status bar
+    top: 60,
     left: 20,
     right: 20,
     zIndex: 9999,

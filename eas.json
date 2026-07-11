@@ -34,9 +34,11 @@
       "autoIncrement": true,
       "channel": "production",
       "credentialsSource": "local",
+      "node": "22.14.0",
       "env": {
         "APP_VARIANT": "production",
-        "NODE_OPTIONS": "--max-old-space-size=4096"
+        "NODE_OPTIONS": "--max-old-space-size=4096",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     }
   },
