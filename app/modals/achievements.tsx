@@ -64,6 +64,7 @@ const BadgeCard = memo(({ badge, owned }: { badge: typeof ALL_BADGES[string]; ow
     </View>
   );
 });
+BadgeCard.displayName = 'BadgeCard';
 
 // ── Achievement Row (memoized, NO lottie) ─────────────────────────────────────
 const AchievementRow = memo(({ achievement, isPinned, onTogglePin }: {
@@ -134,6 +135,7 @@ const AchievementRow = memo(({ achievement, isPinned, onTogglePin }: {
     </TouchableOpacity>
   );
 });
+AchievementRow.displayName = 'AchievementRow';
 
 // ── Category Accordion ─────────────────────────────────────────────────────────
 const CategoryAccordion = memo(({ category, items, pinnedIds, onTogglePin }: {
@@ -199,6 +201,7 @@ const CategoryAccordion = memo(({ category, items, pinnedIds, onTogglePin }: {
     </View>
   );
 });
+CategoryAccordion.displayName = 'CategoryAccordion';
 
 // ── Badges Accordion ───────────────────────────────────────────────────────────
 const BadgesAccordion = memo(({ ownedBadgeIds }: { ownedBadgeIds: string[] }) => {
@@ -254,6 +257,7 @@ const BadgesAccordion = memo(({ ownedBadgeIds }: { ownedBadgeIds: string[] }) =>
     </View>
   );
 });
+BadgesAccordion.displayName = 'BadgesAccordion';
 
 // ── Main Modal ─────────────────────────────────────────────────────────────────
 export default function AchievementsModal() {

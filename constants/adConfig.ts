@@ -47,9 +47,9 @@ export const AD_UNIT_IDS = __DEV__ ? TEST_IDS : PROD_IDS;
 export const AD_CONFIG = {
   /**
    * Tiempo mínimo (en ms) entre dos Interstitials.
-   * Por defecto: 30 minutos. Evita saturar al usuario.
+   * Configurado a 10 minutos para pruebas.
    */
-  interstitialCooldownMs: 30 * 60 * 1000,
+  interstitialCooldownMs: 10 * 60 * 1000,
 
   /**
    * Créditos de IA que recibe un usuario Free por día (foto).

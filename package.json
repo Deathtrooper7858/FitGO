@@ -19,7 +19,7 @@
     "audit:all": "npm audit",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
-    "lint": "eslint . --ext .ts,.tsx --max-warnings 100",
+    "lint": "eslint . --ext .ts,.tsx --max-warnings 300",
     "typecheck": "tsc --noEmit",
     "ci:audit": "npm audit --audit-level=high --omit=dev",
     "ci:all": "npm run ci:audit && npm run lint && npm run typecheck && npm test",

@@ -62,6 +62,12 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
       line.toLowerCase().includes('not a certified professional') ||
       line.toLowerCase().includes('consult a real professional')
     );
+
+    // Completely hide the disclaimer from the chat bubble
+    if (isDisclaimer) {
+      return null;
+    }
+
     let cleanLine = line;
     let prefix = '';
     if (isBullet) {
@@ -78,9 +84,8 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
       const isBold = partIdx % 2 === 1;
       return (
         <Text key={partIdx} style={{
-          fontWeight: isBold ? '800' : (isDisclaimer ? '400' : '500'),
-          color: isBold ? boldColor : (isDisclaimer ? colors.textSecondary : textColor),
-          fontStyle: isDisclaimer && !isBold ? 'italic' : 'normal',
+          fontWeight: isBold ? '800' : '500',
+          color: isBold ? boldColor : textColor,
         }}>
           {part}
         </Text>
@@ -92,17 +97,17 @@ const renderFormattedContent = (content: string, isUser: boolean, colors: any) =
           <Text style={{
             color: isUser ? '#FFF' : colors.primary,
             fontWeight: '900',
-            fontSize: isDisclaimer ? 13 : 15,
-            lineHeight: isDisclaimer ? 20 : 24,
+            fontSize: 15,
+            lineHeight: 24,
             marginRight: 6
           }}>
             {prefix}
           </Text>
         ) : null}
         <Text style={{
-          fontSize: isOnlyEmoji ? 26 : (isDisclaimer ? 13 : 15),
-          lineHeight: isOnlyEmoji ? 32 : (isDisclaimer ? 20 : 24),
-          color: isDisclaimer ? colors.textSecondary : textColor,
+          fontSize: isOnlyEmoji ? 26 : 15,
+          lineHeight: isOnlyEmoji ? 32 : 24,
+          color: textColor,
           flexShrink: 1,
           letterSpacing: 0.15
         }}>
@@ -669,7 +674,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
             </View>
           )}
 
-          <View style={[s.inputArea, { paddingBottom: Math.max(insets.bottom, Spacing.base) }, coachType === 'nutritionist' ? { paddingTop: 4 } : null]}>
+          <View style={[s.inputArea, { paddingBottom: 8 }, coachType === 'nutritionist' ? { paddingTop: 4 } : null]}>
             <TouchableOpacity onPress={handlePickImage} style={[s.inputIconBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} activeOpacity={0.7}>
               <Camera size={20} color={colors.textSecondary} />
             </TouchableOpacity>
@@ -709,6 +714,9 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
               </LinearGradient>
             </TouchableOpacity>
           </View>
+          <Text style={{ textAlign: 'center', fontSize: 10, color: colors.textMuted, paddingBottom: Math.max(insets.bottom, 8), paddingHorizontal: 24, marginTop: 4 }}>
+            {t('coach.disclaimer', 'FitGO IA puede cometer errores. Verifica siempre la información médica o nutricional con un profesional.')}
+          </Text>
         </View>
       </KeyboardAvoidingView>
 
