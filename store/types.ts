@@ -44,7 +44,7 @@ export interface UserProfile extends HealthProfile {
   availableFoods?:  string[];
   preferences?:    string[];
   isPro:           boolean;
-  role:            'user' | 'admin' | 'super_admin' | 'owner' | 'pro' | 'pro_user';
+  role:            'user' | 'pro_user' | 'admin' | 'super_admin' | 'owner';
   trialUsedAt?:    string | null;
   trialExpiresAt?: string | null;
   onboardingDone:  boolean;

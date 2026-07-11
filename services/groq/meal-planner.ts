@@ -179,7 +179,11 @@ Return ONLY valid JSON (no markdown):
 
   let text = (data.choices[0]?.message?.content ?? '').trim();
   text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
-  return JSON.parse(text);
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error('Failed to parse daily meal plan from AI. Please try again.');
+  }
 }
 
 // ─── Swap Meal ───────────────────────────────────────────────────────────────

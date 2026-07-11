@@ -143,7 +143,9 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
         } catch (err) {
           reportError(err, { module: 'PurchaseStore', action: 'updateCustomerInfo.verifyTrial', severity: 'error' });
         }
-      })();
+      })().catch(err => {
+        reportError(err, { module: 'PurchaseStore', action: 'updateCustomerInfo.verifyTrial.unhandled', severity: 'error' });
+      });
     } else if (profile.isPro !== isProActive && !isPrivileged) {
       useAuthStore.getState().setProfile({
         ...profile,

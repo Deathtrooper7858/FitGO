@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { useKeyboardNavBar } from '../hooks/useKeyboardNavBar';
 import { useKeyboardHeight } from '../hooks/useKeyboardHeight';
 import { useAICredits } from '../hooks/useAICredits';
-import { useAuthStore, useCoachStore, CoachMessage, useSettingsStore, usePurchaseStore, usePlannerStore, useWorkoutHistoryStore } from '../store';
+import { useAuthStore, useCoachStore, CoachMessage, useSettingsStore, usePurchaseStore, usePlannerStore, useWorkoutHistoryStore, useLeagueStore, useNutritionStore, useBodyStore } from '../store';
 import { sendCoachMessage, buildCoachSystemPrompt, transcribeAudio } from '../services/groq';
 import { supabase } from '../services/supabase';
 import { Spacing, Radius } from '../constants';
@@ -492,8 +492,10 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
       }
 
       const { mealPlans, workoutPlans } = usePlannerStore.getState();
-      const sleepLogs = undefined;
       const workouts = useWorkoutHistoryStore.getState().getWorkoutsForUser(profile.id);
+      const { myPoints, myStreak, squad } = useLeagueStore.getState();
+      const { todayLogs, dailyWater, dailySleep } = useNutritionStore.getState();
+      const { measurements } = useBodyStore.getState();
 
       const systemPrompt = buildCoachSystemPrompt({
         name: profile.name ?? 'User',
@@ -513,9 +515,13 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
         preferences: profile.preferences,
         mealPlans: isProActually ? mealPlans : undefined,
         workoutPlans: isProActually ? workoutPlans : undefined,
-        sleepLogs,
+        sleepLogs: dailySleep,
         workoutHistory: workouts,
         isPremium: isProActually,
+        leagueStats: { points: myPoints, streak: myStreak, squadName: squad?.name },
+        nutritionLogs: todayLogs,
+        waterLogs: dailyWater,
+        bodyMeasurements: measurements,
       }, language, coachType);
 
       const reply = await sendCoachMessage(history, text, systemPrompt, currentImg ?? undefined);
