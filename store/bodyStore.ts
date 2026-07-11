@@ -1,22 +1,12 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import * as SecureStore from 'expo-secure-store';
 import { supabase } from '../services/supabase';
+import { SecureStorage } from '../utils/storage';
+import i18n from '../i18n';
+import { reportError } from '../utils/errorReporter';
 import { BodyMeasurement } from './types';
 import { useAuthStore } from './authStore';
-
-// Secure storage adapter for Zustand
-const secureStorage = {
-  getItem: async (name: string) => {
-    return (await SecureStore.getItemAsync(name)) || null;
-  },
-  setItem: async (name: string, value: string) => {
-    await SecureStore.setItemAsync(name, value);
-  },
-  removeItem: async (name: string) => {
-    await SecureStore.deleteItemAsync(name);
-  },
-};
+import { useToastStore } from './toastStore';
 
 interface BodyState {
   measurements: BodyMeasurement[];
@@ -62,8 +52,11 @@ export const useBodyStore = create<BodyState>()(
           }));
 
           set({ measurements: parsed });
-        } catch (error) {
-          console.error('[BodyStore] Fetch error:', error);
+        } catch (error: any) {
+          if (error?.name === 'AbortError' || error?.message?.includes('AbortError')) {
+            return; // Ignore normal request cancellations
+          }
+          reportError(error, { module: 'BodyStore', action: 'fetchMeasurements' });
         } finally {
           set({ isLoading: false });
         }
@@ -116,8 +109,17 @@ export const useBodyStore = create<BodyState>()(
               measurements: [newM, ...filtered].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             };
           });
+
+          useToastStore.getState().addNotification({
+            title: i18n.t('body.measurementsUpdated'),
+            description: i18n.t('body.measurementsUpdatedDesc'),
+            iconType: 'lucide',
+            lucideIcon: 'Ruler',
+            tier: 'plata',
+            isAchievement: false
+          });
         } catch (error) {
-          console.error('[BodyStore] Add/Upsert error:', error);
+          reportError(error, { module: 'BodyStore', action: 'addMeasurement' });
         }
       },
 
@@ -129,7 +131,7 @@ export const useBodyStore = create<BodyState>()(
           const { error } = await supabase.from('body_measurements').delete().eq('id', id);
           if (error) throw error;
         } catch (error) {
-          console.error('[BodyStore] Delete error:', error);
+          reportError(error, { module: 'BodyStore', action: 'deleteMeasurement', extra: { id } });
         }
       },
 
@@ -153,7 +155,7 @@ export const useBodyStore = create<BodyState>()(
             measurements: state.measurements.map(m => m.id === id ? { ...m, ...updates } : m)
           }));
         } catch (error) {
-          console.error('[BodyStore] Update error:', error);
+          reportError(error, { module: 'BodyStore', action: 'updateMeasurement', extra: { id } });
         }
       },
       
@@ -165,7 +167,7 @@ export const useBodyStore = create<BodyState>()(
     }),
     {
       name: 'ff-body-measurements',
-      storage: createJSONStorage(() => secureStorage),
+      storage: createJSONStorage(() => SecureStorage),
     }
   )
 );

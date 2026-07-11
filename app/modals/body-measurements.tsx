@@ -8,16 +8,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Spacing, Radius } from '../../constants';
-import { useBodyStore, useAuthStore, BodyMeasurement, useNutritionStore, useSettingsStore } from '../../store';
-import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { convertMass, convertLength, formatValue } from '../../utils/units';
-import { CustomAlert, AlertType } from '../../components/CustomAlert';
-import { supabase } from '../../services/supabase';
-import { calculateTDEE, calculateMacros } from '../../services/foodDatabase';
 import * as Haptics from 'expo-haptics';
-
 import { 
   Scale, 
   Percent, 
@@ -31,7 +23,15 @@ import {
   ChevronRight,
   Info
 } from 'lucide-react-native';
+import { Spacing, Radius } from '../../constants';
+import { useBodyStore, useAuthStore, BodyMeasurement, useNutritionStore, useSettingsStore } from '../../store';
+import { useTheme } from '../../hooks/useTheme';
+import { convertMass, convertLength, formatValue } from '../../utils/units';
+import { CustomAlert, AlertType } from '../../components/CustomAlert';
+import { supabase } from '../../services/supabase';
+import { calculateTDEE, calculateMacros } from '../../services/foodDatabase';
 
+  
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = 12;
 
@@ -106,7 +106,7 @@ export default function BodyMeasurementsModal() {
   };
 
 
-  const { selectedDate } = useNutritionStore();
+  const selectedDate = useNutritionStore(s => s.selectedDate);
   const last = measurements[0];
 
   useEffect(() => {
@@ -184,7 +184,11 @@ export default function BodyMeasurementsModal() {
         }
       }
       showAlert('success', t('common.success'), t('profile.updateSuccess'), () => {
-        router.back();
+        if (router.canGoBack()) {
+          router.back();
+        } else {
+          router.dismissAll();
+        }
       });
     } catch (err) {
       showAlert('error', t('common.error'), t('profile.saveMeasurementsFailed'));
@@ -204,12 +208,21 @@ export default function BodyMeasurementsModal() {
   };
 
   const renderMainWidget = (key: 'weight' | 'bodyFat', Icon: any, color: string, min: number, max: number) => {
-    const val = values[key] || (last?.[key] ? (key === 'weight' ? convertMass(last[key]!, 'kg', massUnit).toFixed(1) : last[key]?.toString()) : min.toString()) || min.toString();
+    // inputVal is the raw string in the TextInput — can be empty when user clears it
+    const inputVal = values[key] ?? '';
     const change = getChange(key);
     const unit = key === 'weight' ? massUnit : '%';
 
     return (
-      <View style={[s.mainCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <View style={[s.mainCard, { 
+        backgroundColor: colors.surface, 
+        borderColor: `${colors.primary}20`,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 3
+      }]}>
         <View style={s.mainHeader}>
           <View style={[s.iconCircle, { backgroundColor: color + '15' }]}>
             <Icon size={20} color={color} />
@@ -226,18 +239,19 @@ export default function BodyMeasurementsModal() {
             <View style={s.inputRow}>
               <TextInput
                 style={[s.mainValueInput, { color: colors.textPrimary }]}
-                value={val}
+                value={inputVal}
                 onChangeText={(v) => {
                   const clean = v.replace(/[^0-9.]/g, '');
                   setValues(p => ({ ...p, [key]: clean }));
                 }}
                 onBlur={() => {
-                  if (val && !isNaN(parseFloat(val))) {
-                    setValues(p => ({ ...p, [key]: parseFloat(val).toFixed(1) }));
+                  if (inputVal && !isNaN(parseFloat(inputVal))) {
+                    setValues(p => ({ ...p, [key]: parseFloat(inputVal).toFixed(1) }));
                   }
                 }}
                 keyboardType="numeric"
                 maxLength={5}
+                placeholder="--"
                 placeholderTextColor={colors.textMuted}
                 selectTextOnFocus
                 underlineColorAndroid="transparent"
@@ -262,15 +276,21 @@ export default function BodyMeasurementsModal() {
 
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]} edges={['top']}>
+      <LinearGradient
+        colors={[`${colors.primary}15`, colors.background]}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 0.6 }}
+      />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {/* Header */}
         <View style={s.header}>
-          <TouchableOpacity onPress={() => router.back()} style={[s.closeBtn, { backgroundColor: colors.surfaceAlt }]}>
+          <TouchableOpacity onPress={() => { if (router.canGoBack()) { router.back(); } else { router.dismissAll(); } }} style={[s.closeBtn, { backgroundColor: colors.surfaceAlt }]}>
             <X size={20} color={colors.textPrimary} />
           </TouchableOpacity>
           <Text style={[s.title, { color: colors.textPrimary }]}>{t('profile.bodyMeasurements')}</Text>
           <TouchableOpacity onPress={handleSave} disabled={saving} style={s.saveBtn}>
-            <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.saveGrad}>
+            <LinearGradient colors={[colors.primary, colors.primary + 'C0']} style={s.saveGrad}>
               {saving ? <ActivityIndicator size="small" color="#fff" /> : <Text style={s.saveText}>{t('common.save')}</Text>}
             </LinearGradient>
           </TouchableOpacity>
@@ -278,7 +298,7 @@ export default function BodyMeasurementsModal() {
 
         <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
           <View style={s.infoSection}>
-            <View style={[s.infoBadge, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
+            <View style={[s.infoBadge, { backgroundColor: `${colors.primary}10`, borderColor: `${colors.primary}20` }]}>
               <Info size={14} color={colors.primary} />
               <Text style={[s.infoBadgeText, { color: colors.textSecondary }]}>
                 {last ? `${t('profile.lastMeasurement')}: ${last.date}` : t('profile.bodyMeasurements')}
@@ -299,7 +319,15 @@ export default function BodyMeasurementsModal() {
             {OTHER_FIELDS.map((field) => {
               const change = getChange(field.key);
               return (
-                <View key={field.key} style={[s.fieldRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View key={field.key} style={[s.fieldRow, { 
+                  backgroundColor: colors.surface, 
+                  borderColor: `${colors.primary}20`,
+                  shadowColor: colors.primary,
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 8,
+                  elevation: 2
+                }]}>
                   <View style={s.fieldLeft}>
                     <View style={[s.fieldIcon, { backgroundColor: colors.surfaceAlt }]}>
                       <field.icon size={18} color={colors.textSecondary} />

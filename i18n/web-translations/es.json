@@ -70,12 +70,90 @@
       "fats": "Grasas",
       "today": "Hoy",
       "kcal": "kcal consumidas"
+    },
+    "extraFeatures": {
+      "subtitle": "MÁS FUNCIONALIDADES",
+      "title": "Todo lo que necesitas, y más",
+      "items": {
+        "barcode": {
+          "title": "Escáner de código de barras",
+          "desc": "Escanea cualquier alimento al instante"
+        },
+        "photoScan": {
+          "title": "Análisis por foto con IA",
+          "desc": "Sube una foto y la IA identifica tu comida"
+        },
+        "voiceInput": {
+          "title": "Entrada por voz",
+          "desc": "Dicta tus comidas y ejercicios con Whisper"
+        },
+        "squads": {
+          "title": "Squads",
+          "desc": "Forma equipo con amigos y compiten juntos"
+        },
+        "macroWars": {
+          "title": "Guerras de Macros",
+          "desc": "Compite semanalmente por los mejores macros"
+        },
+        "leagues": {
+          "title": "Ligas Élite",
+          "desc": "10 rangos competitivos de Bronce a Diamante"
+        },
+        "sleep": {
+          "title": "Tracking de sueño",
+          "desc": "Registra tu descanso para mejor recuperación"
+        },
+        "notifications": {
+          "title": "Notificaciones inteligentes",
+          "desc": "Recordatorios de comidas y logros"
+        },
+        "languages": {
+          "title": "7 idiomas",
+          "desc": "EN, ES, FR, PT, IT, DE, RU"
+        }
+      }
+    },
+    "howItWorks": {
+      "subtitle": "CÓMO FUNCIONA",
+      "title": "3 pasos para empezar",
+      "desc": "Empieza a transformar tu cuerpo en minutos.",
+      "steps": {
+        "1": {
+          "title": "Descarga FitGO",
+          "desc": "Disponible gratis en App Store y Google Play. Crea tu cuenta en segundos."
+        },
+        "2": {
+          "title": "Configura tu perfil",
+          "desc": "Ingresa tus datos, objetivos y preferencias. La IA personaliza todo para ti."
+        },
+        "3": {
+          "title": "Empieza a entrenar",
+          "desc": "Registra comidas, entrena con el mapa muscular y compite en ligas."
+        }
+      }
+    },
+    "testimonials": {
+      "subtitle": "TESTIMONIOS",
+      "title": "Lo que dice nuestra comunidad",
+      "items": {
+        "maria": {
+          "text": "FitGO cambió mi forma de comer. El escáner de código de barras es increíble y el coach IA me ayuda a mantener la disciplina."
+        },
+        "carlos": {
+          "text": "Las Ligas Élite me motivan a entrenar todos los días. Nunca había sido tan constante con el gym. ¡La gamificación funciona!"
+        },
+        "laura": {
+          "text": "Probé MyFitnessPal y Fitia, pero FitGO es mucho más fluida. El mapa muscular y el tracking de macros son perfectos."
+        }
+      }
     }
   },
   "nav": {
     "home": "Inicio",
     "app": "La App",
     "about": "Nosotros",
+    "ranking": "Ranking",
+    "squadsRanking": "Squads",
     "premium": "Premium",
     "login": "Iniciar sesión",
     "logout": "Cerrar sesión",
@@ -212,6 +290,10 @@
         "title": "La idea nace",
         "desc": "Frustrados con las apps de fitness existentes, empezamos a bocetar FitGO en papel."
       },
+      "2026": {
+        "title": "FitGO Web",
+        "desc": "Lanzamos la plataforma web para que puedas gestionar tu cuenta y suscripción desde el navegador."
+      },
       "2025Q1": {
         "title": "Primer prototipo",
         "desc": "El primer build de FitGO corre en nuestros teléfonos. El tracker de peso funciona por primera vez."
@@ -223,10 +305,6 @@
       "2025Q3": {
         "title": "Lanzamiento público",
         "desc": "FitGO llega a App Store y Google Play. La comunidad crece orgánicamente."
-      },
-      "2026": {
-        "title": "FitGO Web",
-        "desc": "Lanzamos la plataforma web para que puedas gestionar tu cuenta y suscripción desde el navegador."
       }
     },
     "team": {
@@ -264,6 +342,7 @@
       "desc": "Desbloquea todo tu potencial",
       "month": "mes",
       "billedAnnually": "Facturado anualmente",
+      "was": "antes",
       "btn": "Obtener Pro",
       "secure": "Pago seguro · Cancela cuando quieras"
     },
@@ -290,16 +369,17 @@
       ]
     },
     "freeFeatures": [
-      "Registro de peso corporal",
+      "Registro de peso y medidas",
       "Tracking de macros básico",
       "Base de datos de alimentos",
       "Rutinas de entrenamiento",
-      "Historial (últimos 30 días)",
-      "Coach con IA",
-      "Guerras de Macros",
-      "Ligas Élite",
-      "Historial ilimitado",
-      "Análisis avanzado de progreso"
+      "Coach IA (3 escaneos/día)",
+      "Escáner de código de barras",
+      "Planificador de comidas básico",
+      "Directorio de ejercicios básico",
+      "Color de nombre predeterminado",
+      "Historial (7 días)",
+      "Anuncios"
     ],
     "freeIncluded": [
       true,
@@ -307,33 +387,126 @@
       true,
       true,
       true,
-      false,
-      false,
-      false,
-      false,
-      false
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
     ],
     "proFeatures": [
       "Todo lo del plan gratuito",
-      "Coach con IA ilimitado",
-      "Guerras de Macros",
-      "Ligas Élite",
+      "Coach IA ilimitado con voz",
+      "Escáner de comida por IA (foto)",
+      "Planificador nutricional IA semanal",
+      "Entrada por voz",
+      "Directorio de ejercicios completo",
+      "Colores premium para tu nombre",
+      "Ligas Élite y Squads",
+      "Guerras de Macros semanales",
+      "Desafíos generados por IA",
       "Historial ilimitado",
-      "Análisis avanzado de progreso",
-      "Escáner de código de barras",
-      "Planificador nutricional IA",
-      "Soporte prioritario",
-      "Sin publicidad"
+      "Sin anuncios"
     ],
     "highlights": {
-      "coach": "Coach IA",
-      "macroWars": "Macro Wars",
-      "leagues": "Ligas Élite",
-      "analysis": "Análisis Pro",
-      "nutrition": "Nutrición IA",
-      "unlimited": "Sin límites"
+      "coach": "Coach IA Ilimitado",
+      "planner": "Planificador IA",
+      "scanner": "Escáner AI",
+      "voice": "Voz a Texto",
+      "directory": "Directorio",
+      "colors": "Colores Premium",
+      "leagues": "Ligas y Squads",
+      "history": "Historial Ilimitado",
+      "ads": "Sin Anuncios"
     },
-    "secure": "Pago seguro · Cancela cuando quieras"
+    "secure": "Pago seguro · Cancela cuando quieras",
+    "errorMsg": "Error al procesar el pago. Intenta de nuevo.",
+    "compare": {
+      "label": "Comparativa",
+      "title": "Gratis vs Pro",
+      "coach": "Coach IA",
+      "coachFree": "3 escaneos/día",
+      "coachPro": "Ilimitado + voz",
+      "scanner": "Escáner de comida",
+      "scannerFree": "Código de barras",
+      "scannerPro": "IA por foto",
+      "planner": "Planificador",
+      "plannerFree": "Básico",
+      "plannerPro": "IA semanal",
+      "voice": "Entrada por voz",
+      "voiceFree": "No disponible",
+      "voicePro": "Ilimitada",
+      "directory": "Directorio ejercicios",
+      "directoryFree": "Básico",
+      "directoryPro": "Completo",
+      "wars": "Guerras de Macros",
+      "warsFree": "No disponible",
+      "warsPro": "Semanales",
+      "squads": "Squads",
+      "squadsFree": "No disponible",
+      "squadsPro": "Ilimitados",
+      "challenges": "Desafíos IA",
+      "challengesFree": "No disponible",
+      "challengesPro": "Personalizados",
+      "history": "Historial",
+      "historyFree": "7 días",
+      "historyPro": "Ilimitado",
+      "colors": "Color de nombre",
+      "colorsFree": "Predeterminado",
+      "colorsPro": "11 premium",
+      "ads": "Anuncios",
+      "adsFree": "Sí",
+      "adsPro": "Sin anuncios"
+    }
+  },
+  "ranking": {
+    "badge": "Ranking Global",
+    "individualTitle": "Ranking Individual",
+    "global": "Global",
+    "desc": "Los mejores usuarios de FitGO ordenados por puntos de liga. Compite por la cima y gana tu lugar en la élite.",
+    "live": "En vivo",
+    "users": "usuarios",
+    "howPoints": "¿Cómo sumar puntos?",
+    "refresh": "Actualizar",
+    "pointsInfo": "Sistema de Puntos",
+    "actions": "Acciones",
+    "mealLog": "Registrar comida",
+    "macroPerfect": "Macros perfectos (5% margen)",
+    "challenge": "Completar desafío",
+    "activity": "Registrar actividad",
+    "achievement": "Logro desbloqueado",
+    "streakMulti": "Multiplicador de racha",
+    "streak0": "0-2 días",
+    "streak3": "3-7 días",
+    "streak8": "8-14 días",
+    "streak15": "15+ días",
+    "streak": "Racha",
+    "days": "días",
+    "grades": "Tabla de Grados",
+    "anonymous": "Anónimo",
+    "errorMsg": "Error al cargar el ranking",
+    "serverInfo": "Estado del Servidor",
+    "serverOnline": "En línea",
+    "totalUsers": "usuarios",
+    "totalSquads": "squads",
+    "totalLogs": "comidas registradas",
+    "proUsers": "Pro",
+    "topUser": "Mejor usuario",
+    "topSquad": "Mejor squad",
+    "loading": "Cargando ranking...",
+    "empty": "Aún no hay usuarios en el ranking"
+  },
+  "squadsRanking": {
+    "badge": "Ranking de Squads",
+    "title": "Ranking de Squads",
+    "global": "Global",
+    "desc": "Los mejores squads de FitGO compitiendo en las Ligas Élite. Forma tu equipo y domina la clasificación.",
+    "live": "En vivo",
+    "squads": "squads",
+    "members": "miembros",
+    "noSquads": "No hay squads aún. ¡Sé el primero en crear uno desde la app!",
+    "errorMsg": "Error al cargar el ranking de squads",
+    "loading": "Cargando squads..."
   },
   "auth": {
     "login": {
@@ -354,7 +527,8 @@
       "btn": "Crear cuenta",
       "loading": "Creando cuenta...",
       "hasAccount": "¿Ya tienes cuenta?",
-      "login": "Inicia sesión"
+      "login": "Inicia sesión",
+      "confirmPassword": "Confirmar contraseña"
     },
     "forgot": {
       "title": "Recupera tu acceso a FitGO.",
@@ -362,7 +536,19 @@
       "email": "Correo electrónico",
       "btn": "Enviar enlace",
       "loading": "Enviando...",
-      "back": "Volver al inicio de sesión"
+      "back": "Volver al inicio de sesión",
+      "successMsg": "Revisa tu correo para el enlace de recuperación."
+    },
+    "reset": {
+      "title": "Establece tu nueva contraseña",
+      "password": "Nueva contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "btn": "Actualizar contraseña",
+      "loading": "Actualizando...",
+      "back": "Volver a iniciar sesión",
+      "successMsg": "Contraseña actualizada correctamente.",
+      "errorMismatch": "Las contraseñas no coinciden.",
+      "errorLength": "La contraseña debe tener al menos 6 caracteres."
     }
   }
 }

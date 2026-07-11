@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { Modal, View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, Platform, TextInput, KeyboardTypeOptions } from 'react-native';
+import { Modal, View, Text, StyleSheet, TouchableOpacity, Animated, Platform, TextInput, KeyboardTypeOptions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AlertCircle, CheckCircle2, Info, HelpCircle, XCircle, Sparkles } from 'lucide-react-native';
 import { useTheme } from '../hooks/useTheme';
 import { Radius, Spacing, Shadow } from '../constants';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { useSettingsStore } from '../store';
+import { useIsPro } from '../hooks/useIsPro';
 
 export type AlertType = 'success' | 'error' | 'warning' | 'info' | 'confirm';
 
@@ -43,6 +43,10 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
   const opacity = useRef(new Animated.Value(0)).current;
   const pulse = useRef(new Animated.Value(1)).current;
   const [inputValue, setInputValue] = React.useState(initialInputValue);
+
+  const { premiumColor } = useSettingsStore();
+  const isProActually = useIsPro();
+  const isPremiumCustom = isProActually && premiumColor && premiumColor.startsWith('#');
 
   useEffect(() => {
     if (visible) {
@@ -87,12 +91,14 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
   };
 
   const getColors = (): [string, string] => {
+    // For success/error/warning we keep their semantic colors.
+    // For confirm and info we apply the premium color if available.
     switch (type) {
       case 'success': return ['#10B981', '#059669'];
       case 'error':   return ['#EF4444', '#B91C1C'];
       case 'warning': return ['#F59E0B', '#D97706'];
-      case 'confirm': return ['#7C5CFC', '#4338CA'];
-      default:        return ['#3B82F6', '#1E40AF'];
+      case 'confirm': return isPremiumCustom ? [premiumColor, premiumColor + 'CC'] : ['#7C5CFC', '#4338CA'];
+      default:        return isPremiumCustom ? [premiumColor, premiumColor + 'CC'] : ['#3B82F6', '#1E40AF'];
     }
   };
 
@@ -330,4 +336,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
 

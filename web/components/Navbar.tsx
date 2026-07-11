@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, usePathname } from "@/i18n/routing";
-import { Menu, X, Zap } from "lucide-react";
+import { Menu, X, Zap, LogOut, ChevronRight } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { createClient } from "@/lib/supabase";
-
 import { User } from "@supabase/supabase-js";
-
 import { useTranslations } from "next-intl";
 
 export default function Navbar() {
@@ -31,16 +29,42 @@ export default function Navbar() {
     return () => listener.subscription.unsubscribe();
   }, [supabase.auth]);
 
-  const t = useTranslations("web");
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (open) {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        document.body.style.overflow = "";
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [open]);
+
+  const handleSignOut = useCallback(async () => {
+    await supabase.auth.signOut();
+    setOpen(false);
+  }, [supabase.auth]);
+
+  const t = useTranslations();
   const navLinks = [
     { href: "/", label: t("nav.home") },
     { href: "/about", label: t("nav.app") },
     { href: "/about-us", label: t("nav.about") },
+    { href: "/ranking", label: t("nav.ranking") },
+    { href: "/squads-ranking", label: t("nav.squadsRanking") },
     { href: "/pricing", label: t("nav.premium") },
   ];
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full px-4 md:w-[90%] max-w-5xl transition-all duration-300">
+    <div suppressHydrationWarning className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full px-4 md:w-[90%] max-w-5xl transition-all duration-300">
       <nav
         className={`rounded-2xl transition-all duration-500 ${
           scrolled
@@ -82,9 +106,7 @@ export default function Navbar() {
           <LanguageSwitcher />
           {user ? (
             <button
-              onClick={async () => {
-                await supabase.auth.signOut();
-              }}
+              onClick={handleSignOut}
               className="text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors"
             >
               {t("nav.logout")}
@@ -105,50 +127,70 @@ export default function Navbar() {
         </div>
 
         {/* Mobile menu button */}
-        <button
-          className="md:hidden text-text-secondary hover:text-text-primary transition-colors"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
-        >
-          {open ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        <div className="md:hidden flex items-center gap-2">
+          <LanguageSwitcher />
+          <button
+            className="text-text-secondary hover:text-text-primary transition-colors p-2"
+            onClick={() => setOpen(!open)}
+            aria-label="Toggle menu"
+          >
+            {open ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile drawer */}
-      {open && (
-        <div className="md:hidden glass border-t border-white/5 px-6 pb-6 pt-4 flex flex-col gap-2">
+      <div
+        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+          open ? "max-h-125 opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="glass border-t border-white/5 px-6 pb-6 pt-4 flex flex-col gap-2">
           {navLinks.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+              className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-between ${
                 pathname === l.href
                   ? "text-primary bg-primary/10"
                   : "text-text-secondary hover:text-text-primary hover:bg-white/5"
               }`}
             >
               {l.label}
+              <ChevronRight size={14} className="opacity-40" />
             </Link>
           ))}
-          <div className="mt-2 flex flex-col gap-2">
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="btn-secondary py-3! text-sm! justify-center"
-            >
-              {t("nav.login")}
-            </Link>
-            <Link
-              href="/register"
-              onClick={() => setOpen(false)}
-              className="btn-primary py-3! text-sm! justify-center"
-            >
-              {t("nav.register")}
-            </Link>
+          <div className="mt-2 flex flex-col gap-2 border-t border-white/5 pt-4">
+            {user ? (
+              <button
+                onClick={handleSignOut}
+                className="btn-secondary py-3! text-sm! justify-center gap-2"
+              >
+                <LogOut size={16} />
+                {t("nav.logout")}
+              </button>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  className="btn-secondary py-3! text-sm! justify-center"
+                >
+                  {t("nav.login")}
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setOpen(false)}
+                  className="btn-primary py-3! text-sm! justify-center"
+                >
+                  {t("nav.register")}
+                </Link>
+              </>
+            )}
           </div>
         </div>
-      )}
+      </div>
       </nav>
     </div>
   );

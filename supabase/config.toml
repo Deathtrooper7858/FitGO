@@ -1,11 +1,43 @@
+# ─── FitGO Supabase Configuration ──────────────────────────────────────────
+# Referencia completa: https://supabase.com/docs/guides/cli/config
+
+# ─── API Settings ──────────────────────────────────────────────────────────
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public"]
+# max_request_body_size = 2097152  # 2MB
+
+# ─── Database Settings ─────────────────────────────────────────────────────
+[db]
+# migration_directory = "supabase/migrations"
+
+# ─── Auth Settings ─────────────────────────────────────────────────────────
+[auth]
+enabled = true
+
+# ─── Storage Settings ──────────────────────────────────────────────────────
+[storage]
+enabled = true
+
+# ─── Edge Functions ────────────────────────────────────────────────────────
 
 [functions.groq-proxy]
 enabled = true
 verify_jwt = true
 import_map = "./functions/groq-proxy/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/groq-proxy/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/groq-proxy/*.html" ]
+
+[functions.edamam-proxy]
+enabled = true
+verify_jwt = true
+import_map = "./functions/edamam-proxy/deno.json"
+entrypoint = "./functions/edamam-proxy/index.ts"
+
+[functions.revenuecat-webhook]
+enabled = true
+verify_jwt = false
+import_map = "./functions/revenuecat-webhook/deno.json"
+entrypoint = "./functions/revenuecat-webhook/index.ts"
+

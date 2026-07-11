@@ -1,16 +1,17 @@
 import {getRequestConfig} from 'next-intl/server';
 import {routing} from './routing';
 
-function cleanKeys(obj: unknown): unknown {
-  if (typeof obj !== 'object' || obj === null) return obj;
-  if (Array.isArray(obj)) return obj.map(cleanKeys);
-  
-  const result: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
-    const cleanKey = key.replace(/\./g, '_');
-    result[cleanKey] = cleanKeys(value);
+function cleanDottedKeys(obj: Record<string, any>): Record<string, any> {
+  const out: Record<string, any> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    const cleanKey = k.replace(/\./g, ' ');
+    if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
+      out[cleanKey] = cleanDottedKeys(v);
+    } else {
+      out[cleanKey] = v;
+    }
   }
-  return result;
+  return out;
 }
 
 export default getRequestConfig(async ({requestLocale}) => {
@@ -20,10 +21,10 @@ export default getRequestConfig(async ({requestLocale}) => {
     locale = routing.defaultLocale;
   }
 
-  const mobileTranslations = (await import(`../../i18n/translations/${locale}.json`)).default;
-  let webTranslations = {};
+  const mobileTranslations = cleanDottedKeys((await import(`../../i18n/translations/${locale}.json`)).default);
+  let webTranslations: Record<string, any> = {};
   try {
-    webTranslations = (await import(`../../i18n/web-translations/${locale}.json`)).default;
+    webTranslations = cleanDottedKeys((await import(`../../i18n/web-translations/${locale}.json`)).default);
   } catch {
     // If web translations don't exist yet, we just use an empty object
   }
@@ -31,9 +32,8 @@ export default getRequestConfig(async ({requestLocale}) => {
   return {
     locale,
     messages: {
-      ...(cleanKeys(mobileTranslations) as Record<string, unknown>),
-      web: webTranslations,
-      ...(webTranslations as Record<string, unknown>)
+      ...mobileTranslations,
+      ...webTranslations,
     }
   };
 });

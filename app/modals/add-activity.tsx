@@ -1,25 +1,27 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  TextInput, ActivityIndicator, Alert, Animated, Platform
+  TextInput, ActivityIndicator, Alert, Animated
 } from 'react-native';
 import * as Crypto from 'expo-crypto';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useTheme } from '../../hooks/useTheme';
-import { useNutritionStore, useSettingsStore } from '../../store';
-import { Radius, Spacing } from '../../constants';
 import { useTranslation } from 'react-i18next';
 import {
   useAudioRecorder, RecordingPresets,
   requestRecordingPermissionsAsync, setAudioModeAsync
 } from 'expo-audio';
-import { transcribeAudio, estimateActivityCalories } from '../../services/groq';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import {
-  X, Search, Mic, Square, Flame, Clock, Sparkles, Plus, Minus, Check, ArrowLeft
+  X, Search, Mic, Square, Flame, Clock, Sparkles, Plus, Minus, Check, ArrowLeft, Lock
 } from 'lucide-react-native';
+import { useTheme } from '../../hooks/useTheme';
+import { useNutritionStore, useSettingsStore } from '../../store';
+import { useIsPro } from '../../hooks/useIsPro';
+
+import { transcribeAudio, estimateActivityCalories } from '../../services/groq';
+import { CustomAlert } from '../../components/CustomAlert';
 
 /** Preset exercise list with fixed kcal-per-30-min values and category mapping. */
 const EXERCISES = [
@@ -43,6 +45,16 @@ const EXERCISES = [
   { id: '18',     name: 'activities.volleyball',    icon: '🏐', kcalPer30m: 155, category: 'sports' },
   { id: '19',     name: 'activities.golf',          icon: '🏌️', kcalPer30m: 130, category: 'sports' },
   { id: '20',     name: 'activities.martial_arts',  icon: '🥋', kcalPer30m: 280, category: 'sports' },
+  { id: '21',     name: 'activities.elliptical',    icon: '⛷️', kcalPer30m: 270, category: 'cardio' },
+  { id: '22',     name: 'activities.rowing',        icon: '🚣', kcalPer30m: 260, category: 'cardio' },
+  { id: '23',     name: 'activities.jump_rope',     icon: '🪢', kcalPer30m: 375, category: 'cardio' },
+  { id: '24',     name: 'activities.stairs',        icon: '🪜', kcalPer30m: 220, category: 'cardio' },
+  { id: '25',     name: 'activities.zumba',         icon: '💃', kcalPer30m: 250, category: 'cardio' },
+  { id: '26',     name: 'activities.powerlifting',  icon: '🦍', kcalPer30m: 210, category: 'strength' },
+  { id: '27',     name: 'activities.stretching',    icon: '🧘‍♂️', kcalPer30m: 75,  category: 'strength' },
+  { id: '28',     name: 'activities.gymnastics',    icon: '🤸‍♀️', kcalPer30m: 160, category: 'strength' },
+  { id: '29',     name: 'activities.baseball',      icon: '⚾', kcalPer30m: 150, category: 'sports' },
+  { id: '30',     name: 'activities.surfing',       icon: '🏄', kcalPer30m: 150, category: 'sports' },
   { id: 'custom', name: 'activities.custom',        icon: '✨', kcalPer30m: 0,   category: 'custom' },
 ];
 
@@ -58,7 +70,11 @@ export default function AddActivityModal() {
   const colors       = useTheme();
   const { language } = useSettingsStore();
   const { id }       = useLocalSearchParams<{ id: string }>();
-  const { addActivityLog, updateActivityLog, activityLogs, selectedDate } = useNutritionStore();
+  const addActivityLog = useNutritionStore(s => s.addActivityLog);
+  const updateActivityLog = useNutritionStore(s => s.updateActivityLog);
+  const activityLogs = useNutritionStore(s => s.activityLogs);
+  const selectedDate = useNutritionStore(s => s.selectedDate);
+  const isProActually = useIsPro();
 
   // If an `id` param was passed, we are editing an existing log entry
   const editingAct = id ? activityLogs.find(a => a.id === id) : null;
@@ -84,6 +100,10 @@ export default function AddActivityModal() {
 
   const [activeCategory, setActiveCategory] = useState<'all' | 'cardio' | 'strength' | 'sports'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Premium alert state
+  const [premiumAlert, setPremiumAlert] = useState(false);
+  const showPremiumAlert = () => setPremiumAlert(true);
 
   // Animated value for the pulsing mic ring while recording
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -190,6 +210,10 @@ export default function AddActivityModal() {
   };
 
   const toggleRecording = () => {
+    if (!isProActually) {
+      showPremiumAlert();
+      return;
+    }
     if (isRecording) {
       stopRecording();
     } else {
@@ -214,9 +238,15 @@ export default function AddActivityModal() {
           t('activities.estimateFailed', 'No pudimos calcular las calorías. Intenta ser más específico.')
         );
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('[AddActivity] Estimate error:', err);
-      Alert.alert(t('common.error'), t('activities.estimateError', 'Error al conectar con la IA.'));
+      const isOffline = err?.message?.includes('Sin conexión') || err?.message?.includes('Network Error');
+      Alert.alert(
+        t('common.error'),
+        isOffline
+          ? t('activities.noInternet', 'Sin conexión a internet. La estimación de IA requiere conexión.')
+          : t('activities.estimateError', 'Error al conectar con la IA.')
+      );
     } finally {
       setIsEstimating(false);
     }
@@ -247,19 +277,6 @@ export default function AddActivityModal() {
     }
   };
 
-  const getBadgeTextColor = (category: string) => {
-    switch (category) {
-      case 'strength':
-        return '#10B981';
-      case 'cardio':
-        return '#F43F5E';
-      case 'sports':
-        return '#06B6D4';
-      default:
-        return '#8B5CF6';
-    }
-  };
-
   // Filter exercises by category and search query (excluding custom entry)
   const filteredExercises = EXERCISES.filter(ex => {
     if (ex.id === 'custom') return false;
@@ -275,11 +292,15 @@ export default function AddActivityModal() {
   // ─── DETAIL VIEW (After exercise selection) ──────────────────────────────────
   if (selected) {
     const badgeBg = getBadgeBg(selected.category);
-    const badgeText = getBadgeTextColor(selected.category);
     const isCustom = selected.id === 'custom';
 
     return (
-      <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <LinearGradient
+          colors={[colors.primary + '15', colors.background, colors.background]}
+          style={StyleSheet.absoluteFill}
+        />
+        <SafeAreaView style={s.safe}>
         {/* Detail Header */}
         <View style={s.detailHeader}>
           <TouchableOpacity
@@ -303,7 +324,11 @@ export default function AddActivityModal() {
 
         <ScrollView contentContainerStyle={s.detailScroll} showsVerticalScrollIndicator={false}>
           {/* Main Hero Icon Card */}
-          <View style={[s.detailHeroCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[s.detailHeroCard, { backgroundColor: colors.surface, borderColor: colors.border, overflow: 'hidden' }]}>
+            <LinearGradient
+              colors={[colors.primary + '15', colors.surface, colors.surface]}
+              style={StyleSheet.absoluteFill}
+            />
             <View style={[s.detailHeroIconBadge, { backgroundColor: badgeBg }]}>
               <Text style={{ fontSize: 36 }}>{selected.icon}</Text>
             </View>
@@ -320,7 +345,11 @@ export default function AddActivityModal() {
           </View>
 
           {/* Duration Card */}
-          <View style={[s.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[s.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border, overflow: 'hidden' }]}>
+            <LinearGradient
+              colors={[colors.primary + '08', colors.surface, colors.surface]}
+              style={StyleSheet.absoluteFill}
+            />
             <View style={s.sectionHeader}>
               <Clock size={16} color={colors.primary} />
               <Text style={[s.sectionLabel, { color: colors.textSecondary }]}>
@@ -439,16 +468,20 @@ export default function AddActivityModal() {
 
           {/* AI Custom Activity Card Content */}
           {isCustom && (
-            <View style={[s.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[s.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border, overflow: 'hidden' }]}>
+              <LinearGradient
+                colors={[colors.primary + '08', colors.surface, colors.surface]}
+                style={StyleSheet.absoluteFill}
+              />
               <View style={s.sectionHeader}>
                 <Sparkles size={16} color={colors.primary} />
                 <Text style={[s.sectionLabel, { color: colors.textSecondary }]}>
-                  {t('activities.whatDidYouDo', '¿Qué actividad hiciste?').toUpperCase()}
+                  {t('activities.whatDidYouDo', 'What activity did you do?').toUpperCase()}
                 </Text>
               </View>
 
               <Text style={[s.instructionsText, { color: colors.textMuted }]}>
-                {t('activities.aiInstructions', 'Toca el micrófono para dictar con tu voz (ej: "Trotemos 40 minutos en el parque") o descríbelo en el campo de texto.')}
+                {t('activities.aiInstructions', 'Tap the microphone to dictate with your voice (e.g. "Let\'s jog 40 minutes in the park") or describe it in the text field.')}
               </Text>
 
               {/* Voice mic record visual feedback */}
@@ -484,37 +517,68 @@ export default function AddActivityModal() {
                   </View>
                 )}
 
-                <TouchableOpacity
-                  onPress={toggleRecording}
-                  disabled={isTranscribing}
-                  activeOpacity={0.85}
-                  style={[
-                    s.micBtn,
-                    {
-                      backgroundColor: isRecording ? colors.error : colors.primary + '15',
-                      borderColor: isRecording ? colors.error : colors.primary + '40',
-                      borderWidth: isRecording ? 0 : 2,
-                    }
-                  ]}
-                >
-                  {isTranscribing ? (
-                    <ActivityIndicator color={colors.primary} size="large" />
-                  ) : isRecording ? (
-                    <Square size={24} color="#FFF" fill="#FFF" />
-                  ) : (
-                    <Mic size={30} color={colors.primary} />
+                <View style={{ position: 'relative' }}>
+                  <TouchableOpacity
+                    onPress={toggleRecording}
+                    disabled={isTranscribing}
+                    activeOpacity={0.85}
+                    style={[
+                      s.micBtn,
+                      {
+                        backgroundColor: !isProActually ? 'rgba(124,92,252,0.08)' : isRecording ? colors.error : colors.primary + '15',
+                        borderColor: !isProActually ? colors.primary + '30' : isRecording ? colors.error : colors.primary + '40',
+                        borderWidth: isRecording ? 0 : 2,
+                        opacity: !isProActually ? 0.7 : 1,
+                      }
+                    ]}
+                  >
+                    {isTranscribing ? (
+                      <ActivityIndicator color={colors.primary} size="large" />
+                    ) : isRecording ? (
+                      <Square size={24} color="#FFF" fill="#FFF" />
+                    ) : (
+                      <Mic size={30} color={!isProActually ? colors.textMuted : colors.primary} />
+                    )}
+                  </TouchableOpacity>
+
+                  {/* Lock badge for non-premium */}
+                  {!isProActually && (
+                    <TouchableOpacity
+                      onPress={showPremiumAlert}
+                      activeOpacity={0.9}
+                      style={{
+                        position: 'absolute',
+                        bottom: -4,
+                        right: -4,
+                        width: 26,
+                        height: 26,
+                        borderRadius: 13,
+                        backgroundColor: '#F59E0B',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        borderWidth: 2,
+                        borderColor: colors.surface,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 4,
+                        elevation: 5,
+                      }}
+                    >
+                      <Lock size={13} color="#fff" strokeWidth={3} />
+                    </TouchableOpacity>
                   )}
-                </TouchableOpacity>
+                </View>
 
                 <Text style={[
                   s.statusText,
                   { color: isRecording ? colors.error : isTranscribing ? colors.primary : colors.textSecondary }
                 ]}>
                   {isRecording
-                    ? `🔴 ${t('scan.recording', 'Grabando... toca para detener')}`
+                    ? `🔴 ${t('scan.recording', 'Recording... tap to stop')}`
                     : isTranscribing
-                    ? `⏳ ${t('scan.transcribing', 'Transcribiendo audio...')}`
-                    : t('scan.tapToRecord', 'Toca el micrófono para dictar con voz')}
+                    ? `⏳ ${t('scan.transcribing', 'Transcribing audio...')}`
+                    : t('scan.tapToRecord', 'Tap the microphone to dictate by voice')}
                 </Text>
               </View>
 
@@ -538,7 +602,7 @@ export default function AddActivityModal() {
                 style={s.estimateBtnWrapper}
               >
                 <LinearGradient
-                  colors={(!customName.trim() || isEstimating) ? ['#475569', '#334155'] : ['#8B5CF6', '#6D28D9']}
+                  colors={(!customName.trim() || isEstimating) ? ['#475569', '#334155'] : [colors.primary, colors.primary + 'CC']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={[s.estimateBtnGrad, { opacity: (!customName.trim() || isEstimating) ? 0.6 : 1 }]}
@@ -561,11 +625,11 @@ export default function AddActivityModal() {
           {/* Calorie Output metric box */}
           <View style={[s.kcalCardWrapper]}>
             <LinearGradient
-              colors={['rgba(244, 63, 94, 0.08)', 'rgba(139, 92, 246, 0.05)']}
-              style={[s.kcalCard, { borderColor: colors.accent + '22' }]}
+              colors={[colors.primary + '15', colors.primary + '05']}
+              style={[s.kcalCard, { borderColor: colors.primary + '22' }]}
             >
-              <View style={[s.kcalCardIconBadge, { backgroundColor: colors.accent + '15' }]}>
-                <Flame size={24} color={colors.accent} fill={colors.accent + '33'} />
+              <View style={[s.kcalCardIconBadge, { backgroundColor: colors.primary + '15' }]}>
+                <Flame size={24} color={colors.primary} fill={colors.primary + '33'} />
               </View>
               <View style={s.kcalCardInfo}>
                 <Text style={[s.kcalCardLabel, { color: colors.textSecondary }]}>
@@ -599,16 +663,18 @@ export default function AddActivityModal() {
                       loggedAt: `${selectedDate}T${new Date().toLocaleTimeString('en-GB')}`,
                     });
                   }
-                  router.back();
                 } catch (err) {
                   console.error('[AddActivity] Save error:', err);
+                } finally {
+                  // Always navigate back — the activity is saved locally even if Supabase sync fails
+                  router.back();
                 }
               }}
               activeOpacity={0.85}
               style={s.saveBtnWrapper}
             >
               <LinearGradient
-                colors={colors.gradientPrimary}
+                colors={[colors.primary, colors.primary + 'CC']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={s.saveBtnGrad}
@@ -632,12 +698,28 @@ export default function AddActivityModal() {
           </View>
         </ScrollView>
       </SafeAreaView>
+      </View>
     );
   }
 
   // ─── GENERAL LIST VIEW (Active activity select) ─────────────────────────────
   return (
-    <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <LinearGradient
+        colors={[colors.primary + '15', colors.background, colors.background]}
+        style={StyleSheet.absoluteFill}
+      />
+      <SafeAreaView style={s.safe}>
+      <CustomAlert
+        visible={premiumAlert}
+        type="confirm"
+        title={`👑 ${t('paywall.premiumFeature', 'Función Premium')}`}
+        message={t('paywall.premiumRequired', 'Esta función es exclusiva para usuarios Premium. ¡Actualiza tu plan para usar el dictado por voz y la estimación con IA!')}
+        confirmText={t('paywall.upgrade', 'Ver Planes')}
+        cancelText={t('common.close', 'Cerrar')}
+        onConfirm={() => { setPremiumAlert(false); router.push('/paywall' as any); }}
+        onCancel={() => setPremiumAlert(false)}
+      />
       {/* Header */}
       <View style={s.header}>
         <Text style={[s.title, { color: colors.textPrimary }]}>
@@ -692,7 +774,7 @@ export default function AddActivityModal() {
               >
                 {isActive ? (
                   <LinearGradient
-                    colors={colors.gradientPrimary}
+                    colors={[colors.primary, colors.primary + 'CC']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={s.activeTabGrad}
@@ -726,11 +808,11 @@ export default function AddActivityModal() {
             style={s.heroCardWrapper}
           >
             <LinearGradient
-              colors={['rgba(139, 92, 246, 0.15)', 'rgba(99, 102, 241, 0.05)']}
+              colors={[colors.primary + '20', colors.primary + '05']}
               style={[s.heroCard, { borderColor: colors.primary + '40' }]}
             >
               <View style={s.heroContent}>
-                <View style={[s.heroIconBadge, { backgroundColor: 'rgba(139, 92, 246, 0.2)' }]}>
+                <View style={[s.heroIconBadge, { backgroundColor: colors.primary + '25' }]}>
                   <Sparkles size={22} color={colors.primary} fill={colors.primary + '33'} />
                 </View>
                 <View style={s.heroInfo}>
@@ -764,9 +846,24 @@ export default function AddActivityModal() {
               <TouchableOpacity
                 key={ex.id}
                 activeOpacity={0.85}
-                style={[s.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                style={[
+                  s.card, 
+                  { 
+                    backgroundColor: colors.surface, 
+                    borderColor: colors.border,
+                    shadowColor: colors.primary,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 12,
+                    elevation: 4
+                  }
+                ]}
                 onPress={() => setSelected(ex)}
               >
+                <LinearGradient
+                  colors={[colors.surface, colors.primary + '05']}
+                  style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
+                />
                 <View style={[s.cardBadge, { backgroundColor: badgeBg }]}>
                   <Text style={{ fontSize: 22 }}>{ex.icon}</Text>
                 </View>
@@ -803,6 +900,7 @@ export default function AddActivityModal() {
         )}
       </ScrollView>
     </SafeAreaView>
+    </View>
   );
 }
 
@@ -1269,3 +1367,4 @@ const s = StyleSheet.create({
     fontWeight: '600'
   }
 });
+

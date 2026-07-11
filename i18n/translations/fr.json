@@ -11,6 +11,7 @@
     "tapToEdit": "Appuyez pour modifier",
     "or": "ou",
     "back": "Retour",
+    "front": "Face",
     "remove": "Supprimer",
     "locale": "fr-FR",
     "done": "Fait",
@@ -37,6 +38,8 @@
     "send": "Envoyer",
     "noResults": "Aucun résultat",
     "tryAnotherTerm": "Essayez un autre terme",
+    "searchFood": "Rechercher un aliment...",
+    "enterFoodName": "Entrez le nom de l'aliment...",
     "camera": "Caméra",
     "gallery": "Galerie",
     "cameraPermissionDenied": "Permission de la caméra requise.",
@@ -49,7 +52,11 @@
     "retake": "Modifier",
     "today": "Aujourd'hui",
     "upgrade": "Passer à Pro",
-    "viewAll": "Historique"
+    "viewAll": "Historique",
+    "swipe": "Glisser",
+    "all": "Tous",
+    "close": "Fermer",
+    "default": "Par défaut"
   },
   "tabs": {
     "dashboard": "Tableau de bord",
@@ -115,7 +122,7 @@
     "carbs": "Glucides",
     "fat": "Lipides",
     "userIdNotFound": "ID utilisateur non trouvé. Veuillez vous reconnecter.",
-    "updateFailed": "Échec de la mise à jour du profil",
+    "updateFailed": "Échec de la mise à jour de votre compte.",
     "notAuth": "Utilisateur non authentifié",
     "uploadFailed": "Échec du téléchargement de la photo de profil",
     "goalQuest": "Quel est votre objectif actuel ?",
@@ -246,7 +253,29 @@
     "takePhotoDesc": "Utilisez la caméra de votre appareil",
     "chooseGallery": "Choisir dans la galerie",
     "chooseGalleryDesc": "Sélectionner une image existante",
-    "goalReached": "Accompli !"
+    "goalReached": "Accompli !",
+    "updateAccountDesc": "Saisissez votre nouvel e-mail ou un nouveau mot de passe. Seuls les champs modifiés seront mis à jour.",
+    "emailAndPasswordUpdated": "Mot de passe mis à jour. Veuillez vérifier la boîte de réception de votre nouvel e-mail pour confirmer le changement.",
+    "emailUpdated": "Vérifiez la boîte de réception de votre nouvel e-mail pour confirmer le changement.",
+    "passwordUpdated": "Mot de passe mis à jour avec succès.",
+    "samePasswordError": "Le nouveau mot de passe doit être différent du mot de passe actuel.",
+    "noChanges": "Vous n'avez apporté aucune modification.",
+    "colors": {
+      "default": "Violet Classique",
+      "gold": "Or d'Élite",
+      "blue": "Bleu Électrique",
+      "green": "Vert Néon",
+      "red": "Rouge Rubis",
+      "orange": "Orange Feu",
+      "magenta": "Magenta Foncé",
+      "pink": "Rose Coucher de Soleil",
+      "emerald": "Vert Émeraude",
+      "turquoise": "Turquoise Profond",
+      "purple": "Violet Impérial",
+      "silver": "Argent Chromé",
+      "defaultSubtitle": "La couleur par défaut"
+    },
+    "inviteFriends": "Inviter des Amis"
   },
   "coach": {
     "title": "Entraîneur Fitz",
@@ -298,7 +327,12 @@
     "email": "Email de Support",
     "hashtag": "Hashtags",
     "moreInfo": "Plus d'informations",
-    "version": "Version"
+    "version": "Version",
+    "website": "Site Web",
+    "credits": "Crédits",
+    "creditsTitle": "Crédits",
+    "creditsMessage": "Les animations (GIFs) du répertoire d'exercices sont la propriété et la courtoisie de ExerciseDB API.",
+    "creditsOk": "Compris"
   },
   "exercise": {
     "title": "Exercice",
@@ -414,7 +448,14 @@
     "privacyLink": "Politique de confidentialité",
     "termsAnd": "et la",
     "mustAcceptTerms": "Vous devez accepter les Conditions Générales et la Politique de Confidentialité pour continuer.",
-    "emailRequired": "Veuillez entrer votre adresse e-mail."
+    "emailRequired": "Veuillez entrer votre adresse e-mail.",
+    "newPassword": "Nouveau mot de passe",
+    "newPasswordPlaceholder": "Laissez vide pour ne pas changer",
+    "sessionFailed": "Impossible de créer la session. Réessayez.",
+    "googleLoginFailed": "Erreur de connexion avec Google",
+    "unexpectedResult": "Résultat inattendu : ",
+    "googleAuthFailed": "Impossible d'obtenir l'URL d'autorisation Google.",
+    "emailAlreadyRegistered": "Cet email est déjà inscrit. Essayez de vous connecter ou de réinitialiser votre mot de passe."
   },
   "dashboard": {
     "greetingMorning": "Bonjour",
@@ -477,7 +518,32 @@
     "evaluatePhysique": "Évaluer le physique",
     "getAIFeedback": "Obtenir des retours IA",
     "withAI": "Avec l'IA",
-    "muscleDirectory": "Annuaire des muscles"
+    "muscleDirectory": "Annuaire des muscles",
+    "muscleEvolution": "Évolution Musculaire",
+    "muscleEvolutionDesc": "Débloquez l'Évolution Musculaire et la Fatigue pour visualiser vos groupes musculaires et leur progression en temps réel.",
+    "fatigueRecovery": "Fatigue & Récupération",
+    "symmetryEmpty": "Pas encore de données musculaires",
+    "symmetryEmptyHint": "Complétez des entraînements dans le Planner pour voir vos groupes musculaires ici.",
+    "viewFatigue": "Voir la Fatigue",
+    "viewEvolution": "Voir l'Évolution",
+    "tapColoredMuscle": "Appuyez sur un muscle coloré pour voir les détails",
+    "levelMortal": "Mortel",
+    "levelWarrior": "Guerrier",
+    "levelSpartan": "Spartiate",
+    "levelDemigod": "Demi-dieu",
+    "levelOlympic": "Olympique",
+    "levelTitan": "Titan",
+    "fatigueRecovered": "Récupéré",
+    "fatigueTired": "Fatigué",
+    "fatigueExhausted": "Épuisé",
+    "sessionImpact": "impact",
+    "sessionImpacts": "impacts",
+    "sessionThisMonth": "ce mois",
+    "sessionRecent": "récents",
+    "dailyTipFallback": "Donnons tout aujourd'hui ! 🔥",
+    "kcalConsumed": "kcal consommées",
+    "remaining": "restantes",
+    "overGoal": "au-dessus de l'objectif"
   },
   "tracker": {
     "title": "Aujourd'hui",
@@ -556,7 +622,21 @@
     "protein": "Protéines",
     "sleep": "Sommeil (h)",
     "target": "Objectif calories",
-    "yesterday": "Hier"
+    "yesterday": "Hier",
+    "macroProgressToday": "Progrès des Macros (Aujourd'hui)",
+    "waterToday": "Eau (Aujourd'hui)",
+    "glass250ml": "Verre (250ml)",
+    "registered": "Enregistré",
+    "kcalAdded": "{{calories}} kcal ont été ajoutées à votre journée.",
+    "waterUpdated": "Eau mise à jour",
+    "waterTodayTotal": "Total d'aujourd'hui : ",
+    "waterAdded": "Eau ajoutée",
+    "stepsAdded": "Pas ajoutés",
+    "stepsTodayTotal": "Total d'aujourd'hui : ",
+    "sleepLogged": "Sommeil enregistré",
+    "sleepRecorded": "Vous avez enregistré ",
+    "sleepHours": "heures de sommeil.",
+    "exerciseAdded": "Exercice ajouté"
   },
   "planner": {
     "title": "Planificateur de Repas",
@@ -640,11 +720,80 @@
     "resetWarningDesc": "Ce soir à 23h59 (dimanche), votre plan hebdomadaire sera réinitialisé automatiquement. La semaine prochaine, vous devrez générer un nouveau plan personnalisé.",
     "pdfDisclaimer": "Ce plan est généré par l'intelligence artificielle. Il ne remplace pas les conseils d'un entraîneur certifié ou d'un médecin. Consultez un professionnel avant de suivre ce plan.",
     "askExercise": "Comment faire ?",
+    "loadKg": "CHARGE (KG)",
+    "valuesSavedNotice": "* Ces valeurs seront enregistrées dans vos progrès lorsque vous terminerez l'entraînement.",
+    "quickDifficultyAdjust": "Ajustement Rapide de la Difficulté",
+    "noEquipment": "Sans Équipement",
     "fullDisclaimerTitle": "Avertissement",
     "fullDisclaimerText": "Le plan généré par FitGO est produit par l'intelligence artificielle à des fins d'information et d'orientation générale. Il ne constitue pas un avis médical, nutritionnel ou de santé professionnel. Les résultats individuels peuvent varier. Consultez toujours un diététicien agréé, un nutritionniste certifié ou un médecin avant d'apporter des changements significatifs à votre alimentation ou à votre routine d'exercice. FitGO n'est pas responsable des dommages ou conséquences résultant de l'utilisation de ces plans. Ce plan se renouvelle automatiquement chaque dimanche à 23h59.",
     "exportShoppingList": "Liste de courses PDF",
     "exportMenu": "Menu PDF",
-    "askRecipe": "Comment le préparer ?"
+    "askRecipe": "Comment le préparer ?",
+    "generateWeekly": "Générer le Plan Hebdomadaire",
+    "warningsTitle": "Avertissements et Précautions",
+    "defaultAIWarning": "Avertissement : je suis une IA et non un professionnel certifié. Le plan que je génère est uniquement à titre indicatif. Consultez toujours un spécialiste avant d'apporter des changements significatifs à votre alimentation ou entraînement.",
+    "emptyWorkoutSub": "Ajoutez des exercices ou ajustez votre semaine",
+    "startWorkout": "Commencer l'Entraînement",
+    "workoutDone": "Entraînement Terminé ! ✅",
+    "markComplete": "Marquer comme Terminé",
+    "viewMuscleDirectory": "Répertoire d'Exercices et GIFs",
+    "consume": "Consommer",
+    "workoutMode": "Mode d'Entraînement",
+    "modeNormal": "Normal",
+    "modeExpress": "Rapide (25m)",
+    "modeHeavy": "Force/Pesant",
+    "modeRecovery": "Récupération",
+    "symmetryFocus": "Focus Symétrie",
+    "symmetryFocusDesc": "L'IA priorisera vos muscles les plus faibles",
+    "aiWorking": "L'IA est en cours...",
+    "aiMsgWorkout1": "Analyse de votre historique musculaire...",
+    "aiMsgWorkout2": "Calcul de la symétrie et de la fatigue...",
+    "aiMsgWorkout3": "Ajustement du volume et de l'intensité...",
+    "aiMsgWorkout4": "Recherche d'exercices de remplacement...",
+    "aiMsgWorkout5": "Optimisation pour la surcharge progressive...",
+    "aiMsgWorkout6": "Finalisation de votre plan parfait...",
+    "aiMsgNutrition1": "Analyse de vos besoins caloriques...",
+    "aiMsgNutrition2": "Équilibrage des macros et micronutriments...",
+    "aiMsgNutrition3": "Sélection de vos aliments préférés...",
+    "aiMsgNutrition4": "Évitement des allergies et restrictions...",
+    "aiMsgNutrition5": "Génération de recettes faciles et rapides...",
+    "aiMsgNutrition6": "Finalisation de votre menu hebdomadaire...",
+    "aiMsgAnalysis1": "Nutritionniste lecture de vos macros...",
+    "aiMsgAnalysis2": "Vérification de vos objectifs caloriques...",
+    "aiMsgAnalysis3": "Rédaction de conseils personnalisés...",
+    "aiMsgAnalysis4": "Génération du plan d'action...",
+    "aiMsgBodyweight1": "Traduction en poids de corps...",
+    "aiMsgBodyweight2": "Recherche d'alternatives de calisthénie...",
+    "aiMsgBodyweight3": "Ajustement de la difficulté sans poids...",
+    "aiMsgBodyweight4": "Presque prêt...",
+    "categories": "Catégories",
+    "totalProducts": "Produits totaux",
+    "products": "produits",
+    "generatedByFitgo": "Généré par FitGO",
+    "checkProducts": "Cochez les articles au fur et à mesure",
+    "generatingList": "Génération de la liste intelligente...",
+    "eqCatBasics": "Bases de Calisthénie",
+    "eqCatBands": "Bandes & Résistance",
+    "eqCatAccessories": "Accessoires Supplémentaires",
+    "eqCatWeights": "Poids & Haltères",
+    "eqPullupBar": "Barre de traction",
+    "eqParallelBars": "Barres parallèles",
+    "eqGymnasticRings": "Anneaux de gymnastique",
+    "eqWeightedVest": "Gilet lesté",
+    "eqTubularBands": "Bandes élastiques tubulaires",
+    "eqLoopBands": "Bandes de résistance (boucles)",
+    "eqTRX": "TRX / Suspension",
+    "eqMat": "Tapis",
+    "eqAbWheel": "Roue abdominale",
+    "eqJumpRope": "Corde à sauter",
+    "eqAdjustableBench": "Banc réglable",
+    "weightPlaceholder": "Ex : 5",
+    "generateShort": "Générer",
+    "howFeelToday": "Comment vous sentez-vous aujourd'hui ?",
+    "energyLow": "Épuisé",
+    "energyNormal": "Normal",
+    "energyBeast": "Bête",
+    "adjustFailed": "Impossible d'ajuster l'entraînement."
   },
   "recipes": {
     "title": "Recettes",
@@ -1027,7 +1176,55 @@
     "snack": "Collation",
     "vitamins": "Vitamines et suppléments",
     "walk": "Marche et marches",
-    "sleep": "Repos et sommeil"
+    "sleep": "Repos et sommeil",
+    "category": {
+      "all": "Tous",
+      "meal": "Repas",
+      "water": "Hydratation",
+      "workout": "Entraînement",
+      "general": "Général",
+      "social": "Social & Compétitif"
+    },
+    "default": {
+      "breakfast": "Petit-déjeuner",
+      "breakfastBody": "C'est l'heure d'un petit-déjeuner sain !",
+      "lunch": "Déjeuner",
+      "lunchBody": "N'oubliez pas votre déjeuner nutritif !",
+      "dinner": "Dîner",
+      "dinnerBody": "C'est l'heure du dîner. Bon appétit !",
+      "snack": "Collation",
+      "snackBody": "C'est l'heure d'une collation saine !",
+      "water": "Eau",
+      "waterBody": "Restez hydraté ! Buvez un verre d'eau.",
+      "waterAfternoon": "Eau après-midi",
+      "waterAfternoonBody": "N'oubliez pas de vous hydrater l'après-midi !",
+      "workout": "Entraînement",
+      "workoutBody": "C'est l'heure d'atteindre votre objectif de mouvement !",
+      "walk": "Marche",
+      "walkBody": "Vérifiez vos pas ! C'est l'heure de marcher.",
+      "cardio": "Cardio",
+      "cardioBody": "Activez votre cardio du jour !",
+      "vitamins": "Vitamines",
+      "vitaminsBody": "N'oubliez pas de prendre vos vitamines et suppléments !",
+      "sleep": "Sommeil",
+      "sleepBody": "Reposez-vous bien pour récupérer !",
+      "log": "Journal",
+      "logBody": "Enregistrez vos repas du jour dans FitGo !",
+      "league": "Ligue",
+      "leagueBody": "La bataille de la ligue ne s'arrête pas ! Vérifiez votre position.",
+      "dailyChallenge": "Défi quotidien",
+      "dailyChallengeBody": "Complétez le défi quotidien avant qu'il n'expire !",
+      "friends": "Amis",
+      "friendsBody": "Voyez ce que vos amis accomplissent aujourd'hui !",
+      "streak": "Série",
+      "streakBody": "Ne brisez pas votre série ! Enregistrez vos progrès.",
+      "achievements": "Succès",
+      "achievementsBody": "Vous avez des succès débloqués qui vous attendent !",
+      "leaderboard": "Classement",
+      "leaderboardBody": "Le classement hebdomadaire se termine bientôt. Montez dans le rang !",
+      "messages": "Messages",
+      "messagesBody": "💬 Vous avez de nouveaux messages sur FitGO Social !"
+    }
   },
   "scan": {
     "title": "Scanner Aliment",
@@ -1051,6 +1248,7 @@
     "detectedFoods": "Aliments Détectés",
     "totalCalories": "Calories Totales",
     "retake": "Reprendre",
+    "missing": "Ajouter manquant",
     "addAll": "Tout ajouter à {{meal}}",
     "barcodeScanned": "Scanné",
     "analysisFailed": "Analyse Échouée",
@@ -1072,7 +1270,11 @@
     "transcribing": "Transcription audio...",
     "tapToRecord": "Appuyez sur le microphone pour dicter par la voix",
     "limitReachedSubPhoto": "Vous avez atteint votre limite mensuelle de scans.",
-    "limitReachedSubText": "Passez à Pro pour des scans illimités."
+    "limitReachedSubText": "Passez à Pro pour des scans illimités.",
+    "photoPrecisionHint": "Pour plus de précision, essayez de bien montrer les proportions.",
+    "textPrecisionHint": "Pour plus de précision, mentionnez explicitement les quantités (ex. 200g) et de quoi il s'agit.",
+    "photoDisclaimer": "L'analyse par photo est une estimation. Les valeurs nutritionnelles peuvent ne pas être 100% précises.",
+    "logTime": "Heure denregistrement"
   },
   "foodDetail": {
     "per": "Par",
@@ -2729,7 +2931,21 @@
       "comment": "Commenter",
       "share": "Partager",
       "writeComment": "Écrire un commentaire...",
-      "edited": "(modifié)"
+      "edited": "(modifié)",
+      "sortRecent": "Plus récents",
+      "sortOldest": "Plus anciens",
+      "sortPopular": "Plus populaires",
+      "sortCommented": "Plus commentés",
+      "filterImages": "Avec images",
+      "filterText": "Texte uniquement",
+      "filterAudio": "Avec audio",
+      "searchPostsPlaceholder": "Rechercher des publications...",
+      "filtersActive": "Filtres actifs",
+      "clearFilters": "Effacer les filtres",
+      "filterLanguage": "Langue",
+      "stop": "Arrêter",
+      "voice": "Voix",
+      "recording": "Enregistrement..."
     },
     "friends": {
       "addFriends": "Ajouter des amis",
@@ -2818,6 +3034,18 @@
       "pendingRequest": "Demande en attente",
       "addFriend": "Ajouter un ami",
       "class": "Classe"
+    },
+    "picker": {
+      "title": "Partager un média",
+      "subtitle": "Que souhaitez-vous partager aujourd'hui?",
+      "takePhoto": "Prendre une photo",
+      "takePhotoDesc": "Utilisez l'appareil photo de votre appareil",
+      "recordVideo": "Enregistrer une vidéo",
+      "recordVideoDesc": "Enregistrez une courte vidéo avec votre appareil",
+      "gallery": "Choisir dans la galerie",
+      "galleryDesc": "Sélectionner des photos ou vidéos existantes",
+      "audio": "Choisir un fichier audio",
+      "audioDesc": "Sélectionner un fichier MP3 ou autre audio"
     },
     "headers": {
       "socialSubtitle": "Connectez-vous avec votre communauté",
@@ -3693,25 +3921,45 @@
     "mySquad": "Mon Équipe",
     "individual": "Individuel",
     "leagues": {
-      "carbono": {
-        "name": "Ligue Carbone",
+      "bronce": {
+        "name": "Ligue Bronze",
         "desc": "Votre point de départ dans FitGO. Gagnez des points pour grimper !"
       },
-      "neon": {
-        "name": "Ligue Néon",
-        "desc": "Ligue intermédiaire. Continuez !"
+      "plata": {
+        "name": "Ligue Argent",
+        "desc": "Vous avez fait le premier vrai pas ! Restez constant."
       },
-      "titanio": {
-        "name": "Ligue Titane",
-        "desc": "Ligue avancée. Vous devenez élite !"
+      "oro": {
+        "name": "Ligue Or",
+        "desc": "Vous prenez cela au sérieux. Excellente constance."
       },
-      "cuarzo": {
-        "name": "Ligue Quartz",
-        "desc": "Ligue compétitive de haut niveau."
+      "platino": {
+        "name": "Ligue Platine",
+        "desc": "Niveau avancé. Vous faites désormais partie de l'élite compétitive."
       },
-      "zenit": {
-        "name": "Ligue Élite Zénith",
-        "desc": "Le sommet de la compétition FitGO."
+      "esmeralda": {
+        "name": "Ligue Émeraude",
+        "desc": "Élite tactique. Vos macros et entraînements sont précis."
+      },
+      "diamante": {
+        "name": "Ligue Diamant",
+        "desc": "Discipline incassable. Niveau expert."
+      },
+      "maestro": {
+        "name": "Ligue Maître",
+        "desc": "Réservé aux vrais maîtres de leur physique."
+      },
+      "leyenda": {
+        "name": "Ligue Légende",
+        "desc": "Votre constance est légendaire. Vous êtes un modèle."
+      },
+      "titan": {
+        "name": "Ligue Titan",
+        "desc": "Pouvoir absolu. Vous appartenez à l'Olympe FitGO."
+      },
+      "celestial": {
+        "name": "Ligue Céleste",
+        "desc": "Le sommet. Le pic le plus haut de la compétition mondiale."
       }
     },
     "squads": {
@@ -3755,7 +4003,17 @@
       "requestJoin": "Demander à rejoindre",
       "noFriendsToInvite": "Vous n'avez pas encore d'amis à inviter.",
       "sent": "Envoyé ✓",
-      "inviteBtn": "Inviter"
+      "inviteBtn": "Inviter",
+      "transferLeaderTitle": "Transférer le Leadership",
+      "transferLeaderMsg": "Transférer le leadership de l'équipe à {{name}} ? Vous perdrez les permissions de créateur.",
+      "deleteSquadTitle": "Supprimer l'équipe",
+      "deleteSquadMsg": "Êtes-vous sûr de vouloir supprimer définitivement votre équipe ?",
+      "deleteSquad": "Supprimer l'équipe",
+      "delete": "Supprimer",
+      "joinFailed": "Impossible de rejoindre le squad.",
+      "createFailed": "Erreur lors de la création du squad.",
+      "invalidCode": "Code squad invalide.",
+      "full": "Ce squad a déjà 5 membres."
     },
     "howItWorks": "Comment ça marche ?",
     "streakMultipliers": "Multiplicateurs de série",
@@ -3809,7 +4067,13 @@
     "squads.inviteBtn": "Inviter",
     "squads.copiedText": "Copié !",
     "squads.podiumTitle": "Podium des ligues",
-    "squads.podiumSub": "Les meilleures équipes de FitGO Competitive"
+    "squads.podiumSub": "Les meilleures équipes de FitGO Competitive",
+    "tab": {
+      "info": "INFO"
+    },
+    "ranks": "Rangs",
+    "ranksList": "Rangs Individuels",
+    "rankLabel": "Rang {{label}}"
   },
   "calendar": {
     "myStreaks": "Mes Séries",
@@ -3822,7 +4086,11 @@
     "recordShort": "Record",
     "activeDay": "Jour actif",
     "today": "Aujourd'hui",
-    "selected": "Sélectionné"
+    "selected": "Sélectionné",
+    "streakAmazing": "Incroyable ! ",
+    "consecutiveDays": " jours consécutifs 🔥",
+    "streakGood": "Vous allez très bien ! Continuez 💪",
+    "streakStart": "Commencez votre série aujourd'hui ! Chaque jour compte ⚡"
   },
   "evaluation": {
     "feedbackTitle": "Verdict du Coach",
@@ -3838,7 +4106,23 @@
     "analyzing": "Analyse de votre développement musculaire...",
     "backToMain": "Retour au début",
     "error": "Une erreur est survenue lors de l'analyse de l'image.",
-    "fatLabel": "Graisse"
+    "fatLabel": "Graisse",
+    "posture": "Analyse de Posture",
+    "symmetry": "Symétrie et Proportion",
+    "recommendations": "Recommandations",
+    "selectArea": "Quelle zone souhaitez-vous évaluer ?",
+    "optionalContext": "Contexte optionnel",
+    "contextPlaceholder": "ex: \"C'est mon bras droit qui fait un curl\"",
+    "deleteConfirmTitle": "Supprimer l'évaluation ?",
+    "deleteConfirmMsg": "Cette action est irréversible.",
+    "proTitle": "L'Évaluation Physique est une fonctionnalité Pro",
+    "proSub": "Débloquez l'analyse physique par IA pour suivre vos progrès.",
+    "fullBody": "Corps Complet",
+    "upperBody": "Haut du Corps",
+    "lowerBody": "Jambes",
+    "backBody": "Dos",
+    "arms": "Bras",
+    "core": "Abdomen"
   },
   "legal": {
     "termsAndConditions": "Termes et Conditions",
@@ -4016,5 +4300,161 @@
       "label": "Brise-Glace",
       "description": "A laissé son premier commentaire."
     }
+  },
+  "noCredits": {
+    "title": "Pas d'énergie IA pour aujourd'hui",
+    "subtitle": "Vous avez utilisé vos crédits quotidiens. Choisissez comment continuer :",
+    "photoDay": "photo/jour",
+    "textDay": "texte/jour",
+    "watchAd": "Regarder une courte vidéo",
+    "watchAdDesc": "Gagnez +1 crédit IA ⚡ gratuit",
+    "free": "GRATUIT",
+    "goPro": "Passer Pro · IA Illimitée",
+    "price": "Seulement 11 800 COP/mois · Annulez quand vous voulez",
+    "videoLimit": "Limite de vidéos atteinte",
+    "comeBack": "Revenez demain pour plus de crédits",
+    "earned": "⚡ +{{count}} crédits gagnés",
+    "earnedSub": "Merci ! Vous pouvez continuer à utiliser IA.",
+    "goProLabel": "Passer Pro · IA Illimitée",
+    "cancel": "Annuler",
+    "close": "Fermer"
+  },
+  "premiumColors": {
+    "title": "Couleur Premium",
+    "proExclusive": "Exclusif aux Pro",
+    "proDesc": "Passez à la version supérieure pour débloquer les couleurs premium et vous démarquer dans l'application.",
+    "upgrade": "Améliorer",
+    "description": "Personnalisez l'apparence de l'application entière en choisissant votre couleur d'accent préférée."
+  },
+  "toast": {
+    "registrationSuccess": "Inscription réussie !",
+    "actionCompleted": "Action terminée !",
+    "attention": "Attention !",
+    "notification": "Notification"
+  },
+  "chat": {
+    "cameraPermissionTitle": "Permission requise",
+    "cameraPermissionMsg": "L'accès à la caméra est nécessaire.",
+    "galleryPermissionTitle": "Permission requise",
+    "galleryPermissionMsg": "L'accès à la galerie est nécessaire.",
+    "micPermissionTitle": "Permission requise",
+    "micPermissionMsg": "L'accès au microphone est nécessaire.",
+    "uploadFailed": "Impossible de télécharger le fichier.",
+    "audioSendFailed": "Impossible d'envoyer l'audio.",
+    "sendMediaTitle": "Envoyer un média",
+    "sendMediaSub": "Choisissez une photo, enregistrez une vidéo ou sélectionnez dans la galerie",
+    "recording": "Enregistrement...",
+    "messagePlaceholder": "Écrivez un message..."
+  },
+  "body": {
+    "measurementsUpdated": "Mesures mises à jour",
+    "measurementsSaved": "Vos mesures corporelles ont été enregistrées."
+  },
+  "notifications": {
+    "channels": {
+      "messages": "💬 Messages",
+      "messagesDesc": "Messages directs des amis",
+      "social": "👥 Social",
+      "socialDesc": "Demandes damitié et activité sociale",
+      "nutrition": "🥗 Nutrition",
+      "nutritionDesc": "Rappels de repas, calories et hydratation",
+      "trainingDesc": "Entraînements, séries et pas",
+      "achievements": "🏆 Succès",
+      "achievementsDesc": "Succès débloqués et récompenses",
+      "reminders": "⏰ Rappels",
+      "remindersDesc": "Rappels programmés",
+      "generalDesc": "Notifications générales de FitGO"
+    },
+    "testTitle": "🔔 FitGO Notifications",
+    "testBody": "Les notifications fonctionnent parfaitement !"
+  },
+  "notifTriggers": {
+    "messageSent": " a envoyé un message.",
+    "joinRequest": "👥 Demande de rejoindre",
+    "joinRequestBody": " veut rejoindre ",
+    "newMember": "🎉 Nouveau membre",
+    "newMemberBody": " a rejoint ",
+    "squadDeleted": "⚠️ Squad supprimé",
+    "squadDeletedBody": "Le leader a dissous le squad ",
+    "removedFromSquad": "⛔ Retiré du squad",
+    "removedFromSquadBody": "Vous avez été retiré de ",
+    "newInvitation": "📩 Nouvelle invitation",
+    "newInvitationBody": "Vous êtes invité à rejoindre ",
+    "leagueMilestone": "🏅 Étape de ligue !",
+    "leagueMilestoneBody": "Votre squad vient d'atteindre ",
+    "leagueMilestonePoints": " points de ligue.",
+    "planShared": "📋 Plan partagé",
+    "planSharedBody": " a partagé un plan dentraînement avec vous.",
+    "challengeStarted": "⚔️ Défi lancé !",
+    "challengeStartedBody": " a commencé. Donnez tout !",
+    "breakfastTitle": "🍳 Petit-déjeuner !",
+    "breakfastBody": "Enregistrez votre petit-déjeuner pour garder votre série.",
+    "lunchTitle": "🥗 Déjeuner !",
+    "lunchBody": "Qu'allez-vous manger aujourd'hui ? Enregistrez-le dans FitGO.",
+    "dinnerTitle": "🍽️ Dîner !",
+    "dinnerBody": "N'oubliez pas d'enregistrer votre dernier repas de la journée.",
+    "snackBody": "Une petite envie ? Pensez à vos macros.",
+    "hydrationMorningTitle": "💧 Hydratation matinale",
+    "hydrationMorningBody": "N'oubliez pas de boire de l'eau. Restez hydraté !",
+    "hydrationAfternoonTitle": "💧 Hydratation linternédiaire",
+    "hydrationAfternoonBody": "Continuez à boire de l'eau, vous êtes presque à votre objectif.",
+    "fastingStarted": "⏳ Jeûne commencé",
+    "fastingStartedBody": "Votre période de jeûne a commencé. Vous pouvez le faire !",
+    "fastingCompleted": "🎉 Jeûne terminé !",
+    "fastingCompletedBody": "Félicitations ! Vous avez atteint votre objectif de jeûne.",
+    "caloriesWarning": "⚠️ Attention aux calories",
+    "caloriesWarningBody": "Vous approchez de votre limite calorique quotidienne.",
+    "caloriesGoalReached": "🎯 Objectif calorique atteint !",
+    "caloriesGoalBody": "Vous avez atteint votre objectif calorique du jour. Bravo !",
+    "workoutPrepTitle": "💪 Préparation dentraînement",
+    "workoutPrepBody": "C'est l'heure de votre boisson ou échauffement !",
+    "weMissYou": "😢 On vous manque !",
+    "weMissYouBody": "Ça fait 2 jours sans entraînement. Reprenez votre progression aujourd'hui !",
+    "achievementUnlocked": "🏆 Succès débloqué !",
+    "achievementUnlockedBody": "Vous venez de débloquer : ",
+    "weighInTitle": "⚖️ Pesée hebdomadaire",
+    "weighInBody": "Il est temps denregistrer votre progression hebdomadaire.",
+    "aiCoachTitle": "🤖 Message de votre Coach IA",
+    "aiCoachBody": "Bonjour ! Consultez votre plan du jour dans l'onglet IA.",
+    "aiSummaryTitle": "🌙 Résumé IA quotidien",
+    "aiSummaryBody": "Voyons comment vous avez géré vos objectifs nutritionnels aujourd'hui.",
+    "streakWarning": "🔥 Ne perdez pas votre série !",
+    "streakWarningBody": "Vous êtes sur une série de ",
+    "streakWarningDays": " jours. Enregistrez quelque chose aujourd'hui pour la maintenir.",
+    "almostSteps": "🚶‍♂️ Presque !",
+    "almostStepsBody": "Il ne vous manque que quelques pas pour votre objectif. Continuez !",
+    "newRecipe": "🥗 Nouvelle recette suggérée",
+    "newRecipeBody": "Le Coach IA a généré une recette spéciale pour vous.",
+    "supplementTitle": "💊 Moment des suppléments",
+    "supplementBody": "N'oubliez pas de prendre vos vitamines/suppléments.",
+    "proExpiring": "🔒 Abonnement Pro",
+    "proExpiringBody": "Votre accès Pro est sur le point d'expirer. Renouvelez pour garder vos avantages."
+  },
+  "aiLoading": {
+    "workout1": "Analyse de votre historique musculaire...",
+    "workout2": "Calcul de symétrie et fatigue...",
+    "workout3": "Ajustement du volume et de lintensité...",
+    "workout4": "Recherche dexercices de remplacement...",
+    "workout5": "Optimisation pour la surcharge progressive...",
+    "workout6": "Finalisation de votre plan parfait...",
+    "nutrition1": "Analyse de vos besoins caloriques...",
+    "nutrition2": "Équilibrage des macros et micronutriments...",
+    "nutrition3": "Sélection de vos aliments préférés...",
+    "nutrition4": "Évitement des allergies et restrictions...",
+    "nutrition5": "Génération de recettes faciles et rapides...",
+    "nutrition6": "Finalisation de votre menu hebdomadaire...",
+    "analysis1": "Nutritionniste en train de lire vos macros...",
+    "analysis2": "Revue de vos objectifs caloriques...",
+    "analysis3": "Rédaction de conseils personnalisés...",
+    "analysis4": "Génération du plan d'action...",
+    "bodyweight1": "Conversion en poids de corps...",
+    "bodyweight2": "Recherche dalternatives de callisthénie...",
+    "bodyweight3": "Ajustement de la difficulté sans poids...",
+    "bodyweight4": "Presque prêt..."
+  },
+  "groq": {
+    "noConnection": "AI Service Error: Pas de connexion internet. Veuillez vérifier votre connexion.",
+    "visionUnavailable": "Le modèle de vision nest pas disponible actuellement. Réessayez plus tard.",
+    "imageTooLarge": "L'image est trop grande. Sélectionnez une image plus petite ou réduisez la qualité."
   }
 }

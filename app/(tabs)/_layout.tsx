@@ -1,16 +1,16 @@
 import { Tabs, router, usePathname } from 'expo-router';
 import { View, Text, StyleSheet, Platform } from 'react-native';
-import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { FileText, BarChart2, MessageCircle, Calendar, Trophy, Users } from 'lucide-react-native';
-import { useAuthStore, usePurchaseStore, useSocialStore } from '../../store';
-import React, { useCallback, useRef } from 'react';
+import { FileText, BarChart2, MessageCircle, Calendar, Users } from 'lucide-react-native';
+import React, { useCallback, useMemo } from 'react';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const TabIcon = React.memo(({ Icon, label, focused, badgeCount }: { Icon: any; label: string; focused: boolean; badgeCount?: number }) => {
+import { useIsPro } from '../../hooks/useIsPro';
+import { useAuthStore, useSocialStore } from '../../store';
+import { useTheme } from '../../hooks/useTheme';
+const TabIcon = React.memo(function TabIcon({ Icon, label, focused, badgeCount }: { Icon: any; label: string; focused: boolean; badgeCount?: number }) {
   const colors = useTheme();
   return (
     <View style={styles.tabItem}>
@@ -50,19 +50,27 @@ const TabIcon = React.memo(({ Icon, label, focused, badgeCount }: { Icon: any; l
   );
 });
 
+const TAB_ROUTES = [
+  '/(tabs)/profile',
+  '/(tabs)/tracker',
+  '/(tabs)/dashboard',
+  '/(tabs)/coach',
+  '/(tabs)/planner',
+  '/(tabs)/social',
+] as const;
+
 export default function TabsLayout() {
   const { t } = useTranslation();
   const colors = useTheme();
   const { profile } = useAuthStore();
-  const { isPro } = usePurchaseStore();
   const pathname = usePathname();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const isProActually = useIsPro();
 
   // Social notifications badge
-  const { totalUnreadCount, friends } = useSocialStore();
-  const pendingFriendRequests = friends.filter(
-    f => f.status === 'pending' && f.user_id_2 === profile?.id
-  ).length;
+  const totalUnreadCount = useSocialStore(s => s.totalUnreadCount);
+  const pendingFriendRequests = useSocialStore(s => s.friends.reduce((count, f) => 
+    count + (f.status === 'pending' && f.user_id_2 === profile?.id ? 1 : 0), 0
+  ));
   const socialBadgeCount = totalUnreadCount + pendingFriendRequests;
 
   const insets = useSafeAreaInsets();
@@ -71,94 +79,97 @@ export default function TabsLayout() {
   const paddingBottom = insets.bottom > 0 ? insets.bottom : (isIOS ? 20 : 8);
   const tabBarHeight = baseHeight + paddingBottom;
 
-  const TAB_ROUTES = [
-    '/(tabs)/tracker',
-    '/(tabs)/dashboard',
-    '/(tabs)/coach',
-    '/(tabs)/planner',
-    '/(tabs)/social',
-  ];
-
   const getCurrentTabIndex = useCallback(() => {
-    if (pathname.includes('tracker'))  return 0;
-    if (pathname.includes('dashboard')) return 1;
-    if (pathname.includes('coach'))    return 2;
-    if (pathname.includes('planner'))  return 3;
-    if (pathname.includes('social'))   return 4;
-    return 0;
+    if (pathname.includes('profile'))   return 0;
+    if (pathname.includes('tracker'))   return 1;
+    if (pathname.includes('dashboard')) return 2;
+    if (pathname.includes('coach'))     return 3;
+    if (pathname.includes('planner'))   return 4;
+    if (pathname.includes('social'))    return 5;
+    return 1;
   }, [pathname]);
 
-  // Track where the gesture started vertically to gate zone-based swipes
-  const gestureStartY = useRef(0);
-  // Only fire main-tab change if swipe starts in the TOP zone (header/widgets)
-  const TOP_ZONE_THRESHOLD = 200;
+  const navigateTab = useCallback((direction: number) => {
+    // Vibrar siempre que se detecte el gesto, sin importar si hay cambio
+    Haptics.selectionAsync();
+    const currentIndex = getCurrentTabIndex();
+    const nextIndex = currentIndex + direction;
+    if (nextIndex < 0 || nextIndex >= TAB_ROUTES.length) return;
+    if (nextIndex === 4 && !isProActually) {
+      router.push('/modals/paywall');
+      return;
+    }
+    router.push(TAB_ROUTES[nextIndex] as any);
+  }, [getCurrentTabIndex, isProActually]);
 
-  const swipeGesture = Gesture.Pan()
-    .activeOffsetX([-40, 40])
-    .failOffsetY([-15, 15])
+  const gestureStartY = React.useRef(0);
+
+  const swipeGesture = useMemo(() => Gesture.Pan()
+    .activeOffsetX([-15, 15])
+    .failOffsetY([-50, 50])
     .runOnJS(true)
     .onBegin((e) => {
-      gestureStartY.current = e.absoluteY;
+      gestureStartY.current = e.y;
     })
     .onEnd((e) => {
-      // Only allow main-tab navigation when gesture starts in the top zone
-      if (gestureStartY.current > TOP_ZONE_THRESHOLD) return;
-      if (Math.abs(e.velocityX) > 500 || Math.abs(e.translationX) > 100) {
-        const direction = e.translationX > 0 ? -1 : 1;
-        const currentIndex = getCurrentTabIndex();
-        const nextIndex = currentIndex + direction;
-        if (nextIndex < 0 || nextIndex >= TAB_ROUTES.length) return;
-        if (nextIndex === 3 && !isProActually) {
-          router.push('/modals/paywall');
-          return;
-        }
-        Haptics.selectionAsync();
-        router.push(TAB_ROUTES[nextIndex] as any);
-      }
-    });
-  
+      // Exclude if we are on the social/community tab to avoid interfering with local sub-tab gestures
+      if (pathname.includes('social')) return;
+
+      // Exclude horizontal swipes starting in the Day Bar vertical zone (Y between 70 and 180)
+      if (gestureStartY.current >= 70 && gestureStartY.current <= 180) return;
+
+      const enoughVelocity = Math.abs(e.velocityX) > 300;
+      const enoughDistance = Math.abs(e.translationX) > 60;
+      if (!enoughVelocity && !enoughDistance) return;
+      const direction = e.translationX > 0 ? -1 : 1;
+      navigateTab(direction);
+    }), [navigateTab, pathname]);
+
+  const tabScreenOptions = useMemo(() => ({
+    headerShown: false,
+    tabBarStyle: {
+      ...styles.tabBar,
+      backgroundColor: colors.surface,
+      borderTopColor: colors.border + '80',
+      height: tabBarHeight,
+      paddingBottom,
+    },
+    tabBarShowLabel: false,
+    tabBarActiveTintColor: colors.tabActive,
+    tabBarInactiveTintColor: colors.tabInactive,
+    tabBarHideOnKeyboard: true,
+    tabBarItemStyle: {
+      ...styles.tabBarItem,
+      height: baseHeight,
+    },
+  }), [colors.surface, colors.border, colors.tabActive, colors.tabInactive, tabBarHeight, paddingBottom, baseHeight]);
+
+  const plannerTabPress = useCallback((e: any) => {
+    if (!isProActually) {
+      e.preventDefault();
+      router.push('/modals/paywall');
+    }
+  }, [isProActually]);
+
   return (
     <GestureDetector gesture={swipeGesture}>
     <View style={{ flex: 1, backgroundColor: colors.surface }}>
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarStyle: [
-            styles.tabBar, 
-            { 
-              backgroundColor: colors.surface, 
-              borderTopColor: colors.border + '80',
-              height: tabBarHeight,
-              paddingBottom: paddingBottom,
-            }
-          ],
-          tabBarShowLabel: false,
-          tabBarActiveTintColor: colors.tabActive,
-          tabBarInactiveTintColor: colors.tabInactive,
-          tabBarHideOnKeyboard: true,
-          tabBarItemStyle: [
-            styles.tabBarItem,
-            {
-              height: baseHeight,
-            }
-          ],
-        }}
-      >
+      <Tabs screenOptions={tabScreenOptions}>
         <Tabs.Screen
           name="tracker/index"
           options={{
-            title: t('tabs.tracker', 'Main'),
-            tabBarIcon: ({ focused }) => (
-              <TabIcon Icon={FileText} label={t('tabs.tracker', 'Main')} focused={focused} />
+            title: t('tabs.tracker', 'Tracker'),
+            tabBarIcon: ({ focused }: { focused: boolean }) => (
+              <TabIcon Icon={FileText} label={t('tabs.tracker', 'Tracker')} focused={focused} />
             ),
           }}
         />
         <Tabs.Screen
           name="dashboard/index"
           options={{
-            title: t('tabs.dashboard', 'Progress'),
-            tabBarIcon: ({ focused }) => (
-              <TabIcon Icon={BarChart2} label={t('tabs.dashboard', 'Progress')} focused={focused} />
+            title: t('tabs.dashboard', 'Dashboard'),
+            tabBarIcon: ({ focused }: { focused: boolean }) => (
+              <TabIcon Icon={BarChart2} label={t('tabs.dashboard', 'Dashboard')} focused={focused} />
             ),
           }}
         />
@@ -166,7 +177,7 @@ export default function TabsLayout() {
           name="coach/index"
           options={{
             title: t('tabs.coach', 'Coach'),
-            tabBarIcon: ({ focused }) => (
+            tabBarIcon: ({ focused }: { focused: boolean }) => (
               <TabIcon Icon={MessageCircle} label={t('tabs.coach', 'Coach')} focused={focused} />
             ),
           }}
@@ -175,24 +186,17 @@ export default function TabsLayout() {
           name="planner/index"
           options={{
             title: t('tabs.planner', 'Planner'),
-            tabBarIcon: ({ focused }) => (
+            tabBarIcon: ({ focused }: { focused: boolean }) => (
               <TabIcon Icon={Calendar} label={t('tabs.planner', 'Planner')} focused={focused} />
             ),
           }}
-          listeners={{
-            tabPress: (e) => {
-              if (!isProActually) {
-                e.preventDefault();
-                router.push('/modals/paywall');
-              }
-            },
-          }}
+          listeners={{ tabPress: plannerTabPress }}
         />
         <Tabs.Screen
           name="social/index"
           options={{
             title: t('tabs.social', 'Social'),
-            tabBarIcon: ({ focused }) => (
+            tabBarIcon: ({ focused }: { focused: boolean }) => (
               <TabIcon
                 Icon={Users}
                 label={t('tabs.social', 'Social')}
@@ -274,3 +278,4 @@ const styles = StyleSheet.create({
     lineHeight: 12,
   },
 });
+

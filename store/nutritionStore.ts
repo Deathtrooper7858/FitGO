@@ -1,706 +1,118 @@
-/**
- * nutritionStore.ts
- *
- * Central Zustand store for daily nutrition tracking, activity logging,
- * water/step/sleep metrics, and food favorites. Data is persisted locally
- * via AsyncStorage (NOT SecureStore — SecureStore has a 2KB limit per key
- * on Android which causes silent failures when todayLogs grows large)
- * and synced to Supabase when the user is authenticated.
- */
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { shallow } from 'zustand/vanilla/shallow';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FoodLog, ActivityLog } from './types';
-import type { FoodItem } from '../services/foodDatabase';
 import { getLocalDateString } from '../utils/date';
-import { useAuthStore } from './authStore';
-import { useLeagueStore, POINTS } from './leagueStore';
-import { supabase } from '../services/supabase';
-import { NotificationTriggers } from '../utils/notificationTriggers';
-import * as Crypto from 'expo-crypto';
+import type { FoodItem } from '../services/foodDatabase';
+import { createFoodLogSlice, initialFoodLogState } from './nutrition/foodLogSlice';
+import { createStreakSlice, initialStreakState } from './nutrition/streakSlice';
+import { createDailyMetricsSlice, initialDailyMetricsState } from './nutrition/dailyMetricsSlice';
+import { createAiUsageSlice, initialAiUsageState } from './nutrition/aiUsageSlice';
+import { selectDailyTotals } from './nutrition/selectors';
+import type { DailyTotals } from './nutrition/selectors';
+import type { FoodLog, ActivityLog } from './types';
 
-// NOTE: We intentionally use AsyncStorage (not SecureStore) here.
-// SecureStore has a hard 2 KB per-key limit on Android which causes
-// silent persist failures once todayLogs / activityLogs grow beyond that.
-
-/** Returns true if the string is a valid UUID v4 format. */
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const isValidUUID = (v: string | null | undefined): boolean =>
-  !!v && UUID_REGEX.test(v);
-
-/** Returns the value if it's a valid UUID, otherwise generates a new one. */
-const ensureUUID = (v: string | null | undefined): string =>
-  isValidUUID(v) ? v! : Crypto.randomUUID();
+export type { DailyTotals };
 
 interface NutritionState {
-  todayLogs:    FoodLog[];
+  todayLogs: FoodLog[];
   selectedDate: string;
-  streakDays:   number;
-  activityCals:  number;
-  activityLogs: ActivityLog[];
-  activeDays:    Record<string, boolean>;
-  plannedDays:   number;
+  streakDays: number;
+  activeDays: Record<string, boolean>;
+  plannedDays: number;
   favoriteFoods: FoodItem[];
-  dailyWater:    Record<string, number>; // date -> ml
-  dailySteps:    Record<string, number>; // date -> steps
-  dailySleep:    Record<string, number>; // date -> hours
-  dailyNeat:     Record<string, string>;
+  dailyWater: Record<string, number>;
+  dailySteps: Record<string, number>;
+  dailySleep: Record<string, number>;
+  dailyNeat: Record<string, string>;
   dailyExercise: Record<string, string>;
-  aiPhotoUsageCount:  number;
-  aiTextUsageCount:   number;
+  activityCals: number;
+  activityLogs: ActivityLog[];
+  aiPhotoUsageCount: number;
+  aiTextUsageCount: number;
   lastAiUsageDate: string;
+
+  addExtraSnack: () => Promise<void>;
+  removeExtraSnack: () => Promise<void>;
+  addLog: (log: FoodLog) => Promise<void>;
+  removeLog: (id: string) => Promise<void>;
+  updateLog: (id: string, updates: Partial<FoodLog>) => Promise<void>;
+  setLogs: (logs: FoodLog[]) => void;
+  addFavorite: (food: FoodItem) => void;
+  removeFavorite: (id: string) => void;
+  fetchLogs: (userId: string, date: string) => Promise<void>;
+  fetchHistory: (userId: string) => Promise<void>;
+
+  setStreak: (days: number) => void;
   updateActivity: (date: string) => void;
-  incrementAiUsage: (mode: 'photo' | 'text') => void;
-  checkAndResetAiLimit: () => void;
-  addLog:       (log: FoodLog) => Promise<void>;
-  removeLog:    (id: string) => Promise<void>;
-  updateLog:    (id: string, updates: Partial<FoodLog>) => Promise<void>;
-  setLogs:      (logs: FoodLog[]) => void;
-  setWater:     (ml: number) => void;
-  addWater:     (ml: number) => void;
-  setDate:      (date: string) => void;
-  setStreak:    (days: number) => void;
-  setSteps:     (steps: number) => void;
-  addSteps:     (steps: number) => void;
-  setSleep:     (hours: number) => void;
-  setActivity:  (cals: number) => void;
+
+  setWater: (ml: number) => void;
+  addWater: (ml: number) => void;
+  setSteps: (steps: number) => void;
+  addSteps: (steps: number) => void;
+  setSleep: (hours: number) => void;
+  setActivity: (cals: number) => void;
   addActivityLog: (activity: ActivityLog) => Promise<void>;
   removeActivityLog: (id: string) => Promise<void>;
   updateActivityLog: (id: string, updates: Partial<ActivityLog>) => Promise<void>;
   setActivityLogs: (activities: ActivityLog[]) => void;
-  setNeat:      (level: string) => void;
+  setNeat: (level: string) => void;
   setExerciseLevel: (level: string) => void;
-  addFavorite:  (food: FoodItem) => void;
-  removeFavorite: (id: string) => void;
-  fetchLogs: (userId: string, date: string) => Promise<void>;
-  fetchHistory: (userId: string) => Promise<void>;
   syncDailyMetrics: () => Promise<void>;
+
+  checkAndResetAiLimit: () => void;
+  incrementAiUsage: (mode: 'photo' | 'text') => void;
+
+  setDate: (date: string) => void;
   reset: () => void;
-  
-  // Extra Snacks logic synchronized here
-  addExtraSnack: () => Promise<void>;
-  removeExtraSnack: () => Promise<void>;
-}
-
-/**
- * Calculates the user's current activity streak (consecutive days with logged data).
- * Starts from today (or yesterday if today has no activity) and counts backwards.
- */
-function recalculateStreak(activeDays: Record<string, boolean>): number {
-  let streak = 0;
-  const todayStr = getLocalDateString();
-  const checkDate = new Date();
-
-  // Allow today to be missing (day might still be ongoing)
-  if (!activeDays[todayStr]) {
-    checkDate.setDate(checkDate.getDate() - 1);
-  }
-
-  let safety = 0;
-  while (safety < 365) {
-    safety++;
-    const dateStr = getLocalDateString(checkDate);
-    if (!activeDays[dateStr]) break;
-    streak++;
-    checkDate.setDate(checkDate.getDate() - 1);
-  }
-
-  return streak;
 }
 
 export const useNutritionStore = create<NutritionState>()(
   persist(
     (set, get) => ({
-      todayLogs:    [],
-      selectedDate: new Date().toLocaleDateString('en-CA'),
-      streakDays:   0,
-      activityCals: 0,
-      activityLogs: [],
-      favoriteFoods: [],
-      activeDays:   {},
-      plannedDays:  0,
-      dailyWater:   {},
-      dailySteps:   {},
-      dailySleep:   {},
-      dailyNeat:    {},
-      dailyExercise:{},
-      aiPhotoUsageCount: 0,
-      aiTextUsageCount:  0,
-      lastAiUsageDate: new Date().toLocaleDateString('en-CA'),
+      ...initialFoodLogState,
+      ...initialStreakState,
+      ...initialDailyMetricsState,
+      ...initialAiUsageState,
 
-      addExtraSnack: async () => {
-        const { profile, setProfile } = useAuthStore.getState();
-        if (!profile) return;
-        const newCount = (profile.extraSnacks || 0) + 1;
-        setProfile({ ...profile, extraSnacks: newCount });
-        if (profile.id) {
-          try {
-            await supabase.from('users').update({ extra_snacks: newCount }).eq('id', profile.id);
-          } catch (err) {
-            console.error('[NutritionStore] addExtraSnack sync error:', err);
-          }
-        }
-      },
+      ...createFoodLogSlice(set, get),
+      ...createStreakSlice(set, get),
+      ...createDailyMetricsSlice(set, get),
+      ...createAiUsageSlice(set, get),
 
-      removeExtraSnack: async () => {
-        const { profile, setProfile } = useAuthStore.getState();
-        if (!profile) return;
-        const newCount = Math.max(0, (profile.extraSnacks || 0) - 1);
-        setProfile({ ...profile, extraSnacks: newCount });
-        if (profile.id) {
-          try {
-            await supabase.from('users').update({ extra_snacks: newCount }).eq('id', profile.id);
-          } catch (err) {
-            console.error('[NutritionStore] removeExtraSnack sync error:', err);
-          }
-        }
-      },
+      setDate: (date) => set({ selectedDate: date }),
 
-      syncDailyMetrics: async () => {
-        const date = get().selectedDate;
-        const { profile } = useAuthStore.getState();
-        if (!profile?.id) return;
-
-        try {
-          const water_ml = get().dailyWater[date] || 0;
-          const steps = get().dailySteps[date] || 0;
-          const sleep_hours = get().dailySleep[date] || 0;
-          const neat_level = get().dailyNeat[date] || null;
-          const exercise_level = get().dailyExercise[date] || null;
-
-          await supabase.from('daily_metrics').upsert({
-            user_id: profile.id,
-            date,
-            water_ml,
-            steps,
-            sleep_hours,
-            neat_level,
-            exercise_level
-          }, { onConflict: 'user_id,date' });
-        } catch (err) {
-          console.error('[NutritionStore] syncDailyMetrics error:', err);
-        }
-      },
-
-      checkAndResetAiLimit: () => {
-        const today = getLocalDateString();
-        if (get().lastAiUsageDate !== today) {
-          set({ aiPhotoUsageCount: 0, aiTextUsageCount: 0, lastAiUsageDate: today });
-        }
-      },
-
-      incrementAiUsage: (mode) => {
-        get().checkAndResetAiLimit();
-        if (mode === 'photo') {
-          set((s) => ({ aiPhotoUsageCount: s.aiPhotoUsageCount + 1 }));
-        } else {
-          set((s) => ({ aiTextUsageCount: s.aiTextUsageCount + 1 }));
-        }
-      },
-
-      updateActivity: (date) => {
-        const { activeDays } = get();
-        if (activeDays[date]) return;
-
-        // Prevent updating streaks/active days for past dates. 
-        // Only the current local device day can be marked as newly active.
-        if (date !== getLocalDateString()) return;
-
-        const newActiveDays = { ...activeDays, [date]: true };
-        const newPlannedDays = Object.keys(newActiveDays).length;
-        const streak = recalculateStreak(newActiveDays);
-
-        set({ activeDays: newActiveDays, plannedDays: newPlannedDays, streakDays: streak });
-      },
-
-      addLog: async (log) => {
-        // Ensure the log has a valid UUID before anything else
-        const safeLog = isValidUUID(log.id) ? log : { ...log, id: Crypto.randomUUID() };
-        set((s) => ({ todayLogs: [...s.todayLogs, safeLog] }));
-        get().updateActivity(safeLog.loggedAt.split('T')[0]);
-
-        const { profile } = useAuthStore.getState();
-        if (profile?.id) {
-          try {
-            const { error } = await supabase.from('food_logs').insert({
-              id: safeLog.id,
-              user_id: profile.id,
-              // food_id omitted: FK constraint requires entry in foods table,
-              // but our foods come from external APIs and don't exist there.
-              // food_name is sufficient to identify what was eaten.
-              food_name: safeLog.foodItem.name,
-              calories: safeLog.calories,
-              protein: safeLog.protein,
-              carbs: safeLog.carbs,
-              fat: safeLog.fat,
-              sugar: safeLog.sugar || 0,
-              fiber: safeLog.fiber || 0,
-              sodium: safeLog.sodium || 0,
-              iron: safeLog.iron || 0,
-              calcium: safeLog.calcium || 0,
-              saturated_fat: safeLog.saturatedFat || 0,
-              trans_fat: safeLog.transFat || 0,
-              grams: safeLog.grams,
-              meal: safeLog.meal,
-              logged_at: safeLog.loggedAt
-            });
-            if (error) {
-              console.warn('[NutritionStore] addLog Supabase error:', error);
-              throw error;
-            }
-
-            // --- Calorie Triggers ---
-            if (profile?.targetCalories) {
-              const dateStr = safeLog.loggedAt.split('T')[0];
-              const logsForDay = get().todayLogs.filter(l => l.loggedAt.startsWith(dateStr));
-              const totalCals = logsForDay.reduce((acc, l) => acc + l.calories, 0);
-              const prevCals = totalCals - safeLog.calories;
-
-              if (totalCals >= profile.targetCalories && prevCals < profile.targetCalories) {
-                NotificationTriggers.nutrition.calorieGoalReached();
-              } else if (totalCals >= profile.targetCalories * 0.9 && totalCals < profile.targetCalories && prevCals < profile.targetCalories * 0.9) {
-                NotificationTriggers.nutrition.calorieWarning();
-              }
-            }
-
-            // Gamification: Award points for logging meal
-            try {
-              const ls = useLeagueStore.getState();
-              console.log(`[NutritionStore] 🎮 Awarding MEAL_LOG points for user ${profile.id}...`);
-              await ls.awardPoints(profile.id, POINTS.MEAL_LOG, 'meal_log');
-              console.log('[NutritionStore] 🎮 MEAL_LOG points awarded successfully');
-              
-              // Check if this log perfected the macros for the day
-              const totals = selectDailyTotals(get());
-              if (profile.targetCalories && profile.macros) {
-                console.log(`[NutritionStore] 🎯 Checking macro perfection - consumed: ${JSON.stringify({ cal: totals.calories, p: totals.protein, c: totals.carbs, f: totals.fat })}, target: ${JSON.stringify({ cal: profile.targetCalories, p: profile.macros.protein, c: profile.macros.carbs, f: profile.macros.fat })}`);
-                await ls.checkAndAwardMacroPoints(
-                  profile.id,
-                  { calories: totals.calories, protein: totals.protein, carbs: totals.carbs, fat: totals.fat },
-                  { calories: profile.targetCalories, protein: profile.macros.protein, carbs: profile.macros.carbs, fat: profile.macros.fat }
-                );
-              }
-            } catch (e) {
-              console.warn('[NutritionStore] ⚠️ Failed to award gamification points:', e);
-            }
-          } catch (err) {
-            console.warn('[NutritionStore] addLog sync error:', err);
-            throw err;
-          }
-        }
-      },
-      removeLog: async (id) => {
-        set((s) => ({ todayLogs: s.todayLogs.filter((l) => l.id !== id) }));
-        try {
-          const { error } = await supabase.from('food_logs').delete().eq('id', id);
-          if (error) {
-            console.error('[NutritionStore] removeLog Supabase error:', error);
-            throw error;
-          }
-        } catch (err) {
-          console.error('[NutritionStore] removeLog sync error:', err);
-          throw err;
-        }
-      },
-      updateLog: async (id, updates) => {
-        set((s) => ({
-          todayLogs: s.todayLogs.map((l) => (l.id === id ? { ...l, ...updates } : l)),
-        }));
-        try {
-          const dbUpdates: any = {};
-          if (updates.meal) dbUpdates.meal = updates.meal;
-          if (updates.grams !== undefined) dbUpdates.grams = updates.grams;
-          if (updates.calories !== undefined) dbUpdates.calories = updates.calories;
-          if (updates.protein !== undefined) dbUpdates.protein = updates.protein;
-          if (updates.carbs !== undefined) dbUpdates.carbs = updates.carbs;
-          if (updates.fat !== undefined) dbUpdates.fat = updates.fat;
-          
-          if (Object.keys(dbUpdates).length > 0) {
-            const { error } = await supabase.from('food_logs').update(dbUpdates).eq('id', id);
-            if (error) throw error;
-          }
-        } catch (err) {
-          console.error('[NutritionStore] updateLog sync error:', err);
-          throw err;
-        }
-      },
-      setLogs:   (logs) => set({ todayLogs: logs }),
-      setWater:  async (ml) => {
-        const safeml = Math.max(0, ml);
-        set((s) => ({ dailyWater: { ...s.dailyWater, [s.selectedDate]: safeml } }));
-        if (safeml > 0) get().updateActivity(get().selectedDate);
-        get().syncDailyMetrics();
-      },
-      addWater:  async (ml) => {
-        const date = get().selectedDate;
-        set((s) => ({ 
-          dailyWater: { ...s.dailyWater, [date]: Math.max(0, (s.dailyWater[date] || 0) + ml) } 
-        }));
-        const newVal = get().dailyWater[date] || 0;
-        if (newVal > 0) get().updateActivity(date);
-        get().syncDailyMetrics();
-      },
-      setDate:   (date) => set({ selectedDate: date }),
-      setStreak: (streakDays) => set({ streakDays }),
-      setSteps:  async (steps) => {
-        const safeSteps = Math.max(0, steps);
-        set((s) => ({ dailySteps: { ...s.dailySteps, [s.selectedDate]: safeSteps } }));
-        if (safeSteps > 0) get().updateActivity(get().selectedDate);
-        get().syncDailyMetrics();
-      },
-      addSteps:  async (steps) => {
-        const date = get().selectedDate;
-        set((s) => ({ 
-          dailySteps: { ...s.dailySteps, [date]: Math.max(0, (s.dailySteps[date] || 0) + steps) } 
-        }));
-        const newVal = get().dailySteps[date] || 0;
-        if (newVal > 0) get().updateActivity(date);
-        get().syncDailyMetrics();
-      },
-      setSleep:  async (hours) => {
-        const date = get().selectedDate;
-        set((s) => ({ dailySleep: { ...s.dailySleep, [date]: hours } }));
-        if (hours > 0) get().updateActivity(date);
-        
-        // Trigger sync in background without awaiting to keep UI snappy
-        get().syncDailyMetrics();
-      },
-      setActivity: (activityCals) => set({ activityCals }),
-      addActivityLog: async (activity) => {
-        set((s) => ({ activityLogs: [...s.activityLogs, activity] }));
-        get().updateActivity(activity.loggedAt.split('T')[0]);
-
-        const { profile } = useAuthStore.getState();
-        if (profile?.id) {
-          try {
-            const { error } = await supabase.from('activity_logs').insert({
-              id:         activity.id,
-              user_id:    profile.id,
-              name:       activity.name,
-              icon:       activity.icon,
-              calories:   activity.calories,
-              duration:   activity.duration,
-              logged_at:  activity.loggedAt.split('T')[0]
-            });
-            if (error) {
-              console.error('[NutritionStore] addActivityLog Supabase error:', error);
-              throw error;
-            }
-            console.log('[NutritionStore] Activity synced successfully');
-          } catch (err) {
-            console.error('[NutritionStore] addActivityLog sync error:', err);
-            // We don't remove from local state yet to allow retry or persistence
-            throw err;
-          }
-        }
-      },
-      removeActivityLog: async (id) => {
-        set((s) => ({ activityLogs: s.activityLogs.filter(a => a.id !== id) }));
-        try {
-          const { error } = await supabase.from('activity_logs').delete().eq('id', id);
-          if (error) {
-            console.error('[NutritionStore] removeActivityLog Supabase error:', error);
-            throw error;
-          }
-        } catch (err) {
-          console.error('[NutritionStore] removeActivityLog sync error:', err);
-          throw err;
-        }
-      },
-      updateActivityLog: async (id, updates) => {
-        set((s) => ({
-          activityLogs: s.activityLogs.map(a => a.id === id ? { ...a, ...updates } : a)
-        }));
-        try {
-          await supabase.from('activity_logs').update({
-            name:       updates.name,
-            icon:       updates.icon,
-            calories:   updates.calories,
-            duration:   updates.duration,
-          }).eq('id', id);
-        } catch (err) {
-          console.error('[NutritionStore] updateActivityLog sync error:', err);
-        }
-      },
-      setActivityLogs: (activityLogs) => set({ activityLogs }),
-      setNeat:     (level) => {
-        set((s) => ({ dailyNeat: { ...s.dailyNeat, [s.selectedDate]: level } }));
-        get().syncDailyMetrics();
-      },
-      setExerciseLevel: (level) => {
-        set((s) => ({ dailyExercise: { ...s.dailyExercise, [s.selectedDate]: level } }));
-        get().syncDailyMetrics();
-      },
-      addFavorite: (food) => set((s) => ({
-        favoriteFoods: s.favoriteFoods.find(f => f.id === food.id)
-          ? s.favoriteFoods
-          : [...s.favoriteFoods, food],
-      })),
-      removeFavorite: (id) => set((s) => ({
-        favoriteFoods: s.favoriteFoods.filter(f => f.id !== id),
-      })),
-
-      fetchLogs: async (userId, date) => {
-        try {
-          // Parallel fetch for better performance.
-          // IMPORTANT: Use .maybeSingle() instead of .single() for daily_metrics —
-          // .single() throws an error when no row exists (common for dates without data).
-          const [foodResult, metricsResult, actResult] = await Promise.all([
-            supabase.from('food_logs').select('*').eq('user_id', userId).eq('logged_at', date),
-            supabase.from('daily_metrics').select('*').eq('user_id', userId).eq('date', date).maybeSingle(),
-            supabase.from('activity_logs').select('*').eq('user_id', userId).eq('logged_at', date),
-          ]);
-
-          const { data, error } = foodResult;
-          if (error) throw error;
-
-          const metricsData = metricsResult.data;
-          const actData = actResult.data;
-          let hasActivityThisDay = false;
-
-          if (metricsData) {
-            if ((metricsData.water_ml ?? 0) > 0 || (metricsData.steps ?? 0) > 0 || (metricsData.sleep_hours ?? 0) > 0) {
-              hasActivityThisDay = true;
-            }
-            set((s) => {
-              const newWater = { ...s.dailyWater };
-              const newSteps = { ...s.dailySteps };
-              const newSleep = { ...s.dailySleep };
-              const newNeat = { ...s.dailyNeat };
-              const newEx = { ...s.dailyExercise };
-
-              if (metricsData.water_ml !== null) newWater[date] = metricsData.water_ml;
-              if (metricsData.steps !== null) newSteps[date] = metricsData.steps;
-              if (metricsData.sleep_hours !== null) newSleep[date] = Number(metricsData.sleep_hours);
-              if (metricsData.neat_level) newNeat[date] = metricsData.neat_level;
-              if (metricsData.exercise_level) newEx[date] = metricsData.exercise_level;
-
-              return {
-                dailyWater: newWater,
-                dailySteps: newSteps,
-                dailySleep: newSleep,
-                dailyNeat: newNeat,
-                dailyExercise: newEx
-              };
-            });
-          }
-
-          if (actData && actData.length > 0) {
-            hasActivityThisDay = true;
-            const formattedActs = actData.map((a: any) => ({
-              id:        a.id,
-              name:      a.name,
-              icon:      a.icon,
-              calories:  a.calories,
-              duration:  a.duration,
-              loggedAt:  a.logged_at
-            }));
-            
-            set((s) => {
-              const otherDaysActs = s.activityLogs.filter(act => !act.loggedAt.startsWith(date));
-              const mergedActs = new Map();
-              s.activityLogs.filter(act => act.loggedAt.startsWith(date)).forEach(a => mergedActs.set(a.id, a));
-              formattedActs.forEach(a => mergedActs.set(a.id, a));
-              
-              return {
-                activityLogs: [...otherDaysActs, ...Array.from(mergedActs.values())]
-              };
-            });
-          }
-
-          if (data && data.length > 0) {
-            hasActivityThisDay = true;
-            const formattedLogs = data.map((d: any) => ({
-              id:        d.id,
-              foodItem:  {
-                id:       d.food_id ?? d.id,
-                name:     d.food_name,
-                calories: d.grams > 0 ? Math.round((d.calories / d.grams) * 100) : d.calories,
-                protein:  d.grams > 0 ? Math.round((d.protein  / d.grams) * 100) : d.protein,
-                carbs:    d.grams > 0 ? Math.round((d.carbs    / d.grams) * 100) : d.carbs,
-                fat:      d.grams > 0 ? Math.round((d.fat      / d.grams) * 100) : d.fat,
-                sugar:    d.grams > 0 ? Math.round((d.sugar    / d.grams) * 100) : d.sugar,
-                fiber:    d.grams > 0 ? Math.round((d.fiber    / d.grams) * 100) : d.fiber,
-                sodium:   d.grams > 0 ? Math.round((d.sodium   / d.grams) * 100) : d.sodium,
-                iron:     d.grams > 0 ? Math.round((d.iron     / d.grams) * 100) : d.iron,
-                calcium:  d.grams > 0 ? Math.round((d.calcium  / d.grams) * 100) : d.calcium,
-                saturatedFat: d.grams > 0 ? Math.round((d.saturated_fat / d.grams) * 100) : d.saturated_fat,
-                transFat:     d.grams > 0 ? Math.round((d.trans_fat     / d.grams) * 100) : d.trans_fat,
-                source:   'custom',
-              },
-              grams:    d.grams,
-              meal:     d.meal,
-              loggedAt: d.logged_at,
-              calories: d.calories,
-              protein:  d.protein,
-              carbs:    d.carbs,
-              fat:      d.fat,
-              sugar:    d.sugar,
-              fiber:    d.fiber,
-              sodium:   d.sodium,
-              iron:     d.iron,
-              calcium:  d.calcium,
-              saturatedFat: d.saturated_fat,
-              transFat:     d.trans_fat,
-            }));
-
-            // Merge food logs: keep others, update existing with Supabase data, preserve unsynced local logs
-            set((s) => {
-              const otherDaysLogs = s.todayLogs.filter(log => !log.loggedAt.startsWith(date));
-              const mergedMap = new Map();
-              s.todayLogs.filter(log => log.loggedAt.startsWith(date)).forEach(l => mergedMap.set(l.id, l));
-              formattedLogs.forEach((l: any) => mergedMap.set(l.id, l));
-              
-              return {
-                todayLogs: [...otherDaysLogs, ...Array.from(mergedMap.values())] as any
-              };
-            });
-          }
-
-          if (hasActivityThisDay) {
-            const currentActiveDays = get().activeDays;
-            if (!currentActiveDays[date]) {
-              const rawActiveDays = { ...currentActiveDays, [date]: true };
-              // Trim activeDays to last 90 days to prevent unbounded storage growth
-              const cutoff = new Date();
-              cutoff.setDate(cutoff.getDate() - 90);
-              const cutoffStr = getLocalDateString(cutoff);
-              const newActiveDays = Object.fromEntries(
-                Object.entries(rawActiveDays).filter(([d]) => d >= cutoffStr)
-              );
-              set({ 
-                activeDays: newActiveDays, 
-                plannedDays: Object.keys(newActiveDays).length,
-                streakDays: recalculateStreak(newActiveDays)
-              });
-            }
-          }
-
-          // Force recalculate streak to avoid stale UI
-          const { activeDays } = get();
-          const streak = recalculateStreak(activeDays);
-          if (get().streakDays !== streak) set({ streakDays: streak });
-
-        } catch (err) {
-          console.error('[NutritionStore] fetchLogs error:', err);
-          // Do NOT clear local logs on error to prevent data loss
-          throw err; // Re-throw so UI can handle it
-        }
-      },
-
-      fetchHistory: async (userId) => {
-        try {
-          const thirtyDaysAgo = new Date();
-          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-          const startDate = thirtyDaysAgo.toISOString().split('T')[0];
-
-          const { data, error } = await supabase
-            .from('food_logs')
-            .select('*')
-            .eq('user_id', userId)
-            .gte('logged_at', startDate);
-
-          if (error) throw error;
-
-          if (data) {
-            const formattedLogs = data.map((d: any) => ({
-              id: d.id,
-              foodItem: {
-                id: d.food_id ?? d.id,
-                name: d.food_name,
-                calories: d.grams > 0 ? Math.round((d.calories / d.grams) * 100) : d.calories,
-                protein: d.grams > 0 ? Math.round((d.protein / d.grams) * 100) : d.protein,
-                carbs: d.grams > 0 ? Math.round((d.carbs / d.grams) * 100) : d.carbs,
-                fat: d.grams > 0 ? Math.round((d.fat / d.grams) * 100) : d.fat,
-                sugar:    d.grams > 0 ? Math.round((d.sugar    / d.grams) * 100) : d.sugar,
-                fiber:    d.grams > 0 ? Math.round((d.fiber    / d.grams) * 100) : d.fiber,
-                sodium:   d.grams > 0 ? Math.round((d.sodium   / d.grams) * 100) : d.sodium,
-                iron:     d.grams > 0 ? Math.round((d.iron     / d.grams) * 100) : d.iron,
-                calcium:  d.grams > 0 ? Math.round((d.calcium  / d.grams) * 100) : d.calcium,
-                saturatedFat: d.grams > 0 ? Math.round((d.saturated_fat / d.grams) * 100) : d.saturated_fat,
-                transFat:     d.grams > 0 ? Math.round((d.trans_fat     / d.grams) * 100) : d.trans_fat,
-                source: 'custom',
-              },
-              grams: d.grams,
-              meal: d.meal,
-              loggedAt: d.logged_at,
-              calories: d.calories,
-              protein: d.protein,
-              carbs: d.carbs,
-              fat: d.fat,
-              sugar:    d.sugar,
-              fiber:    d.fiber,
-              sodium:   d.sodium,
-              iron:     d.iron,
-              calcium:  d.calcium,
-              saturatedFat: d.saturated_fat,
-              transFat:     d.trans_fat,
-            }));
-
-            set(s => {
-              const existingIds = new Set(s.todayLogs.map(l => l.id));
-              const newLogs = formattedLogs.filter(l => !existingIds.has(l.id));
-              return { todayLogs: [...s.todayLogs, ...newLogs] as any };
-            });
-            
-            const historyActiveDays: Record<string, boolean> = {};
-            data.forEach((log: any) => {
-              const day = log.logged_at.split('T')[0];
-              historyActiveDays[day] = true;
-            });
-            set(s => {
-              const mergedActiveDays = { ...s.activeDays, ...historyActiveDays };
-              const newPlannedDays = Object.keys(mergedActiveDays).length;
-              const streak = recalculateStreak(mergedActiveDays);
-              return { activeDays: mergedActiveDays, plannedDays: newPlannedDays, streakDays: streak };
-            });
-          }
-        } catch (err) {
-          console.error('[NutritionStore] fetchHistory error:', err);
-        }
-      },
       reset: () => set({
-        todayLogs: [],
-        streakDays: 0,
-        dailyWater: {},
-        dailySteps: {},
-        dailySleep: {},
-        activityCals: 0,
-        dailyNeat: {},
-        dailyExercise: {},
-        activityLogs: [],
-        favoriteFoods: [],
-        aiPhotoUsageCount: 0,
-        aiTextUsageCount: 0,
-        activeDays: {},
-        plannedDays: 0,
+        ...initialFoodLogState,
+        ...initialStreakState,
+        ...initialDailyMetricsState,
+        ...initialAiUsageState,
+        selectedDate: new Date().toLocaleDateString('en-CA'),
         lastAiUsageDate: new Date().toLocaleDateString('en-CA'),
       }),
     }),
     {
-      name: 'ff-nutrition-v2', // bumped version to clear old SecureStore key
+      name: 'ff-nutrition-v2',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (s) => {
-        // Only persist the last 7 days of food/activity logs to keep storage small.
-        // Older data is always fetched fresh from Supabase when needed.
         const cutoff = new Date();
         cutoff.setDate(cutoff.getDate() - 7);
         const cutoffStr = getLocalDateString(cutoff);
         return {
-          todayLogs:     s.todayLogs.filter(l => l.loggedAt >= cutoffStr),
-          streakDays:    s.streakDays,
-          dailyWater:    Object.fromEntries(Object.entries(s.dailyWater).filter(([d]) => d >= cutoffStr)),
-          dailySteps:    Object.fromEntries(Object.entries(s.dailySteps).filter(([d]) => d >= cutoffStr)),
-          dailySleep:    Object.fromEntries(Object.entries(s.dailySleep).filter(([d]) => d >= cutoffStr)),
-          activityCals:  s.activityCals,
-          dailyNeat:     Object.fromEntries(Object.entries(s.dailyNeat).filter(([d]) => d >= cutoffStr)),
+          todayLogs: s.todayLogs.filter(l => l.loggedAt >= cutoffStr),
+          streakDays: s.streakDays,
+          dailyWater: Object.fromEntries(Object.entries(s.dailyWater).filter(([d]) => d >= cutoffStr)),
+          dailySteps: Object.fromEntries(Object.entries(s.dailySteps).filter(([d]) => d >= cutoffStr)),
+          dailySleep: Object.fromEntries(Object.entries(s.dailySleep).filter(([d]) => d >= cutoffStr)),
+          activityCals: s.activityCals,
+          dailyNeat: Object.fromEntries(Object.entries(s.dailyNeat).filter(([d]) => d >= cutoffStr)),
           dailyExercise: Object.fromEntries(Object.entries(s.dailyExercise).filter(([d]) => d >= cutoffStr)),
-          activityLogs:  s.activityLogs.filter(a => a.loggedAt >= cutoffStr),
+          activityLogs: s.activityLogs.filter(a => a.loggedAt >= cutoffStr),
           favoriteFoods: s.favoriteFoods,
-          activeDays:    s.activeDays,
-          plannedDays:   s.plannedDays,
-          aiPhotoUsageCount:  s.aiPhotoUsageCount,
-          aiTextUsageCount:   s.aiTextUsageCount,
+          activeDays: s.activeDays,
+          plannedDays: s.plannedDays,
+          aiPhotoUsageCount: s.aiPhotoUsageCount,
+          aiTextUsageCount: s.aiTextUsageCount,
           lastAiUsageDate: s.lastAiUsageDate,
         };
       },
@@ -708,53 +120,4 @@ export const useNutritionStore = create<NutritionState>()(
   )
 );
 
-/**
- * Zustand Selector: Calculates daily totals based on todayLogs and selectedDate.
- * Usage: const totals = useNutritionStore(selectDailyTotals);
- */
-let _cachedTotalsState: { date: string, logs: any[] } | null = null;
-let _cachedTotalsResult: any = null;
-
-export const selectDailyTotals = (state: NutritionState) => {
-  const date = state.selectedDate;
-  const logs = state.todayLogs;
-
-  if (_cachedTotalsState && _cachedTotalsState.date === date && _cachedTotalsState.logs === logs) {
-    return _cachedTotalsResult;
-  }
-
-  const dateLogs = logs.filter(l => l.loggedAt.startsWith(date));
-  const raw = dateLogs.reduce(
-    (acc, l) => ({
-      calories: acc.calories + (Number(l.calories) || 0),
-      protein:  acc.protein  + (Number(l.protein) || 0),
-      carbs:    acc.carbs    + (Number(l.carbs) || 0),
-      fat:      acc.fat      + (Number(l.fat) || 0),
-      sugar:    acc.sugar    + (Number(l.sugar) || 0),
-      fiber:    acc.fiber    + (Number(l.fiber) || 0),
-      sodium:   acc.sodium   + (Number(l.sodium)   || 0),
-      iron:     acc.iron     + (Number(l.iron)     || 0),
-      calcium:  acc.calcium  + (Number(l.calcium)  || 0),
-      saturatedFat: acc.saturatedFat + (Number(l.saturatedFat) || 0),
-      transFat:     acc.transFat     + (Number(l.transFat)     || 0),
-    }),
-    { calories: 0, protein: 0, carbs: 0, fat: 0, sugar: 0, fiber: 0, sodium: 0, iron: 0, calcium: 0, saturatedFat: 0, transFat: 0 }
-  );
-
-  _cachedTotalsResult = {
-    calories: Math.round(raw.calories),
-    protein:  Math.round(raw.protein * 10) / 10,
-    carbs:    Math.round(raw.carbs * 10) / 10,
-    fat:      Math.round(raw.fat * 10) / 10,
-    sugar:    Math.round(raw.sugar * 10) / 10,
-    fiber:    Math.round(raw.fiber * 10) / 10,
-    sodium:   Math.round(raw.sodium),
-    iron:     Math.round(raw.iron * 10) / 10,
-    calcium:  Math.round(raw.calcium),
-    saturatedFat: Math.round(raw.saturatedFat * 10) / 10,
-    transFat:     Math.round(raw.transFat * 10) / 10,
-  };
-  _cachedTotalsState = { date, logs };
-
-  return _cachedTotalsResult;
-};
+export { selectDailyTotals };

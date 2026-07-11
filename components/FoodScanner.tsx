@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { Camera, useCameraDevice, useFrameOutput, useCameraPermission } from 'react-native-vision-camera';
 import { useTensorflowModel } from 'react-native-fast-tflite';
-import { useRunOnJS } from 'react-native-worklets-core';
 
 export default function FoodScanner() {
   const { hasPermission, requestPermission } = useCameraPermission();
@@ -20,17 +19,12 @@ export default function FoodScanner() {
     }
   }, [hasPermission]);
 
-  // Update UI state from the Worklet thread
-  const updatePrediction = useRunOnJS((result: string) => {
-    setPrediction(result);
-  }, []);
-
   const frameOutput = useFrameOutput({
     pixelFormat: 'rgb',
     onFrame(frame) {
       'worklet';
       if (!model) {
-        frame.dispose();
+        if (frame.dispose) frame.dispose();
         return;
       }
 
@@ -48,8 +42,7 @@ export default function FoodScanner() {
       } catch (e) {
         console.error('[FoodScanner] Frame processing error:', e);
       } finally {
-        // ALWAYS dispose the frame to avoid stalling the camera pipeline
-        frame.dispose();
+        if (frame.dispose) frame.dispose();
       }
     }
   });

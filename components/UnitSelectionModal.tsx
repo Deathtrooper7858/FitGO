@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Check, X } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../hooks/useTheme';
 import { Radius, Spacing } from '../constants';
 
@@ -39,6 +40,7 @@ export function UnitSelectionModal({
   onClose,
 }: UnitSelectionModalProps) {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   return (
     <Modal
@@ -106,7 +108,7 @@ export function UnitSelectionModal({
           </View>
 
           <TouchableOpacity style={s.cancelBtn} onPress={onClose}>
-            <Text style={[s.cancelText, { color: colors.textSecondary }]}>Cancelar</Text>
+            <Text style={[s.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text>
           </TouchableOpacity>
         </View>
       </View>

@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams } from 'expo-router';
 import { Apple, Dumbbell, Activity } from 'lucide-react-native';
-import NutritionistScreen from '../../../components/NutritionistScreen';
-import TrainerScreen from '../../../components/TrainerScreen';
-import DoctorScreen from '../../../components/DoctorScreen';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../../../hooks/useTheme';
+import CoachScreen from '../../../components/CoachScreen';
+import { GlobalBackground } from '../../../components/GlobalBackground';
 
 export default function CoachIndex() {
   const params = useLocalSearchParams();
@@ -24,13 +22,8 @@ export default function CoachIndex() {
   const { t } = useTranslation();
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <LinearGradient
-        colors={['rgba(16, 185, 129, 0.45)', 'rgba(6, 182, 212, 0.15)', 'transparent']}
-        style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 500 }}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-      />
+    <View style={{ flex: 1 }}>
+      <GlobalBackground />
       <SafeAreaView edges={['top']} style={{ backgroundColor: 'transparent' }}>
         <View style={s.toggleWrap}>
           <View style={[s.toggleContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -103,7 +96,7 @@ export default function CoachIndex() {
         </View>
       </SafeAreaView>
       <View style={{ flex: 1 }}>
-        {activeCoach === 'nutritionist' ? <NutritionistScreen /> : activeCoach === 'trainer' ? <TrainerScreen /> : <DoctorScreen />}
+        <CoachScreen coachType={activeCoach} />
       </View>
     </View>
   );

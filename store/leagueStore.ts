@@ -1,23 +1,15 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../services/supabase';
-import { useAuthStore } from './authStore';
 import { NotificationTriggers } from '../utils/notificationTriggers';
 import { getLocalDateString } from '../utils/date';
+import i18n from '../i18n';
+import { reportError } from '../utils/errorReporter';
+import { useAuthStore } from './authStore';
 
-// Secure storage adapter for Zustand
-const secureStorage = {
-  getItem: async (name: string) => {
-    return (await SecureStore.getItemAsync(name)) || null;
-  },
-  setItem: async (name: string, value: string) => {
-    await SecureStore.setItemAsync(name, value);
-  },
-  removeItem: async (name: string) => {
-    await SecureStore.deleteItemAsync(name);
-  },
-};
+// AsyncStorage adapter — SecureStore has a hard 2KB/key limit on Android which
+// causes silent persist failures when leagueStore data grows (members list etc.)
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,6 +21,8 @@ export interface SquadMember {
   avatar_url?: string;
   league_points: number;
   current_streak: number;
+  name_color?: string;
+  total_league_points?: number;
 }
 
 export interface Squad {
@@ -52,6 +46,7 @@ interface LeagueStore {
   squad: Squad | null;
   members: SquadMember[];
   myPoints: number;
+  mySquadPoints: number;
   myStreak: number;
   todayPointsEarned: number;
   lastPointsDate: string;
@@ -84,17 +79,10 @@ interface LeagueStore {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const POINTS = {
+export const LEAGUE_POINTS = {
   MEAL_LOG: 10,
   MACRO_PERFECT: 100,
-  SQUAD_SYNERGY: 50,
 } as const;
-
-const STREAK_MULTIPLIERS: Record<string, number> = {
-  '3':  1.2,
-  '8':  1.5,
-  '15': 2.0,
-};
 
 function getStreakMultiplier(streak: number): number {
   if (streak >= 15) return 2.0;
@@ -117,6 +105,7 @@ export const useLeagueStore = create<LeagueStore>()(
       squad: null,
       members: [],
       myPoints: 0,
+      mySquadPoints: 0,
       myStreak: 0,
       todayPointsEarned: 0,
       lastPointsDate: getLocalDateString(),
@@ -130,23 +119,55 @@ export const useLeagueStore = create<LeagueStore>()(
   fetchMySquad: async (userId: string) => {
     set({ loading: true, error: null });
     try {
-      // Get squad membership
-      const { data: membership, error: memberErr } = await supabase
-        .from('squad_members')
-        .select('squad_id')
-        .eq('user_id', userId)
-        .maybeSingle();
+      // Fetch user stats and squad membership IN PARALLEL (~2x faster than sequential)
+      const [statsResult, memberResult] = await Promise.all([
+        supabase
+          .from('users')
+          .select('league_points, current_streak, squad_members(contributed_points)')
+          .eq('id', userId)
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('squad_members')
+          .select('squad_id')
+          .eq('user_id', userId)
+          .limit(1)
+          .maybeSingle(),
+      ]);
 
-      // Network error: keep cached state, don't wipe
-      if (memberErr) {
-        console.warn('[League] fetchMySquad network error, keeping cache:', memberErr.message);
+      const { data: myStats, error: statsErr } = statsResult;
+      const { data: membership, error: memberErr } = memberResult;
+
+      if (statsErr && statsErr?.message !== 'AbortError: Aborted' && statsErr?.name !== 'AbortError') {
+        console.warn('[League] fetchMySquad stats error, keeping cache:', statsErr.message);
         set({ loading: false });
         return;
       }
 
+      const realPoints  = myStats?.league_points   ?? 0;
+      const realStreak  = myStats?.current_streak  ?? 0;
+      const contributedPoints = myStats?.squad_members?.[0]?.contributed_points ?? 0;
+
+      // Network error: update points but keep squad cached
+      if (memberErr) {
+        if (memberErr?.message !== 'AbortError: Aborted' && memberErr?.name !== 'AbortError') {
+          console.warn('[League] fetchMySquad membership error, keeping cache:', memberErr.message);
+        }
+        // Still update the real points even if squad fetch failed
+        set({ myPoints: realPoints, myStreak: realStreak, loading: false });
+        return;
+      }
+
       if (!membership) {
-        // Definitively no squad in DB
-        set({ squad: null, members: [], myPoints: 0, myStreak: 0, loading: false });
+        // User has no squad — clear squad data but KEEP their real points
+        set({
+          squad: null,
+          members: [],
+          myPoints: realPoints,
+          mySquadPoints: 0,
+          myStreak: realStreak,
+          loading: false,
+        });
         return;
       }
 
@@ -155,11 +176,14 @@ export const useLeagueStore = create<LeagueStore>()(
         .from('squads')
         .select('*')
         .eq('id', membership.squad_id)
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       if (squadErr) {
-        console.warn('[League] Squad fetch error, keeping cache:', squadErr.message);
-        set({ loading: false });
+        if (squadErr?.message !== 'AbortError: Aborted' && squadErr?.name !== 'AbortError') {
+          console.warn('[League] Squad fetch error, keeping cache:', squadErr.message);
+        }
+        set({ myPoints: realPoints, myStreak: realStreak, loading: false });
         return;
       }
 
@@ -167,25 +191,23 @@ export const useLeagueStore = create<LeagueStore>()(
       const { data: leaderboard, error: lbErr } = await supabase
         .rpc('get_squad_leaderboard', { p_squad_id: membership.squad_id });
 
-      if (lbErr) console.warn('[League] Leaderboard error:', lbErr.message);
-
-      // Get my own stats
-      const { data: myStats } = await supabase
-        .from('users')
-        .select('league_points, current_streak')
-        .eq('id', userId)
-        .single();
+      if (lbErr && lbErr.message !== 'AbortError: Aborted' && lbErr.name !== 'AbortError') {
+        console.warn('[League] Leaderboard error:', lbErr.message);
+      }
 
       set({
         squad: squadData as Squad,
         members: (leaderboard ?? []) as SquadMember[],
-        myPoints: myStats?.league_points ?? 0,
-        myStreak: myStats?.current_streak ?? 0,
+        myPoints: realPoints,
+        mySquadPoints: contributedPoints,
+        myStreak: realStreak,
         loading: false,
       });
     } catch (err: any) {
       // Never wipe squad on unknown error - keep cache
-      console.warn('[League] fetchMySquad unexpected error, keeping cache:', err.message);
+      if (err?.message !== 'AbortError: Aborted' && err?.name !== 'AbortError') {
+        console.warn('[League] fetchMySquad unexpected error, keeping cache:', err.message);
+      }
       set({ loading: false });
     }
   },
@@ -198,7 +220,9 @@ export const useLeagueStore = create<LeagueStore>()(
 
       if (error) {
         // Fallback: direct table query with stored points
-        console.warn('[League] fetchTopSquads RPC failed, falling back:', error.message);
+        if (error?.message !== 'AbortError: Aborted' && error?.name !== 'AbortError') {
+          console.warn('[League] fetchTopSquads RPC failed, falling back:', error.message);
+        }
         const { data: fallback, error: fbErr } = await supabase
           .from('squads')
           .select('*')
@@ -209,8 +233,10 @@ export const useLeagueStore = create<LeagueStore>()(
       }
 
       set({ topSquads: (data ?? []) as Squad[] });
-    } catch (err) {
-      console.warn('[League] fetchTopSquads unexpected error:', err);
+    } catch (err: any) {
+      if (err?.message !== 'AbortError: Aborted' && err?.name !== 'AbortError') {
+        console.warn('[League] fetchTopSquads unexpected error:', err);
+      }
     }
   },
 
@@ -234,42 +260,24 @@ export const useLeagueStore = create<LeagueStore>()(
   createSquad: async (name: string, userId: string) => {
     set({ loading: true, error: null });
     try {
-      const { data, error } = await supabase
-        .from('squads')
-        .insert({ name, created_by: userId })
-        .select()
-        .single();
+      // Use atomic RPC — creates squad + adds creator in a single transaction
+      const { data, error } = await supabase.rpc('create_squad_atomic', {
+        p_name: name,
+        p_user_id: userId,
+      });
 
       if (error) throw error;
+      if (!data) throw new Error('Failed to create squad');
 
-      // Auto-join the creator
-      const { error: joinErr } = await supabase
-        .from('squad_members')
-        .insert({ squad_id: data.id, user_id: userId });
-        
-      if (joinErr) throw joinErr;
-
-      // Reset points to 0 and add squad creator achievement
-      const { profile } = useAuthStore.getState();
-      const currentAchievements = profile?.unlockedAchievements || [];
-      const newAchievements = currentAchievements.includes('squad_creator') 
-        ? currentAchievements 
-        : [...currentAchievements, 'squad_creator'];
-
-      await supabase.from('users').update({ 
-        league_points: 0,
-        unlocked_achievements: newAchievements
-      }).eq('id', userId);
-
-      // Give 50 starting points
-      set({ myPoints: 0, todayPointsEarned: 0 }); // reset locally
+      // Reset only squad contribution points, not total league_points
+      set({ mySquadPoints: 0, todayPointsEarned: 0 });
       
       await get().fetchMySquad(userId);
       await get().awardPoints(userId, 50, 'squad_created');
       
       return data as Squad;
     } catch (err: any) {
-      console.error('[LeagueStore] Error creating squad:', err);
+      reportError(err, { module: 'LeagueStore', action: 'createSquad' });
       set({ error: err.message, loading: false });
       return null;
     }
@@ -283,10 +291,11 @@ export const useLeagueStore = create<LeagueStore>()(
         .from('squads')
         .select('*')
         .eq('invite_code', code.trim().toLowerCase())
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       if (findErr || !squadData) {
-        set({ error: 'Código de squad inválido.', loading: false });
+        set({ error: i18n.t('competitive.squads.invalidCode'), loading: false });
         return false;
       }
 
@@ -296,16 +305,16 @@ export const useLeagueStore = create<LeagueStore>()(
 
       if (joinErr) {
         if (joinErr.message.includes('more than 5')) {
-          set({ error: 'Este squad ya tiene 5 miembros.', loading: false });
+          set({ error: i18n.t('competitive.squads.full'), loading: false });
         } else {
           set({ error: joinErr.message, loading: false });
         }
         return false;
       }
 
-      // Reset points so they start fresh in the new squad
-      await supabase.from('users').update({ league_points: 0 }).eq('id', userId);
-      set({ myPoints: 0, todayPointsEarned: 0 });
+      // Reset only squad contribution points, total league_points stay intact
+      await supabase.from('users').update({ squad_points: 0 }).eq('id', userId);
+      set({ mySquadPoints: 0, todayPointsEarned: 0 });
 
       // Fetch existing members' push tokens to notify them
       const { data: membersInfo } = await supabase
@@ -333,17 +342,38 @@ export const useLeagueStore = create<LeagueStore>()(
   leaveSquad: async (userId: string) => {
     const { squad } = get();
     if (!squad) return;
-    await supabase
-      .from('squad_members')
-      .delete()
-      .match({ squad_id: squad.id, user_id: userId });
     
-    // Reset points
-    await supabase.from('users').update({ league_points: 0 }).eq('id', userId);
-    
-    await supabase.rpc('recalculate_league_tier', { p_squad_id: squad.id });
-    
-    set({ squad: null, members: [], myPoints: 0, todayPointsEarned: 0 });
+    set({ loading: true, error: null });
+    try {
+      const { error } = await supabase
+        .from('squad_members')
+        .delete()
+        .match({ squad_id: squad.id, user_id: userId });
+      
+      if (error) throw error;
+      
+      // Reset only squad contribution points, league_points stay intact
+      await supabase.from('users').update({ squad_points: 0 }).eq('id', userId);
+      
+      await supabase.rpc('recalculate_league_tier', { p_squad_id: squad.id });
+
+      // Fetch real points from DB after leaving
+      const { data: freshStats } = await supabase
+        .from('users')
+        .select('league_points, current_streak')
+        .eq('id', userId)
+        .limit(1)
+        .maybeSingle();
+      
+      set({ squad: null, members: [], mySquadPoints: 0, todayPointsEarned: 0,
+            myPoints: freshStats?.league_points ?? get().myPoints,
+            myStreak: freshStats?.current_streak ?? get().myStreak });
+    } catch (err: any) {
+      reportError(err, { module: 'LeagueStore', action: 'leaveSquad' });
+      set({ error: err.message });
+    } finally {
+      set({ loading: false });
+    }
   },
 
   // ── Remove a member (leader only) ─────────────────────────────────────────
@@ -365,14 +395,14 @@ export const useLeagueStore = create<LeagueStore>()(
       await get().fetchMySquad(profile!.id);
 
       // Notify kicked member
-      const { data: memberData } = await supabase.from('users').select('expo_push_token').eq('id', memberId).single();
+      const { data: memberData } = await supabase.from('users').select('expo_push_token').eq('id', memberId).limit(1).maybeSingle();
       if (memberData?.expo_push_token) {
         NotificationTriggers.social.memberKicked(memberData.expo_push_token, squad?.name || 'el squad');
       }
       
       return true;
     } catch (err: any) {
-      console.error('[LeagueStore] Error removing member:', err);
+      reportError(err, { module: 'LeagueStore', action: 'removeMember', extra: { squadId, memberId } });
       set({ error: err.message, loading: false });
       return false;
     }
@@ -381,7 +411,7 @@ export const useLeagueStore = create<LeagueStore>()(
   // ── Delete squad ──────────────────────────────────────────────────────────
   deleteSquad: async (squadId: string) => {
     const { profile } = useAuthStore.getState();
-    const { members } = get();
+    const { members, squad } = get();
     set({ loading: true, error: null });
     try {
       const { error } = await supabase
@@ -390,25 +420,27 @@ export const useLeagueStore = create<LeagueStore>()(
         .match({ id: squadId, created_by: profile?.id });
       if (error) throw error;
 
-      // Reset points for all members and notify them
+      // Reset only squad contribution points for all members, NOT league_points
       if (members.length > 0) {
         const memberIds = members.map(m => m.user_id);
-        await supabase.from('users').update({ league_points: 0 }).in('id', memberIds);
-
-        // Fetch tokens to notify
-        const { data: memberTokens } = await supabase.from('users').select('expo_push_token').in('id', memberIds);
-        if (memberTokens) {
-          const tokens = memberTokens.map(m => m.expo_push_token).filter(Boolean);
+        // Parallel batch operations instead of sequential
+        const [, tokenResult] = await Promise.all([
+          supabase.from('users').update({ squad_points: 0 }).in('id', memberIds),
+          supabase.from('users').select('expo_push_token').in('id', memberIds),
+        ]);
+        
+        if (tokenResult.data) {
+          const tokens = tokenResult.data.map(m => m.expo_push_token).filter(Boolean);
           if (tokens.length > 0) {
             NotificationTriggers.social.squadDeleted(tokens as string[], squad?.name || 'Squad');
           }
         }
       }
 
-      set({ squad: null, members: [], myPoints: 0, todayPointsEarned: 0, loading: false });
+      set({ squad: null, members: [], mySquadPoints: 0, todayPointsEarned: 0, loading: false });
       return true;
     } catch (err: any) {
-      console.error('[LeagueStore] Error deleting squad:', err);
+      reportError(err, { module: 'LeagueStore', action: 'deleteSquad', extra: { squadId } });
       set({ error: err.message, loading: false });
       return false;
     }
@@ -427,7 +459,7 @@ export const useLeagueStore = create<LeagueStore>()(
       if (profile?.id) await get().fetchMySquad(profile.id);
       return true;
     } catch (err: any) {
-      console.error('[LeagueStore] Error transferring leadership:', err);
+      reportError(err, { module: 'LeagueStore', action: 'transferLeadership', extra: { squadId, newOwnerId } });
       set({ error: err.message, loading: false });
       return false;
     }
@@ -441,53 +473,49 @@ export const useLeagueStore = create<LeagueStore>()(
       set({ todayPointsEarned: 0, lastPointsDate: today });
     }
 
-    const { myStreak, squad } = get();
-    
-    // GUARD: Only award points if the user is in a squad
-    if (!squad) {
-      console.log(`[LeagueStore] 🚫 Skipping award of ${points} pts (reason: ${reason}) - user is not in a squad.`);
-      return;
-    }
-
+    const { myStreak } = get();
     const multiplier = getStreakMultiplier(myStreak);
     const finalPoints = Math.round(points * multiplier);
 
-    console.log(`[LeagueStore] ⭐ Awarding ${finalPoints} pts (base: ${points}, streak: ${myStreak}, multiplier: ${multiplier}x, reason: ${reason})`);
+    __DEV__ && console.log(`[LeagueStore] ⭐ Awarding ${finalPoints} pts (base: ${points}, streak: ${myStreak}, multiplier: ${multiplier}x, reason: ${reason})`);
 
-    try {
-      const { error: rpcError } = await supabase.rpc('award_league_points', {
-        p_user_id: userId,
-        p_points: finalPoints,
-        p_reason: reason,
-      });
-
-      if (rpcError) {
-        console.error('[LeagueStore] ❌ award_league_points RPC failed:', rpcError.message);
-        // Still update local state so UI reflects the intent
-      } else {
-        console.log(`[LeagueStore] ✅ Points saved to DB successfully (${finalPoints} pts)`);
-      }
-    } catch (err: any) {
-      console.error('[LeagueStore] ❌ award_league_points exception:', err.message);
-    }
-    
-    if (squad?.id) {
-      try {
-        await supabase.rpc('recalculate_league_tier', { p_squad_id: squad.id });
-      } catch (err: any) {
-        console.warn('[LeagueStore] recalculate_league_tier failed:', err.message);
-      }
-    }
-
+    // Update local state immediately — UI reflects intent without waiting for network
     set(state => ({
       myPoints: state.myPoints + finalPoints,
+      mySquadPoints: state.mySquadPoints + finalPoints,
       todayPointsEarned: state.todayPointsEarned + finalPoints,
     }));
-    
-    console.log(`[LeagueStore] 📊 New totals - myPoints: ${get().myPoints}, todayEarned: ${get().todayPointsEarned}`);
-    
-    // Refresh to get new tier and leaderboard
-    await get().fetchMySquad(userId);
+
+    // Persist to DB in background — never blocks the caller.
+    // award_league_points RPC: updates users.league_points AND users.squad_points.
+    // The DB trigger on squad_points propagates delta to squad_members.contributed_points.
+    void (async () => {
+      try {
+        const { error: rpcErr } = await supabase.rpc('award_league_points', {
+          p_user_id: userId,
+          p_points: points,   // base points — streak multiplier also applied server-side
+          p_reason: reason,
+        });
+        if (rpcErr) {
+          console.warn('[LeagueStore] award_league_points RPC error:', rpcErr.message);
+        }
+      } catch (err: any) {
+        console.warn('[LeagueStore] awardPoints background error:', err.message);
+      }
+
+      // Tier recalculation — non-blocking
+      const currentSquad = get().squad;
+      if (currentSquad?.id) {
+        try {
+          await supabase.rpc('recalculate_league_tier', { p_squad_id: currentSquad.id });
+        } catch (err) {
+          console.warn('[LeagueStore] recalculate_league_tier error:', err);
+        }
+      }
+
+      // Refresh leaderboard so members list is up-to-date
+      await get().fetchMySquad(userId);
+    })();
   },
 
   // ── Award points after checking if macros are within 5% margin ───────────
@@ -498,8 +526,8 @@ export const useLeagueStore = create<LeagueStore>()(
     const caloriesOk = isWithinMargin(consumed.calories, target.calories);
 
     if (proteinOk && carbsOk && fatOk && caloriesOk) {
-      await get().awardPoints(userId, POINTS.MACRO_PERFECT, 'macro_perfect');
-      get().showReward(POINTS.MACRO_PERFECT);
+      await get().awardPoints(userId, LEAGUE_POINTS.MACRO_PERFECT, 'macro_perfect');
+      get().showReward(LEAGUE_POINTS.MACRO_PERFECT);
     }
   },
 
@@ -510,23 +538,24 @@ export const useLeagueStore = create<LeagueStore>()(
   hideReward: () => set({ rewardVisible: false, rewardPoints: 0 }),
 
   reset: () => set({
-    squad: null, members: [], myPoints: 0, myStreak: 0,
+    squad: null, members: [], myPoints: 0, mySquadPoints: 0, myStreak: 0,
     todayPointsEarned: 0, lastPointsDate: getLocalDateString(),
     rewardVisible: false, rewardPoints: 0,
     loading: false, error: null,
   }),
     }),
     {
-      name: 'ff-league-store',
-      storage: createJSONStorage(() => secureStorage),
+      name: 'ff-league-store-v2', // bumped to clear old SecureStore key
+      storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         squad: state.squad,
         members: state.members,
         myPoints: state.myPoints,
+        mySquadPoints: state.mySquadPoints,
         myStreak: state.myStreak,
       }),
     }
   )
 );
 
-export { POINTS, getStreakMultiplier };
+export { getStreakMultiplier };

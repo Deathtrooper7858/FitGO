@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Platform, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Apple, ChevronLeft, Sparkles, AlertCircle, Search, Check, ChevronDown, ChevronUp, Utensils } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuthStore } from '../../store';
 import { supabase } from '../../services/supabase';
 import { Radius, Spacing } from '../../constants';
-import { useTranslation } from 'react-i18next';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Apple, ChevronLeft, Sparkles, AlertCircle, Search, Check, ChevronDown, ChevronUp, Utensils } from 'lucide-react-native';
+
+import { FOOD_CATEGORIES } from '../../components/onboarding/constants';
 
 // Category color palettes & icons
 const CAT_META: Record<string, { gradient: [string, string]; icon: string }> = {
@@ -21,148 +23,6 @@ const CAT_META: Record<string, { gradient: [string, string]; icon: string }> = {
   dairy:    { gradient: ['#74B9FF', '#0984E3'], icon: '🥛' },
   beverages:{ gradient: ['#A29BFE', '#6C5CE7'], icon: '☕' },
 };
-
-const FOOD_CATEGORIES = [
-  {
-    id: 'proteins', title: 'proteins', min: 3,
-    items: [
-      { id: 'chicken', label: 'chicken', emoji: '🍗' },
-      { id: 'beef', label: 'beef', emoji: '🥩' },
-      { id: 'fish', label: 'fish', emoji: '🐟' },
-      { id: 'salmon', label: 'salmon', emoji: '🍣' },
-      { id: 'tuna', label: 'tuna', emoji: '🐠' },
-      { id: 'turkey', label: 'turkey', emoji: '🦃' },
-      { id: 'pork', label: 'pork', emoji: '🍖' },
-      { id: 'eggs', label: 'eggs', emoji: '🥚' },
-      { id: 'tofu', label: 'tofu', emoji: '🍱' },
-      { id: 'greek_yogurt', label: 'greek_yogurt', emoji: '🥄' },
-      { id: 'cottage_cheese', label: 'cottage_cheese', emoji: '🧀' },
-      { id: 'protein_powder', label: 'protein_powder', emoji: '💪' },
-      { id: 'shrimp', label: 'shrimp', emoji: '🦐' },
-      { id: 'seitan', label: 'seitan', emoji: '🌾' },
-      { id: 'tempeh', label: 'tempeh', emoji: '🌱' },
-      { id: 'lamb', label: 'lamb', emoji: '🍖' },
-      { id: 'sardines', label: 'sardines', emoji: '🐟' },
-      { id: 'crab', label: 'crab', emoji: '🦀' },
-      { id: 'octopus', label: 'octopus', emoji: '🐙' },
-      { id: 'duck', label: 'duck', emoji: '🦆' },
-    ]
-  },
-  {
-    id: 'carbs', title: 'carbs', min: 3,
-    items: [
-      { id: 'rice', label: 'rice', emoji: '🍚' },
-      { id: 'potato', label: 'potato', emoji: '🥔' },
-      { id: 'sweet_potato', label: 'sweet_potato', emoji: '🍠' },
-      { id: 'pasta', label: 'pasta', emoji: '🍝' },
-      { id: 'oats', label: 'oats', emoji: '🫓' },
-      { id: 'quinoa', label: 'quinoa', emoji: '🌾' },
-      { id: 'beans', label: 'beans', emoji: '🫘' },
-      { id: 'lentils', label: 'lentils', emoji: '🍲' },
-      { id: 'bread', label: 'bread', emoji: '🍞' },
-      { id: 'corn', label: 'corn', emoji: '🌽' },
-      { id: 'tortilla', label: 'tortilla', emoji: '🫓' },
-      { id: 'plantain', label: 'plantain', emoji: '🍌' },
-      { id: 'chickpeas', label: 'chickpeas', emoji: '🫘' },
-      { id: 'brown_rice', label: 'brown_rice', emoji: '🍚' },
-      { id: 'granola', label: 'granola', emoji: '🥣' },
-    ]
-  },
-  {
-    id: 'fats', title: 'fats', min: 1,
-    items: [
-      { id: 'avocado', label: 'avocado', emoji: '🥑' },
-      { id: 'nuts', label: 'nuts', emoji: '🥜' },
-      { id: 'almonds', label: 'almonds', emoji: '🌰' },
-      { id: 'walnuts', label: 'walnuts', emoji: '🌰' },
-      { id: 'peanut_butter', label: 'peanut_butter', emoji: '🥜' },
-      { id: 'olive_oil', label: 'olive_oil', emoji: '🫒' },
-      { id: 'cheese', label: 'cheese', emoji: '🧀' },
-      { id: 'chia_seeds', label: 'chia_seeds', emoji: '🌱' },
-      { id: 'coconut_oil', label: 'coconut_oil', emoji: '🥥' },
-      { id: 'dark_chocolate', label: 'dark_chocolate', emoji: '🍫' },
-      { id: 'tahini', label: 'tahini', emoji: '🍯' },
-      { id: 'cashews', label: 'cashews', emoji: '🌰' },
-    ]
-  },
-  {
-    id: 'fruits', title: 'fruits', min: 2,
-    items: [
-      { id: 'banana', label: 'banana', emoji: '🍌' },
-      { id: 'apple', label: 'apple', emoji: '🍎' },
-      { id: 'berries', label: 'berries', emoji: '🍓' },
-      { id: 'grapes', label: 'grapes', emoji: '🍇' },
-      { id: 'watermelon', label: 'watermelon', emoji: '🍉' },
-      { id: 'orange', label: 'orange', emoji: '🍊' },
-      { id: 'mango', label: 'mango', emoji: '🥭' },
-      { id: 'pineapple', label: 'pineapple', emoji: '🍍' },
-      { id: 'peach', label: 'peach', emoji: '🍑' },
-      { id: 'kiwi', label: 'kiwi', emoji: '🥝' },
-      { id: 'cherry', label: 'cherry', emoji: '🍒' },
-      { id: 'lemon', label: 'lemon', emoji: '🍋' },
-      { id: 'coconut', label: 'coconut', emoji: '🥥' },
-    ]
-  },
-  {
-    id: 'veggies', title: 'veggies', min: 2,
-    items: [
-      { id: 'broccoli', label: 'broccoli', emoji: '🥦' },
-      { id: 'spinach', label: 'spinach', emoji: '🥬' },
-      { id: 'carrot', label: 'carrot', emoji: '🥕' },
-      { id: 'tomato', label: 'tomato', emoji: '🍅' },
-      { id: 'onion', label: 'onion', emoji: '🧅' },
-      { id: 'cucumber', label: 'cucumber', emoji: '🥒' },
-      { id: 'bell_pepper', label: 'bell_pepper', emoji: '🫑' },
-      { id: 'zucchini', label: 'zucchini', emoji: '🥒' },
-      { id: 'mushroom', label: 'mushroom', emoji: '🍄' },
-      { id: 'eggplant', label: 'eggplant', emoji: '🍆' },
-      { id: 'cauliflower', label: 'cauliflower', emoji: '🥦' },
-      { id: 'asparagus', label: 'asparagus', emoji: '🥦' },
-      { id: 'pumpkin', label: 'pumpkin', emoji: '🎃' },
-      { id: 'cabbage', label: 'cabbage', emoji: '🥬' },
-    ]
-  },
-  {
-    id: 'condiments', title: 'condiments', min: 1,
-    items: [
-      { id: 'salt', label: 'salt', emoji: '🧂' },
-      { id: 'pepper', label: 'pepper', emoji: '🌶️' },
-      { id: 'soy_sauce', label: 'soy_sauce', emoji: '🍶' },
-      { id: 'hot_sauce', label: 'hot_sauce', emoji: '🔥' },
-      { id: 'garlic', label: 'garlic', emoji: '🧄' },
-      { id: 'mustard', label: 'mustard', emoji: '🌶️' },
-      { id: 'honey', label: 'honey', emoji: '🍯' },
-      { id: 'cinnamon', label: 'cinnamon', emoji: '🌰' },
-      { id: 'turmeric', label: 'turmeric', emoji: '🫚' },
-      { id: 'ginger', label: 'ginger', emoji: '🥔' },
-    ]
-  },
-  {
-    id: 'dairy', title: 'dairy', min: 0,
-    items: [
-      { id: 'milk', label: 'milk', emoji: '🥛' },
-      { id: 'almond_milk', label: 'almond_milk', emoji: '🥛' },
-      { id: 'oat_milk', label: 'oat_milk', emoji: '🥛' },
-      { id: 'mozzarella', label: 'mozzarella', emoji: '🧀' },
-      { id: 'parmesan', label: 'parmesan', emoji: '🧀' },
-      { id: 'cheddar', label: 'cheddar', emoji: '🧀' },
-      { id: 'feta', label: 'feta', emoji: '🧀' },
-      { id: 'cream_cheese', label: 'cream_cheese', emoji: '🧀' },
-    ]
-  },
-  {
-    id: 'beverages', title: 'beverages', min: 0,
-    items: [
-      { id: 'water', label: 'water', emoji: '💧' },
-      { id: 'coffee', label: 'coffee', emoji: '☕' },
-      { id: 'green_tea', label: 'green_tea', emoji: '🍵' },
-      { id: 'matcha', label: 'matcha', emoji: '🍵' },
-      { id: 'smoothie', label: 'smoothie', emoji: '🥤' },
-      { id: 'coconut_water', label: 'coconut_water', emoji: '🥥' },
-      { id: 'protein_shake', label: 'protein_shake', emoji: '🧃' },
-    ]
-  }
-];
 
 export default function FoodSelectionModal() {
   const { t } = useTranslation();
@@ -282,7 +142,7 @@ export default function FoodSelectionModal() {
           <Search size={18} color={searchQuery ? colors.primary : colors.textSecondary} />
           <TextInput
             style={[s.searchInput, { color: colors.textPrimary }]}
-            placeholder="Buscar alimento..."
+            placeholder={t('common.searchFood', 'Search food...')}
             placeholderTextColor={colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -298,8 +158,8 @@ export default function FoodSelectionModal() {
         {searchQuery.trim() && filteredCategories.length === 0 && (
           <View style={s.noResultsWrap}>
             <Text style={{ fontSize: 32, marginBottom: 12 }}>🔍</Text>
-            <Text style={[s.noResultsText, { color: colors.textPrimary }]}>{t('common.noResults', 'Sin resultados')}</Text>
-            <Text style={[s.noResultsSub, { color: colors.textSecondary }]}>{t('common.tryAnotherTerm', 'Intenta con otro término')}</Text>
+            <Text style={[s.noResultsText, { color: colors.textPrimary }]}>{t('common.noResults', 'No results')}</Text>
+            <Text style={[s.noResultsSub, { color: colors.textSecondary }]}>{t('common.tryAnotherTerm', 'Try another term')}</Text>
           </View>
         )}
 

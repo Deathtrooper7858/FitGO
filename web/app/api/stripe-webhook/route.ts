@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-// Use service role for admin tasks like webhook updates
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key" // Correctly using service role key for backend operations
-);
+function getSupabaseAdmin(): SupabaseClient {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error("Missing Supabase environment variables for webhook");
+  }
+  return createClient(supabaseUrl, supabaseServiceKey);
+}
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -28,13 +31,22 @@ export async function POST(req: Request) {
       const userId = session.client_reference_id;
 
       if (userId) {
-        // Update user profile to premium in Supabase
-        await supabaseAdmin
+        const supabaseAdmin = getSupabaseAdmin();
+        const { data: existing } = await supabaseAdmin
           .from("profiles")
-          .update({ is_premium: true })
-          .eq("id", userId);
-          
-        console.log(`User ${userId} upgraded to Premium via Stripe.`);
+          .select("is_premium")
+          .eq("id", userId)
+          .single();
+
+        if (!existing?.is_premium) {
+          await supabaseAdmin
+            .from("profiles")
+            .update({ is_premium: true })
+            .eq("id", userId);
+          console.log(`User ${userId} upgraded to Premium via Stripe.`);
+        } else {
+          console.log(`User ${userId} already premium, skipping.`);
+        }
       }
     }
 
@@ -42,7 +54,7 @@ export async function POST(req: Request) {
   } catch (err: unknown) {
     console.error("Webhook error:", err instanceof Error ? err.message : err);
     return NextResponse.json(
-      { error: `Webhook Error: ${err instanceof Error ? err.message : "Unknown error"}` },
+      { error: "Webhook processing failed" },
       { status: 400 }
     );
   }

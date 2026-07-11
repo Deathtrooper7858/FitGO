@@ -1,0 +1,75 @@
+name: 🤖 FitGO CI/CD Pipeline
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+  # Permite ejecutarlo manualmente desde la web de GitHub
+  workflow_dispatch: 
+
+# Cancela ejecuciones viejas si haces otro commit rápido
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mobile-quality:
+    name: 📱 App Móvil (Expo)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+        
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          
+      - name: Instalar dependencias
+        run: npm ci
+        
+      - name: 🛡️ Auditoría de Seguridad
+        run: npm run ci:audit
+        
+      - name: 🧹 Revisar sintaxis (Lint)
+        run: npm run lint
+        
+      - name: 🏗️ Revisar TypeScript (App)
+        run: npm run typecheck
+        
+      - name: 🧪 Ejecutar Tests
+        run: npm test
+        
+      - name: 📦 Probar Compilación (Expo Export)
+        # Esto exporta la app en modo offline para asegurar que el bundle funciona
+        run: npx expo export --platform all
+
+  web-quality:
+    name: 🌐 Backend / Web (Next.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+        
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          
+      - name: Instalar dependencias Web
+        run: npm ci
+        
+      - name: 🧹 Revisar sintaxis (Web)
+        run: npm run lint
+        
+      - name: 🏗️ Revisar TypeScript (Web)
+        run: npx tsc --noEmit
+        
+      - name: 📦 Probar Compilación (Next Build)
+        run: npm run build

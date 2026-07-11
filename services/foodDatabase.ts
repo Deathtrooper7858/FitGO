@@ -2,10 +2,11 @@
  * OpenFoodFacts + Edamam food database service.
  */
 import axios from 'axios';
+import { OPEN_FOOD_FACTS_URL } from '../constants/urls';
 import { getFoodByBarcodeAI } from './groq';
 import { supabase } from './supabase';
 
-const OFF_BASE = 'https://world.openfoodfacts.org';
+const OFF_BASE = OPEN_FOOD_FACTS_URL;
 
 export interface FoodItem {
   id:       string;
@@ -17,6 +18,7 @@ export interface FoodItem {
   fat:      number;
   saturatedFat?: number;
   transFat?:     number;
+  cholesterol?: number;
   sugar?:   number;
   fiber?:   number;
   sodium?:  number;
@@ -27,9 +29,15 @@ export interface FoodItem {
 }
 
 // ─── OpenFoodFacts ─────────────────────────────────────────────────────────────
-function mapOFFProduct(p: any): FoodItem | null {
+function mapOFFProduct(p: any, langKey: string = 'en'): FoodItem | null {
   const nut = p.nutriments || {};
-  const name = p.product_name_es || p.product_name || p.product_name_en || p.generic_name_es || p.generic_name || '';
+  let name = p[`product_name_${langKey}`] || p.product_name || p.product_name_en || p[`generic_name_${langKey}`] || p.generic_name;
+  
+  if (!name) {
+    const localizedKey = Object.keys(p).find(k => k.startsWith('product_name_') && p[k]);
+    if (localizedKey) name = p[localizedKey];
+  }
+
   if (!name || !p.nutriments) return null;
   const cal = nut['energy-kcal_100g'] ?? (nut['energy_100g'] ? Math.round(nut['energy_100g'] / 4.184) : 0);
   return {
@@ -52,10 +60,12 @@ function mapOFFProduct(p: any): FoodItem | null {
   };
 }
 
-export async function searchFoodOFF(query: string, _language: string = 'en', page = 1): Promise<FoodItem[]> {
+export async function searchFoodOFF(query: string, language: string = 'en', page = 1): Promise<FoodItem[]> {
+  const langKey = language.substring(0, 2).toLowerCase();
+  
   const { data } = await axios.get(`${OFF_BASE}/cgi/search.pl`, {
     headers: {
-      'User-Agent': 'FitGO - Android/iOS - 1.0.0 - support@fitgo.app',
+      'User-Agent': 'FitGO - Android/iOS - 1.0.0 - fitgoenterprise@gmail.com',
     },
     params: {
       search_terms: query,
@@ -64,14 +74,14 @@ export async function searchFoodOFF(query: string, _language: string = 'en', pag
       json: 1,
       page_size: 25,
       page,
-      fields: 'id,_id,code,product_name,product_name_es,product_name_en,generic_name,generic_name_es,brands,nutriments,image_front_small_url',
+      fields: `id,_id,code,product_name,product_name_${langKey},product_name_en,generic_name,generic_name_${langKey},brands,nutriments,image_front_small_url`,
       // NOTE: No lc/categories_lc filter — it causes 0 results for many Spanish queries
     },
     timeout: 10000,
   });
 
   return (data.products ?? [])
-    .map((p: any) => mapOFFProduct(p))
+    .map((p: any) => mapOFFProduct(p, langKey))
     .filter((item: FoodItem | null): item is FoodItem => item !== null);
 }
 
@@ -80,7 +90,7 @@ export async function getFoodByBarcode(barcode: string, language: string = 'es')
   try {
     const { data } = await axios.get(`${OFF_BASE}/api/v0/product/${barcode}.json`, {
       headers: {
-        'User-Agent': 'FitGO - Android/iOS - 1.0.0 - support@fitgo.app',
+        'User-Agent': 'FitGO - Android/iOS - 1.0.0 - fitgoenterprise@gmail.com',
       },
       timeout: 8000,
     });
@@ -273,4 +283,17 @@ export function calculateMacros(calories: number, goal: 'lose' | 'maintain' | 'g
     carbs:   Math.round((adjustedCalories * 0.40) / 4),  // 40% carbs
     fat:     Math.round((adjustedCalories * 0.30) / 9),  // 30% fat
   };
+}
+
+export function resolveActivityLevel(
+  lifestyle: string,
+  exerciseLevel: string
+): 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' {
+  const LIFESTYLE_MAP: Record<string, number> = { seated: 0, standing_sometimes: 1, standing_mostly: 2, moving: 3, physical_work: 4 };
+  const EXERCISE_MAP: Record<string, number> = { none: 0, '1-2': 1, '3-4': 2, '5-6': 3, daily: 4 };
+  const REVERSE_MAP: Record<number, 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active'> = { 0: 'sedentary', 1: 'light', 2: 'moderate', 3: 'active', 4: 'very_active' };
+
+  const lifeScore = LIFESTYLE_MAP[lifestyle] || 0;
+  const exeScore  = EXERCISE_MAP[exerciseLevel] || 0;
+  return REVERSE_MAP[Math.max(lifeScore, exeScore)] || 'sedentary';
 }

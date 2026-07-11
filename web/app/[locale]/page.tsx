@@ -1,3 +1,4 @@
+import React from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Link } from "@/i18n/routing";
@@ -17,7 +18,32 @@ import {
   ArrowRight,
   Download,
   Smartphone,
+  Scan,
+  Mic,
+  Camera,
+  Users,
+  Swords,
+  Medal,
+  Target,
+  TrendingUp,
+  Moon,
+  Bell,
+  Globe,
+  Check,
 } from "lucide-react";
+
+function HighlightedText({ text, className = "text-white" }: { text: string; className?: string }) {
+  const parts = text.split(/(<highlight>|<\/highlight>)/g);
+  const result: React.ReactNode[] = [];
+  let highlighting = false;
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (part === "<highlight>") { highlighting = true; continue; }
+    if (part === "</highlight>") { highlighting = false; continue; }
+    result.push(highlighting ? <span key={i} className={className}>{part}</span> : <React.Fragment key={i}>{part}</React.Fragment>);
+  }
+  return <>{result}</>;
+}
 
 const featurePills = [
   { icon: Apple, key: "nutrition", color: "#FF6B6B" },
@@ -73,6 +99,30 @@ const features = [
   },
 ];
 
+const extraFeatures = [
+  { icon: Scan, key: "barcode", color: "#F59E0B" },
+  { icon: Camera, key: "photoScan", color: "#F43F5E" },
+  { icon: Mic, key: "voiceInput", color: "#3B82F6" },
+  { icon: Users, key: "squads", color: "#10B981" },
+  { icon: Swords, key: "macroWars", color: "#8B5CF6" },
+  { icon: Medal, key: "leagues", color: "#FFD700" },
+  { icon: Moon, key: "sleep", color: "#6366F1" },
+  { icon: Bell, key: "notifications", color: "#EC4899" },
+  { icon: Globe, key: "languages", color: "#06B6D4" },
+];
+
+const howItWorks = [
+  { step: "1", key: "download", color: "#8B5CF6" },
+  { step: "2", key: "profile", color: "#06B6D4" },
+  { step: "3", key: "track", color: "#10B981" },
+];
+
+const testimonials = [
+  { name: "María G.", role: "Pro User", key: "maria", rating: 5 },
+  { name: "Carlos R.", role: "Active User", key: "carlos", rating: 5 },
+  { name: "Laura M.", role: "Pro User", key: "laura", rating: 5 },
+];
+
 const stats = [
   { value: "10K+", key: "users" },
   { value: "500K+", key: "foods" },
@@ -81,10 +131,10 @@ const stats = [
 ];
 
 export default function HomePage() {
-  const t = useTranslations("web");
+  const t = useTranslations();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" suppressHydrationWarning>
       <Navbar />
 
       {/* ── HERO ──────────────────────────────────────────────────── */}
@@ -151,8 +201,9 @@ export default function HomePage() {
           <p
             className="text-text-secondary text-lg md:text-2xl leading-relaxed mb-10 max-w-2xl mx-auto animate-fade-up font-medium"
             style={{ animationDelay: "0.1s" }}
-            dangerouslySetInnerHTML={{ __html: t.raw("home.motto").replace(/<highlight>/g, '<span className="text-white">').replace(/<\/highlight>/g, '</span>') }}
-          />
+          >
+            <HighlightedText text={t.raw("home.motto")} />
+          </p>
 
           {/* Feature pills */}
           <div
@@ -194,7 +245,9 @@ export default function HomePage() {
             style={{ animationDelay: "0.4s" }}
           >
             <a
-              href="#"
+              href="https://apps.apple.com/app/fitgo"
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2 text-text-muted hover:text-text-secondary transition-colors text-sm font-semibold"
             >
               <Download size={14} />
@@ -202,7 +255,9 @@ export default function HomePage() {
             </a>
             <span className="text-border">·</span>
             <a
-              href="#"
+              href="https://play.google.com/store/apps/details?id=com.fitgo.app"
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2 text-text-muted hover:text-text-secondary transition-colors text-sm font-semibold"
             >
               <Download size={14} />
@@ -272,6 +327,122 @@ export default function HomePage() {
                 <p className="text-text-secondary text-sm leading-relaxed">
                   {t(`home.features.items.${f.key}.desc`)}
                 </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── EXTRA FEATURES ────────────────────────────────────────── */}
+      <section className="py-20 px-6 border-y border-white/5">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="section-label">{t("home.extraFeatures.subtitle")}</span>
+            <h2 className="font-display font-black text-3xl md:text-4xl text-text-primary mt-3 mb-4">
+              {t("home.extraFeatures.title")}
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
+            {extraFeatures.map((f) => (
+              <div
+                key={f.key}
+                className="glass rounded-2xl p-5 flex items-center gap-4 hover:bg-white/5 transition-all duration-300 group"
+              >
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"
+                  style={{
+                    background: `${f.color}20`,
+                    border: `1px solid ${f.color}40`,
+                  }}
+                >
+                  <f.icon size={20} style={{ color: f.color }} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-text-primary">
+                    {t(`home.extraFeatures.items.${f.key}.title`)}
+                  </h4>
+                  <p className="text-xs text-text-muted mt-0.5">
+                    {t(`home.extraFeatures.items.${f.key}.desc`)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ──────────────────────────────────────────── */}
+      <section className="py-24 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="section-label">{t("home.howItWorks.subtitle")}</span>
+            <h2 className="font-display font-black text-4xl md:text-5xl text-text-primary mt-3 mb-4">
+              {t("home.howItWorks.title")}
+            </h2>
+            <p className="text-text-secondary text-lg max-w-xl mx-auto">
+              {t("home.howItWorks.desc")}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {howItWorks.map((item) => (
+              <div key={item.step} className="text-center relative">
+                <div
+                  className="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-2xl font-display font-black"
+                  style={{
+                    background: `${item.color}20`,
+                    border: `2px solid ${item.color}40`,
+                    color: item.color,
+                    boxShadow: `0 8px 24px ${item.color}20`,
+                  }}
+                >
+                  {item.step}
+                </div>
+                <h3 className="font-display font-bold text-xl text-text-primary mb-2">
+                  {t(`home.howItWorks.steps.${item.step}.title`)}
+                </h3>
+                <p className="text-text-secondary text-sm leading-relaxed">
+                  {t(`home.howItWorks.steps.${item.step}.desc`)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── TESTIMONIALS ──────────────────────────────────────────── */}
+      <section className="py-20 px-6 border-y border-white/5">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="section-label">{t("home.testimonials.subtitle")}</span>
+            <h2 className="font-display font-black text-3xl md:text-4xl text-text-primary mt-3 mb-4">
+              {t("home.testimonials.title")}
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {testimonials.map((t_item) => (
+              <div
+                key={t_item.key}
+                className="glass rounded-2xl p-6 card-hover"
+              >
+                <div className="flex items-center gap-1 mb-3">
+                  {[...Array(t_item.rating)].map((_, i) => (
+                    <Star key={i} size={14} className="text-pro fill-pro" />
+                  ))}
+                </div>
+                <p className="text-text-secondary text-sm leading-relaxed mb-4">
+                  &ldquo;{t(`home.testimonials.items.${t_item.key}.text`)}&rdquo;
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span className="text-xs font-bold text-primary">
+                      {t_item.name[0]}
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-text-primary">{t_item.name}</div>
+                    <div className="text-xs text-text-muted">{t_item.role}</div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -379,7 +550,9 @@ export default function HomePage() {
                   FitGO Pro
                 </span>
               </div>
-              <h2 className="font-display font-black text-4xl md:text-5xl text-text-primary mb-4 text-balance" dangerouslySetInnerHTML={{ __html: t.raw("home.pricing.title").replace(/<highlight>/g, '<span className="gradient-text">').replace(/<\/highlight>/g, '</span>') }} />
+              <h2 className="font-display font-black text-4xl md:text-5xl text-text-primary mb-4 text-balance">
+                <HighlightedText text={t.raw("home.pricing.title")} className="gradient-text" />
+              </h2>
               <p className="text-text-secondary text-lg mb-8">
                 {t("home.pricing.desc")}
               </p>

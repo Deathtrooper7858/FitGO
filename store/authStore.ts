@@ -1,22 +1,9 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import * as SecureStore from 'expo-secure-store';
-import { UserProfile } from './types';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '../services/supabase';
-
-// Secure storage adapter for Zustand
-const secureStorage = {
-  getItem: async (name: string) => {
-    return (await SecureStore.getItemAsync(name)) || null;
-  },
-  setItem: async (name: string, value: string) => {
-    await SecureStore.setItemAsync(name, value);
-  },
-  removeItem: async (name: string) => {
-    await SecureStore.deleteItemAsync(name);
-  },
-};
+import { SecureStorage } from '../utils/storage';
+import { useSettingsStore } from './settingsStore';
+import { UserProfile } from './types';
 
 interface AuthState {
   session:     Session | null;
@@ -29,80 +16,164 @@ interface AuthState {
   fetchProfile: (userId: string) => Promise<void>;
 }
 
+// Sensitive health fields that MUST be stored in SecureStore, not AsyncStorage
+const HEALTH_FIELDS = [
+  'dietaryRestrictions', 'medicalConditions', 'medicationsSupplements',
+  'sex', 'age', 'weight', 'height',
+] as const;
+
+function extractHealthData(profile: UserProfile): Record<string, any> {
+  const health: Record<string, any> = {};
+  for (const field of HEALTH_FIELDS) {
+    if (profile[field] !== undefined) {
+      health[field] = profile[field];
+    }
+  }
+  return health;
+}
+
+function mergeHealthData(profile: UserProfile, healthData: Record<string, any>): UserProfile {
+  return { ...profile, ...healthData };
+}
+
+async function persistProfile(profile: UserProfile | null): Promise<void> {
+  if (!profile) {
+    await SecureStorage.removeItem('ff-health-profile');
+    return;
+  }
+  // Store sensitive health data in SecureStore
+  const healthData = extractHealthData(profile);
+  await SecureStorage.setItem('ff-health-profile', JSON.stringify(healthData));
+}
+
+async function loadHealthData(): Promise<Record<string, any>> {
+  try {
+    const raw = await SecureStorage.getItem('ff-health-profile');
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
 export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
+  (set) => ({
       session:    null,
       profile:    null,
       isLoading:  true,
       setSession: (session) => set({ session }),
-      setProfile: (profile) => set({ profile }),
+      setProfile: async (profile) => {
+        set({ profile });
+        // Persist health data to SecureStore whenever profile changes
+        await persistProfile(profile);
+      },
       setLoading: (isLoading) => set({ isLoading }),
-      clearAuth:  () => set({ session: null, profile: null, isLoading: false }),
+      clearAuth:  async () => {
+        await SecureStorage.removeItem('ff-health-profile');
+        set({ session: null, profile: null, isLoading: false });
+      },
       fetchProfile: async (userId: string) => {
-        try {
-          const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', userId)
-            .single();
+        // Load cached health data from SecureStore first (for offline support)
+        const cachedHealth = await loadHealthData();
+        
+        let retries = 3;
+        while (retries > 0) {
+          try {
+            const { data, error } = await supabase
+              .from('users')
+              .select('id, email, name, avatar_url, name_color, premium_color, sex, age, weight, height, activity_level, goal, target_weight, starting_weight, tdee, target_calories, macros, available_foods, preferences, is_pro, role, trial_used_at, trial_expires_at, onboarding_done, lifestyle, extra_snacks, widgets_order, expo_push_token, notification_preferences, dietary_restrictions, medical_conditions, medications_supplements, diet_type, badges, selected_badge, unlocked_achievements, pinned_achievements, achievement_points, pro_expires_at, pro_will_renew')
+              .eq('id', userId)
+              .single();
 
-          if (data && !error) {
-            set({
-              profile: {
-                id:             data.id,
-                email:          data.email,
-                name:           data.name,
-                avatarUrl:      data.avatar_url,
-                sex:            data.sex,
-                age:            data.age,
-                weight:         data.weight,
-                height:         data.height,
-                activityLevel:  data.activity_level,
-                goal:           data.goal,
-                targetWeight:   data.target_weight,
-                startingWeight: data.starting_weight,
-                tdee:           data.tdee,
-                targetCalories: data.target_calories,
-                macros:         data.macros,
-                availableFoods: data.available_foods,
-                preferences:    data.preferences,
-                isPro:          data.is_pro,
-                role:           data.role || 'user',
-                onboardingDone: data.onboarding_done,
-                lifestyle:      data.lifestyle,
-                extraSnacks:    data.extra_snacks,
-                widgetsOrder:   data.widgets_order,
-                // ── Settings & Auth ──────────────────────────────────────
-                expoPushToken:          data.expo_push_token,
-                notificationPreferences: data.notification_preferences,
-                // ── Health Profile ────────────────────────────────────────
-                dietaryRestrictions:    data.dietary_restrictions    ?? [],
-                medicalConditions:      data.medical_conditions      ?? [],
-                medicationsSupplements: data.medications_supplements ?? [],
-                // ── Diet type (onboarding selection) ─────────────────────
-                dietType:       data.diet_type       ?? 'recommended',
-                // ── Gamification ─────────────────────────────────────────
-                badges:         data.badges          ?? [],
-                selectedBadge:  data.selected_badge  ?? null,
-                unlockedAchievements: data.unlocked_achievements ?? [],
-                pinnedAchievements: data.pinned_achievements ?? [],
-                achievementPoints:  data.achievement_points ?? 0,
+            if (data && !error) {
+              const fetchedNameColor = (data.is_pro && !data.name_color) ? '#EAB308' : data.name_color;
+              const fetchedPremiumColor = data.premium_color || null;
+              
+              if (fetchedPremiumColor) {
+                useSettingsStore.getState().setPremiumColor(fetchedPremiumColor);
               }
-            });
-          } else {
-            set({ profile: null });
+              
+              const freshProfile: UserProfile = {
+                  id:             data.id,
+                  email:          data.email,
+                  name:           data.name,
+                  avatarUrl:      data.avatar_url,
+                  nameColor:      fetchedNameColor || undefined,
+                  premiumColor:   fetchedPremiumColor || undefined,
+                  sex:            data.sex,
+                  age:            data.age,
+                  weight:         data.weight,
+                  height:         data.height,
+                  activityLevel:  data.activity_level,
+                  goal:           data.goal,
+                  targetWeight:   data.target_weight,
+                  startingWeight: data.starting_weight,
+                  tdee:           data.tdee,
+                  targetCalories: data.target_calories,
+                  macros:         data.macros,
+                  availableFoods: data.available_foods,
+                  preferences:    data.preferences,
+                  isPro:          data.is_pro,
+                  role:           data.role || 'user',
+                  trialUsedAt:    data.trial_used_at,
+                  trialExpiresAt: data.trial_expires_at,
+                  onboardingDone: data.onboarding_done,
+                  lifestyle:      data.lifestyle,
+                  extraSnacks:    data.extra_snacks,
+                  widgetsOrder:   data.widgets_order,
+                  expoPushToken:          data.expo_push_token,
+                  notificationPreferences: data.notification_preferences,
+                  dietaryRestrictions:    data.dietary_restrictions    ?? [],
+                  medicalConditions:      data.medical_conditions      ?? [],
+                  medicationsSupplements: data.medications_supplements ?? [],
+                  dietType:       data.diet_type       ?? 'recommended',
+                  badges:         data.badges          ?? [],
+                  selectedBadge:  data.selected_badge  ?? null,
+                  unlockedAchievements: data.unlocked_achievements ?? [],
+                  pinnedAchievements: data.pinned_achievements ?? [],
+                  achievementPoints:  data.achievement_points ?? 0,
+              };
+              
+              // Persist health data to SecureStore
+              await persistProfile(freshProfile);
+              set({ profile: freshProfile });
+              return;
+            } else {
+              if (error?.code === 'PGRST116') {
+                retries -= 1;
+                if (retries === 0) {
+                  // Use cached health data even if profile fetch fails
+                  const profileWithCache = Object.keys(cachedHealth).length > 0
+                    ? mergeHealthData({} as UserProfile, cachedHealth)
+                    : null;
+                  set({ profile: profileWithCache });
+                }
+                else await new Promise(resolve => setTimeout(resolve, 500));
+              } else {
+                set({ profile: null });
+                return;
+              }
+            }
+          } catch (err) {
+            console.warn(`[AuthStore] Profile fetch error, retries left: ${retries - 1}`, err);
+            retries -= 1;
+            if (retries === 0) {
+              // Retain cached health data for offline support
+              if (Object.keys(cachedHealth).length > 0) {
+                const currentProfile = get().profile;
+                if (currentProfile) {
+                  set({ profile: mergeHealthData(currentProfile, cachedHealth) });
+                }
+              }
+            } else {
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
           }
-        } catch (err) {
-          console.warn('[AuthStore] Profile fetch error, keeping cached profile:', err);
-          // Do NOT set profile to null here. Retain the cached profile for offline support.
         }
       }
-    }),
-    {
-      name: 'ff-auth',
-      storage: createJSONStorage(() => secureStorage),
-      partialize: (s) => ({ profile: s.profile }), // only persist profile, not session
-    }
-  )
+    })
 );
+
+// Helper to access state outside of React hooks
+function get() {
+  return useAuthStore.getState();
+}

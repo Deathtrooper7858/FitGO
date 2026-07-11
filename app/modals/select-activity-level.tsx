@@ -2,11 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { useTheme } from '../../hooks/useTheme';
-import { useNutritionStore, useAuthStore, UserProfile } from '../../store';
-import { supabase } from '../../services/supabase';
-import { calculateTDEE, calculateMacros } from '../../services/foodDatabase';
-import { Radius, Spacing } from '../../constants';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { 
@@ -19,6 +14,11 @@ import {
   Zap,
   ChevronRight
 } from 'lucide-react-native';
+import { useTheme } from '../../hooks/useTheme';
+import { useNutritionStore, useAuthStore, UserProfile } from '../../store';
+import { supabase } from '../../services/supabase';
+import { calculateTDEE, calculateMacros, resolveActivityLevel } from '../../services/foodDatabase';
+import { Radius, Spacing } from '../../constants';
 
 const ACTIVITY_OPTIONS = [
   { 
@@ -77,7 +77,9 @@ const ACTIVITY_TO_EXERCISE: Record<string, string> = {
 export default function SelectActivityLevelModal() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const { dailyExercise, setExerciseLevel, selectedDate } = useNutritionStore();
+  const dailyExercise = useNutritionStore(s => s.dailyExercise);
+  const setExerciseLevel = useNutritionStore(s => s.setExerciseLevel);
+  const selectedDate = useNutritionStore(s => s.selectedDate);
   const { profile, setProfile } = useAuthStore();
   const [saving, setSaving] = useState(false);
 
@@ -94,13 +96,7 @@ export default function SelectActivityLevelModal() {
       // 2. Sync to profile
       if (!profile) { router.back(); return; }
 
-      const LIFESTYLE_MAP: Record<string, number> = { seated: 0, standing_sometimes: 1, standing_mostly: 2, moving: 3, physical_work: 4 };
-      const EXERCISE_MAP: Record<string, number> = { none: 0, '1-2': 1, '3-4': 2, '5-6': 3, daily: 4 };
-      const REVERSE_MAP: Record<number, UserProfile['activityLevel']> = { 0: 'sedentary', 1: 'light', 2: 'moderate', 3: 'active', 4: 'very_active' };
-
-      const lifeScore = LIFESTYLE_MAP[profile.lifestyle || 'standing_sometimes'] || 1;
-      const exeScore  = EXERCISE_MAP[selectedId] || 0;
-      const newActivityLevel = REVERSE_MAP[Math.max(lifeScore, exeScore)];
+      const newActivityLevel = resolveActivityLevel(profile.lifestyle || 'standing_sometimes', selectedId);
       
       const newProfile: UserProfile = { ...profile, activityLevel: newActivityLevel };
       

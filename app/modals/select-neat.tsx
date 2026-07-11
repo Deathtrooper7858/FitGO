@@ -2,13 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { useTheme } from '../../hooks/useTheme';
-import { useNutritionStore, useAuthStore, UserProfile } from '../../store';
-import { supabase } from '../../services/supabase';
-import { Radius, Spacing } from '../../constants';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
-import { calculateTDEE, calculateMacros } from '../../services/foodDatabase';
 import { 
   ChevronLeft, 
   Monitor, 
@@ -21,6 +16,11 @@ import {
   Coffee,
   Briefcase
 } from 'lucide-react-native';
+import { useTheme } from '../../hooks/useTheme';
+import { useNutritionStore, useAuthStore, UserProfile } from '../../store';
+import { supabase } from '../../services/supabase';
+import { Radius, Spacing } from '../../constants';
+import { calculateTDEE, calculateMacros, resolveActivityLevel } from '../../services/foodDatabase';
 
 const NEAT_OPTIONS = [
   {
@@ -71,7 +71,9 @@ const ACTIVITY_TO_NEAT: Record<string, string> = {
 export default function SelectNeatModal() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const { dailyNeat, setNeat, selectedDate } = useNutritionStore();
+  const dailyNeat = useNutritionStore(s => s.dailyNeat);
+  const setNeat = useNutritionStore(s => s.setNeat);
+  const selectedDate = useNutritionStore(s => s.selectedDate);
   const { profile, setProfile } = useAuthStore();
   const [saving, setSaving] = useState(false);
   
@@ -88,17 +90,11 @@ export default function SelectNeatModal() {
       // 2. Sync to profile
       if (!profile) { router.back(); return; }
 
-      const LIFESTYLE_MAP: Record<string, number> = { seated: 0, standing_sometimes: 1, standing_mostly: 2, moving: 3, physical_work: 4 };
-      const EXERCISE_MAP: Record<string, number> = { none: 0, '1-2': 1, '3-4': 2, '5-6': 3, daily: 4 };
-      const REVERSE_MAP: Record<number, UserProfile['activityLevel']> = { 0: 'sedentary', 1: 'light', 2: 'moderate', 3: 'active', 4: 'very_active' };
-
       // Get current exercise level to maintain consistency
       const ACTIVITY_TO_EXERCISE: Record<string, string> = { 'sedentary': 'none', 'light': '1-2', 'moderate': '3-4', 'active': '5-6', 'very_active': 'daily' };
       const currentExeLevel = dailyExercise[selectedDate] || ACTIVITY_TO_EXERCISE[profile.activityLevel] || '3-4';
 
-      const lifeScore = LIFESTYLE_MAP[selectedId] || 0;
-      const exeScore  = EXERCISE_MAP[currentExeLevel] || 0;
-      const newActivityLevel = REVERSE_MAP[Math.max(lifeScore, exeScore)];
+      const newActivityLevel = resolveActivityLevel(selectedId, currentExeLevel);
       
       const newProfile: UserProfile = { ...profile, activityLevel: newActivityLevel, lifestyle: selectedId as any };
       
@@ -139,7 +135,7 @@ export default function SelectNeatModal() {
     }
   };
 
-  const { dailyExercise } = useNutritionStore();
+  const dailyExercise = useNutritionStore(s => s.dailyExercise);
 
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>

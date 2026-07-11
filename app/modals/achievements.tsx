@@ -3,15 +3,16 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Modal
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as LucideIcons from 'lucide-react-native';
-import { useTheme } from '../../hooks/useTheme';
-import { useAchievements, Achievement, ALL_BADGES, AchievementTier } from '../../hooks/useAchievements';
+import { Lock, CheckCircle2, ChevronDown, ChevronUp, ArrowLeft, Info } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../../hooks/useTheme';
+import { useAchievements, Achievement, ALL_BADGES, AchievementTier , TIER_POINTS } from '../../hooks/useAchievements';
 import { Spacing, Radius } from '../../constants';
 import { supabase } from '../../services/supabase';
 import { GlassCard } from '../../components/GlassCard';
 import { useAuthStore } from '../../store';
-import { TIER_POINTS } from '../../hooks/useAchievements';
+
+import { GlobalBackground } from '../../components/GlobalBackground';
 
 const { width } = Dimensions.get('window');
 
@@ -51,7 +52,7 @@ const BadgeCard = memo(({ badge, owned }: { badge: typeof ALL_BADGES[string]; ow
       !owned ? { opacity: 0.45 } : {}
     ]}>
       <LinearGradient
-        colors={owned ? badge.colors as [string, string] : [colors.surfaceAlt, colors.surfaceAlt]}
+        colors={owned ? badge.colors : [colors.surfaceAlt, colors.surfaceAlt]}
         style={bs.badgeIconWrap}
       >
         <Text style={{ fontSize: 22 }}>{badge.icon}</Text>
@@ -59,10 +60,11 @@ const BadgeCard = memo(({ badge, owned }: { badge: typeof ALL_BADGES[string]; ow
       <Text style={[bs.badgeLabel, { color: owned ? colors.textPrimary : colors.textSecondary }]} numberOfLines={2}>
         {t(`achievements.badges.${badge.id}.label`, badge.label)}
       </Text>
-      {!owned && <LucideIcons.Lock size={10} color={colors.textMuted} style={{ marginTop: 2 }} />}
+      {!owned && <Lock size={10} color={colors.textMuted} style={{ marginTop: 2 }} />}
     </View>
   );
 });
+BadgeCard.displayName = 'BadgeCard';
 
 // ── Achievement Row (memoized, NO lottie) ─────────────────────────────────────
 const AchievementRow = memo(({ achievement, isPinned, onTogglePin }: {
@@ -92,7 +94,7 @@ const AchievementRow = memo(({ achievement, isPinned, onTogglePin }: {
               <LinearGradient colors={tierColors} style={[s.iconHex, { opacity: 0.3 }]}>
                 <Text style={[s.emojiHuge, { opacity: 0.5 }]}>{achievement.icon}</Text>
                 <View style={s.lockBadge}>
-                  <LucideIcons.Lock size={11} color="#FFF" />
+                  <Lock size={11} color="#FFF" />
                 </View>
               </LinearGradient>
             )}
@@ -109,7 +111,7 @@ const AchievementRow = memo(({ achievement, isPinned, onTogglePin }: {
               <Text style={[s.itemTitle, { color: achievement.unlocked ? colors.textPrimary : colors.textSecondary }]} numberOfLines={1}>
                 {t(`achievements.items.${achievement.id}.title`, achievement.title)}
               </Text>
-              {achievement.unlocked && <LucideIcons.CheckCircle2 size={15} color={accentColor} />}
+              {achievement.unlocked && <CheckCircle2 size={15} color={accentColor} />}
             </View>
             <Text style={[s.itemPoints, { color: accentColor }]}>
               {TIER_POINTS[achievement.tier]} pts
@@ -133,6 +135,7 @@ const AchievementRow = memo(({ achievement, isPinned, onTogglePin }: {
     </TouchableOpacity>
   );
 });
+AchievementRow.displayName = 'AchievementRow';
 
 // ── Category Accordion ─────────────────────────────────────────────────────────
 const CategoryAccordion = memo(({ category, items, pinnedIds, onTogglePin }: {
@@ -167,8 +170,8 @@ const CategoryAccordion = memo(({ category, items, pinnedIds, onTogglePin }: {
           </View>
         )}
         <View style={[s.chevronWrap, { backgroundColor: colors.surfaceAlt }]}>
-          {open ? <LucideIcons.ChevronUp size={16} color={colors.textSecondary} />
-                : <LucideIcons.ChevronDown size={16} color={colors.textSecondary} />}
+          {open ? <ChevronUp size={16} color={colors.textSecondary} />
+                : <ChevronDown size={16} color={colors.textSecondary} />}
         </View>
       </TouchableOpacity>
 
@@ -198,6 +201,7 @@ const CategoryAccordion = memo(({ category, items, pinnedIds, onTogglePin }: {
     </View>
   );
 });
+CategoryAccordion.displayName = 'CategoryAccordion';
 
 // ── Badges Accordion ───────────────────────────────────────────────────────────
 const BadgesAccordion = memo(({ ownedBadgeIds }: { ownedBadgeIds: string[] }) => {
@@ -225,8 +229,8 @@ const BadgesAccordion = memo(({ ownedBadgeIds }: { ownedBadgeIds: string[] }) =>
           </View>
         )}
         <View style={[s.chevronWrap, { backgroundColor: colors.surfaceAlt }]}>
-          {open ? <LucideIcons.ChevronUp size={16} color={colors.textSecondary} />
-                : <LucideIcons.ChevronDown size={16} color={colors.textSecondary} />}
+          {open ? <ChevronUp size={16} color={colors.textSecondary} />
+                : <ChevronDown size={16} color={colors.textSecondary} />}
         </View>
       </TouchableOpacity>
 
@@ -253,6 +257,7 @@ const BadgesAccordion = memo(({ ownedBadgeIds }: { ownedBadgeIds: string[] }) =>
     </View>
   );
 });
+BadgesAccordion.displayName = 'BadgesAccordion';
 
 // ── Main Modal ─────────────────────────────────────────────────────────────────
 export default function AchievementsModal() {
@@ -303,16 +308,23 @@ export default function AchievementsModal() {
   const progressPct = achievements.length > 0 ? (unlockedCount / achievements.length) * 100 : 0;
 
   return (
-    <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
+    <View style={s.container}>
+      <GlobalBackground />
+      <LinearGradient
+        colors={[colors.primary + '30', colors.primary + '10', 'transparent']}
+        style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 320 }}
+        pointerEvents="none"
+      />
+      <SafeAreaView style={s.container}>
+        {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={[s.backBtn, { backgroundColor: colors.surface }]}>
-          <LucideIcons.ArrowLeft color={colors.textPrimary} size={22} />
+          <ArrowLeft color={colors.textPrimary} size={22} />
         </TouchableOpacity>
         <Text style={[s.title, { color: colors.textPrimary }]}>{t('achievements.title', 'Your Achievements')}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <TouchableOpacity onPress={() => setShowInfo(true)} style={[s.infoBtn, { backgroundColor: colors.surface }]}>
-            <LucideIcons.Info color={colors.textPrimary} size={20} />
+            <Info color={colors.textPrimary} size={20} />
           </TouchableOpacity>
           <View style={[s.countBadge, { backgroundColor: colors.primary }]}>
             <Text style={s.countText}>{unlockedCount}</Text>
@@ -405,6 +417,7 @@ export default function AchievementsModal() {
         ))}
       </ScrollView>
     </SafeAreaView>
+    </View>
   );
 }
 

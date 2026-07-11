@@ -70,12 +70,90 @@
       "fats": "Fats",
       "today": "Today",
       "kcal": "kcal consumed"
+    },
+    "extraFeatures": {
+      "subtitle": "MORE FEATURES",
+      "title": "Everything you need, and more",
+      "items": {
+        "barcode": {
+          "title": "Barcode Scanner",
+          "desc": "Scan any food item instantly"
+        },
+        "photoScan": {
+          "title": "AI Photo Analysis",
+          "desc": "Upload a photo and AI identifies your meal"
+        },
+        "voiceInput": {
+          "title": "Voice Input",
+          "desc": "Dictate meals and exercises with Whisper"
+        },
+        "squads": {
+          "title": "Squads",
+          "desc": "Form a team with friends and compete together"
+        },
+        "macroWars": {
+          "title": "Macro Wars",
+          "desc": "Weekly competition for the best macros"
+        },
+        "leagues": {
+          "title": "Elite Leagues",
+          "desc": "10 competitive ranks from Bronze to Diamond"
+        },
+        "sleep": {
+          "title": "Sleep Tracking",
+          "desc": "Log your rest for better recovery"
+        },
+        "notifications": {
+          "title": "Smart Notifications",
+          "desc": "Meal reminders and achievement alerts"
+        },
+        "languages": {
+          "title": "7 Languages",
+          "desc": "EN, ES, FR, PT, IT, DE, RU"
+        }
+      }
+    },
+    "howItWorks": {
+      "subtitle": "HOW IT WORKS",
+      "title": "3 steps to get started",
+      "desc": "Start transforming your body in minutes.",
+      "steps": {
+        "1": {
+          "title": "Download FitGO",
+          "desc": "Free on App Store and Google Play. Create your account in seconds."
+        },
+        "2": {
+          "title": "Set up your profile",
+          "desc": "Enter your data, goals, and preferences. AI personalizes everything for you."
+        },
+        "3": {
+          "title": "Start training",
+          "desc": "Log meals, train with the muscle map, and compete in leagues."
+        }
+      }
+    },
+    "testimonials": {
+      "subtitle": "TESTIMONIALS",
+      "title": "What our community says",
+      "items": {
+        "maria": {
+          "text": "FitGO changed my way of eating. The barcode scanner is incredible and the AI coach helps me stay disciplined."
+        },
+        "carlos": {
+          "text": "Elite Leagues motivate me to train every day. I've never been this consistent with the gym. Gamification works!"
+        },
+        "laura": {
+          "text": "I tried MyFitnessPal and Fitia, but FitGO is much smoother. The muscle map and macro tracking are perfect."
+        }
+      }
     }
   },
   "nav": {
     "home": "Home",
     "app": "The App",
     "about": "About Us",
+    "ranking": "Ranking",
+    "squadsRanking": "Squads",
     "premium": "Premium",
     "login": "Log in",
     "logout": "Log out",
@@ -264,6 +342,7 @@
       "desc": "Unlock all your potential",
       "month": "month",
       "billedAnnually": "Billed annually",
+      "was": "was",
       "btn": "Get Pro",
       "secure": "Secure payment · Cancel anytime"
     },
@@ -290,16 +369,17 @@
       ]
     },
     "freeFeatures": [
-      "Body weight tracking",
+      "Body weight & measurements tracking",
       "Basic macro tracking",
       "Food database",
       "Workout routines",
-      "History (last 30 days)",
-      "AI Coach",
-      "Macro Wars",
-      "Elite Leagues",
-      "Unlimited history",
-      "Advanced progress analysis"
+      "AI Coach (3 scans/day)",
+      "Barcode scanner",
+      "Basic meal planner",
+      "Basic exercise directory",
+      "Default name color",
+      "History (7 days)",
+      "Ads"
     ],
     "freeIncluded": [
       true,
@@ -307,33 +387,126 @@
       true,
       true,
       true,
-      false,
-      false,
-      false,
-      false,
-      false
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
     ],
     "proFeatures": [
       "Everything in the free plan",
-      "Unlimited AI Coach",
-      "Macro Wars",
-      "Elite Leagues",
+      "Unlimited AI Coach with voice",
+      "AI food scanner (photo)",
+      "Weekly AI meal planner",
+      "Voice input",
+      "Full exercise directory",
+      "Premium name colors",
+      "Elite Leagues & Squads",
+      "Weekly Macro Wars",
+      "AI-generated challenges",
       "Unlimited history",
-      "Advanced progress analysis",
-      "Barcode scanner",
-      "AI nutrition planner",
-      "Priority support",
       "No ads"
     ],
     "highlights": {
-      "coach": "Coach AI",
-      "macroWars": "Macro Wars",
-      "leagues": "Elite Leagues",
-      "analysis": "Pro Analysis",
-      "nutrition": "AI Nutrition",
-      "unlimited": "No limits"
+      "coach": "Unlimited AI Coach",
+      "planner": "AI Meal Planner",
+      "scanner": "AI Scanner",
+      "voice": "Voice Input",
+      "directory": "Exercise Directory",
+      "colors": "Premium Colors",
+      "leagues": "Leagues & Squads",
+      "history": "Unlimited History",
+      "ads": "Ad-Free"
     },
-    "secure": "Secure payment · Cancel anytime"
+    "secure": "Secure payment · Cancel anytime",
+    "errorMsg": "Error processing payment. Please try again.",
+    "compare": {
+      "label": "Comparison",
+      "title": "Free vs Pro",
+      "coach": "AI Coach",
+      "coachFree": "3 scans/day",
+      "coachPro": "Unlimited + voice",
+      "scanner": "Food Scanner",
+      "scannerFree": "Barcode only",
+      "scannerPro": "AI photo scan",
+      "planner": "Planner",
+      "plannerFree": "Basic",
+      "plannerPro": "Weekly AI plan",
+      "voice": "Voice Input",
+      "voiceFree": "Not available",
+      "voicePro": "Unlimited",
+      "directory": "Exercise Directory",
+      "directoryFree": "Basic",
+      "directoryPro": "Full",
+      "wars": "Macro Wars",
+      "warsFree": "Not available",
+      "warsPro": "Weekly",
+      "squads": "Squads",
+      "squadsFree": "Not available",
+      "squadsPro": "Unlimited",
+      "challenges": "AI Challenges",
+      "challengesFree": "Not available",
+      "challengesPro": "Personalized",
+      "history": "History",
+      "historyFree": "7 days",
+      "historyPro": "Unlimited",
+      "colors": "Name Color",
+      "colorsFree": "Default",
+      "colorsPro": "11 premium",
+      "ads": "Ads",
+      "adsFree": "Yes",
+      "adsPro": "Ad-free"
+    }
+  },
+  "ranking": {
+    "badge": "Global Ranking",
+    "individualTitle": "Individual Ranking",
+    "global": "Global",
+    "desc": "Top FitGO users ranked by league points. Compete for the top and earn your place in the elite.",
+    "live": "Live",
+    "users": "users",
+    "howPoints": "How to earn points?",
+    "refresh": "Refresh",
+    "pointsInfo": "Points System",
+    "actions": "Actions",
+    "mealLog": "Log a meal",
+    "macroPerfect": "Perfect macros (5% margin)",
+    "challenge": "Complete a challenge",
+    "activity": "Log an activity",
+    "achievement": "Unlock an achievement",
+    "streakMulti": "Streak Multiplier",
+    "streak0": "0-2 days",
+    "streak3": "3-7 days",
+    "streak8": "8-14 days",
+    "streak15": "15+ days",
+    "streak": "Streak",
+    "days": "days",
+    "grades": "Grades Table",
+    "anonymous": "Anonymous",
+    "errorMsg": "Error loading ranking",
+    "serverInfo": "Server Status",
+    "serverOnline": "Online",
+    "totalUsers": "users",
+    "totalSquads": "squads",
+    "totalLogs": "meals logged",
+    "proUsers": "Pro",
+    "topUser": "Top user",
+    "topSquad": "Top squad",
+    "loading": "Loading ranking...",
+    "empty": "No users in the ranking yet"
+  },
+  "squadsRanking": {
+    "badge": "Squads Ranking",
+    "title": "Squads Ranking",
+    "global": "Global",
+    "desc": "Top FitGO squads competing in Elite Leagues. Form your team and dominate the leaderboard.",
+    "live": "Live",
+    "squads": "squads",
+    "members": "members",
+    "noSquads": "No squads yet. Be the first to create one from the app!",
+    "errorMsg": "Error loading squads ranking",
+    "loading": "Loading squads..."
   },
   "auth": {
     "login": {
@@ -354,7 +527,8 @@
       "btn": "Create account",
       "loading": "Creating account...",
       "hasAccount": "Already have an account?",
-      "login": "Log in"
+      "login": "Log in",
+      "confirmPassword": "Confirm password"
     },
     "forgot": {
       "title": "Recover your access to FitGO.",
@@ -362,7 +536,19 @@
       "email": "Email address",
       "btn": "Send link",
       "loading": "Sending...",
-      "back": "Back to login"
+      "back": "Back to login",
+      "successMsg": "Check your email for the recovery link."
+    },
+    "reset": {
+      "title": "Set your new password",
+      "password": "New password",
+      "confirmPassword": "Confirm password",
+      "btn": "Update password",
+      "loading": "Updating...",
+      "back": "Back to login",
+      "successMsg": "Password updated successfully.",
+      "errorMismatch": "Passwords do not match.",
+      "errorLength": "Password must be at least 6 characters."
     }
   }
 }

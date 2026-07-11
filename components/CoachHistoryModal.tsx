@@ -1,10 +1,11 @@
 import React from 'react';
 import {
   View, Text, StyleSheet, Modal, TouchableOpacity,
-  FlatList, Pressable, Alert
+  Pressable, Alert
 } from 'react-native';
-import { useTheme } from '../hooks/useTheme';
+import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../hooks/useTheme';
 import { useCoachStore } from '../store';
 import { Spacing, Radius } from '../constants';
 import { supabase } from '../services/supabase';
@@ -85,8 +86,10 @@ export default function CoachHistoryModal({ visible, onClose, coachType }: Histo
             <Text style={[s.newBtnText, { color: colors.primary }]}>+ {t('coach.newChat', 'New Chat')}</Text>
           </TouchableOpacity>
 
-          <FlatList
+          <FlashList
             data={sessions}
+            // @ts-ignore
+            estimatedItemSize={50}
             keyExtractor={item => item.id}
             contentContainerStyle={s.list}
             renderItem={({ item }) => (

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, View, Image, TouchableOpacity, StyleSheet, Text, Dimensions, SafeAreaView } from 'react-native';
+import { Modal, View, TouchableOpacity, StyleSheet, Text, Dimensions, SafeAreaView } from 'react-native';
+import { Image } from 'expo-image';
 import { X } from 'lucide-react-native';
 
 interface ImageViewerModalProps {
@@ -20,10 +21,10 @@ export function ImageViewerModal({ visible, imageUri, onClose }: ImageViewerModa
           </TouchableOpacity>
         </View>
         <View style={styles.imageContainer}>
-          <Image
+          <Image cachePolicy="memory-disk"
             source={{ uri: imageUri }}
             style={styles.image}
-            resizeMode="contain"
+            contentFit="contain"
           />
         </View>
       </SafeAreaView>

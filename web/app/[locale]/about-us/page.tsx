@@ -5,8 +5,8 @@ import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
 
 export const metadata: Metadata = {
-  title: "Nosotros — FitGO",
-  description: "Conoce al equipo detrás de FitGO y la visión que nos mueve.",
+  title: "Nosotros",
+  description: "Conoce al equipo detrás de FitGO y la visión que nos mueve. Creamos la mejor experiencia de fitness que haya existido.",
 };
 
 
@@ -20,13 +20,10 @@ const valuesIcons = {
 export default function AboutUsPage() {
   const t = useTranslations("aboutUs");
 
-  const timelineKeys = ["2024", "2025Q1", "2025Q2", "2025Q3", "2026"];
-  const timelineDates = ["2024", "2025 Q1", "2025 Q2", "2025 Q3", "2026"];
-
   const valuesKeys = ["speed", "effort", "passion", "improving"];
   const valuesColors = ["#F59E0B", "#06B6D4", "#F43F5E", "#10B981"];
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" suppressHydrationWarning>
       <Navbar />
 
       {/* Hero */}
@@ -173,43 +170,6 @@ export default function AboutUsPage() {
                 </div>
               </div>
             )})}
-          </div>
-        </div>
-      </section>
-
-      {/* Timeline */}
-      <section className="py-24 px-6">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="section-label">{t("historyLabel")}</span>
-            <h2 className="font-display font-black text-4xl text-text-primary mt-3">
-              {t("historyTitle")}
-            </h2>
-          </div>
-          <div className="relative">
-            {/* Timeline line */}
-            <div className="absolute left-6 top-0 bottom-0 w-px bg-linear-to-b from-primary via-secondary to-accent" />
-
-            <div className="space-y-10">
-              {timelineKeys.map((item, i) => (
-                <div key={i} className="flex gap-8 pl-4">
-                  <div className="relative shrink-0">
-                    <div className="w-5 h-5 rounded-full bg-primary glow-primary relative z-10 mt-1" />
-                  </div>
-                  <div className="glass rounded-2xl p-6 flex-1 card-hover">
-                    <span className="text-xs font-black text-primary uppercase tracking-widest">
-                      {timelineDates[i]}
-                    </span>
-                    <h3 className="font-display font-bold text-lg text-text-primary mt-1 mb-2">
-                      {t(`timeline.${item}.title`)}
-                    </h3>
-                    <p className="text-text-secondary text-sm leading-relaxed">
-                      {t(`timeline.${item}.desc`)}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>

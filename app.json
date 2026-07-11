@@ -2,8 +2,8 @@
   "expo": {
     "name": "FitGO",
     "slug": "fitgo",
-    "owner": "elubiz",
-    "version": "1.0.0",
+    "owner": "deathtrooper",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -14,7 +14,7 @@
     },
     "scheme": "fitgo",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/transparent.png",
       "resizeMode": "contain",
       "backgroundColor": "#0D0F14"
     },
@@ -25,12 +25,13 @@
         "NSCameraUsageDescription": "Scan food barcodes and take progress photos",
         "NSMicrophoneUsageDescription": "Use voice to log food and talk with your AI coach",
         "NSPhotoLibraryUsageDescription": "Access your photo library for progress photos",
+        "NSMotionUsageDescription": "Allow FitGO to count your steps to track your daily activity.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "package": "com.fitgo.app",
-      "versionCode": 11,
+      "versionCode": 15,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0D0F14"
@@ -41,12 +42,13 @@
         "CAMERA",
         "RECORD_AUDIO",
         "VIBRATE",
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
-        "android.permission.POST_NOTIFICATIONS"
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.ACTIVITY_RECOGNITION",
+        "com.android.vending.BILLING",
+        "com.google.android.gms.permission.AD_ID"
       ]
     },
     "web": {
@@ -85,8 +87,50 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "androidAppId": "ca-app-pub-6675982933894700~4114813863",
           "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
+      ],
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "FitGoMainWidget",
+              "label": "FitGO – Resumen del Día",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "description": "Calorías restantes, proteína y racha actual",
+              "previewImage": "./assets/icon.png",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "FitGoStreakWidget",
+              "label": "FitGO – Llama de Racha",
+              "minWidth": "110dp",
+              "minHeight": "55dp",
+              "description": "Tu racha de días activos en FitGO",
+              "previewImage": "./assets/icon.png",
+              "updatePeriodMillis": 3600000
+            },
+            {
+              "name": "FitGoWaterWidget",
+              "label": "FitGO – Hidratación",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "description": "Tu consumo de agua del día",
+              "previewImage": "./assets/icon.png",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "react-native",
+          "organization": "fitgo"
         }
       ]
     ],
@@ -97,7 +141,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "c7070968-231a-43c2-a62e-37108264a8db"
+        "projectId": "b322d830-a5f8-4c68-83b5-8686ce3d38f3"
       }
     },
     "runtimeVersion": {

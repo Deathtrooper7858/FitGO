@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert,
-  Modal, Platform, Dimensions, TextInput
+  Modal, Platform, TextInput
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../hooks/useTheme';
-import { Spacing, Radius } from '../constants';
 import { 
   Target, Flame, Dumbbell, Heart, Zap, Monitor, Footprints, 
   Activity, Scale, ChevronLeft, ChevronRight, Building2, Hammer, Plus, Minus,
   Sparkles, AlertCircle
 } from 'lucide-react-native';
+import { useTheme } from '../hooks/useTheme';
+import { Spacing, Radius } from '../constants';
 import { useAuthStore, useSettingsStore } from '../store';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const STEPS_COUNT = 5;
 

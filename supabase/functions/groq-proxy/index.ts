@@ -1,22 +1,117 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.0";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = new Set([
+  "https://www.fitgo.app",
+  "https://fitgo.app",
+  "https://abvidinpswnfxijjfnic.supabase.co",
+  "exp+com.fitgo.app://",
+  "com.fitgo.app://",
+]);
+
+const API_KEY_ENV_VARS = [
+  "GROQ_API_KEY",
+  "GROQ_API_KEY_2",
+  "GROQ_API_KEY_3",
+  "GROQ_API_KEY_4",
+  "GROQ_API_KEY_5",
+];
+
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_CLEANUP_MS = 300_000;
+const CACHE_TTL_MS = 300_000;
+
+let keyIndex = 0;
+
+interface RateEntry {
+  count: number;
+  windowStart: number;
+}
+
+const rateMap = new Map<string, RateEntry>();
+
+const responseCache = new Map<string, { data: string; expires: number }>();
+
+let lastCleanup = Date.now();
+
+function cleanupStale() {
+  const now = Date.now();
+  if (now - lastCleanup < RATE_LIMIT_CLEANUP_MS) return;
+  lastCleanup = now;
+  for (const [key, entry] of rateMap) {
+    if (now - entry.windowStart > RATE_LIMIT_WINDOW_MS) rateMap.delete(key);
+  }
+  for (const [key, entry] of responseCache) {
+    if (now > entry.expires) responseCache.delete(key);
+  }
+}
+
+function checkRateLimit(userId: string): { allowed: boolean; retryAfter: number } {
+  cleanupStale();
+  const now = Date.now();
+  let entry = rateMap.get(userId);
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    entry = { count: 1, windowStart: now };
+    rateMap.set(userId, entry);
+    return { allowed: true, retryAfter: 0 };
+  }
+  entry.count++;
+  if (entry.count > RATE_LIMIT_MAX) {
+    const retryAfter = Math.ceil((entry.windowStart + RATE_LIMIT_WINDOW_MS - now) / 1000);
+    return { allowed: false, retryAfter };
+  }
+  return { allowed: true, retryAfter: 0 };
+}
+
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return hash.toString(36);
+}
+
+function getCurrentApiKey(): string | null {
+  for (let i = 0; i < API_KEY_ENV_VARS.length; i++) {
+    const idx = (keyIndex + i) % API_KEY_ENV_VARS.length;
+    const key = Deno.env.get(API_KEY_ENV_VARS[idx]);
+    if (key) {
+      keyIndex = idx; // Lock onto the valid key
+      return key;
+    }
+  }
+  return null;
+}
+
+function advanceApiKey() {
+  keyIndex = (keyIndex + 1) % API_KEY_ENV_VARS.length;
+}
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get("origin") || "";
+  const allowed = ALLOWED_ORIGINS.has(origin) ? origin : "https://www.fitgo.app";
+  return {
+    "Access-Control-Allow-Origin": allowed,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  };
+}
 
 Deno.serve(async (req) => {
+  const startTime = performance.now();
+
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: getCorsHeaders(req) });
   }
 
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing Auth Header" }), {
+      return new Response(JSON.stringify({ error: "Missing authorization header" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -30,83 +125,192 @@ Deno.serve(async (req) => {
     if (userError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
-    const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
-    if (!GROQ_API_KEY) {
-      console.error("[Groq Proxy] Error: GROQ_API_KEY is not configured in Supabase secrets.");
+    const { allowed, retryAfter } = checkRateLimit(user.id);
+    if (!allowed) {
+      console.warn(`[Groq Proxy] Rate limit exceeded for user ${user.id}`);
       return new Response(
-        JSON.stringify({ error: "GROQ_API_KEY is not configured in Supabase secrets." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Too many requests. Please wait before trying again." }),
+        {
+          status: 429,
+          headers: {
+            ...getCorsHeaders(req),
+            "Content-Type": "application/json",
+            "Retry-After": String(retryAfter),
+          },
+        }
       );
     }
 
     const contentType = req.headers.get("content-type") || "";
+
+    if (!contentType) {
+      return new Response(
+        JSON.stringify({ error: "Missing Content-Type header" }),
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     let url = "https://api.groq.com/openai/v1/chat/completions";
-    let body: any;
+    let isStreaming = false;
+    let cacheKey: string | null = null;
+    let parsed: any = null;
+    let rawFormData: FormData | null = null;
 
     try {
       if (contentType.includes("multipart/form-data")) {
         url = "https://api.groq.com/openai/v1/audio/transcriptions";
-        body = await req.formData();
+        rawFormData = await req.formData();
+        parsed = {}; // No parsed JSON for form-data
       } else {
-        // Use text() and then parse to avoid potential stringification issues
-        // and to allow pass-through if needed, but we keep JSON for logging/validation.
         const rawBody = await req.text();
-        try {
-          JSON.parse(rawBody); // Validate JSON
-          body = rawBody;
-        } catch (e) {
-          throw new Error("Invalid JSON body");
+        parsed = JSON.parse(rawBody);
+        isStreaming = parsed.stream === true;
+        if (!isStreaming) {
+          cacheKey = simpleHash(rawBody);
+          const cached = responseCache.get(cacheKey);
+          if (cached && Date.now() < cached.expires) {
+            const duration = ((performance.now() - startTime) / 1000).toFixed(2);
+            console.log(`[Groq Proxy] Cache hit for user ${user.id} (${duration}s)`);
+            return new Response(cached.data, {
+              headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+              status: 200,
+            });
+          }
         }
       }
     } catch (e) {
-      console.error("[Groq Proxy] Failed to parse request body:", e);
       return new Response(
-        JSON.stringify({ error: "Failed to parse request body", details: e.message }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          error: "Failed to parse request body",
+        }),
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`[Groq Proxy] Forwarding request to: ${url}`);
+    const modelsToTry = Array.isArray(parsed?.models) ? parsed.models : (parsed?.model ? [parsed.model] : [undefined]);
+    const maxKeysToTry = API_KEY_ENV_VARS.length;
+    let keysTried = 0;
+    
+    let finalResponse: Response | null = null;
+    let finalGroqData: any = null;
+    let finalStatus = 500;
 
-    const groqResponse = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${GROQ_API_KEY}`,
-        ...(contentType.includes("application/json") ? { "Content-Type": "application/json" } : {}),
-      },
-      body: body,
-    });
+    while (keysTried < maxKeysToTry) {
+      const apiKey = getCurrentApiKey();
+      if (!apiKey) {
+        return new Response(
+          JSON.stringify({ error: "No Groq API keys configured." }),
+          { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
 
-    const responseText = await groqResponse.text();
-    let groqData;
-    try {
-      groqData = JSON.parse(responseText);
-    } catch (e) {
-      groqData = { error: "Non-JSON response from Groq", raw: responseText };
+      let success = false;
+      let shouldAdvanceKey = true;
+
+      for (let i = 0; i < modelsToTry.length; i++) {
+        const model = modelsToTry[i];
+        
+        let currentBody: FormData | string;
+        if (rawFormData) {
+           currentBody = rawFormData;
+           if (model) currentBody.set('model', model);
+        } else {
+           currentBody = JSON.stringify({ ...parsed, models: undefined, model: model });
+        }
+
+        const groqResponse = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            ...(contentType.includes("application/json") ? { "Content-Type": "application/json" } : {}),
+          },
+          body: currentBody,
+        });
+
+        const responseText = await groqResponse.text();
+        let groqData: any;
+        try {
+          groqData = JSON.parse(responseText);
+        } catch {
+          groqData = { error: "Non-JSON response from Groq", raw: responseText };
+        }
+
+        finalStatus = groqResponse.status;
+        finalGroqData = groqData;
+
+        if (groqResponse.ok) {
+          success = true;
+          finalResponse = new Response(responseText, {
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+            status: 200,
+          });
+          
+          if (cacheKey && !isStreaming) {
+            responseCache.set(cacheKey, { data: responseText, expires: Date.now() + CACHE_TTL_MS });
+          }
+          break; // Exit model loop
+        }
+
+        // If rate limited, we continue to next model
+        if (groqResponse.status === 429) {
+          console.warn(`[Groq Proxy] Rate limited on key index ${keyIndex}, model ${model}.`);
+          continue; 
+        }
+
+        // If other 5xx error, we can also try next model
+        if (groqResponse.status >= 500) {
+          console.warn(`[Groq Proxy] 5xx Error on key index ${keyIndex}, model ${model}.`);
+          continue;
+        }
+
+        // For 4xx errors (e.g. bad request), no point in retrying models/keys usually
+        // Break out of the keys loop entirely
+        shouldAdvanceKey = false;
+        finalResponse = new Response(JSON.stringify(groqData), {
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+          status: groqResponse.status,
+        });
+        break;
+      }
+
+      if (success || !shouldAdvanceKey) {
+        break; // Exit keys loop
+      }
+
+      // If we reach here, all models failed (likely 429) for the CURRENT key.
+      console.warn(`[Groq Proxy] API Key index ${keyIndex} is drained or failed all models. Switching to next key.`);
+      advanceApiKey();
+      keysTried++;
     }
 
-    if (!groqResponse.ok) {
-      console.error(`[Groq Proxy] Groq API error (${groqResponse.status}):`, JSON.stringify(groqData));
-      // Return the actual Groq error to the client
-      return new Response(JSON.stringify(groqData), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: groqResponse.status,
+    const duration = ((performance.now() - startTime) / 1000).toFixed(2);
+
+    if (!finalResponse) {
+      console.error(`[Groq Proxy] All API keys and models exhausted for user ${user.id} (${duration}s)`);
+      return new Response(JSON.stringify(finalGroqData || { error: "All API keys and models are rate limited." }), {
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+        status: finalStatus,
       });
     }
 
-    return new Response(JSON.stringify(groqData), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+    if (finalStatus === 200) {
+      console.log(`[Groq Proxy] Success for user ${user.id} (${duration}s)`);
+    } else {
+      console.error(`[Groq Proxy] Groq API error (${finalStatus}) for user ${user.id} (${duration}s):`, JSON.stringify(finalGroqData));
+    }
+
+    return finalResponse;
   } catch (error) {
     console.error("[Groq Proxy] Internal Error:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({
+        error: "Internal server error",
+      }),
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

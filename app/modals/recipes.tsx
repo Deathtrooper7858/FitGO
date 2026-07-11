@@ -1,14 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Keyboard } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Spacing, Radius, Shadow } from '../../constants';
-import { useAuthStore, useRecipesStore, Recipe, useSettingsStore } from '../../store';
-import { generateRecipes } from '../../services/groq';
-import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react-native';
+import { Spacing, Radius, Shadow } from '../../constants';
+import { useAuthStore, useRecipesStore, Recipe, useSettingsStore } from '../../store';
+import { useAdStore } from '../../store/adStore';
+import { AdTimerOverlay } from '../../components/AdTimerOverlay';
+import { RewardedAdGate } from '../../components/RewardedAdGate';
+import { generateRecipes } from '../../services/groq';
+import { useTheme } from '../../hooks/useTheme';
+import { useIsPro } from '../../hooks/useIsPro';
 
 export default function RecipesModal() {
   const { t } = useTranslation();
@@ -16,13 +21,17 @@ export default function RecipesModal() {
   const { language } = useSettingsStore();
   const { profile } = useAuthStore();
   const { recipes, pinnedRecipes, setRecipes, togglePin } = useRecipesStore();
+  const { hasPremiumAdAccess, grantPremiumAdAccess } = useAdStore();
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'search' | 'pinned'>('search');
-  const isPro = profile?.isPro ?? false;
+  const [showAdGate, setShowAdGate] = useState(false);
+  const isPro = useIsPro();
+  const featureId = 'recipes';
+  const hasAccess = isPro || hasPremiumAdAccess(featureId);
 
   const loadRecipes = async (foodName?: string) => {
-    if (!isPro) return;
+    if (!hasAccess) return;
     setLoading(true);
     // Remove Keyboard.dismiss() to prevent closing the keyboard while user is typing
     try {
@@ -42,7 +51,7 @@ export default function RecipesModal() {
   useEffect(() => {
     if (prevLang.current !== language) {
       prevLang.current = language;
-      if (isPro && activeTab === 'search') {
+      if (hasAccess && activeTab === 'search') {
         setRecipes([]);
         // Small delay so setRecipes settles before we call the API
         setTimeout(() => loadRecipes(), 100);
@@ -52,7 +61,7 @@ export default function RecipesModal() {
 
   // Debounce logic for automatic search
   useEffect(() => {
-    if (!isPro || activeTab !== 'search') return;
+    if (!hasAccess || activeTab !== 'search') return;
     
     // Only auto-search if the query has changed and is long enough, or empty
     const handler = setTimeout(() => {
@@ -64,27 +73,57 @@ export default function RecipesModal() {
     }, 1200); // 1.2s debounce to avoid spamming the AI
 
     return () => clearTimeout(handler);
-  }, [searchQuery, isPro, activeTab]);
+  }, [searchQuery, hasAccess, activeTab]);
 
   useEffect(() => {
-    if (recipes.length === 0 && isPro && activeTab === 'search') {
+    if (recipes.length === 0 && hasAccess && activeTab === 'search') {
       loadRecipes();
     }
-  }, [isPro]);
+  }, [hasAccess]);
 
-  if (!isPro) {
+  if (!hasAccess) {
     return (
       <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
+        <LinearGradient
+          colors={[`${colors.primary}35`, colors.background]}
+          style={StyleSheet.absoluteFillObject}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 0.8 }}
+        />
         <View style={s.paywallContainer}>
-          <Text style={s.paywallEmoji}>🔒</Text>
+          <Text style={s.paywallEmoji}>🍳</Text>
           <Text style={[s.paywallTitle, { color: colors.textPrimary }]}>{t('recipes.proTitle')}</Text>
           <Text style={[s.paywallSub, { color: colors.textSecondary }]}>{t('recipes.proSub')}</Text>
+
+          {/* Ver ad para desbloquear temporalmente */}
+          <TouchableOpacity
+            style={[s.proBtn, { marginBottom: 12 }]}
+            onPress={() => setShowAdGate(true)}
+          >
+            <LinearGradient colors={['#10B981', '#059669']} style={s.proGrad}>
+              <Text style={s.proText}>▶ Ver video · Desbloquear gratis</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
           <TouchableOpacity style={s.proBtn} onPress={() => router.push('/modals/paywall')}>
             <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.proGrad}>
               <Text style={s.proText}>{t('recipes.unlockNow')}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
+
+        <RewardedAdGate
+          visible={showAdGate}
+          onClose={() => setShowAdGate(false)}
+          onRewarded={() => {
+            setShowAdGate(false);
+            grantPremiumAdAccess(featureId);
+          }}
+          emoji="🍳"
+          title="Recetas Premium"
+          subtitle="Ve un breve video y accede a recetas de IA personalizadas a tu objetivo"
+          watchLabel="▶ Ver video · Desbloquear recetas"
+        />
       </SafeAreaView>
     );
   }
@@ -99,67 +138,65 @@ export default function RecipesModal() {
       );
     }
 
-    if (activeTab === 'search') {
+    const currentData = activeTab === 'search' ? recipes : pinnedRecipes;
+
+    if (activeTab === 'pinned' && pinnedRecipes.length === 0) {
       return (
-        <View style={s.list}>
-          {recipes.map((recipe, index) => (
+        <View style={s.center}>
+          <Text style={{ fontSize: 40, marginBottom: 10 }}>📌</Text>
+          <Text style={[s.loadingText, { color: colors.textSecondary }]}>{t('recipes.noPinned', 'No tienes recetas fijadas aún.')}</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={{ flex: 1, paddingHorizontal: Spacing.lg }}>
+        <FlashList
+          data={currentData}
+          renderItem={({ item: recipe, index }) => (
             <RecipeCard
-              key={recipe.id}
               recipe={recipe}
               isFav={pinnedRecipes.some(r => r.id === recipe.id)}
               onFav={() => togglePin(recipe)}
               index={index}
             />
-          ))}
-        </View>
-      );
-    }
-
-    if (activeTab === 'pinned') {
-      if (pinnedRecipes.length === 0) {
-        return (
-          <View style={s.center}>
-            <Text style={{ fontSize: 40, marginBottom: 10 }}>📌</Text>
-            <Text style={[s.loadingText, { color: colors.textSecondary }]}>{t('recipes.noPinned', 'No tienes recetas fijadas aún.')}</Text>
-          </View>
-        );
-      }
-      return (
-        <View style={s.list}>
-          {pinnedRecipes.map((recipe, index) => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-              isFav={true}
-              onFav={() => togglePin(recipe)}
-              index={index}
-            />
-          ))}
-        </View>
-      );
-    }
+          )}
+          keyExtractor={(item) => item.id}
+          // @ts-ignore - The property exists at runtime and is required by FlashList but types are failing
+          estimatedItemSize={250}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+        />
+      </View>
+    );
   };
 
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]}>
+      <LinearGradient
+        colors={[`${colors.primary}35`, colors.background]}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 0.8 }}
+      />
       <View style={s.header}>
         <Text style={[s.title, { color: colors.textPrimary }]}>{t('recipes.title')}</Text>
       </View>
 
       <View style={s.tabs}>
         <TouchableOpacity 
-          style={[s.tab, activeTab === 'search' && { borderBottomColor: '#7C5CFC', borderBottomWidth: 3 }]} 
+          style={[s.tab, activeTab === 'search' && { borderBottomColor: colors.primary, borderBottomWidth: 3 }]} 
           onPress={() => setActiveTab('search')}
         >
-          <Text style={[s.tabText, { color: activeTab === 'search' ? '#7C5CFC' : colors.textSecondary }]}>
+          <Text style={[s.tabText, { color: activeTab === 'search' ? colors.primary : colors.textSecondary }]}>
             {t('recipes.searchTab', 'Buscar')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[s.tab, activeTab === 'pinned' && { borderBottomColor: '#7C5CFC', borderBottomWidth: 3 }]} 
+          style={[s.tab, activeTab === 'pinned' && { borderBottomColor: colors.primary, borderBottomWidth: 3 }]} 
           onPress={() => setActiveTab('pinned')}
         >
-          <Text style={[s.tabText, { color: activeTab === 'pinned' ? '#7C5CFC' : colors.textSecondary }]}>
+          <Text style={[s.tabText, { color: activeTab === 'pinned' ? colors.primary : colors.textSecondary }]}>
             {t('recipes.pinnedTab', 'Fijadas')}
           </Text>
         </TouchableOpacity>
@@ -178,16 +215,18 @@ export default function RecipesModal() {
             returnKeyType="search"
           />
           <TouchableOpacity onPress={() => loadRecipes(searchQuery)}>
-            <LinearGradient colors={['#7C5CFC', '#5141D3']} style={s.searchBtn}>
+            <LinearGradient colors={[colors.primary, colors.primary + 'C0']} style={s.searchBtn}>
               <Text style={s.searchBtnText}>{t('recipes.search', 'Buscar')}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
       )}
 
-      <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
+      <View style={s.scroll}>
         {renderContent()}
-      </ScrollView>
+      </View>
+
+      <AdTimerOverlay featureId="recipes" />
     </SafeAreaView>
   );
 }
@@ -196,20 +235,32 @@ function RecipeCard({ recipe, isFav, onFav, index }: { recipe: Recipe; isFav: bo
   const { t } = useTranslation();
   const colors = useTheme();
   
-  // Alternating slight gradients for visual richness
+  // Alternating slight gradients for visual richness with premium color
   const gradientColors = index % 2 === 0 
-    ? [colors.surface, colors.background] as const
-    : [colors.background, colors.surface] as const;
+    ? [colors.surface, `${colors.primary}10`] as const
+    : [`${colors.primary}10`, colors.surface] as const;
 
   return (
-    <View style={[rc.cardContainer, Shadow.md]}>
+    <View style={[
+      rc.cardContainer, 
+      Shadow.md,
+      {
+        borderColor: `${colors.primary}30`,
+        borderWidth: 1,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 5
+      }
+    ]}>
       <LinearGradient colors={gradientColors} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={rc.card}>
         <View style={rc.info}>
           <View style={rc.headerRow}>
             <View style={{ flex: 1, paddingRight: 8 }}>
               <Text style={[rc.name, { color: colors.textPrimary }]} numberOfLines={2}>{recipe.name}</Text>
             </View>
-            <TouchableOpacity onPress={onFav} style={[rc.favBtn, { backgroundColor: isFav ? '#7C5CFC22' : colors.surface }]}>
+            <TouchableOpacity onPress={onFav} style={[rc.favBtn, { backgroundColor: isFav ? `${colors.primary}22` : colors.surface }]}>
               <Text style={rc.favEmoji}>{isFav ? '📌' : '📍'}</Text>
             </TouchableOpacity>
           </View>
@@ -244,7 +295,7 @@ function RecipeCard({ recipe, isFav, onFav, index }: { recipe: Recipe; isFav: bo
           </View>
           
           <TouchableOpacity 
-            style={[rc.askCoachBtn, { backgroundColor: '#7C5CFC' }]}
+            style={[rc.askCoachBtn, { backgroundColor: colors.primary }]}
             onPress={() => {
               const prompt = t('recipes.promptHowToPrepare', {
                 defaultValue: `Hola Coach, ¿me puedes dar las instrucciones paso a paso para preparar esta receta: "{{name}}"? Descripción y detalles: {{desc}} (P: {{p}}g, C: {{c}}g, F: {{f}}g, {{kcal}} kcal).`,

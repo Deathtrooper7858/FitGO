@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Dimensions, Linking } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Spacing, Radius } from '../../constants';
-import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { ShieldCheck, Lock, ChevronLeft } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../../hooks/useTheme';
+import { Spacing, Radius } from '../../constants';
 import { TERMS_DATA, PRIVACY_DATA } from '../../constants/legalData';
 
 const { width } = Dimensions.get('window');
@@ -66,7 +66,7 @@ export default function LegalScreen() {
       <View style={[s.headerContainer, { borderBottomColor: colors.border }]}>
         <TouchableOpacity style={s.backButton} onPress={() => router.back()}>
           <ChevronLeft color={colors.textPrimary} size={24} />
-          <Text style={[s.backText, { color: colors.textPrimary }]}>{t('common.back', 'Volver')}</Text>
+          <Text style={[s.backText, { color: colors.textPrimary }]}>{t('common.back', 'Back')}</Text>
         </TouchableOpacity>
         
         <View style={s.titleRow}>
@@ -76,7 +76,7 @@ export default function LegalScreen() {
             <Lock color={colors.primary} size={32} />
           )}
           <Text style={[s.mainTitle, { color: colors.textPrimary }]}>
-            {activeTab === 'terms' ? t('legal.termsAndConditions', 'Términos y Condiciones') : t('legal.privacyPolicy', 'Política de Privacidad')}
+            {activeTab === 'terms' ? t('legal.termsAndConditions', 'Terms and Conditions') : t('legal.privacyPolicy', 'Privacy Policy')}
           </Text>
         </View>
 
@@ -133,7 +133,7 @@ export default function LegalScreen() {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
           >
-            <Text style={s.btnText}>{t('common.acceptAndUnderstood', 'Aceptar y Entendido')}</Text>
+            <Text style={s.btnText}>{t('common.acceptAndUnderstood', 'Accept and Understood')}</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>

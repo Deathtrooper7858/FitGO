@@ -1,20 +1,23 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation, Platform, ScrollView, Modal, Pressable, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
-import Body from 'react-native-body-highlighter';
-import { supabase } from '../../services/supabase';
-import { translateExerciseDetails } from '../../services/groq';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../../hooks/useTheme';
 import { ChevronDown, Dumbbell, Activity, Flame, ChevronUp, X } from 'lucide-react-native';
-import { Radius, Shadow, Spacing } from '../../constants';
-import { useAuthStore, usePurchaseStore } from '../../store';
 import { LinearGradient } from 'expo-linear-gradient';
+import { supabase } from '../../services/supabase';
+import { translateExerciseDetails } from '../../services/groq';
+import { useTheme } from '../../hooks/useTheme';
+import { Radius, Shadow, Spacing } from '../../constants';
+import { useIsPro } from '../../hooks/useIsPro';
+import { useAdStore } from '../../store/adStore';
+import { AdTimerOverlay } from '../../components/AdTimerOverlay';
 
 
 import exercisesData from '../../excercise/exercises.json';
+const Body = React.lazy(() => import('react-native-body-highlighter').then(m => ({ default: m.default })));
 
 const capitalize = (str: string) => {
   if (!str) return '';
@@ -50,12 +53,13 @@ const BODY_DATA = [
 ] as any;
 
 const getGroupIdBySlug = (slug: string) => {
-  if (['chest'].includes(slug)) return 'chest';
-  if (['upper-back', 'lower-back', 'trapezius'].includes(slug)) return 'back';
-  if (['quadriceps', 'hamstring', 'gluteal', 'calves', 'adductors'].includes(slug)) return 'legs';
-  if (['deltoids'].includes(slug)) return 'shoulders';
-  if (['biceps', 'triceps', 'forearm'].includes(slug)) return 'arms';
-  if (['abs', 'obliques'].includes(slug)) return 'core';
+  const s = slug.toLowerCase();
+  if (['chest'].includes(s)) return 'chest';
+  if (['upper-back', 'lower-back', 'trapezius', 'lats'].includes(s)) return 'back';
+  if (['quadriceps', 'hamstring', 'gluteal', 'calves', 'adductors', 'abductors', 'hamstrings', 'glutes'].includes(s)) return 'legs';
+  if (['deltoids', 'shoulders', 'front-deltoids', 'back-deltoids'].includes(s)) return 'shoulders';
+  if (['biceps', 'triceps', 'forearm', 'forearms'].includes(s)) return 'arms';
+  if (['abs', 'obliques'].includes(s)) return 'core';
   return null;
 };
 
@@ -112,11 +116,13 @@ export default function MuscleDirectoryModal() {
   const [isTranslating, setIsTranslating] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
-  const { profile } = useAuthStore();
-  const { isPro } = usePurchaseStore();
-  const isProActually = isPro || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
+  const { hasPremiumAdAccess } = useAdStore();
 
-  if (!isProActually) {
+  const isProActually = useIsPro();
+  const featureId = 'directory';
+  const hasAccess = isProActually || hasPremiumAdAccess(featureId);
+
+  if (!hasAccess) {
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
         <View style={styles.paywallContainer}>
@@ -144,10 +150,20 @@ export default function MuscleDirectoryModal() {
     }
     
     setIsTranslating(true);
+    const cacheKey = `ex_trans_${exercise.exerciseId || exercise.name}_${currentLang}`;
     try {
+      const cached = await AsyncStorage.getItem(cacheKey);
+      if (cached) {
+        setTranslatedData(JSON.parse(cached));
+        setIsTranslating(false);
+        return;
+      }
+      
       const res = await translateExerciseDetails(exercise.name, exercise.instructions || [], currentLang);
       setTranslatedData(res);
+      await AsyncStorage.setItem(cacheKey, JSON.stringify(res));
     } catch (err) {
+      console.warn('Translation error, falling back to English:', err);
       setTranslatedData({ name: exercise.name, instructions: exercise.instructions || [] });
     } finally {
       setIsTranslating(false);
@@ -174,6 +190,12 @@ export default function MuscleDirectoryModal() {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
+      <LinearGradient
+        colors={[`${colors.primary}35`, colors.background]}
+        style={StyleSheet.absoluteFillObject}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 0.8 }}
+      />
       <View style={styles.header}>
         <TouchableOpacity style={[styles.closeBtn, { backgroundColor: colors.surfaceAlt }]} onPress={() => router.back()}>
           <X size={24} color={colors.textPrimary} />
@@ -187,18 +209,20 @@ export default function MuscleDirectoryModal() {
       <ScrollView ref={scrollRef} style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.introWrap}>
           <View style={styles.bodyDiagramsContainer}>
-            <Body 
-              data={BODY_DATA}
-              side="front"
-              scale={0.8}
-              onBodyPartPress={handleBodyPartPress}
-            />
-            <Body 
-              data={BODY_DATA}
-              side="back"
-              scale={0.8}
-              onBodyPartPress={handleBodyPartPress}
-            />
+            <React.Suspense fallback={<View style={{ height: 200, width: '100%', justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator color={colors.primary} /></View>}>
+              <Body 
+                data={BODY_DATA}
+                side="front"
+                scale={0.8}
+                onBodyPartPress={handleBodyPartPress}
+              />
+              <Body 
+                data={BODY_DATA}
+                side="back"
+                scale={0.8}
+                onBodyPartPress={handleBodyPartPress}
+              />
+            </React.Suspense>
           </View>
           <Text style={[styles.introSub, { color: colors.textSecondary }]}>
             {t('dashboard.muscleDirectorySub', 'Toca un grupo muscular en la figura para ver los ejercicios o encuéntralos en la lista.')}
@@ -215,15 +239,28 @@ export default function MuscleDirectoryModal() {
                 key={group.id} 
                 style={[
                   styles.accordionItem, 
-                  { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
-                  isExpanded && { borderColor: group.color, borderWidth: 2 }
+                  { backgroundColor: colors.surfaceAlt, borderColor: `${colors.primary}40`, borderWidth: 1 },
+                  isExpanded && { 
+                    borderColor: group.color, 
+                    borderWidth: 2,
+                    shadowColor: group.color,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 12,
+                    elevation: 5
+                  }
                 ]}
               >
                 <TouchableOpacity 
-                  style={styles.accordionHeader} 
                   onPress={() => toggleAccordion(group.id)}
                   activeOpacity={0.7}
                 >
+                  <LinearGradient
+                    colors={isExpanded ? [colors.surfaceAlt, `${group.color}25`] : [colors.surfaceAlt, `${colors.primary}15`]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.accordionHeader}
+                  >
                   <View style={styles.groupInfo}>
                     <View style={[styles.iconWrap, { backgroundColor: group.color + '20' }]}>
                       <IconComponent size={20} color={group.color} />
@@ -244,6 +281,7 @@ export default function MuscleDirectoryModal() {
                       <ChevronDown size={16} color={colors.textSecondary} />
                     )}
                   </View>
+                  </LinearGradient>
                 </TouchableOpacity>
 
                 {isExpanded && (
@@ -257,7 +295,14 @@ export default function MuscleDirectoryModal() {
                           {eqGroup.exercises.map((exercise) => (
                             <TouchableOpacity 
                               key={exercise.exerciseId} 
-                              style={[styles.exercisePill, { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border + '40' }]}
+                              style={[
+                                styles.exercisePill, 
+                                { 
+                                  backgroundColor: colors.surfaceAlt, 
+                                  borderWidth: 1, 
+                                  borderColor: isExpanded ? `${group.color}30` : colors.border + '40'
+                                }
+                              ]}
                               onPress={() => handleSelectExercise(exercise)}
                             >
                               <Text style={[styles.exerciseDot, { color: group.color }]}>•</Text>
@@ -304,7 +349,7 @@ export default function MuscleDirectoryModal() {
                 </Text>
                 
                 <View style={[styles.gifContainer, { backgroundColor: colors.background }]}>
-                  <Image
+                  <Image cachePolicy="memory-disk"
                     source={{ 
                       uri: supabase.storage
                         .from('excercises')
@@ -339,6 +384,8 @@ export default function MuscleDirectoryModal() {
           </View>
         </View>
       </Modal>
+
+      <AdTimerOverlay featureId="directory" />
     </SafeAreaView>
   );
 }
@@ -527,3 +574,4 @@ const styles = StyleSheet.create({
   proGrad:          { padding: 16, alignItems: 'center' },
   proText:          { color: '#fff', fontWeight: '700', fontSize: 16 },
 });
+

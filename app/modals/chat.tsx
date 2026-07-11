@@ -1,45 +1,84 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, TextInput, Image, ScrollView,
+  View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView,
   KeyboardAvoidingView, Platform, ActivityIndicator, Modal, Alert,
   Pressable, Animated
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, Send, Image as ImageIcon, Mic, Play, Pause, X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../hooks/useTheme';
-import { useKeyboardNavBar } from '../../hooks/useKeyboardNavBar';
-import { Radius } from '../../constants';
-import { useAuthStore, useSocialStore } from '../../store';
-import { DirectMessage } from '../../store/socialStore';
-import { supabase } from '../../services/supabase';
 import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import {
   useAudioRecorder, useAudioPlayer, useAudioPlayerStatus,
   requestRecordingPermissionsAsync, setAudioModeAsync, RecordingPresets
 } from 'expo-audio';
+import { useTheme } from '../../hooks/useTheme';
+import { useKeyboardNavBar } from '../../hooks/useKeyboardNavBar';
+import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
+import { Radius } from '../../constants';
+import { useAuthStore, useSocialStore, useSettingsStore } from '../../store';
+import { DirectMessage } from '../../store/socialStore';
+import { getNameStyle } from '../../utils/styles';
+import { supabase } from '../../services/supabase';
 import { AvatarViewerModal } from '../../components/AvatarViewerModal';
-import { PhotoSourceModal } from '../../components/PhotoSourceModal';
+import { MediaPickerModal } from '../../components/MediaPickerModal';
+import { VideoPlayerView } from '../../components/social/VideoPlayerView';
 
-// ── Voice Note Player ─────────────────────────────────────────────────────────
+
+// Darkens a hex color by a given ratio (0–1)
+const darkenHex = (hex: string, amount = 0.22): string => {
+  const clean = hex.replace('#', '');
+  if (clean.length !== 6) return hex;
+  const num = parseInt(clean, 16);
+  const r = Math.max(0, (num >> 16) - Math.round(255 * amount));
+  const g = Math.max(0, ((num >> 8) & 0xff) - Math.round(255 * amount));
+  const b = Math.max(0, (num & 0xff) - Math.round(255 * amount));
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+};
+
 function VoiceNotePlayer({ audioUrl, isMine, colors }: { audioUrl: string; isMine: boolean; colors: any }) {
   const player = useAudioPlayer(audioUrl);
   const status = useAudioPlayerStatus(player);
+  const [trackWidth, setTrackWidth] = useState(0);
 
   const formatTime = (seconds: number) => {
+    if (isNaN(seconds)) return '0:00';
     const s = Math.floor(seconds);
     return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   };
 
   const progress = status.duration > 0 ? status.currentTime / status.duration : 0;
 
-  const handleToggle = () => {
+  const handleToggle = async () => {
+    try {
+      await setAudioModeAsync({ 
+        playsInSilentMode: true, 
+        allowsRecording: false, 
+        interruptionMode: 'mixWithOthers', 
+        shouldPlayInBackground: false, 
+        shouldRouteThroughEarpiece: false 
+      });
+    } catch (e) {
+      console.warn('Audio mode error:', e);
+    }
+
     if (status.playing) {
       player.pause();
     } else {
       if (status.didJustFinish) player.seekTo(0);
       player.play();
+    }
+  };
+
+  const handleSeek = (e: any) => {
+    if (trackWidth > 0 && status.duration > 0) {
+      const x = e.nativeEvent.locationX;
+      const percent = Math.max(0, Math.min(1, x / trackWidth));
+      player.seekTo(percent * status.duration);
     }
   };
 
@@ -54,8 +93,16 @@ function VoiceNotePlayer({ audioUrl, isMine, colors }: { audioUrl: string; isMin
           : <Play size={16} color={isMine ? '#fff' : colors.primary} />}
       </TouchableOpacity>
       <View style={vStyles.progressWrapper}>
-        <View style={[vStyles.progressTrack, { backgroundColor: isMine ? 'rgba(255,255,255,0.3)' : colors.border }]}>
-          <View style={[vStyles.progressFill, { width: `${progress * 100}%`, backgroundColor: isMine ? '#fff' : colors.primary }]} />
+        <View 
+          style={{ height: 20, justifyContent: 'center' }}
+          onLayout={e => setTrackWidth(e.nativeEvent.layout.width)}
+          onStartShouldSetResponder={() => true}
+          onResponderGrant={handleSeek}
+          onResponderMove={handleSeek}
+        >
+          <View style={[vStyles.progressTrack, { backgroundColor: isMine ? 'rgba(255,255,255,0.3)' : colors.border }]}>
+            <View style={[vStyles.progressFill, { width: `${progress * 100}%`, backgroundColor: isMine ? '#fff' : colors.primary }]} />
+          </View>
         </View>
         <Text style={[vStyles.timeText, { color: isMine ? 'rgba(255,255,255,0.75)' : colors.textMuted }]}>
           {status.playing
@@ -83,8 +130,12 @@ export default function ChatModal() {
   const { t } = useTranslation();
   const { profile } = useAuthStore();
   const socialStore = useSocialStore();
+  const { premiumColor } = useSettingsStore();
   const insets = useSafeAreaInsets();
   useKeyboardNavBar();
+  const keyboardHeight = useKeyboardHeight();
+
+  const friendProfile = socialStore.friends.find(f => f.friend_profile?.id === friendId)?.friend_profile;
 
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -201,20 +252,45 @@ export default function ChatModal() {
     await socialStore.sendDirectMessage(profile.id, friendId, content);
   };
 
-  // ── Image Picker ─────────────────────────────────────────────────────────────
+  // ── Media Picker ─────────────────────────────────────────────────────────────
   const handlePickFromCamera = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permiso requerido', 'Se necesita acceso a la cámara.'); return; }
+    if (status !== 'granted') { Alert.alert(t('chat.cameraPermissionTitle'), t('chat.cameraPermissionMsg')); return; }
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8 });
-    if (!result.canceled && result.assets[0]) setPreviewImage(result.assets[0].uri);
+    if (!result.canceled && result.assets?.[0]) setPreviewImage(result.assets[0].uri);
+  };
+
+  const handleRecordVideo = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') { Alert.alert(t('chat.cameraPermissionTitle'), t('chat.cameraPermissionMsg')); return; }
+    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['videos'], quality: 0.8 });
+    if (!result.canceled && result.assets?.[0]) setPreviewImage(result.assets[0].uri);
   };
 
   const handlePickFromGallery = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permiso requerido', 'Se necesita acceso a la galería.'); return; }
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
-    if (!result.canceled && result.assets[0]) setPreviewImage(result.assets[0].uri);
+    if (status !== 'granted') { Alert.alert(t('chat.galleryPermissionTitle'), t('chat.galleryPermissionMsg')); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images', 'videos'], quality: 0.8 });
+    if (!result.canceled && result.assets?.[0]) setPreviewImage(result.assets[0].uri);
   };
+
+  const handlePickAudio = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({ type: 'audio/*', copyToCacheDirectory: true });
+      if (!result.canceled && result.assets?.[0]) {
+        const uri = result.assets[0].uri;
+        if (!profile?.id) return;
+        optimisticSend('', undefined, uri);
+        const uploadedUrl = await socialStore.uploadChatAudio(uri);
+        if (uploadedUrl) {
+          await socialStore.sendDirectMessage(profile.id, friendId, '', undefined, uploadedUrl);
+        }
+      }
+    } catch (e) {
+      console.warn('Error audio:', e);
+    }
+  };
+
 
   const handleSendPreviewImage = async () => {
     if (!previewImage || !profile?.id) return;
@@ -222,19 +298,23 @@ export default function ChatModal() {
     setPreviewImage(null);
     setPreviewIsSending(true);
     optimisticSend('', uri); // show local preview immediately
-    const url = await socialStore.uploadChatImage(uri);
+    const isVideo = uri.toLowerCase().includes('.mp4') || uri.toLowerCase().includes('.mov') || uri.includes('video');
+    const url = isVideo 
+      ? await socialStore.uploadChatVideo(uri)
+      : await socialStore.uploadChatImage(uri);
     if (url) {
       await socialStore.sendDirectMessage(profile.id, friendId, '', url, undefined);
     } else {
-      Alert.alert('Error', 'No se pudo subir la imagen.');
+      Alert.alert(t('common.error'), t('chat.uploadFailed'));
     }
     setPreviewIsSending(false);
   };
 
+
   // ── Voice Recording ──────────────────────────────────────────────────────────
   const handleStartRecording = async () => {
     const { granted } = await requestRecordingPermissionsAsync();
-    if (!granted) { Alert.alert('Permiso requerido', 'Se necesita acceso al micrófono.'); return; }
+    if (!granted) { Alert.alert(t('chat.micPermissionTitle'), t('chat.micPermissionMsg')); return; }
     try {
       await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true, interruptionMode: 'doNotMix', shouldPlayInBackground: false, shouldRouteThroughEarpiece: false });
       await recorder.prepareToRecordAsync();
@@ -258,7 +338,7 @@ export default function ChatModal() {
         if (url) {
           await socialStore.sendDirectMessage(profile.id, friendId, '', undefined, url);
         } else {
-          Alert.alert('Error', 'No se pudo enviar el audio.');
+          Alert.alert(t('common.error'), t('chat.audioSendFailed'));
         }
       }
     } catch (e) {
@@ -277,11 +357,16 @@ export default function ChatModal() {
   const hasText = newMessage.trim().length > 0;
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
+    <LinearGradient
+      colors={[colors.primary + '18', colors.background, colors.background] as const}
+      locations={[0, 0.28, 1]}
+      style={styles.safe}
+    >
+      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 90}
+        style={[styles.keyboardView, { paddingBottom: Platform.OS === 'android' ? keyboardHeight : 0 }]}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         {/* ── Header ── */}
         <View style={[styles.header, { borderBottomColor: colors.border + '50' }]}>
@@ -291,14 +376,14 @@ export default function ChatModal() {
           <View style={styles.headerInfo}>
             <TouchableOpacity onPress={() => friendAvatar ? setAvatarVisible(true) : null} activeOpacity={0.85}>
               {friendAvatar ? (
-                <Image source={{ uri: friendAvatar }} style={styles.avatar} />
+                <Image cachePolicy="memory-disk" source={{ uri: friendAvatar }} style={styles.avatar} />
               ) : (
                 <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}>
                   <Text style={styles.avatarInitials}>{friendName?.charAt(0) || '?'}</Text>
                 </View>
               )}
             </TouchableOpacity>
-            <Text style={[styles.headerName, { color: colors.textPrimary }]}>{friendName}</Text>
+            <Text style={[styles.headerName, { color: colors.textPrimary }, getNameStyle(friendProfile?.name_color, friendId, profile?.id, profile?.nameColor, premiumColor)]}>{friendName}</Text>
           </View>
           <View style={{ width: 40 }} />
         </View>
@@ -323,7 +408,7 @@ export default function ChatModal() {
 
               return (
                 <View
-                  key={msg.id}
+                  key={`${msg.id}-${index}`}
                   style={[
                     styles.messageWrapper,
                     isMine ? styles.myMessageWrapper : styles.theirMessageWrapper,
@@ -331,30 +416,48 @@ export default function ChatModal() {
                   ]}
                 >
                   {msg.image_url ? (
-                    <TouchableOpacity
-                      style={[styles.imageWrapper, isMine ? { borderBottomRightRadius: 4 } : { borderBottomLeftRadius: 4 }]}
-                      onPress={() => setPreviewImage(msg.image_url!)}
-                      activeOpacity={0.9}
-                    >
-                      <Image source={{ uri: msg.image_url }} style={styles.chatImage} resizeMode="cover" />
-                      <Text style={[styles.messageTime, styles.imageTime]}>
-                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </Text>
-                    </TouchableOpacity>
+                    msg.image_url.toLowerCase().includes('.mp4') || msg.image_url.toLowerCase().includes('.mov') || msg.image_url.includes('chat_media/17') || msg.image_url.includes('video') ? (
+                      <View style={[styles.imageWrapper, { width: 220, height: 180 }, isMine ? { borderBottomRightRadius: 4 } : { borderBottomLeftRadius: 4 }]}>
+                        <VideoPlayerView videoUrl={msg.image_url} style={{ width: 220, height: 180 }} />
+                        <Text style={[styles.messageTime, styles.imageTime]}>
+                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </Text>
+                      </View>
+                    ) : (
+                      <TouchableOpacity
+                        style={[styles.imageWrapper, isMine ? { borderBottomRightRadius: 4 } : { borderBottomLeftRadius: 4 }]}
+                        onPress={() => setPreviewImage(msg.image_url!)}
+                        activeOpacity={0.9}
+                      >
+                        <Image cachePolicy="memory-disk" source={{ uri: msg.image_url }} style={styles.chatImage} contentFit="cover" />
+                        <Text style={[styles.messageTime, styles.imageTime]}>
+                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </Text>
+                      </TouchableOpacity>
+                    )
                   ) : msg.audio_url ? (
-                    <View style={[styles.messageBubble, isMine ? [styles.myBubble, { backgroundColor: bubbleBg }] : [styles.theirBubble, { backgroundColor: bubbleBg }]]}>
+
+                    <LinearGradient
+                      colors={isMine ? [colors.primary, darkenHex(colors.primary)] : [bubbleBg, bubbleBg]}
+                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                      style={[styles.messageBubble, isMine ? styles.myBubble : styles.theirBubble]}
+                    >
                       <VoiceNotePlayer audioUrl={msg.audio_url} isMine={isMine} colors={colors} />
                       <Text style={[styles.messageTime, { color: isMine ? 'rgba(255,255,255,0.7)' : colors.textMuted, alignSelf: 'flex-end', marginTop: 4 }]}>
                         {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </Text>
-                    </View>
+                    </LinearGradient>
                   ) : (
-                    <View style={[styles.messageBubble, isMine ? [styles.myBubble, { backgroundColor: bubbleBg }] : [styles.theirBubble, { backgroundColor: bubbleBg }]]}>
+                    <LinearGradient
+                      colors={isMine ? [colors.primary, darkenHex(colors.primary)] : [bubbleBg, bubbleBg]}
+                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                      style={[styles.messageBubble, isMine ? styles.myBubble : styles.theirBubble]}
+                    >
                       <Text style={[styles.messageText, { color: isMine ? '#fff' : colors.textPrimary }]}>{msg.content}</Text>
                       <Text style={[styles.messageTime, { color: isMine ? 'rgba(255,255,255,0.7)' : colors.textMuted }]}>
                         {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </Text>
-                    </View>
+                    </LinearGradient>
                   )}
                 </View>
               );
@@ -385,7 +488,7 @@ export default function ChatModal() {
               <View style={styles.recordingInfo}>
                 <Animated.View style={[styles.recordingDot, { transform: [{ scale: pulseAnim }] }]} />
                 <Text style={[styles.recordingLabel, { color: colors.textPrimary }]}>
-                  Grabando... {formatDuration(recordingDuration)}
+                  {t('chat.recording', 'Recording...')} {formatDuration(recordingDuration)}
                 </Text>
               </View>
               <TouchableOpacity onPress={handleStopAndSendRecording} style={[styles.sendBtn, { backgroundColor: colors.primary }]}>
@@ -408,7 +511,7 @@ export default function ChatModal() {
 
               <TextInput
                 style={[styles.input, { backgroundColor: colors.background, color: colors.textPrimary }]}
-                placeholder="Escribe un mensaje..."
+                placeholder={t('chat.messagePlaceholder', 'Write a message...')}
                 placeholderTextColor={colors.textMuted}
                 value={newMessage}
                 onChangeText={handleTyping}
@@ -441,13 +544,18 @@ export default function ChatModal() {
         onClose={() => setAvatarVisible(false)}
       />
 
-      {/* Beautiful Photo Source Modal */}
-      <PhotoSourceModal
+      {/* Beautiful Media Source Modal */}
+      <MediaPickerModal
         visible={photoSourceVisible}
-        onSelectCamera={handlePickFromCamera}
-        onSelectGallery={handlePickFromGallery}
         onClose={() => setPhotoSourceVisible(false)}
+        onTakePhoto={handlePickFromCamera}
+        onRecordVideo={handleRecordVideo}
+        onSelectLibrary={handlePickFromGallery}
+        onSelectAudio={handlePickAudio}
+        title={t('chat.sendMediaTitle', 'Enviar Multimedia')}
+        subtitle={t('chat.sendMediaSub', 'Elige una foto, graba un video o selecciona desde la galería')}
       />
+
 
       {/* Image Preview Modal */}
       <Modal visible={!!previewImage} transparent animationType="fade" statusBarTranslucent onRequestClose={() => setPreviewImage(null)}>
@@ -457,8 +565,13 @@ export default function ChatModal() {
               <X size={20} color="#fff" />
             </TouchableOpacity>
             {previewImage && (
-              <Image source={{ uri: previewImage }} style={styles.previewImage} resizeMode="contain" />
+              previewImage.toLowerCase().includes('.mp4') || previewImage.toLowerCase().includes('.mov') || previewImage.includes('video') ? (
+                <VideoPlayerView videoUrl={previewImage} style={{ width: 320, height: 380, borderRadius: 16 }} />
+              ) : (
+                <Image cachePolicy="memory-disk" source={{ uri: previewImage }} style={styles.previewImage} contentFit="contain" />
+              )
             )}
+
             {/* Only show send button for newly picked images (not received ones) */}
             {previewImage && !messages.some(m => m.image_url === previewImage) && (
               <TouchableOpacity style={[styles.previewSendBtn, { backgroundColor: colors.primary }]} onPress={handleSendPreviewImage}>
@@ -470,6 +583,7 @@ export default function ChatModal() {
         </Pressable>
       </Modal>
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 

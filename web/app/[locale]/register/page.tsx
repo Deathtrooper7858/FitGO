@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Zap, Mail, Lock, AlertCircle, ArrowRight, User } from "lucide-react";
+import { Zap, Mail, Lock, AlertCircle, ArrowRight, ArrowLeft, User } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { useTranslations } from "next-intl";
 
@@ -12,6 +12,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -21,6 +22,17 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden.");
+      setLoading(false);
+      return;
+    }
+    if (password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres.");
+      setLoading(false);
+      return;
+    }
 
     const { error: signUpError } = await supabase.auth.signUp({
       email,
@@ -61,6 +73,15 @@ export default function RegisterPage() {
       />
 
       <div className="relative z-10 w-full max-w-md">
+        {/* Back to home */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-text-muted hover:text-text-primary transition-colors text-sm font-semibold mb-8"
+        >
+          <ArrowLeft size={16} />
+          Volver al inicio
+        </Link>
+
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex flex-col items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-gradient-btn glow-primary flex items-center justify-center">
@@ -78,7 +99,7 @@ export default function RegisterPage() {
         <div className="glass rounded-3xl p-8 shadow-card border border-white/10">
           <form onSubmit={handleRegister} className="space-y-5">
             {error && (
-              <div className="p-4 rounded-xl bg-error/10 border border-error/20 flex items-start gap-3">
+              <div className="p-4 rounded-xl bg-error/10 border border-error/20 flex items-start gap-3 animate-fade-in">
                 <AlertCircle size={18} className="text-error shrink-0 mt-0.5" />
                 <p className="text-sm text-error/90 leading-tight">{error}</p>
               </div>
@@ -96,6 +117,7 @@ export default function RegisterPage() {
                   className="input-dark pl-11"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  autoComplete="name"
                 />
               </div>
 
@@ -110,6 +132,7 @@ export default function RegisterPage() {
                   className="input-dark pl-11"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
                 />
               </div>
 
@@ -120,10 +143,28 @@ export default function RegisterPage() {
                 <input
                   type="password"
                   required
+                  minLength={6}
                   placeholder={t("password")}
                   className="input-dark pl-11"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                />
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-muted">
+                  <Lock size={18} />
+                </div>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  placeholder={t("confirmPassword")}
+                  className="input-dark pl-11"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
                 />
               </div>
             </div>

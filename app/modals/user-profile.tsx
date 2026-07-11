@@ -4,14 +4,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Image } from 'expo-image';
 import { ArrowLeft, UserPlus, Check, Trophy, Heart, MessageSquare, Users, Trash2 } from 'lucide-react-native';
-import * as LucideIcons from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
+import { getNameStyle } from '../../utils/styles';
+import { getLucideIcon } from '../../constants/iconMap';
 import { supabase } from '../../services/supabase';
-import { useAuthStore, useSocialStore } from '../../store';
+import { useAuthStore, useSocialStore, useSettingsStore, usePurchaseStore } from '../../store';
 import { GlassCard } from '../../components/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
-import { useAchievements, ALL_BADGES } from '../../hooks/useAchievements';
-import { useTranslation } from 'react-i18next';
+import { useAchievements, useTranslatedBadge, ALL_BADGES } from '../../hooks/useAchievements';
 import { Radius } from '../../constants';
 import { CustomAlert } from '../../components/CustomAlert';
 import { AvatarViewerModal } from '../../components/AvatarViewerModal';
@@ -27,6 +28,8 @@ export default function UserProfileModal() {
 
   const colors = useTheme();
   const { profile: myProfile } = useAuthStore();
+  const { premiumColor } = useSettingsStore();
+  const { isPro } = usePurchaseStore();
   const { t } = useTranslation();
   const socialStore = useSocialStore();
   const { achievements: myAchievements } = useAchievements();
@@ -105,6 +108,10 @@ export default function UserProfileModal() {
     loadFriends();
   }, [userId]);
 
+  const displayUser = userProfile || { name: fallbackName, avatar_url: fallbackAvatar, unlockedAchievements: [], role: 'verified' };
+  const currentBadgeId = displayUser.selectedBadge || (displayUser.role === 'owner' ? 'owner' : displayUser.role === 'super_admin' ? 'super_admin' : displayUser.role === 'admin' ? 'admin' : displayUser.isPro ? 'pro' : 'verified');
+  const currentBadge = useTranslatedBadge(currentBadgeId) || ALL_BADGES.verified;
+
   if (loading) {
     return (
       <View style={[s.container, { backgroundColor: colors.background, justifyContent: 'center' }]}>
@@ -124,7 +131,12 @@ export default function UserProfileModal() {
     );
   }
 
-  const displayUser = userProfile || { name: fallbackName, avatar_url: fallbackAvatar, unlockedAchievements: [], role: 'verified' };
+  // For own profile: use premiumColor from local store.
+  // For others: use their name_color from DB (visible to ALL users inspecting the profile).
+  const isValidColor = (c: string | null | undefined) => !!c && (c.startsWith('#') || c.startsWith('rgb'));
+  const vitrineColor: string | null = isMe
+    ? ((isPro || myProfile?.isPro || myProfile?.role === 'owner' || myProfile?.role === 'super_admin' || myProfile?.role === 'admin') && isValidColor(premiumColor) ? premiumColor! : null)
+    : (isValidColor(displayUser.name_color) ? displayUser.name_color : null);
 
   const friendStatus = socialStore.friends.find(f =>
     (f.user_id_1 === myProfile?.id && f.user_id_2 === userId) ||
@@ -146,8 +158,6 @@ export default function UserProfileModal() {
   };
 
   const userGrade = rankInfo ? getRank(rankInfo.points) : getRank(0);
-  const currentBadgeId = displayUser.selectedBadge || (displayUser.role === 'owner' ? 'owner' : displayUser.role === 'super_admin' ? 'super_admin' : displayUser.role === 'admin' ? 'admin' : displayUser.isPro ? 'pro' : 'verified');
-  const currentBadge = ALL_BADGES[currentBadgeId] || ALL_BADGES.verified;
 
   const theirUnlockedIds: string[] = Array.from(new Set(displayUser.unlocked_achievements || []));
   const theirUnlockedCount = isMe
@@ -155,8 +165,20 @@ export default function UserProfileModal() {
     : myAchievements.filter(a => theirUnlockedIds.includes(a.id)).length;
   const totalAchievements = myAchievements.length;
 
+  const hasProAccess = isPro || myProfile?.role === 'owner' || myProfile?.role === 'super_admin' || myProfile?.role === 'admin';
+  const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
+  const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
+  const isPremiumCustom = hasProAccess && isValidHex;
+
   return (
-    <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[s.container, { backgroundColor: isPremiumCustom ? safePremiumColor + '0A' : colors.background }]}>
+      {isPremiumCustom && (
+        <LinearGradient
+          colors={[safePremiumColor + '1A', 'transparent']}
+          style={StyleSheet.absoluteFill}
+          pointerEvents="none"
+        />
+      )}
       <View style={s.header}>
         <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
           <ArrowLeft size={24} color={colors.textPrimary} />
@@ -167,7 +189,16 @@ export default function UserProfileModal() {
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 50 }} showsVerticalScrollIndicator={false}>
         {/* Profile Card */}
-        <GlassCard style={{ margin: 16, padding: 0, overflow: 'hidden' }}>
+        <GlassCard style={{ margin: 16, padding: 0, overflow: 'hidden', backgroundColor: isPremiumCustom ? safePremiumColor + '10' : colors.surface }}>
+          {isPremiumCustom && (
+            <LinearGradient
+              colors={[safePremiumColor + '20', 'transparent']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+            />
+          )}
           <View style={{ alignItems: 'center', paddingHorizontal: 24, paddingBottom: 24, paddingTop: 28 }}>
             {/* Avatar */}
             <TouchableOpacity
@@ -181,7 +212,7 @@ export default function UserProfileModal() {
               }}
             >
               {displayUser.avatar_url ? (
-                <Image source={{ uri: displayUser.avatar_url }} style={{ width: 82, height: 82, borderRadius: 41 }} />
+                <Image cachePolicy="memory-disk" source={{ uri: displayUser.avatar_url }} style={{ width: 82, height: 82, borderRadius: 41 }} />
               ) : (
                 <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 82, height: 82, borderRadius: 41 }]}>
                   <Text style={{ fontSize: 32, color: '#fff', fontWeight: 'bold' }}>{displayUser.name?.[0]}</Text>
@@ -189,7 +220,7 @@ export default function UserProfileModal() {
               )}
             </TouchableOpacity>
 
-            <Text style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '900', letterSpacing: -0.5 }}>{displayUser.name}</Text>
+            <Text style={[{ color: colors.textPrimary, fontSize: 22, fontWeight: '900', letterSpacing: -0.5 }, getNameStyle(displayUser.name_color, displayUser.id, myProfile?.id, myProfile?.nameColor)]}>{displayUser.name}</Text>
 
             <View style={[s.chip, { backgroundColor: currentBadge.colors[0] + '20', flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 }]}>
               <Text style={{ fontSize: 13 }}>{currentBadge.icon}</Text>
@@ -271,44 +302,93 @@ export default function UserProfileModal() {
 
           {/* ── Vitrina de Trofeos (Showcase) ── */}
           {displayUser.pinned_achievements && displayUser.pinned_achievements.length > 0 && (
-            <View style={{ marginBottom: 16 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 {t('achievements.trophyShowcase', 'Vitrina de Trofeos')}</Text>
-              </View>
-              <View style={{ flexDirection: 'row', gap: 12 }}>
-                {displayUser.pinned_achievements.map((id: string) => {
-                  const ach = myAchievements.find((a: any) => a.id === id);
-                  if (!ach) return null;
-                  const isHolo = ach.tier === 'oro' || ach.tier === 'diamante';
-                  const tierColor = ach.tier === 'diamante' ? '#38BDF8' : 
-                                    ach.tier === 'oro' ? '#FBBF24' : 
-                                    ach.tier === 'plata' ? '#9CA3AF' : '#D97706';
-                  return (
-                    <View key={id} style={{
-                      flex: 1, backgroundColor: colors.surfaceAlt, padding: 8, borderRadius: 16, alignItems: 'center',
-                      borderWidth: 1, borderColor: isHolo ? tierColor + '50' : colors.border,
-                      ...(isHolo ? { shadowColor: tierColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 } : {})
-                    }}>
-                      <LinearGradient
-                        colors={(isHolo ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5'] : ['transparent', 'transparent']) as [string, string, ...string[]]}
-                        style={{ width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: isHolo ? 'transparent' : colors.surfaceAlt, marginBottom: 8 }}
-                      >
-                        {ach.iconType === 'lucide' && ach.lucideIcon ? (
-                          // @ts-ignore
-                          React.createElement(LucideIcons[ach.lucideIcon] || LucideIcons.Star, {
-                            size: 24,
-                            color: isHolo ? '#FFF' : tierColor,
-                            strokeWidth: 2.5
-                          })
-                        ) : (
-                          <Text style={{ fontSize: 24 }}>{ach.icon}</Text>
-                        )}
-                      </LinearGradient>
-                      <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' }} numberOfLines={1}>{ach.title}</Text>
-                      <Text style={{ fontSize: 9, color: tierColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>{ach.tier}</Text>
-                    </View>
-                  );
-                })}
+            <View
+              style={
+                vitrineColor
+                  ? {
+                      marginBottom: 16,
+                      borderRadius: 20,
+                      shadowColor: vitrineColor,
+                      shadowOffset: { width: 0, height: 0 },
+                      shadowOpacity: 0.6,
+                      shadowRadius: 12,
+                    }
+                  : { marginBottom: 16 }
+              }
+            >
+              <View
+                style={{
+                  borderRadius: 20,
+                  overflow: 'hidden',
+                  borderWidth: vitrineColor ? 1.5 : 1,
+                  borderColor: vitrineColor ? vitrineColor + '80' : colors.border,
+                }}
+              >
+                {/* Premium background gradient */}
+                {vitrineColor ? (
+                  <LinearGradient
+                    colors={[vitrineColor + '25', vitrineColor + '10', 'transparent'] as [string, string, string]}
+                    style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  />
+                ) : (
+                  <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface, borderRadius: 20 }]} />
+                )}
+                {/* Top accent stripe */}
+                {vitrineColor && (
+                  <LinearGradient
+                    colors={[vitrineColor + 'DD', vitrineColor + '00'] as [string, string]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2 }}
+                  />
+                )}
+                <View style={{ padding: 16 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>🏆 {t('achievements.trophyShowcase', 'Vitrina de Trofeos')}</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', gap: 12 }}>
+                    {displayUser.pinned_achievements.map((id: string) => {
+                    const ach = myAchievements.find((a: any) => a.id === id);
+                    if (!ach) return null;
+                    const isHolo = ach.tier === 'oro' || ach.tier === 'diamante';
+                    const tierColor = ach.tier === 'diamante' ? '#38BDF8' : 
+                                      ach.tier === 'oro' ? '#FBBF24' : 
+                                      ach.tier === 'plata' ? '#9CA3AF' : '#D97706';
+                    const activeColor = vitrineColor ? vitrineColor : tierColor;
+                    
+                    return (
+                      <View key={id} style={{
+                        flex: 1,
+                        backgroundColor: vitrineColor
+                          ? vitrineColor + '15'
+                          : isHolo ? activeColor + '12' : 'transparent',
+                        padding: 8, borderRadius: 16, alignItems: 'center',
+                        borderWidth: 1, borderColor: isHolo ? activeColor + '50' : (vitrineColor ? vitrineColor + '40' : colors.border + '60')
+                      }}>
+                        <LinearGradient
+                          colors={(isHolo ? [activeColor, vitrineColor ? vitrineColor + '80' : (activeColor === '#FBBF24' ? '#EA580C' : '#4F46E5')] : ['transparent', 'transparent']) as [string, string, ...string[]]}
+                          style={{ width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: isHolo ? 'transparent' : (vitrineColor ? vitrineColor + '20' : colors.surfaceAlt), marginBottom: 8 }}
+                        >
+                          {ach.iconType === 'lucide' && ach.lucideIcon ? (
+                            // @ts-ignore
+                            React.createElement(getLucideIcon(ach.lucideIcon), {
+                              size: 24,
+                              color: isHolo ? '#FFF' : activeColor,
+                              strokeWidth: 2.5
+                            })
+                          ) : (
+                            <Text style={{ fontSize: 24 }}>{ach.icon}</Text>
+                          )}
+                        </LinearGradient>
+                        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' }} numberOfLines={1}>{ach.title}</Text>
+                        <Text style={{ fontSize: 9, color: activeColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>{ach.tier}</Text>
+                      </View>
+                    );
+                  })}
+                  </View>
+                </View>
               </View>
             </View>
           )}
@@ -390,7 +470,7 @@ export default function UserProfileModal() {
                       >
                         {achievement.iconType === 'lucide' && achievement.lucideIcon ? (
                           // @ts-ignore
-                          React.createElement(LucideIcons[achievement.lucideIcon] || LucideIcons.Star, {
+                          React.createElement(getLucideIcon(achievement.lucideIcon), {
                             size: 26,
                             color: '#FFF',
                             strokeWidth: 2.5
@@ -449,7 +529,7 @@ export default function UserProfileModal() {
                         >
                           {achievement.iconType === 'lucide' && achievement.lucideIcon ? (
                             // @ts-ignore
-                            React.createElement(LucideIcons[achievement.lucideIcon] || LucideIcons.Star, {
+                            React.createElement(getLucideIcon(achievement.lucideIcon), {
                               size: 26,
                               color: '#FFF',
                               strokeWidth: 2.5
@@ -488,7 +568,7 @@ export default function UserProfileModal() {
                       onPress={() => router.push({ pathname: '/modals/user-profile', params: { userId: fp.id, name: fp.name, avatarUrl: fp.avatar_url || '' } })}
                     >
                       {fp.avatar_url ? (
-                        <Image source={{ uri: fp.avatar_url }} style={{ width: 52, height: 52, borderRadius: 26, marginBottom: 6 }} />
+                        <Image cachePolicy="memory-disk" source={{ uri: fp.avatar_url }} style={{ width: 52, height: 52, borderRadius: 26, marginBottom: 6 }} />
                       ) : (
                         <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}>
                           <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 20 }}>{fp.name?.[0]}</Text>
@@ -523,7 +603,7 @@ export default function UserProfileModal() {
                   <View style={{ padding: 14 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                       {displayUser.avatar_url ? (
-                        <Image source={{ uri: displayUser.avatar_url }} style={{ width: 32, height: 32, borderRadius: 16 }} />
+                        <Image cachePolicy="memory-disk" source={{ uri: displayUser.avatar_url }} style={{ width: 32, height: 32, borderRadius: 16 }} />
                       ) : (
                         <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}>
                           <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 13 }}>{displayUser.name?.[0]}</Text>
@@ -538,7 +618,7 @@ export default function UserProfileModal() {
                     </View>
                     <Text style={{ color: colors.textPrimary, fontSize: 14, lineHeight: 20 }}>{post.content}</Text>
                     {post.image_url && (
-                      <Image source={{ uri: post.image_url }} style={{ width: '100%', height: 180, borderRadius: 10, marginTop: 10 }} contentFit="cover" />
+                      <Image cachePolicy="memory-disk" source={{ uri: post.image_url }} style={{ width: '100%', height: 180, borderRadius: 10, marginTop: 10 }} contentFit="cover" />
                     )}
                   </View>
                   <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.border + '33', paddingVertical: 10 }}>

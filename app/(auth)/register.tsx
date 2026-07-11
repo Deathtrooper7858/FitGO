@@ -1,35 +1,44 @@
-import React, { useState } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, TextInput,
-  ScrollView, Alert, KeyboardAvoidingView, Platform, Pressable, Dimensions
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Colors, Spacing, Radius } from '../../constants';
-import { supabase } from '../../services';
-import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { makeRedirectUri } from 'expo-auth-session';
 import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import * as WebBrowser from 'expo-web-browser';
-import { CustomAlert, AlertType } from '../../components/CustomAlert';
+import * as Linking from 'expo-linking';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CheckSquare, Square, Mail, Lock, User, Eye, EyeOff } from 'lucide-react-native';
+import { Radius } from '../../constants';
+import { supabase } from '../../services';
+import { useTheme } from '../../hooks/useTheme';
+import { useAuthStore } from '../../store';
+import { CustomAlert, AlertType } from '../../components/CustomAlert';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function RegisterScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const colors = useTheme();
+  const insets = useSafeAreaInsets();
   const [name, setName]         = useState('');
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading]   = useState(false);
+  const { setLoading: setGlobalLoading } = useAuthStore();
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertConfig, setAlertConfig] = useState<{title: string, message: string, type: AlertType}>({ title: '', message: '', type: 'error' });
 
-  const redirectTo = makeRedirectUri();
+  const redirectTo = makeRedirectUri({
+    scheme: 'fitgo',
+    path: 'auth/callback',
+  });
+  // Log the redirect URI once on mount (not on every re-render)
+  useEffect(() => {
+    if (__DEV__) console.log('[OAuth] redirectTo:', redirectTo);
+  }, [redirectTo]);
 
   const showAlert = (title: string, message: string, type: AlertType = 'error') => {
     setAlertConfig({ title, message, type });
@@ -40,6 +49,12 @@ export default function RegisterScreen() {
     const { params, errorCode } = QueryParams.getQueryParams(url);
 
     if (errorCode) throw new Error(errorCode);
+
+    if (params.code) {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(params.code);
+      if (error) throw error;
+      return data.session;
+    }
 
     const { access_token, refresh_token } = params;
 
@@ -69,22 +84,37 @@ export default function RegisterScreen() {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    setGlobalLoading(true);
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: name } },
+      options: { 
+        data: { full_name: name, language: i18n.language },
+        emailRedirectTo: Linking.createURL('/(auth)/verify-email'),
+      },
     });
     setLoading(false);
 
     if (error) {
       let errorMessage = error.message;
       if (errorMessage.toLowerCase().includes('already registered')) {
-        errorMessage = 'Este correo electrónico ya está registrado en el sistema de autenticación. Intenta iniciar sesión o recuperar tu contraseña.';
+        errorMessage = t('auth.emailAlreadyRegistered');
       }
+      setGlobalLoading(false);
       showAlert(t('auth.registerFailed'), errorMessage, 'error');
       return;
     }
     
+    // If we have data but no session, email verification is required
+    if (data?.user && !data?.session) {
+      showAlert(
+        t('common.success'), 
+        t('auth.checkEmailSignup', 'Registration successful. Please check your email to verify your account before logging in.'),
+        'success'
+      );
+      return;
+    }
+
     // NavigationGuard will detect the new session and redirect to /onboarding
     // because the profile record in 'users' table won't exist yet.
   };
@@ -105,10 +135,28 @@ export default function RegisterScreen() {
           data.url,
           redirectTo,
         );
+        if (__DEV__) console.log('[OAuth] WebBrowser result:', res.type, (res as any).url ?? '');
+
         if (res.type === 'success') {
-          const { url } = res;
-          await createSessionFromUrl(url);
+          const { url } = res as { type: 'success'; url: string };
+          try {
+            setGlobalLoading(true);
+            const session = await createSessionFromUrl(url);
+            if (!session) {
+              setGlobalLoading(false);
+              showAlert(t('common.error'), t('auth.sessionFailed'), 'error');
+            }
+          } catch (sessionError: any) {
+            setGlobalLoading(false);
+            showAlert(t('common.error'), sessionError.message ?? t('auth.googleLoginFailed'), 'error');
+          }
+        } else if (res.type === 'dismiss' || res.type === 'cancel') {
+          // User cancelled — do nothing
+        } else {
+          showAlert(t('common.error'), t('auth.unexpectedResult') + `${res.type}`, 'error');
         }
+      } else {
+        showAlert(t('common.error'), t('auth.googleAuthFailed'), 'error');
       }
     } catch (error: any) {
       showAlert(t('common.error'), error.message, 'error');
@@ -127,7 +175,7 @@ export default function RegisterScreen() {
         locations={[0, 0.5, 1]}
         style={StyleSheet.absoluteFill}
       />
-      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[s.content, { paddingTop: insets.top + 24, paddingBottom: Math.max(insets.bottom + 24, 40) }]} keyboardShouldPersistTaps="handled">
         <TouchableOpacity style={s.back} onPress={() => router.back()}>
           <Text style={[s.backText, { color: colors.primary }]}>← {t('common.back')}</Text>
         </TouchableOpacity>
@@ -265,11 +313,11 @@ export default function RegisterScreen() {
   );
 }
 
-const { width } = Dimensions.get('window');
+
 
 const s = StyleSheet.create({
   container:    { flex: 1 },
-  content:      { flexGrow: 1, padding: 24, paddingTop: 60 },
+  content:      { flexGrow: 1, padding: 24, paddingTop: 20 },
   back:         { marginBottom: 32 },
   backText:     { fontSize: 16, fontWeight: '700' },
   title:        { fontSize: 32, fontWeight: '800', marginBottom: 8, letterSpacing: -0.5 },

@@ -1,7 +1,7 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
+import { Link } from "@/i18n/routing";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -10,19 +10,55 @@ import {
   X,
   Star,
   Zap,
-  Bot,
-  Trophy,
-  Swords,
-  Scale,
-  Apple,
-  Flame,
   Lock,
   ChevronRight,
+  AlertCircle,
+  BrainCircuit,
+  ChefHat,
+  Camera,
+  Mic,
+  Activity,
+  History,
+  ShieldOff,
+  Trophy,
 } from "lucide-react";
 import { useState } from "react";
 
+const formatPrice = (usdAmount: number, locale: string) => {
+  const baseLang = locale.toLowerCase().split("-")[0];
+
+  if (locale.toLowerCase() === "es-es" || ["de", "fr", "it"].includes(baseLang)) {
+    return `${usdAmount.toFixed(2).replace(".", ",")} €`;
+  }
+
+  switch (baseLang) {
+    case "es":
+      return `US$ ${usdAmount.toFixed(2).replace(".", ",")}`;
+    case "pt":
+      return `R$ ${(usdAmount * 5).toFixed(2).replace(".", ",")}`;
+    case "ru":
+      return `${Math.round(usdAmount * 90)} ₽`;
+    default:
+      return `$${usdAmount.toFixed(2)}`;
+  }
+};
+
+const getMonthSuffix = (locale: string) => {
+  const baseLang = locale.toLowerCase().split("-")[0];
+  switch (baseLang) {
+    case "es": return " / mes";
+    case "pt": return " / mês";
+    case "ru": return " / мес";
+    case "de": return " / Monat";
+    case "fr": return " / mois";
+    case "it": return " / mese";
+    default: return " / month";
+  }
+};
+
 export default function PricingPage() {
   const t = useTranslations("pricingPage");
+  const locale = useLocale();
 
   const freeFeaturesData = t.raw("freeFeatures") as string[];
   const freeIncludedData = t.raw("freeIncluded") as boolean[];
@@ -38,44 +74,70 @@ export default function PricingPage() {
   }));
 
   const proHighlights = [
-    { icon: Bot, label: t("highlights.coach"), color: "#10B981" },
-    { icon: Swords, label: t("highlights.macroWars"), color: "#F43F5E" },
-    { icon: Trophy, label: t("highlights.leagues"), color: "#F59E0B" },
-    { icon: Scale, label: t("highlights.analysis"), color: "#8B5CF6" },
-    { icon: Apple, label: t("highlights.nutrition"), color: "#06B6D4" },
-    { icon: Flame, label: t("highlights.unlimited"), color: "#FF9F1C" },
+    { icon: BrainCircuit, label: t("highlights.coach"), color: "#7C5CFC" },
+    { icon: ChefHat, label: t("highlights.planner"), color: "#10B981" },
+    { icon: Camera, label: t("highlights.scanner"), color: "#F59E0B" },
+    { icon: Mic, label: t("highlights.voice"), color: "#3B82F6" },
+    { icon: Activity, label: t("highlights.directory"), color: "#EF4444" },
+    { icon: Star, label: t("highlights.colors"), color: "#F59E0B" },
+    { icon: Trophy, label: t("highlights.leagues"), color: "#8B5CF6" },
+    { icon: History, label: t("highlights.history"), color: "#10B981" },
+    { icon: ShieldOff, label: t("highlights.ads"), color: "#7C5CFC" },
   ];
 
-  const [billing, setBilling] = useState<"monthly" | "annual">("annual");
-  const [loading, setLoading] = useState(false);
+  const comparisonRows = [
+    { feature: t("compare.coach"), free: t("compare.coachFree"), pro: t("compare.coachPro") },
+    { feature: t("compare.scanner"), free: t("compare.scannerFree"), pro: t("compare.scannerPro") },
+    { feature: t("compare.planner"), free: t("compare.plannerFree"), pro: t("compare.plannerPro") },
+    { feature: t("compare.voice"), free: t("compare.voiceFree"), pro: t("compare.voicePro") },
+    { feature: t("compare.directory"), free: t("compare.directoryFree"), pro: t("compare.directoryPro") },
+    { feature: t("compare.wars"), free: t("compare.warsFree"), pro: t("compare.warsPro") },
+    { feature: t("compare.squads"), free: t("compare.squadsFree"), pro: t("compare.squadsPro") },
+    { feature: t("compare.challenges"), free: t("compare.challengesFree"), pro: t("compare.challengesPro") },
+    { feature: t("compare.history"), free: t("compare.historyFree"), pro: t("compare.historyPro") },
+    { feature: t("compare.colors"), free: t("compare.colorsFree"), pro: t("compare.colorsPro") },
+    { feature: t("compare.ads"), free: t("compare.adsFree"), pro: t("compare.adsPro") },
+  ];
 
-  const monthlyPrice = 4.99;
-  const annualPrice = 3.33;
-  const annualTotal = (annualPrice * 12).toFixed(2);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const currentPrice = 4.99;
+  const oldPrice = 9.99;
+  const discount = Math.round((1 - currentPrice / oldPrice) * 100);
+
+  const displayPrice = formatPrice(currentPrice, locale);
+  const displayOldPrice = formatPrice(oldPrice, locale);
+  const monthSuffix = getMonthSuffix(locale);
 
   const handleCheckout = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ billing }),
+        body: JSON.stringify({ billing: "monthly" }),
       });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || t("errorMsg"));
+      }
       const { url } = await res.json();
       if (url) window.location.href = url;
     } catch (err) {
-      console.error(err);
+      setError(err instanceof Error ? err.message : t("errorMsg"));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" suppressHydrationWarning>
       <Navbar />
 
       {/* Hero */}
-      <section className="relative pt-40 pb-24 px-6 text-center overflow-hidden">
+      <section className="relative pt-40 pb-20 px-6 text-center overflow-hidden">
         <div
           className="absolute inset-0"
           style={{
@@ -100,36 +162,15 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Billing toggle */}
-      <section className="pb-4 px-6">
-        <div className="flex justify-center">
-          <div className="glass rounded-2xl p-1.5 flex items-center gap-1">
-            <button
-              onClick={() => setBilling("monthly")}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                billing === "monthly"
-                  ? "bg-surface text-text-primary shadow-card"
-                  : "text-text-muted hover:text-text-secondary"
-              }`}
-            >
-              {t("billing.monthly")}
-            </button>
-            <button
-              onClick={() => setBilling("annual")}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${
-                billing === "annual"
-                  ? "bg-surface text-text-primary shadow-card"
-                  : "text-text-muted hover:text-text-secondary"
-              }`}
-            >
-              {t("billing.annual")}
-              <span className="text-xs font-black text-success bg-success/15 px-2 py-0.5 rounded-full">
-                −33%
-              </span>
-            </button>
+      {/* Error banner */}
+      {error && (
+        <section className="px-6">
+          <div className="max-w-5xl mx-auto mb-4 p-4 rounded-xl bg-error/10 border border-error/20 flex items-start gap-3">
+            <AlertCircle size={18} className="text-error shrink-0 mt-0.5" />
+            <p className="text-sm text-error/90 leading-tight">{error}</p>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Pricing cards */}
       <section className="py-16 px-6">
@@ -222,18 +263,21 @@ export default function PricingPage() {
                 <Zap size={28} className="text-primary" fill="#8B5CF6" />
               </div>
 
-              <div className="mb-2">
+              <div className="mb-2 flex items-baseline gap-3 flex-wrap">
                 <span className="font-display font-black text-5xl text-text-primary">
-                  ${billing === "monthly" ? monthlyPrice : annualPrice}
+                  {displayPrice}
                 </span>
-                <span className="text-text-muted text-sm ml-2">/ {t("pro.month")}</span>
+                <span className="text-text-muted text-sm">{monthSuffix}</span>
               </div>
-              {billing === "annual" && (
-                <p className="text-text-muted text-xs mb-6">
-                  {t("pro.billedAnnually")} · ${annualTotal}/{t("billing.annual").toLowerCase()}
-                </p>
-              )}
-              {billing === "monthly" && <div className="mb-6" />}
+              <div className="flex items-center gap-3 mb-6 flex-wrap">
+                <span className="text-text-muted text-sm line-through">{displayOldPrice}{monthSuffix}</span>
+                <span className="text-xs font-black text-success bg-success/15 px-2 py-0.5 rounded-full">
+                  −{discount}%
+                </span>
+                <span className="text-xs font-bold text-text-muted">
+                  {t("pro.was")} {displayOldPrice}{monthSuffix}
+                </span>
+              </div>
 
               {/* Pro highlights */}
               <div className="flex flex-wrap gap-2 mb-7">
@@ -264,8 +308,7 @@ export default function PricingPage() {
                 ) : (
                   <>
                     <Zap size={18} fill="white" />
-                    {t("pro.btn")}{" "}
-                    {billing === "annual" ? `· ${t("billing.annual")}` : `· ${t("billing.monthly")}`}
+                    {t("pro.btn")}
                     <ChevronRight size={18} />
                   </>
                 )}
@@ -289,6 +332,46 @@ export default function PricingPage() {
                 {t("secure")}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison Table */}
+      <section className="py-16 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="section-label">{t("compare.label")}</span>
+            <h2 className="font-display font-black text-3xl md:text-4xl text-text-primary mt-3">
+              {t("compare.title")}
+            </h2>
+          </div>
+          <div className="glass rounded-2xl overflow-hidden">
+            {/* Header */}
+            <div className="grid grid-cols-3 gap-4 px-6 py-4 border-b border-white/5" style={{ background: "rgba(139,92,246,0.06)" }}>
+              <div />
+              <div className="text-center">
+                <span className="text-sm font-bold text-text-muted">{t("free.title")}</span>
+              </div>
+              <div className="text-center">
+                <span className="text-sm font-black text-primary">{t("pro.title")}</span>
+              </div>
+            </div>
+            {/* Rows */}
+            {comparisonRows.map((row, i) => (
+              <div
+                key={row.feature}
+                className="grid grid-cols-3 gap-4 px-6 py-4 border-b border-white/5 last:border-b-0"
+                style={i % 2 === 0 ? { background: "rgba(30,41,59,0.3)" } : {}}
+              >
+                <div className="text-sm font-semibold text-text-primary">{row.feature}</div>
+                <div className="text-center">
+                  <span className="text-sm text-text-muted">{row.free}</span>
+                </div>
+                <div className="text-center">
+                  <span className="text-sm font-bold text-primary">{row.pro}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

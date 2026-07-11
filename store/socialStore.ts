@@ -1,8 +1,56 @@
 import { create } from 'zustand';
-import { supabase } from '../services/supabase';
 import * as FileSystem from 'expo-file-system/legacy';
 import { decode } from 'base64-arraybuffer';
+import { supabase } from '../services/supabase';
 import { triggerInstantNotification } from '../services/notifications';
+import { useAuthStore } from './authStore';
+import { useLeagueStore } from './leagueStore';
+
+/** Shared uploader: posts/ or chat_media/ in the 'social' bucket. */
+async function uploadToSocialStorage(
+  uri: string,
+  folder: 'posts' | 'chat_media',
+  mimeType: string,
+): Promise<string | null> {
+  try {
+    // Validate MIME type to prevent malicious file uploads
+    const ALLOWED_MIME_TYPES = [
+      'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+      'video/mp4', 'video/quicktime',
+      'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/m4a', 'audio/x-m4a',
+    ];
+    
+    const normalizedMime = mimeType.toLowerCase().split(';')[0].trim();
+    if (!ALLOWED_MIME_TYPES.includes(normalizedMime)) {
+      console.warn(`[SocialStore] Rejected upload with disallowed MIME type: ${normalizedMime}`);
+      return null;
+    }
+    
+    // Map MIME to safe extension
+    const mimeToExt: Record<string, string> = {
+      'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif',
+      'video/mp4': 'mp4', 'video/quicktime': 'mov',
+      'audio/mpeg': 'mp3', 'audio/mp3': 'mp3', 'audio/wav': 'wav',
+      'audio/m4a': 'm4a', 'audio/x-m4a': 'm4a',
+    };
+    const extension = mimeToExt[normalizedMime] || 'jpg';
+    
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${extension}`;
+    const filePath = `${folder}/${fileName}`;
+
+    const formData = new FormData();
+    formData.append('file', { uri, name: fileName, type: mimeType } as any);
+
+    const { error } = await supabase.storage.from('social').upload(filePath, formData, { upsert: false });
+    if (error) throw error;
+
+    const { data: urlData } = supabase.storage.from('social').getPublicUrl(filePath);
+    return urlData.publicUrl;
+  } catch (err) {
+    console.warn(`[SocialStore] Error uploading to ${folder}:`, err);
+    return null;
+  }
+}
 
 let activeUnreadChannel: any = null;
 let activeSocialChannel: any = null;
@@ -18,6 +66,8 @@ export interface Friend {
     name: string;
     email: string;
     avatar_url: string;
+    name_color?: string;
+    is_pro?: boolean;
   };
 }
 
@@ -31,17 +81,21 @@ export interface Challenge {
   start_date: string;
   end_date: string;
   status: 'active' | 'completed' | 'cancelled';
+  my_status?: 'pending' | 'completed' | 'surrendered';
 }
 
 export interface Post {
   id: string;
   user_id: string;
   content: string;
-  image_url: string;
+  image_url?: string;
+  audio_url?: string;
   created_at: string;
   user_profile?: {
     name: string;
     avatar_url: string;
+    name_color?: string;
+    is_pro?: boolean;
   };
 }
 
@@ -49,7 +103,10 @@ export interface RankedUser {
   id: string;
   name: string;
   avatar_url: string;
+  name_color?: string;
+  is_pro?: boolean;
   points: number;
+  current_streak?: number;
 }
 
 export interface PostComment {
@@ -62,6 +119,8 @@ export interface PostComment {
   user_profile?: {
     name: string;
     avatar_url: string;
+    name_color?: string;
+    is_pro?: boolean;
   };
 }
 
@@ -87,6 +146,10 @@ function debounce(key: string, fn: () => void, ms = 300) {
   }, ms));
 }
 
+// ── Global ranking cache (5-minute TTL) ────────────────────────────────────────
+let _rankingCacheTs = 0;
+const RANKING_CACHE_TTL = 5 * 60 * 1000; // 5 min
+
 interface SocialState {
   friends: Friend[];
   challenges: Challenge[];
@@ -106,7 +169,10 @@ interface SocialState {
   rejectFriend: (friendshipId: string) => Promise<void>;
   fetchChallenges: (userId: string) => Promise<void>;
   createChallenge: (challenge: Partial<Challenge>, participantIds: string[]) => Promise<void>;
-  fetchGlobalRanking: () => Promise<void>;
+  fetchChallengeParticipants: (challengeId: string) => Promise<any[]>;
+  surrenderChallenge: (challengeId: string, userId: string) => Promise<void>;
+  completeChallengeAndAwardPoints: (challengeId: string, userId: string) => Promise<void>;
+  fetchGlobalRanking: (forceRefresh?: boolean) => Promise<void>;
   fetchPosts: () => Promise<void>;
   createPost: (post: Partial<Post>) => Promise<void>;
   deletePost: (postId: string) => Promise<void>;
@@ -117,8 +183,12 @@ interface SocialState {
   editComment: (commentId: string, content: string) => Promise<void>;
   fetchComments: (postId: string) => Promise<PostComment[]>;
   uploadPostImage: (uri: string) => Promise<string | null>;
+  uploadPostVideo: (uri: string) => Promise<string | null>;
+  uploadPostAudio: (uri: string) => Promise<string | null>;
   uploadChatImage: (uri: string) => Promise<string | null>;
+  uploadChatVideo: (uri: string) => Promise<string | null>;
   uploadChatAudio: (uri: string) => Promise<string | null>;
+
   
   // Direct Messages
   fetchDirectMessages: (userId: string, friendId: string) => Promise<DirectMessage[]>;
@@ -222,10 +292,15 @@ export const useSocialStore = create<SocialState>((set, get) => ({
               .eq('id', senderId)
               .single()
               .then(({ data }) => {
-                const senderName = data?.name || 'Someone';
+                const senderName = data?.name || 'Alguien';
+                const preview = content?.length > 60
+                  ? content.substring(0, 60) + '…'
+                  : (content || 'Nuevo mensaje');
                 triggerInstantNotification(
-                  `💬 New message from ${senderName}`,
-                  content
+                  `💬 Mensaje de ${senderName}`,
+                  `"${preview}"`,
+                  { senderId, type: 'direct_message' },
+                  'messages'
                 );
               });
           }
@@ -259,15 +334,70 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     }
     const uniqueSuffix = Math.random().toString(36).substring(7);
     activeSocialChannel = supabase.channel(`social_events_${userId}_${uniqueSuffix}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => {
-        // Debounce: avoids 5 re-fetches if several posts change rapidly
-        debounce('posts_refresh', () => get().fetchPosts(), 500);
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, () => {
+        // New post: full refresh needed to get profile joins
+        debounce('posts_refresh', () => get().fetchPosts(), 600);
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'post_comments' }, () => {
-        debounce('posts_refresh', () => get().fetchPosts(), 500);
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, (payload: any) => {
+        // Optimistic remove — no re-fetch needed
+        if (payload.old?.id) {
+          set(s => ({ posts: s.posts.filter(p => p.id !== payload.old.id) }));
+        }
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'post_likes' }, () => {
-        debounce('posts_refresh', () => get().fetchPosts(), 500);
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'post_comments' }, (payload: any) => {
+        // Increment comments_count locally — no full re-fetch
+        const postId = payload.new?.post_id;
+        if (postId) {
+          set(s => ({
+            posts: s.posts.map(p =>
+              p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p
+            ),
+          }));
+        }
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'post_comments' }, (payload: any) => {
+        const postId = payload.old?.post_id;
+        if (postId) {
+          set(s => ({
+            posts: s.posts.map(p =>
+              p.id === postId ? { ...p, comments_count: Math.max(0, p.comments_count - 1) } : p
+            ),
+          }));
+        }
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'post_likes' }, (payload: any) => {
+        // Increment likes_count locally — no full re-fetch
+        const postId = payload.new?.post_id;
+        const likerId = payload.new?.user_id;
+        if (postId) {
+          set(s => ({
+            posts: s.posts.map(p => {
+              if (p.id !== postId) return p;
+              return {
+                ...p,
+                likes_count: p.likes_count + 1,
+                // Mark as liked if the liker is the current user
+                is_liked: p.is_liked || likerId === userId,
+              };
+            }),
+          }));
+        }
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'post_likes' }, (payload: any) => {
+        const postId = payload.old?.post_id;
+        const likerId = payload.old?.user_id;
+        if (postId) {
+          set(s => ({
+            posts: s.posts.map(p => {
+              if (p.id !== postId) return p;
+              return {
+                ...p,
+                likes_count: Math.max(0, p.likes_count - 1),
+                is_liked: likerId === userId ? false : p.is_liked,
+              };
+            }),
+          }));
+        }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'friends' }, (payload: any) => {
         debounce(`friends_refresh_${userId}`, () => get().fetchFriends(userId), 300);
@@ -281,10 +411,12 @@ export const useSocialStore = create<SocialState>((set, get) => ({
               .eq('id', senderId)
               .single()
               .then(({ data }) => {
-                const senderName = data?.name || 'Someone';
+                const senderName = data?.name || 'Alguien';
                 triggerInstantNotification(
-                  `👥 Friend Request`,
-                  `${senderName} sent you a friend request.`
+                  `👥 Solicitud de amistad`,
+                  `${senderName} quiere conectar contigo en FitGO.`,
+                  { senderId, type: 'friend_request' },
+                  'social'
                 );
               });
           }
@@ -298,10 +430,12 @@ export const useSocialStore = create<SocialState>((set, get) => ({
                 .eq('id', friendId)
                 .single()
                 .then(({ data }) => {
-                  const friendName = data?.name || 'Your friend';
+                  const friendName = data?.name || 'Tu amigo';
                   triggerInstantNotification(
-                    `🤝 Friend request accepted!`,
-                    `${friendName} accepted your friend request. You can now chat!`
+                    `🤝 ¡Solicitud aceptada!`,
+                    `${friendName} aceptó tu solicitud. ¡Ya pueden chatear!`,
+                    { friendId, type: 'friend_accepted' },
+                    'social'
                   );
                 });
             }
@@ -340,7 +474,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('friends')
-        .select(`*, user1:user_id_1(id, name, email, avatar_url), user2:user_id_2(id, name, email, avatar_url)`)
+        .select(`*, user1:user_id_1(id, name, email, avatar_url, name_color, is_pro), user2:user_id_2(id, name, email, avatar_url, name_color, is_pro)`)
         .or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`);
         
       if (error) throw error;
@@ -402,21 +536,29 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data: partData, error: partErr } = await supabase
         .from('challenge_participants')
-        .select('challenge_id')
+        .select('challenge_id, status')
         .eq('user_id', userId);
       
       if (partErr) throw partErr;
 
       const challengeIds = (partData || []).map(p => p.challenge_id);
       
-      let allChallenges: Challenge[] = [];
+      let allChallenges: any[] = [];
       if (challengeIds.length > 0) {
         const { data, error } = await supabase
           .from('challenges')
           .select('*')
           .in('id', challengeIds);
         if (error) throw error;
-        allChallenges = data || [];
+        
+        // Attach user's participant status to the challenge object
+        allChallenges = (data || []).map(challenge => {
+          const participantInfo = partData?.find(p => p.challenge_id === challenge.id);
+          return {
+            ...challenge,
+            my_status: participantInfo?.status || 'pending'
+          };
+        });
       }
 
       set({ challenges: allChallenges });
@@ -447,14 +589,103 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     }
   },
 
-  fetchGlobalRanking: async () => {
+  fetchChallengeParticipants: async (challengeId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('challenge_participants')
+        .select(`*, user_profile:user_id(id, name, avatar_url, name_color, is_pro)`)
+        .eq('challenge_id', challengeId);
+      if (error) throw error;
+      return data || [];
+    } catch (err) {
+      console.warn('[SocialStore] Error fetching challenge participants:', err);
+      return [];
+    }
+  },
+
+  surrenderChallenge: async (challengeId: string, userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('challenge_participants')
+        .update({ status: 'surrendered' })
+        .eq('challenge_id', challengeId)
+        .eq('user_id', userId);
+      if (error) throw error;
+      get().fetchChallenges(userId); // refresh
+    } catch (err) {
+      console.warn('[SocialStore] Error surrendering challenge:', err);
+    }
+  },
+
+  completeChallengeAndAwardPoints: async (challengeId: string, userId: string) => {
+    try {
+      // Use atomic RPC to prevent race conditions (advisory lock ensures only one winner)
+      const { data, error } = await supabase.rpc('complete_challenge_atomic', {
+        p_challenge_id: challengeId,
+        p_user_id: userId,
+      });
+      if (error) throw error;
+
+      // Show reward animation if this user earned points
+      if (data?.completed && data?.reward_points > 0) {
+        const leagueStore = useLeagueStore.getState();
+        leagueStore.showReward(data.reward_points);
+      }
+
+      get().fetchChallenges(userId); // refresh
+    } catch (err) {
+      console.warn('[SocialStore] Error completing challenge:', err);
+    }
+  },
+
+  fetchGlobalRanking: async (forceRefresh = false) => {
+    // Skip fetch if cache is still fresh (5 min TTL) and not forced
+    if (!forceRefresh && Date.now() - _rankingCacheTs < RANKING_CACHE_TTL && get().globalRanking.length > 0) {
+      return;
+    }
     set({ isRankingLoading: true });
     try {
-      const { data, error } = await supabase.rpc('get_global_ranking');
+      // Use direct table fetch instead of slow legacy RPC
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, name, avatar_url, name_color, is_pro, league_points, current_streak, role')
+        .not('name', 'is', null)
+        .order('league_points', { ascending: false, nullsFirst: false })
+        .limit(50);
+        
       if (error) throw error;
-      set({ globalRanking: data || [] });
-    } catch (err) {
-      console.warn('[SocialStore] Error fetching ranking:', err);
+      
+      const mappedData = (data || []).map((u: any) => {
+        const hasPremiumAccess = u.is_pro || ['owner', 'admin', 'super_admin'].includes(u.role);
+        let validNameColor = u.name_color;
+        
+        // Si no tiene acceso premium, no puede usar colores premium (dorados)
+        if (!hasPremiumAccess && validNameColor && (validNameColor.toUpperCase() === '#EAB308' || validNameColor.toUpperCase() === '#FFD700' || validNameColor.toUpperCase() === '#F59E0B')) {
+          validNameColor = null;
+        }
+        
+        // Si tiene acceso premium y no tiene color, dale el dorado por defecto
+        if (hasPremiumAccess && (!validNameColor || validNameColor === '')) {
+          validNameColor = '#EAB308';
+        }
+
+        return {
+          id: u.id,
+          name: u.name,
+          avatar_url: u.avatar_url,
+          points: u.league_points || 0,
+          current_streak: u.current_streak || 0,
+          role: u.role || 'user',
+          name_color: validNameColor
+        };
+      });
+      
+      _rankingCacheTs = Date.now();
+      set({ globalRanking: mappedData });
+    } catch (err: any) {
+      if (err?.message !== 'AbortError: Aborted' && err?.name !== 'AbortError') {
+        console.warn('[SocialStore] Error fetching ranking:', err);
+      }
     } finally {
       set({ isRankingLoading: false });
     }
@@ -463,14 +694,14 @@ export const useSocialStore = create<SocialState>((set, get) => ({
   fetchPosts: async () => {
     set({ isPostsLoading: true });
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const currentUserId = sessionData.session?.user?.id;
+      // Read userId from cached auth state — avoids an extra getSession() network call
+      const currentUserId = useAuthStore.getState().session?.user?.id;
 
       const { data, error } = await supabase
         .from('posts')
         .select(`
           *,
-          user_profile:user_id(name, avatar_url),
+          user_profile:user_id(name, avatar_url, name_color, is_pro),
           likes:post_likes(user_id),
           comments:post_comments(id)
         `)
@@ -481,7 +712,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         console.warn('[SocialStore] Query failed, trying fallback:', error.message);
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('posts')
-          .select(`*, user_profile:user_id(name, avatar_url)`)
+          .select(`*, user_profile:user_id(name, avatar_url, name_color, is_pro)`)
           .order('created_at', { ascending: false })
           .limit(30);
         
@@ -514,7 +745,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data, error } = await supabase.from('posts').insert(post).select(`
         *,
-        user_profile:user_id(name, avatar_url)
+        user_profile:user_id(name, avatar_url, name_color, is_pro)
       `).single();
       if (error) throw error;
       // Optimistic prepend to avoid full list re-fetch
@@ -636,7 +867,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('post_comments')
-        .select('*, user_profile:user_id(name, avatar_url)')
+        .select('*, user_profile:user_id(name, avatar_url, name_color, is_pro)')
         .eq('post_id', postId)
         .order('created_at', { ascending: true });
       
@@ -648,84 +879,21 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     }
   },
 
-  uploadPostImage: async (uri: string) => {
-    try {
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
-      const filePath = `posts/${fileName}`;
-
-      const formData = new FormData();
-      formData.append('file', {
-        uri,
-        name: fileName,
-        type: 'image/jpeg',
-      } as any);
-
-      const { data, error } = await supabase.storage.from('social').upload(filePath, formData, {
-        upsert: false,
-      });
-
-      if (error) throw error;
-
-      const { data: urlData } = supabase.storage.from('social').getPublicUrl(filePath);
-      return urlData.publicUrl;
-    } catch (err) {
-      console.warn('[SocialStore] Error uploading post image:', err);
-      return null;
-    }
+  uploadPostImage: (uri: string) => uploadToSocialStorage(uri, 'posts', 'image/jpeg'),
+  uploadPostVideo: (uri: string) => uploadToSocialStorage(uri, 'posts', 'video/mp4'),
+  uploadPostAudio: (uri: string) => {
+    const ext = uri.includes('.') ? uri.split('.').pop()?.split('?')[0] : '';
+    const safeExt = (ext && ext.length <= 4 && !ext.includes(':')) ? ext : 'mp3';
+    return uploadToSocialStorage(uri, 'posts', `audio/${safeExt}`);
+  },
+  uploadChatImage: (uri: string) => uploadToSocialStorage(uri, 'chat_media', 'image/jpeg'),
+  uploadChatVideo: (uri: string) => uploadToSocialStorage(uri, 'chat_media', 'video/mp4'),
+  uploadChatAudio: (uri: string) => {
+    const ext = uri.includes('.') ? uri.split('.').pop()?.split('?')[0] : '';
+    const safeExt = (ext && ext.length <= 4 && !ext.includes(':')) ? ext : 'mp3';
+    return uploadToSocialStorage(uri, 'chat_media', `audio/${safeExt}`);
   },
 
-  uploadChatImage: async (uri: string) => {
-    try {
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
-      const filePath = `chat_media/${fileName}`;
-
-      const formData = new FormData();
-      formData.append('file', {
-        uri,
-        name: fileName,
-        type: 'image/jpeg',
-      } as any);
-
-      const { data, error } = await supabase.storage.from('social').upload(filePath, formData, {
-        upsert: false,
-      });
-
-      if (error) throw error;
-
-      const { data: urlData } = supabase.storage.from('social').getPublicUrl(filePath);
-      return urlData.publicUrl;
-    } catch (err) {
-      console.warn('[SocialStore] Error uploading chat image:', err);
-      return null;
-    }
-  },
-
-  uploadChatAudio: async (uri: string) => {
-    try {
-      const extension = uri.split('.').pop() || 'm4a';
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${extension}`;
-      const filePath = `chat_media/${fileName}`;
-
-      const formData = new FormData();
-      formData.append('file', {
-        uri,
-        name: fileName,
-        type: `audio/${extension}`,
-      } as any);
-
-      const { data, error } = await supabase.storage.from('social').upload(filePath, formData, {
-        upsert: false,
-      });
-
-      if (error) throw error;
-
-      const { data: urlData } = supabase.storage.from('social').getPublicUrl(filePath);
-      return urlData.publicUrl;
-    } catch (err) {
-      console.warn('[SocialStore] Error uploading chat audio:', err);
-      return null;
-    }
-  },
 
   fetchDirectMessages: async (userId: string, friendId: string) => {
     try {
@@ -763,7 +931,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
       // Old Spanish-only filter `.ilike('content', '%código de invitación:%')` was a bug.
       const { data, error } = await supabase
         .from('direct_messages')
-        .select('*, sender:sender_id(id, name, avatar_url)')
+        .select('*, sender:sender_id(id, name, avatar_url, name_color, is_pro)')
         .eq('receiver_id', userId)
         .or('content.ilike.%código de invitación:%,content.ilike.%invite code:%,content.ilike.%invitation code:%,content.ilike.%squad invite:%')
         .order('created_at', { ascending: false });
@@ -777,6 +945,17 @@ export const useSocialStore = create<SocialState>((set, get) => ({
   },
 
   reset: () => {
+    // Limpiar canales realtime globales para evitar que queden
+    // vivos tras un logout/cambio de cuenta.
+    if (activeUnreadChannel) {
+      supabase.removeChannel(activeUnreadChannel);
+      activeUnreadChannel = null;
+    }
+    if (activeSocialChannel) {
+      supabase.removeChannel(activeSocialChannel);
+      activeSocialChannel = null;
+    }
+
     set({
       friends: [],
       challenges: [],

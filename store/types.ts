@@ -27,6 +27,8 @@ export interface UserProfile extends HealthProfile {
   name:            string;
   email:           string;
   avatarUrl?:      string;
+  nameColor?:      string;
+  premiumColor?:   string;
   sex:             'male' | 'female' | 'other';
   genderOther?:    string;
   age:             number;
@@ -42,7 +44,9 @@ export interface UserProfile extends HealthProfile {
   availableFoods?:  string[];
   preferences?:    string[];
   isPro:           boolean;
-  role:            'user' | 'admin' | 'super_admin' | 'owner' | 'pro' | 'pro_user';
+  role:            'user' | 'pro_user' | 'admin' | 'super_admin' | 'owner';
+  trialUsedAt?:    string | null;
+  trialExpiresAt?: string | null;
   onboardingDone:  boolean;
   widgetsOrder?:   string[];
   lifestyle?:      'seated' | 'standing_sometimes' | 'standing_mostly' | 'moving' | 'physical_work';
@@ -79,6 +83,9 @@ export interface FoodLog {
   calcium?:   number;
   saturatedFat?: number;
   transFat?:     number;
+  cholesterol?: number;
+  user_id?:     string;
+  is_favorite?: boolean;
 }
 
 export interface ActivityLog {
@@ -142,17 +149,22 @@ export interface ProgressPhoto {
   uri:       string;
   date:      string; // YYYY-MM-DD
   notes?:    string;
+  userId?:   string;
 }
 
 export interface ProgressEvaluation {
   id: string;
   uri: string;
-  base64ImageData?: string; // stored as data URI for persistence across sessions
+  fileName?: string; // Stored relative filename to survive absolute path changes across app restarts
   date: string;
   feedback: string;
   strengths: string[];
   improvements: string[];
   estimatedFatPercentage: string;
+  postureAnalysis?: string;
+  symmetry?: string;
+  recommendations?: string[];
+  userId?: string;
 }
 
 export interface Reminder {
@@ -162,7 +174,18 @@ export interface Reminder {
   time: string; // HH:mm
   enabled: boolean;
   days: number[]; // 0-6
-  type: 'meal' | 'water' | 'workout' | 'general';
+  type: 'meal' | 'water' | 'workout' | 'general' | 'custom' | 'social';
   notificationId?: string;
 }
 
+export interface AppNotification {
+  id: string;
+  title: string;
+  description: string;
+  icon?: string;
+  iconType: 'lucide' | 'lottie' | 'emoji';
+  lucideIcon?: string;
+  lottieFile?: string;
+  tier: 'bronce' | 'plata' | 'oro' | 'diamante' | 'success' | 'info' | 'warning';
+  isAchievement?: boolean;
+}

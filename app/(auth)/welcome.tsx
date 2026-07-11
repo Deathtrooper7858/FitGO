@@ -1,18 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Spacing, Radius } from '../../constants';
-import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { useSettingsStore } from '../../store';
-import LanguageModal from '../../components/LanguageModal';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Globe, Apple, Bot, BarChart3, Calendar, Zap, ShieldCheck } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
+import { Spacing, Radius } from '../../constants';
+import { useTheme } from '../../hooks/useTheme';
+import { useSettingsStore } from '../../store';
+import LanguageModal from '../../components/LanguageModal';
 
 export default function WelcomeScreen() {
   const { t } = useTranslation();
   const colors = useTheme();
+  const insets = useSafeAreaInsets();
   const { language, setLanguage } = useSettingsStore();
   const [langModalVisible, setLangModalVisible] = React.useState(false);
 
@@ -37,7 +39,7 @@ export default function WelcomeScreen() {
       />
 
       <TouchableOpacity 
-        style={[styles.settingsBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+        style={[styles.settingsBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, top: insets.top + 14 }]}
         onPress={() => setLangModalVisible(true)}
       >
         <Globe size={18} color={colors.textPrimary} />
@@ -53,7 +55,10 @@ export default function WelcomeScreen() {
         onClose={() => setLangModalVisible(false)}
       />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + 100, paddingBottom: Math.max(insets.bottom + 20, 40) }]} 
+        showsVerticalScrollIndicator={false}
+      >
         {/* Hero */}
         <View style={styles.hero}>
           <Text style={[styles.motto, { color: '#00FF95' }]}>{t('welcome.motto')}</Text>
@@ -105,7 +110,6 @@ const styles = StyleSheet.create({
   container:      { flex: 1 },
   settingsBtn: {
     position: 'absolute',
-    top: 60,
     left: 20,
     zIndex: 10,
     height: 44,
@@ -116,7 +120,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
   },
-  content:        { flexGrow: 1, padding: Spacing.base, paddingTop: 140, justifyContent: 'center' },
+  content:        { flexGrow: 1, padding: Spacing.base, justifyContent: 'center' },
   hero:           { alignItems: 'center', marginBottom: 50 },
   motto:          { fontSize: 13, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 4, marginBottom: 12 },
   brand:          { fontSize: 56, fontWeight: '900', letterSpacing: -2, marginBottom: 8, textShadowColor: '#7C5CFC', textShadowRadius: 20 },

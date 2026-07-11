@@ -1,35 +1,42 @@
 import { useEffect, useState } from 'react';
-import mobileAds, { MaxAdContentRating, TestIds } from 'react-native-google-mobile-ads';
-
-export const adUnitIds = {
-  banner: __DEV__ ? TestIds.BANNER : 'ca-app-pub-3940256099942544~3347511713', // Replace with real ID later
-  interstitial: __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-3940256099942544~3347511713',
-  rewarded: __DEV__ ? TestIds.REWARDED : 'ca-app-pub-3940256099942544~3347511713',
-};
+import mobileAds, { MaxAdContentRating } from 'react-native-google-mobile-ads';
 
 let initialized = false;
+// Promesa compartida para evitar inicializaciones paralelas si el hook
+// se monta varias veces antes de que la primera finalice.
+let initializingPromise: Promise<void> | null = null;
 
 export function useAdMob() {
   const [isInitialized, setIsInitialized] = useState(initialized);
 
   useEffect(() => {
-    if (!initialized) {
-      mobileAds()
-        .setRequestConfiguration({
-          maxAdContentRating: MaxAdContentRating.T,
-          tagForChildDirectedTreatment: false,
-          tagForUnderAgeOfConsent: false,
-        })
-        .then(() => {
-          mobileAds()
-            .initialize()
-            .then(adapterStatuses => {
-              initialized = true;
-              setIsInitialized(true);
-              console.log('[AdMob] Initialized successfully', adapterStatuses);
-            });
-        });
+    if (initialized) return;
+
+    if (!initializingPromise) {
+      initializingPromise = (async () => {
+        try {
+          // 1️⃣ Configurar política de contenido primero
+          await mobileAds().setRequestConfiguration({
+            maxAdContentRating: MaxAdContentRating.T,
+            tagForChildDirectedTreatment: false,
+            tagForUnderAgeOfConsent: false,
+          });
+
+          // 2️⃣ Inicializar SDK — los ads solo se pre-cargan DESPUÉS de esto
+          await mobileAds().initialize();
+
+          initialized = true;
+          console.log('[AdMob] Initialized successfully');
+        } catch (err) {
+          console.warn('[AdMob] Initialization error:', err);
+          initializingPromise = null; // Permitir reintento
+        }
+      })();
     }
+
+    initializingPromise.then(() => {
+      if (initialized) setIsInitialized(true);
+    });
   }, []);
 
   return { isInitialized };

@@ -1,31 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
   KeyboardAvoidingView, Platform, ScrollView, Alert, Image, Pressable, Dimensions
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Colors, Spacing, Radius } from '../../constants';
-import { supabase } from '../../services';
-import { useAuthStore } from '../../store';
-import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { makeRedirectUri } from 'expo-auth-session';
 import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import * as WebBrowser from 'expo-web-browser';
-import { CustomAlert, AlertType } from '../../components/CustomAlert';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CustomAlert, AlertType } from '../../components/CustomAlert';
+import { useTheme } from '../../hooks/useTheme';
+import { useAuthStore } from '../../store';
+import { supabase } from '../../services';
+import { Colors, Spacing, Radius } from '../../constants';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const { t } = useTranslation();
   const colors = useTheme();
+  const insets = useSafeAreaInsets();
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading]   = useState(false);
-  const { setSession }          = useAuthStore();
+  const { setSession, setLoading: setGlobalLoading } = useAuthStore();
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertConfig, setAlertConfig] = useState<{title: string, message: string, type: AlertType}>({ title: '', message: '', type: 'error' });
 
@@ -34,12 +36,28 @@ export default function LoginScreen() {
     setAlertVisible(true);
   };
 
-  const redirectTo = makeRedirectUri();
+  // In production builds this generates: fitgo://
+  // In Expo Go dev this generates: exp://...
+  const redirectTo = makeRedirectUri({
+    scheme: 'fitgo',
+    path: 'auth/callback',
+  });
+
+  // Log the redirect URI once on mount (not on every re-render)
+  useEffect(() => {
+    if (__DEV__) console.log('[OAuth] redirectTo:', redirectTo);
+  }, []);
 
   const createSessionFromUrl = async (url: string) => {
     const { params, errorCode } = QueryParams.getQueryParams(url);
 
     if (errorCode) throw new Error(errorCode);
+
+    if (params.code) {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(params.code);
+      if (error) throw error;
+      return data.session;
+    }
 
     const { access_token, refresh_token } = params;
 
@@ -60,10 +78,12 @@ export default function LoginScreen() {
       return;
     }
     setLoading(true);
+    setGlobalLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     
     if (error) {
       setLoading(false);
+      setGlobalLoading(false);
       showAlert(t('auth.loginFailed'), error.message, 'error');
       return;
     }
@@ -85,10 +105,29 @@ export default function LoginScreen() {
           data.url,
           redirectTo,
         );
+
+        if (__DEV__) console.log('[OAuth] WebBrowser result:', res.type, (res as any).url ?? '');
+
         if (res.type === 'success') {
-          const { url } = res;
-          await createSessionFromUrl(url);
+          const { url } = res as { type: 'success'; url: string };
+          try {
+            setGlobalLoading(true);
+            const session = await createSessionFromUrl(url);
+            if (!session) {
+              setGlobalLoading(false);
+              showAlert(t('common.error'), t('auth.sessionFailed'), 'error');
+            }
+          } catch (sessionError: any) {
+            setGlobalLoading(false);
+            showAlert(t('common.error'), sessionError.message ?? t('auth.googleLoginFailed'), 'error');
+          }
+        } else if (res.type === 'dismiss' || res.type === 'cancel') {
+          // User cancelled — do nothing
+        } else {
+          showAlert(t('common.error'), t('auth.unexpectedResult') + `${res.type}`, 'error');
         }
+      } else {
+        showAlert(t('common.error'), t('auth.googleAuthFailed'), 'error');
       }
     } catch (error: any) {
       showAlert(t('common.error'), error.message, 'error');
@@ -107,7 +146,7 @@ export default function LoginScreen() {
         locations={[0, 0.5, 1]}
         style={StyleSheet.absoluteFill}
       />
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 24, paddingBottom: Math.max(insets.bottom + 24, 40) }]} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Image 
             source={require('../../assets/fitgo.jpeg')} 
@@ -221,7 +260,7 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container:   { flex: 1 },
   scroll:      { flexGrow: 1, padding: 24 },
-  header:      { alignItems: 'center', paddingTop: 60, paddingBottom: 40 },
+  header:      { alignItems: 'center', paddingTop: 20, paddingBottom: 40 },
   logoImage:   { width: 90, height: 90, borderRadius: 28, marginBottom: 20, shadowColor: '#7C5CFC', shadowOpacity: 0.3, shadowRadius: 15 },
   title:       { fontSize: 32, fontWeight: '800', marginBottom: 8, letterSpacing: -0.5 },
   subtitle:    { fontSize: 16 },

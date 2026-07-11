@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Colors, Spacing, Radius } from '../../constants';
-import { supabase } from '../../services';
 import { useTranslation } from 'react-i18next';
-
+import * as Linking from 'expo-linking';
+import { Spacing, Radius } from '../../constants';
+import { supabase } from '../../services';
 import { useTheme } from '../../hooks/useTheme';
 
 export default function ForgotPasswordScreen() {
@@ -21,7 +21,10 @@ export default function ForgotPasswordScreen() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+    const redirectUrl = Linking.createURL('/(auth)/update-password');
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: redirectUrl,
+    });
     setLoading(false);
 
     if (error) {
