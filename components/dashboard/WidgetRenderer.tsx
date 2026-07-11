@@ -169,6 +169,11 @@ export function renderDashboardWidget(props: WidgetRendererProps) {
               </View>
               <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginTop: 8 }}>{t('dashboard.muscleDirTitle', 'Directorio')}</Text>
               <Text style={[w.subValue, { color: colors.textSecondary }]}>{t('dashboard.muscleDirSub', 'Por músculos')}</Text>
+              {!isPro && !hasPremiumAdAccess('directory') && (
+                <View style={[w.premiumTag, { backgroundColor: colors.primary + '2E', borderColor: colors.primary + '66' }]}>
+                  <Text style={[w.premiumTagText, { color: colors.primary }]}>👑 Premium</Text>
+                </View>
+              )}
             </View>
           }
           onPress={() => handlePremiumFeaturePress(

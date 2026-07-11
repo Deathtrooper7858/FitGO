@@ -35,11 +35,11 @@ export async function generateRecipes(userGoal: string, language: string = 'en',
   const targetLang = getLang(language);
 
   const context = foodName 
-    ? `containing the ingredient/food: "${foodName}" for someone with the goal: ${userGoal}`
+    ? `based on the query/ingredient: "${foodName}". Identify what food this is (it could be in any language), find the best standard recipes for it, and then output them for someone with the goal: ${userGoal}`
     : `for someone with the goal: ${userGoal}`;
 
   const prompt = `Generate ${count} healthy recipe ideas ${context}.
-IMPORTANT: All recipe names, descriptions, and instructions MUST be in ${targetLang}.
+IMPORTANT: You MUST understand the search query regardless of the language it is written in. The final output (recipe names, descriptions, and instructions) MUST be completely translated to ${targetLang}.
 Return ONLY valid JSON (no markdown). Structure:
 [
   {
@@ -61,7 +61,7 @@ IMPORTANT: All text MUST be in ${targetLang}.`;
   const data = await fetchGroq({
     model: FAST_MODEL,
     messages: [{ role: 'user', content: prompt }],
-    max_tokens: 1000,
+    max_tokens: 2500,
     temperature: 0.7,
   });
 
@@ -111,7 +111,7 @@ Important: Group multiple units (e.g. "2 eggs") into one entry. DO NOT split mix
     const data = await fetchGroq({
       model: FAST_MODEL,
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 600,
+      max_tokens: 2000,
       temperature: 0.1,
     });
 

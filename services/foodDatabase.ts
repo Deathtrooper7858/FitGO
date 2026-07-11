@@ -29,9 +29,15 @@ export interface FoodItem {
 }
 
 // ─── OpenFoodFacts ─────────────────────────────────────────────────────────────
-function mapOFFProduct(p: any): FoodItem | null {
+function mapOFFProduct(p: any, langKey: string = 'en'): FoodItem | null {
   const nut = p.nutriments || {};
-  const name = p.product_name_es || p.product_name || p.product_name_en || p.generic_name_es || p.generic_name || '';
+  let name = p[`product_name_${langKey}`] || p.product_name || p.product_name_en || p[`generic_name_${langKey}`] || p.generic_name;
+  
+  if (!name) {
+    const localizedKey = Object.keys(p).find(k => k.startsWith('product_name_') && p[k]);
+    if (localizedKey) name = p[localizedKey];
+  }
+
   if (!name || !p.nutriments) return null;
   const cal = nut['energy-kcal_100g'] ?? (nut['energy_100g'] ? Math.round(nut['energy_100g'] / 4.184) : 0);
   return {
@@ -54,7 +60,9 @@ function mapOFFProduct(p: any): FoodItem | null {
   };
 }
 
-export async function searchFoodOFF(query: string, _language: string = 'en', page = 1): Promise<FoodItem[]> {
+export async function searchFoodOFF(query: string, language: string = 'en', page = 1): Promise<FoodItem[]> {
+  const langKey = language.substring(0, 2).toLowerCase();
+  
   const { data } = await axios.get(`${OFF_BASE}/cgi/search.pl`, {
     headers: {
       'User-Agent': 'FitGO - Android/iOS - 1.0.0 - fitgoenterprise@gmail.com',
@@ -66,14 +74,14 @@ export async function searchFoodOFF(query: string, _language: string = 'en', pag
       json: 1,
       page_size: 25,
       page,
-      fields: 'id,_id,code,product_name,product_name_es,product_name_en,generic_name,generic_name_es,brands,nutriments,image_front_small_url',
+      fields: `id,_id,code,product_name,product_name_${langKey},product_name_en,generic_name,generic_name_${langKey},brands,nutriments,image_front_small_url`,
       // NOTE: No lc/categories_lc filter — it causes 0 results for many Spanish queries
     },
     timeout: 10000,
   });
 
   return (data.products ?? [])
-    .map((p: any) => mapOFFProduct(p))
+    .map((p: any) => mapOFFProduct(p, langKey))
     .filter((item: FoodItem | null): item is FoodItem => item !== null);
 }
 
