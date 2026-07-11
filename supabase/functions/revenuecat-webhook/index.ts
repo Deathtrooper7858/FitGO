@@ -133,11 +133,24 @@ Deno.serve(async (req) => {
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Fetch user's current role first to avoid downgrading privileged accounts
+    const { data: dbUser, error: dbError } = await supabaseAdmin
+      .from("users")
+      .select("role")
+      .eq("id", appUserId)
+      .single();
+
+    if (dbError) {
+      console.warn(`[RevenueCat Webhook] Could not fetch user role for ${appUserId}:`, dbError.message);
+    }
+    const currentRole = dbUser?.role ?? "user";
+    const isPrivileged = ["admin", "super_admin", "owner"].includes(currentRole);
+
     const purchasedAt = purchasedAtMs ? new Date(purchasedAtMs).toISOString() : new Date().toISOString();
     const expiresAt = expirationAtMs ? new Date(expirationAtMs).toISOString() : null;
     const isExpired = expirationAtMs ? expirationAtMs < Date.now() : false;
 
-    console.log(`[RevenueCat Webhook] Processing event '${eventType}' for user: ${appUserId}. Expires: ${expiresAt}, IsExpired: ${isExpired}`);
+    console.log(`[RevenueCat Webhook] Processing event '${eventType}' for user: ${appUserId}. Role: ${currentRole}, Privileged: ${isPrivileged}. Expires: ${expiresAt}, IsExpired: ${isExpired}`);
 
     let updateData: any = {};
     let actionTaken = "";
@@ -202,6 +215,11 @@ Deno.serve(async (req) => {
 
     // 6. Update user record in Supabase
     if (Object.keys(updateData).length > 0) {
+      if (isPrivileged) {
+        console.log(`[RevenueCat Webhook] User ${appUserId} is privileged (${currentRole}). Stripping role and is_pro updates to protect roles.`);
+        delete updateData.role;
+        delete updateData.is_pro;
+      }
       const { error } = await supabaseAdmin
         .from("users")
         .update(updateData)

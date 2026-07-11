@@ -31,9 +31,9 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 
 Sentry.init({
   dsn: 'https://839443385437a525f24520ae8ed30e60@o4511663065661440.ingest.us.sentry.io/4511663106752512',
-  tracesSampleRate: 1.0,
+  tracesSampleRate: __DEV__ ? 1.0 : 0.1,
   _experiments: {
-    profilesSampleRate: 1.0,
+    profilesSampleRate: __DEV__ ? 1.0 : 0.05,
   },
 });
 

@@ -3,14 +3,14 @@ import {
   InterstitialAd,
   AdEventType,
 } from 'react-native-google-mobile-ads';
-import { AD_UNIT_IDS } from '../constants/adConfig';
+import { AD_UNIT_IDS, AD_CONFIG } from '../constants/adConfig';
 
 /**
  * Intervalo mínimo entre interstitials (en ms).
- * Por defecto: 10 minutos. Cambia este valor para ajustar la frecuencia.
+ * Por defecto: 30 minutos (definido en AD_CONFIG).
  * ⚠️ No usar menos de 3 minutos para evitar saturar al usuario y violar políticas de AdMob.
  */
-const INTERSTITIAL_INTERVAL_MS = 10 * 60 * 1000; // 10 minutos
+const INTERSTITIAL_INTERVAL_MS = AD_CONFIG.interstitialCooldownMs;
 
 let interstitialInstance: InterstitialAd | null = null;
 let lastShownAt: number = 0;
