@@ -1,5 +1,17 @@
 {
   "home": {
+    "premium": {
+      "features": {
+        "instantMacros": "Instant macro tracking",
+        "customCoach": "Custom AI Coach",
+        "macroWars": "Macro wars with friends",
+        "eliteLeagues": "Elite leagues and global rankings"
+      },
+      "cta": "Start for free",
+      "title": "Premium design",
+      "heading": "Fast. Fluid. Gamified.",
+      "desc": "Built with the same passion we put into every workout. Surpasses Fitia, MyFitnessPal, and any alternative in fluidity and experience."
+    },
     "badge": "Your best version",
     "motto": "<highlight>The most fluid and gamified</highlight> fitness app. Progress, nutrition, and workouts — all synced in real-time.",
     "cta": {
@@ -44,11 +56,6 @@
       "foods": "Foods in database",
       "rating": "Average rating",
       "satisfaction": "Satisfaction"
-    },
-    "premium": {
-      "title": "Premium design",
-      "heading": "Fast. Fluid. Gamified.",
-      "desc": "Built with the same passion we put into every workout. Surpasses Fitia, MyFitnessPal, and any alternative in fluidity and experience."
     },
     "pricing": {
       "title": "Unlock your full <highlight>potential</highlight>",
@@ -290,6 +297,10 @@
         "title": "The idea is born",
         "desc": "Frustrated with existing fitness apps, we started sketching FitGO on paper."
       },
+      "2026": {
+        "title": "FitGO Web",
+        "desc": "We launch the web platform so you can manage your account and subscription from a browser."
+      },
       "2025Q1": {
         "title": "First prototype",
         "desc": "The first build of FitGO runs on our phones. The weight tracker works for the first time."
@@ -301,10 +312,6 @@
       "2025Q3": {
         "title": "Public launch",
         "desc": "FitGO arrives on App Store and Google Play. The community grows organically."
-      },
-      "2026": {
-        "title": "FitGO Web",
-        "desc": "We launch the web platform so you can manage your account and subscription from a browser."
       }
     },
     "team": {
@@ -320,6 +327,30 @@
     }
   },
   "pricingPage": {
+    "faq": {
+      "readyToStart": "Ready to start your transformation?",
+      "tryFitGoPro": "Try FitGO Pro",
+      "label": "Frequently asked questions",
+      "title": "FAQ",
+      "items": [
+        {
+          "q": "Can I cancel anytime?",
+          "a": "Yes. You can cancel your subscription at any time from your profile. You will keep Pro access until the end of the paid period."
+        },
+        {
+          "q": "Does the web subscription work on the mobile app?",
+          "a": "Absolutely. When you buy Pro on the web, your account is automatically updated in Supabase and you will get Premium benefits immediately when you open the app."
+        },
+        {
+          "q": "What payment methods do you accept?",
+          "a": "We accept all major credit and debit cards (Visa, Mastercard, AmEx) via Stripe, the world's most secure payment processor."
+        },
+        {
+          "q": "Is there a free trial for the Pro plan?",
+          "a": "The free plan already includes the essential features forever. We constantly upgrade the features available in the free version."
+        }
+      ]
+    },
     "hero": {
       "badge": "FitGO Pro",
       "title1": "Choose your",
@@ -345,28 +376,6 @@
       "was": "was",
       "btn": "Get Pro",
       "secure": "Secure payment · Cancel anytime"
-    },
-    "faq": {
-      "label": "Frequently asked questions",
-      "title": "FAQ",
-      "items": [
-        {
-          "q": "Can I cancel anytime?",
-          "a": "Yes. You can cancel your subscription at any time from your profile. You will keep Pro access until the end of the paid period."
-        },
-        {
-          "q": "Does the web subscription work on the mobile app?",
-          "a": "Absolutely. When you buy Pro on the web, your account is automatically updated in Supabase and you will get Premium benefits immediately when you open the app."
-        },
-        {
-          "q": "What payment methods do you accept?",
-          "a": "We accept all major credit and debit cards (Visa, Mastercard, AmEx) via Stripe, the world's most secure payment processor."
-        },
-        {
-          "q": "Is there a free trial for the Pro plan?",
-          "a": "The free plan already includes the essential features forever. We constantly upgrade the features available in the free version."
-        }
-      ]
     },
     "freeFeatures": [
       "Body weight & measurements tracking",
@@ -497,6 +506,7 @@
     "empty": "No users in the ranking yet"
   },
   "squadsRanking": {
+    "noSquadsSubtitle": "Be the first to create one from the app!",
     "badge": "Squads Ranking",
     "title": "Squads Ranking",
     "global": "Global",

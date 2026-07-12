@@ -121,21 +121,42 @@ export default function RankingPage() {
   const stats = serverInfo?.stats;
 
   return (
-    <div className="min-h-screen bg-background" suppressHydrationWarning>
+    <div className="min-h-screen" style={{ background: "#080c18" }} suppressHydrationWarning>
       <Navbar />
 
       <section className="relative pt-40 pb-24 px-6 text-center overflow-hidden">
-        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(139,92,246,0.12) 0%, transparent 70%)" }} />
+        <div
+          className="absolute inset-0"
+          style={{ background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(139,92,246,0.14) 0%, transparent 70%)" }}
+        />
+        <div className="hero-grid absolute inset-0 opacity-30" />
         <div className="relative z-10 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 border border-primary/30 mb-6">
-            <Trophy size={12} className="text-primary" />
-            <span className="text-xs font-bold text-primary uppercase tracking-wider">{t("ranking.badge") || "Ranking Global"}</span>
+          <div
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-7"
+            style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.3)" }}
+          >
+            <Trophy size={13} className="text-primary" />
+            <span className="text-xs font-black text-primary uppercase tracking-wider">{t("ranking.badge") || "Ranking Global"}</span>
           </div>
-          <h1 className="font-display font-black text-5xl md:text-6xl text-text-primary mb-6">
+          <h1
+            className="font-display font-black text-5xl md:text-7xl text-text-primary mb-6 leading-tight"
+            style={{ letterSpacing: "-2px" }}
+          >
             {t("ranking.individualTitle") || "Ranking Individual"}{" "}
-            <span className="gradient-text">{t("ranking.global") || "Global"}</span>
+            <span
+              style={{
+                background: "linear-gradient(135deg, #a78bfa, #06b6d4)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              {t("ranking.global") || "Global"}
+            </span>
           </h1>
-          <p className="text-text-secondary text-xl leading-relaxed">{t("ranking.desc") || "Los mejores usuarios de FitGO ordenados por puntos de liga"}</p>
+          <p className="text-text-secondary text-lg md:text-xl leading-relaxed max-w-lg mx-auto">
+            {t("ranking.desc") || "Los mejores usuarios de FitGO ordenados por puntos de liga"}
+          </p>
         </div>
       </section>
 

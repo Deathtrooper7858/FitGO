@@ -68,7 +68,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`scroll-smooth ${inter.variable} ${dmSans.variable}`} suppressHydrationWarning>
+    <html lang={locale} className={`scroll-smooth ${inter.variable} ${dmSans.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className="bg-background text-text-primary antialiased" suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
           {children}

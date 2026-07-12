@@ -1,5 +1,17 @@
 {
   "home": {
+    "premium": {
+      "features": {
+        "instantMacros": "Suivi instantané des macros",
+        "customCoach": "Coach IA personnalisé",
+        "macroWars": "Guerres de macros entre amis",
+        "eliteLeagues": "Ligues élite et classements mondiaux"
+      },
+      "cta": "Commencer gratuitement",
+      "title": "Design Premium",
+      "heading": "Rapide. Fluide. Gamifiée.",
+      "desc": "Construite avec la même passion que nous mettons dans chaque entraînement. Dépasse Fitia, MyFitnessPal et toute alternative en fluidité et en expérience."
+    },
     "badge": "Votre meilleure version",
     "motto": "<highlight>L'application de fitness la plus fluide</highlight> et gamifiée. Progrès, nutrition et entraînements — tous synchronisés en temps réel.",
     "cta": {
@@ -44,11 +56,6 @@
       "foods": "Aliments dans la base de données",
       "rating": "Note moyenne",
       "satisfaction": "Satisfaction"
-    },
-    "premium": {
-      "title": "Design Premium",
-      "heading": "Rapide. Fluide. Gamifiée.",
-      "desc": "Construite avec la même passion que nous mettons dans chaque entraînement. Dépasse Fitia, MyFitnessPal et toute alternative en fluidité et en expérience."
     },
     "pricing": {
       "title": "Libérez tout votre <highlight>potentiel</highlight>",
@@ -320,6 +327,30 @@
     }
   },
   "pricingPage": {
+    "faq": {
+      "readyToStart": "Prêt à commencer votre transformation ?",
+      "tryFitGoPro": "Essayer FitGO Pro",
+      "label": "Foire aux questions",
+      "title": "FAQ",
+      "items": [
+        {
+          "q": "Puis-je annuler à tout moment ?",
+          "a": "Oui. Vous pouvez annuler votre abonnement à tout moment depuis votre profil. Vous garderez l'accès Pro jusqu'à la fin de la période payée."
+        },
+        {
+          "q": "L'abonnement web fonctionne-t-il sur l'app mobile ?",
+          "a": "Absolument. En achetant Pro sur le web, votre compte est automatiquement mis à jour dans Supabase et vous obtiendrez les avantages Premium immédiatement en ouvrant l'app."
+        },
+        {
+          "q": "Quels modes de paiement acceptez-vous ?",
+          "a": "Nous acceptons toutes les principales cartes de crédit et de débit (Visa, Mastercard, AmEx) via Stripe, le processeur de paiement le plus sécurisé du monde."
+        },
+        {
+          "q": "Y a-t-il un essai gratuit pour le plan Pro ?",
+          "a": "Le plan gratuit inclut déjà les fonctionnalités essentielles pour toujours. Nous améliorons constamment les fonctionnalités disponibles dans la version gratuite."
+        }
+      ]
+    },
     "hero": {
       "badge": "FitGO Pro",
       "title1": "Choisissez votre",
@@ -345,28 +376,6 @@
       "was": "avant",
       "btn": "Obtenir Pro",
       "secure": "Paiement sécurisé · Annulez à tout moment"
-    },
-    "faq": {
-      "label": "Foire aux questions",
-      "title": "FAQ",
-      "items": [
-        {
-          "q": "Puis-je annuler à tout moment ?",
-          "a": "Oui. Vous pouvez annuler votre abonnement à tout moment depuis votre profil. Vous garderez l'accès Pro jusqu'à la fin de la période payée."
-        },
-        {
-          "q": "L'abonnement web fonctionne-t-il sur l'app mobile ?",
-          "a": "Absolument. En achetant Pro sur le web, votre compte est automatiquement mis à jour dans Supabase et vous obtiendrez les avantages Premium immédiatement en ouvrant l'app."
-        },
-        {
-          "q": "Quels modes de paiement acceptez-vous ?",
-          "a": "Nous acceptons toutes les principales cartes de crédit et de débit (Visa, Mastercard, AmEx) via Stripe, le processeur de paiement le plus sécurisé du monde."
-        },
-        {
-          "q": "Y a-t-il un essai gratuit pour le plan Pro ?",
-          "a": "Le plan gratuit inclut déjà les fonctionnalités essentielles pour toujours. Nous améliorons constamment les fonctionnalités disponibles dans la version gratuite."
-        }
-      ]
     },
     "freeFeatures": [
       "Suivi poids et mensurations",
@@ -497,6 +506,7 @@
     "empty": "Pas encore d'utilisateurs dans le classement"
   },
   "squadsRanking": {
+    "noSquadsSubtitle": "Soyez le premier à en créer un depuis l'application !",
     "badge": "Classement des Squads",
     "title": "Classement des Squads",
     "global": "Global",

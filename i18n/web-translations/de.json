@@ -1,5 +1,17 @@
 {
   "home": {
+    "premium": {
+      "features": {
+        "instantMacros": "Sofortiges Makro-Tracking",
+        "customCoach": "Benutzerdefinierter KI-Coach",
+        "macroWars": "Makro-Kriege mit Freunden",
+        "eliteLeagues": "Elite-Ligen und globale Ranglisten"
+      },
+      "cta": "Kostenlos starten",
+      "title": "Premium-Design",
+      "heading": "Schnell. Flüssig. Gamifiziert.",
+      "desc": "Gebaut mit der gleichen Leidenschaft, die wir in jedes Training stecken. Übertrifft Fitia, MyFitnessPal und jede Alternative an Flüssigkeit und Erfahrung."
+    },
     "badge": "Deine beste Version",
     "motto": "<highlight>Die flüssigste</highlight> und gamifizierte Fitness-App. Fortschritt, Ernährung und Training — alles in Echtzeit synchronisiert.",
     "cta": {
@@ -44,11 +56,6 @@
       "foods": "Lebensmittel in der Datenbank",
       "rating": "Durchschnittsbewertung",
       "satisfaction": "Zufriedenheit"
-    },
-    "premium": {
-      "title": "Premium-Design",
-      "heading": "Schnell. Flüssig. Gamifiziert.",
-      "desc": "Gebaut mit der gleichen Leidenschaft, die wir in jedes Training stecken. Übertrifft Fitia, MyFitnessPal und jede Alternative an Flüssigkeit und Erfahrung."
     },
     "pricing": {
       "title": "Schöpfe dein volles <highlight>Potenzial</highlight> aus",
@@ -320,6 +327,30 @@
     }
   },
   "pricingPage": {
+    "faq": {
+      "readyToStart": "Bereit, deine Transformation zu beginnen?",
+      "tryFitGoPro": "FitGO Pro ausprobieren",
+      "label": "Häufig gestellte Fragen",
+      "title": "FAQ",
+      "items": [
+        {
+          "q": "Kann ich jederzeit kündigen?",
+          "a": "Ja. Du kannst dein Abonnement jederzeit aus deinem Profil heraus kündigen. Du behältst den Pro-Zugang bis zum Ende des bezahlten Zeitraums."
+        },
+        {
+          "q": "Funktioniert das Web-Abo in der mobilen App?",
+          "a": "Absolut. Wenn du Pro im Web kaufst, wird dein Konto automatisch in Supabase aktualisiert und du erhältst die Premium-Vorteile sofort beim Öffnen der App."
+        },
+        {
+          "q": "Welche Zahlungsmethoden akzeptieren Sie?",
+          "a": "Wir akzeptieren alle gängigen Kredit- und Debitkarten (Visa, Mastercard, AmEx) über Stripe, den sichersten Zahlungsanbieter der Welt."
+        },
+        {
+          "q": "Gibt es eine kostenlose Testversion für den Pro-Plan?",
+          "a": "Der kostenlose Plan enthält bereits die wesentlichen Funktionen für immer. Wir verbessern ständig die im Free-Plan verfügbaren Funktionen."
+        }
+      ]
+    },
     "hero": {
       "badge": "FitGO Pro",
       "title1": "Wähle deinen",
@@ -345,28 +376,6 @@
       "was": "vorher",
       "btn": "Pro holen",
       "secure": "Sichere Zahlung · Jederzeit kündbar"
-    },
-    "faq": {
-      "label": "Häufig gestellte Fragen",
-      "title": "FAQ",
-      "items": [
-        {
-          "q": "Kann ich jederzeit kündigen?",
-          "a": "Ja. Du kannst dein Abonnement jederzeit aus deinem Profil heraus kündigen. Du behältst den Pro-Zugang bis zum Ende des bezahlten Zeitraums."
-        },
-        {
-          "q": "Funktioniert das Web-Abo in der mobilen App?",
-          "a": "Absolut. Wenn du Pro im Web kaufst, wird dein Konto automatisch in Supabase aktualisiert und du erhältst die Premium-Vorteile sofort beim Öffnen der App."
-        },
-        {
-          "q": "Welche Zahlungsmethoden akzeptieren Sie?",
-          "a": "Wir akzeptieren alle gängigen Kredit- und Debitkarten (Visa, Mastercard, AmEx) über Stripe, den sichersten Zahlungsanbieter der Welt."
-        },
-        {
-          "q": "Gibt es eine kostenlose Testversion für den Pro-Plan?",
-          "a": "Der kostenlose Plan enthält bereits die wesentlichen Funktionen für immer. Wir verbessern ständig die im Free-Plan verfügbaren Funktionen."
-        }
-      ]
     },
     "freeFeatures": [
       "Gewichts- & Maßverfolgung",
@@ -497,6 +506,7 @@
     "empty": "Noch keine Benutzer in der Rangliste"
   },
   "squadsRanking": {
+    "noSquadsSubtitle": "Sei der Erste, der einen über die App erstellt!",
     "badge": "Squad-Rangliste",
     "title": "Squad-Rangliste",
     "global": "Global",

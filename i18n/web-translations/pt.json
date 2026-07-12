@@ -1,5 +1,17 @@
 {
   "home": {
+    "premium": {
+      "features": {
+        "instantMacros": "Rastreamento instantâneo de macros",
+        "customCoach": "Coach de IA personalizado",
+        "macroWars": "Guerras de macros com amigos",
+        "eliteLeagues": "Ligas de elite e rankings globais"
+      },
+      "cta": "Começar grátis",
+      "title": "Design Premium",
+      "heading": "Rápido. Fluido. Gamificado.",
+      "desc": "Construído com a mesma paixão que colocamos em cada treino. Supera o Fitia, MyFitnessPal e qualquer alternativa em fluidez e experiência."
+    },
     "badge": "Sua melhor versão",
     "motto": "<highlight>O aplicativo de fitness mais fluido</highlight> e gamificado. Progresso, nutrição e treinos — tudo sincronizado em tempo real.",
     "cta": {
@@ -44,11 +56,6 @@
       "foods": "Alimentos no banco de dados",
       "rating": "Avaliação média",
       "satisfaction": "Satisfação"
-    },
-    "premium": {
-      "title": "Design Premium",
-      "heading": "Rápido. Fluido. Gamificado.",
-      "desc": "Construído com a mesma paixão que colocamos em cada treino. Supera o Fitia, MyFitnessPal e qualquer alternativa em fluidez e experiência."
     },
     "pricing": {
       "title": "Desbloqueie todo o seu <highlight>potencial</highlight>",
@@ -320,6 +327,30 @@
     }
   },
   "pricingPage": {
+    "faq": {
+      "readyToStart": "Pronto para começar sua transformação?",
+      "tryFitGoPro": "Experimentar FitGO Pro",
+      "label": "Perguntas frequentes",
+      "title": "FAQ",
+      "items": [
+        {
+          "q": "Posso cancelar a qualquer momento?",
+          "a": "Sim. Você pode cancelar sua assinatura a qualquer momento pelo seu perfil. Você continuará tendo acesso Pro até o fim do período pago."
+        },
+        {
+          "q": "A assinatura web funciona no app mobile?",
+          "a": "Absolutamente. Ao comprar Pro na web, sua conta é atualizada automaticamente no Supabase e você terá os benefícios Premium imediatamente ao abrir o app."
+        },
+        {
+          "q": "Quais métodos de pagamento vocês aceitam?",
+          "a": "Aceitamos todos os principais cartões de crédito e débito (Visa, Mastercard, AmEx) via Stripe, o processador de pagamentos mais seguro do mundo."
+        },
+        {
+          "q": "Há um teste gratuito do plano Pro?",
+          "a": "O plano gratuito já inclui as funções essenciais para sempre. Atualizamos constantemente as funcionalidades disponíveis na versão gratuita."
+        }
+      ]
+    },
     "hero": {
       "badge": "FitGO Pro",
       "title1": "Escolha seu",
@@ -345,28 +376,6 @@
       "was": "era",
       "btn": "Obter Pro",
       "secure": "Pagamento seguro · Cancele a qualquer momento"
-    },
-    "faq": {
-      "label": "Perguntas frequentes",
-      "title": "FAQ",
-      "items": [
-        {
-          "q": "Posso cancelar a qualquer momento?",
-          "a": "Sim. Você pode cancelar sua assinatura a qualquer momento pelo seu perfil. Você continuará tendo acesso Pro até o fim do período pago."
-        },
-        {
-          "q": "A assinatura web funciona no app mobile?",
-          "a": "Absolutamente. Ao comprar Pro na web, sua conta é atualizada automaticamente no Supabase e você terá os benefícios Premium imediatamente ao abrir o app."
-        },
-        {
-          "q": "Quais métodos de pagamento vocês aceitam?",
-          "a": "Aceitamos todos os principais cartões de crédito e débito (Visa, Mastercard, AmEx) via Stripe, o processador de pagamentos mais seguro do mundo."
-        },
-        {
-          "q": "Há um teste gratuito do plano Pro?",
-          "a": "O plano gratuito já inclui as funções essenciais para sempre. Atualizamos constantemente as funcionalidades disponíveis na versão gratuita."
-        }
-      ]
     },
     "freeFeatures": [
       "Monitoramento peso e medidas",
@@ -540,6 +549,7 @@
     "empty": "Nenhum usuário no ranking ainda"
   },
   "squadsRanking": {
+    "noSquadsSubtitle": "Seja o primeiro a criar um pelo app!",
     "badge": "Ranking de Squads",
     "title": "Ranking de Squads",
     "global": "Global",

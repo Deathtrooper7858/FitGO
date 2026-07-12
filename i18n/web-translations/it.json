@@ -1,5 +1,17 @@
 {
   "home": {
+    "premium": {
+      "features": {
+        "instantMacros": "Tracciamento istantaneo dei macro",
+        "customCoach": "Coach IA personalizzato",
+        "macroWars": "Guerre di macro con gli amici",
+        "eliteLeagues": "Leghe d'élite e classifiche globali"
+      },
+      "cta": "Inizia gratis",
+      "title": "Design Premium",
+      "heading": "Veloce. Fluida. Gamificata.",
+      "desc": "Costruita con la stessa passione che mettiamo in ogni allenamento. Supera Fitia, MyFitnessPal e qualsiasi alternativa in fluidità ed esperienza."
+    },
     "badge": "La tua versione migliore",
     "motto": "<highlight>L'app di fitness più fluida</highlight> e gamificata. Progressi, nutrizione e allenamenti — tutto sincronizzato in tempo reale.",
     "cta": {
@@ -44,11 +56,6 @@
       "foods": "Alimenti nel database",
       "rating": "Valutazione media",
       "satisfaction": "Soddisfazione"
-    },
-    "premium": {
-      "title": "Design Premium",
-      "heading": "Veloce. Fluida. Gamificata.",
-      "desc": "Costruita con la stessa passione che mettiamo in ogni allenamento. Supera Fitia, MyFitnessPal e qualsiasi alternativa in fluidità ed esperienza."
     },
     "pricing": {
       "title": "Sblocca il tuo pieno <highlight>potenziale</highlight>",
@@ -320,6 +327,30 @@
     }
   },
   "pricingPage": {
+    "faq": {
+      "readyToStart": "Pronto a iniziare la tua trasformazione?",
+      "tryFitGoPro": "Prova FitGO Pro",
+      "label": "Domande frequenti",
+      "title": "FAQ",
+      "items": [
+        {
+          "q": "Posso annullare in qualsiasi momento?",
+          "a": "Sì. Puoi annullare l'abbonamento in qualsiasi momento dal tuo profilo. Manterrai l'accesso Pro fino alla fine del periodo pagato."
+        },
+        {
+          "q": "L'abbonamento web funziona sull'app mobile?",
+          "a": "Assolutamente. Acquistando Pro sul web, il tuo account viene aggiornato automaticamente in Supabase e otterrai i vantaggi Premium immediatamente all'apertura dell'app."
+        },
+        {
+          "q": "Quali metodi di pagamento accettate?",
+          "a": "Accettiamo tutte le principali carte di credito e debito (Visa, Mastercard, AmEx) tramite Stripe, il processore di pagamento più sicuro al mondo."
+        },
+        {
+          "q": "C'è una prova gratuita del piano Pro?",
+          "a": "Il piano gratuito include già le funzionalità essenziali per sempre. Aggiorniamo costantemente le funzionalità disponibili nella versione gratuita."
+        }
+      ]
+    },
     "hero": {
       "badge": "FitGO Pro",
       "title1": "Scegli il tuo",
@@ -345,28 +376,6 @@
       "was": "prima",
       "btn": "Ottieni Pro",
       "secure": "Pagamento sicuro · Annulla in qualsiasi momento"
-    },
-    "faq": {
-      "label": "Domande frequenti",
-      "title": "FAQ",
-      "items": [
-        {
-          "q": "Posso annullare in qualsiasi momento?",
-          "a": "Sì. Puoi annullare l'abbonamento in qualsiasi momento dal tuo profilo. Manterrai l'accesso Pro fino alla fine del periodo pagato."
-        },
-        {
-          "q": "L'abbonamento web funziona sull'app mobile?",
-          "a": "Assolutamente. Acquistando Pro sul web, il tuo account viene aggiornato automaticamente in Supabase e otterrai i vantaggi Premium immediatamente all'apertura dell'app."
-        },
-        {
-          "q": "Quali metodi di pagamento accettate?",
-          "a": "Accettiamo tutte le principali carte di credito e debito (Visa, Mastercard, AmEx) tramite Stripe, il processore di pagamento più sicuro al mondo."
-        },
-        {
-          "q": "C'è una prova gratuita del piano Pro?",
-          "a": "Il piano gratuito include già le funzionalità essenziali per sempre. Aggiorniamo costantemente le funzionalità disponibili nella versione gratuita."
-        }
-      ]
     },
     "freeFeatures": [
       "Monitoraggio peso e misure",
@@ -497,6 +506,7 @@
     "empty": "Nessun utente nella classifica ancora"
   },
   "squadsRanking": {
+    "noSquadsSubtitle": "Sii il primo a crearne uno dall'app!",
     "badge": "Classifica Squadre",
     "title": "Classifica Squadre",
     "global": "Globale",

@@ -20,6 +20,8 @@ export async function GET() {
     const { data, error } = await supabase
       .rpc("get_top_squads_with_live_points", { p_limit: 50 });
 
+    let rawSquads = data || [];
+
     if (error) {
       const { data: fallback, error: fallbackErr } = await supabase
         .from("squads")
@@ -28,21 +30,21 @@ export async function GET() {
         .limit(50);
 
       if (fallbackErr) throw fallbackErr;
-
-      const withMembers = await Promise.all(
-        (fallback || []).map(async (squad) => {
-          const { count } = await supabase
-            .from("squad_members")
-            .select("*", { count: "exact", head: true })
-            .eq("squad_id", squad.id);
-          return { ...squad, member_count: count || 0 };
-        })
-      );
-
-      return NextResponse.json({ squads: withMembers, total: withMembers.length });
+      rawSquads = fallback || [];
     }
 
-    return NextResponse.json({ squads: data || [], total: (data || []).length });
+    const withMembers = await Promise.all(
+      rawSquads.map(async (squad: Record<string, unknown> & { id: string, member_count?: number }) => {
+        if (squad.member_count !== undefined) return squad;
+        const { count } = await supabase
+          .from("squad_members")
+          .select("*", { count: "exact", head: true })
+          .eq("squad_id", squad.id);
+        return { ...squad, member_count: count || 0 };
+      })
+    );
+
+    return NextResponse.json({ squads: withMembers, total: withMembers.length });
   } catch (err) {
     Sentry.captureException(err);
     return NextResponse.json(

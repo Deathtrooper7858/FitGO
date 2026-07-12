@@ -1,3 +1,5 @@
+"use client";
+
 import { Link } from "@/i18n/routing";
 import { Zap, Heart, Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -42,48 +44,126 @@ export default function Footer() {
     ],
   };
 
+  const socialLinks = [
+    {
+      href: "https://www.instagram.com/fitgoapp",
+      label: "Instagram",
+      icon: <InstagramIcon size={16} />,
+      hoverColor: "#E4405F",
+    },
+    {
+      href: "https://www.tiktok.com/@fitgoapp",
+      label: "TikTok",
+      icon: <TiktokIcon size={16} />,
+      hoverColor: "#f8fafc",
+    },
+    {
+      href: "mailto:support@fitgo.app",
+      label: "Email",
+      icon: <Mail size={16} />,
+      hoverColor: "#8B5CF6",
+    },
+  ];
+
   return (
-    <footer className="border-t border-white/5 bg-fitgo-dark/60">
+    <footer
+      style={{
+        borderTop: "1px solid rgba(255,255,255,0.05)",
+        background: "linear-gradient(180deg, rgba(8,12,24,0) 0%, #05080f 100%)",
+      }}
+    >
+      {/* Top gradient line */}
+      <div
+        className="h-px w-full"
+        style={{ background: "linear-gradient(90deg, transparent, rgba(139,92,246,0.4), rgba(6,182,212,0.3), transparent)" }}
+      />
+
       <div className="max-w-6xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-12">
           {/* Brand column */}
           <div className="md:col-span-2">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-gradient-btn flex items-center justify-center glow-primary">
-                <Zap size={18} className="text-white" fill="white" />
+            <Link href="/" className="flex items-center gap-2.5 mb-5 group">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+                style={{
+                  background: "linear-gradient(135deg, #8B5CF6, #7C3AED, #06B6D4)",
+                  boxShadow: "0 4px 16px rgba(139,92,246,0.4)",
+                }}
+              >
+                <Zap size={19} className="text-white" fill="white" />
               </div>
-              <span className="font-display font-black text-2xl gradient-text">
+              <span
+                className="font-display font-black text-2xl"
+                style={{
+                  background: "linear-gradient(135deg, #a78bfa, #06b6d4)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
                 FitGO
               </span>
             </Link>
+
             <p className="text-text-secondary text-sm leading-relaxed max-w-xs mb-6">
               {t("desc")}
             </p>
-            <div className="flex items-center gap-3">
+
+            {/* Social links */}
+            <div className="flex items-center gap-2.5">
+              {socialLinks.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target={s.href.startsWith("mailto") ? undefined : "_blank"}
+                  rel={s.href.startsWith("mailto") ? undefined : "noopener noreferrer"}
+                  aria-label={s.label}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-text-muted transition-all duration-200 group"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.07)",
+                  }}
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget;
+                    el.style.color = s.hoverColor;
+                    el.style.borderColor = `${s.hoverColor}40`;
+                    el.style.background = `${s.hoverColor}12`;
+                    el.style.transform = "translateY(-2px)";
+                    el.style.boxShadow = `0 4px 16px ${s.hoverColor}20`;
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget;
+                    el.style.color = "";
+                    el.style.borderColor = "";
+                    el.style.background = "rgba(255,255,255,0.04)";
+                    el.style.transform = "";
+                    el.style.boxShadow = "";
+                  }}
+                >
+                  {s.icon}
+                </a>
+              ))}
+            </div>
+
+            {/* App store badges */}
+            <div className="flex items-center gap-3 mt-5">
               <a
-                href="https://www.instagram.com/fitgoapp"
+                href="https://apps.apple.com/app/fitgo"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="w-9 h-9 rounded-xl glass flex items-center justify-center text-text-secondary hover:text-[#E4405F] hover:border-[#E4405F]/40 transition-all"
+                className="flex items-center gap-2 text-xs font-bold text-text-muted hover:text-text-primary transition-colors px-3 py-2 rounded-xl"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
               >
-                <InstagramIcon size={16} />
+                App Store
               </a>
               <a
-                href="https://www.tiktok.com/@fitgoapp"
+                href="https://play.google.com/store/apps/details?id=com.fitgo.app"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="TikTok"
-                className="w-9 h-9 rounded-xl glass flex items-center justify-center text-text-secondary hover:text-text-primary hover:border-white/20 transition-all"
+                className="flex items-center gap-2 text-xs font-bold text-text-muted hover:text-text-primary transition-colors px-3 py-2 rounded-xl"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
               >
-                <TiktokIcon size={16} />
-              </a>
-              <a
-                href="mailto:support@fitgo.app"
-                aria-label="Email"
-                className="w-9 h-9 rounded-xl glass flex items-center justify-center text-text-secondary hover:text-primary hover:border-primary/40 transition-all"
-              >
-                <Mail size={16} />
+                Google Play
               </a>
             </div>
           </div>
@@ -91,7 +171,7 @@ export default function Footer() {
           {/* Link columns */}
           {Object.entries(footerLinks).map(([group, links]) => (
             <div key={group}>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-text-muted mb-4">
+              <h4 className="text-[10px] font-black uppercase tracking-[4px] text-text-muted mb-5">
                 {group}
               </h4>
               <ul className="space-y-3">
@@ -99,7 +179,7 @@ export default function Footer() {
                   <li key={l.href}>
                     <Link
                       href={l.href}
-                      className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                      className="text-sm text-text-secondary hover:text-text-primary transition-colors hover:translate-x-0.5 inline-block"
                     >
                       {l.label}
                     </Link>
@@ -110,12 +190,17 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-white/5 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div
+          className="mt-14 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+        >
           <p className="text-text-muted text-xs">
             © {new Date().getFullYear()} FitGO. {t("rights")}
           </p>
-          <p className="text-text-muted text-xs flex items-center gap-1">
-            {t("madeWith1")} <Heart size={12} className="text-accent fill-accent" /> {t("madeWith2")}
+          <p className="text-text-muted text-xs flex items-center gap-1.5">
+            {t("madeWith1")}{" "}
+            <Heart size={11} className="text-accent fill-accent animate-pulse" />{" "}
+            {t("madeWith2")}
           </p>
         </div>
       </div>
