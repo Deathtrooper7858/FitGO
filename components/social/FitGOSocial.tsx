@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Share, Modal } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import { BlurView } from 'expo-blur';
+// import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -25,8 +25,8 @@ import { supabase } from '../../services/supabase';
 import { useAchievements, ALL_BADGES, useTranslatedBadge } from '../../hooks/useAchievements';
 import { parsePostContent, formatPostContent } from '../../utils/language';
 import { MediaPickerModal } from '../MediaPickerModal';
-import { CommentList } from './modal/CommentList';
-import { PostCard, PostAudioPlayer } from './modal/PostCard';
+// import { CommentList } from './modal/CommentList';
+import { PostAudioPlayer } from './modal/PostCard';
 import { VideoPlayerView } from './VideoPlayerView';
 
 
@@ -405,7 +405,7 @@ export default function FitGOSocial({
     }
   };
 
-  const handleStartRecording = async () => {
+  const handleStartRecording = useCallback(async () => {
     try {
       const { granted } = await requestRecordingPermissionsAsync();
       if (!granted) {
@@ -423,9 +423,9 @@ export default function FitGOSocial({
     } catch (e) {
       console.warn('Error starting recording:', e);
     }
-  };
+  }, [recorder]);
 
-  const handleStopRecording = async () => {
+  const handleStopRecording = useCallback(async () => {
     try {
       if (recordingTimerRef.current) {
         clearInterval(recordingTimerRef.current);
@@ -443,13 +443,13 @@ export default function FitGOSocial({
     } catch (e) {
       console.warn('Error stopping recording:', e);
     }
-  };
+  }, [recorder]);
 
-  const formatRecordingTime = (seconds: number) => {
+  const formatRecordingTime = useCallback((seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m}:${String(s).padStart(2, '0')}`;
-  };
+  }, []);
 
 
   const handleSearch = useCallback(async () => {
@@ -948,7 +948,7 @@ export default function FitGOSocial({
         </TouchableOpacity>
       </View>
     </GlassCard>
-  ), [newPostContent, selectedImage, selectedVideo, selectedAudio, isPosting, isRecording, recordingElapsed, profile?.avatarUrl, profile?.name, colors.primary, colors.surfaceAlt, colors.textPrimary, colors.textMuted, colors.textSecondary, colors.error, handleCreatePost, handleStartRecording, handleStopRecording, formatRecordingTime, t]);
+  ), [newPostContent, selectedImage, selectedVideo, selectedAudio, isPosting, isRecording, recordingElapsed, profile?.avatarUrl, profile?.name, colors, handleCreatePost, handleStartRecording, handleStopRecording, formatRecordingTime, t]);
 
   const feedHeader = useMemo(() => {
     const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));

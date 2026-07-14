@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { Heart, MessageSquare, Share2, Trash2 } from 'lucide-react-native';
 import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from 'expo-audio';
-import { Radius, Spacing } from '../../../constants';
+import { Radius } from '../../../constants';
 import { GlassCard } from '../../../components/GlassCard';
 
 export function PostAudioPlayer({ audioUrl, colors }: { audioUrl: string; colors: any }) {

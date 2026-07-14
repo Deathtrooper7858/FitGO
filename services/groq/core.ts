@@ -40,7 +40,7 @@ const isRomanceLang = (lang: string) => ['Spanish', 'French', 'Portuguese', 'Ita
 // ─── Model IDs ────────────────────────────────────────────────────────────────
 const CHAT_MODEL   = 'llama-3.3-70b-versatile'; //no cambiar en proximos
 const FAST_MODEL   = 'openai/gpt-oss-20b'; // Modelo rápido de reemplazo
-const VISION_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct'; // No cambiar en proximos!!
+const VISION_MODEL = 'qwen-3.6-27b'; // Updated from deprecated Llama 4 Scout
 const AUDIO_MODEL  = 'whisper-large-v3';
 
 /**

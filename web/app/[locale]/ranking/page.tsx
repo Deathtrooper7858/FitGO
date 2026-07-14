@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -10,7 +12,6 @@ import {
   Loader2,
   AlertCircle,
   Star,
-  ChevronRight,
   RefreshCw,
   Server,
   Users,
@@ -112,10 +113,17 @@ export default function RankingPage() {
   };
 
   useEffect(() => {
-    fetchRanking();
-    fetchServerInfo();
+    // Avoid synchronous setState warning by deferring the initial fetch
+    const timeout = setTimeout(() => {
+      fetchRanking();
+      fetchServerInfo();
+    }, 0);
     const interval = setInterval(() => fetchRanking(), 30000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const stats = serverInfo?.stats;
@@ -266,7 +274,7 @@ export default function RankingPage() {
 
                     <div className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center overflow-hidden" style={{ background: "linear-gradient(135deg, #334155, #1E293B)" }}>
                       {user.avatar_url ? (
-                        <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                        <Image src={user.avatar_url} alt="" fill sizes="40px" className="object-cover" />
                       ) : (
                         <span className="text-sm font-bold text-text-primary">
                           {(user.name || "?")[0].toUpperCase()}

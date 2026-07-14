@@ -639,7 +639,7 @@ export default function HomePage() {
       {/* ── HOW IT WORKS ──────────────────────────────────────────── */}
       <section className="py-28 px-6 relative overflow-hidden">
         <div
-          className="orb w-[400px] h-[400px]"
+          className="orb w-100 h-100"
           style={{ background: "radial-gradient(circle, #06b6d4, transparent)", bottom: "-10%", left: "-5%", opacity: 0.08 }}
         />
         <div className="relative z-10 max-w-4xl mx-auto">
