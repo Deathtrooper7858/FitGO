@@ -14,7 +14,7 @@ import {
   Mail, Info, FileText, Share2, ShieldCheck, Globe, Smartphone, Camera,
   MessageSquare, Heart, Target, Bell, Palette, LogOut,
 } from 'lucide-react-native';
-import { cacheDirectory, EncodingType, writeAsStringAsync } from 'expo-file-system/legacy';
+import { cacheDirectory, EncodingType, writeAsStringAsync } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as XLSX from 'xlsx';
 import { LinearGradient } from 'expo-linear-gradient';

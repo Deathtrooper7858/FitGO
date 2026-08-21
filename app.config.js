@@ -2,7 +2,7 @@ module.exports = ({ config }) => {
   if (process.env.APP_VARIANT === 'development') {
     return {
       ...config,
-      name: 'FitGO (Dev)',
+      name: 'fitgo-dev',
       scheme: 'fitgo-dev',
       ios: {
         ...config.ios,

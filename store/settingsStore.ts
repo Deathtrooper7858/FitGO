@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { SecureStorage } from '../utils/storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeMode, AppLanguage, MassUnit, VolumeUnit, LengthUnit, EnergyUnit, TempUnit, Reminder } from './types';
 import { useRecipesStore } from './recipesStore';
 
@@ -80,7 +80,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'ff-settings',
-      storage: createJSONStorage(() => SecureStorage),
+      storage: createJSONStorage(() => AsyncStorage),
     }
   )
 );

@@ -86,11 +86,12 @@ export const useAuthStore = create<AuthState>()(
 
             if (data && !error) {
               const fetchedNameColor = (data.is_pro && !data.name_color) ? '#EAB308' : data.name_color;
-              const fetchedPremiumColor = data.premium_color || null;
+              // Only restore premium color if the user is still pro. If they lost pro status,
+              // clear the color so it resets correctly.
+              const fetchedPremiumColor = (data.is_pro && data.premium_color) ? data.premium_color : null;
               
-              if (fetchedPremiumColor) {
-                useSettingsStore.getState().setPremiumColor(fetchedPremiumColor);
-              }
+              // Always sync premiumColor from DB — even when null — to clear stale local state
+              useSettingsStore.getState().setPremiumColor(fetchedPremiumColor);
               
               const freshProfile: UserProfile = {
                   id:             data.id,
