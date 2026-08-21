@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Camera, X, Upload, Brain, CheckCircle, ArrowUpCircle, History, ChevronRight, ChevronDown, ChevronUp, Trash2 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system/legacy';
+import * as FileSystem from 'expo-file-system';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../hooks/useTheme';

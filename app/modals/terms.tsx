@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Dimensions, Linking } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Spacing, Radius } from '../../constants';
-import { useTheme } from '../../hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { ShieldCheck, Lock, ChevronLeft } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../../hooks/useTheme';
+import { Spacing, Radius } from '../../constants';
 import { TERMS_DATA, PRIVACY_DATA } from '../../constants/legalData';
 
 const { width } = Dimensions.get('window');

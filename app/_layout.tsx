@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Stack, router, useSegments } from 'expo-router';
+import { Stack, router, useSegments, useRootNavigationState } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { preventAutoHideAsync, hideAsync } from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -75,53 +75,64 @@ preventAutoHideAsync();
 function NavigationGuard() {
   const { session, profile, isLoading } = useAuthStore();
   const segments = useSegments();
+  // Wait for the root navigator to finish mounting before any navigation.
+  // Without this guard, router.replace fires before the Stack registers its
+  // screens, causing the "action was not handled by any navigator" warning.
+  const navigationState = useRootNavigationState();
 
   useEffect(() => {
-    const inAuthGroup   = segments[0] === '(auth)';
-    const inOnboarding  = segments[0] === 'onboarding';
-    const isTermsModal  = segments.join('/') === 'modals/terms' || (segments[0] === '(auth)' && segments[1] === 'terms');
-    const allSegments   = segments as string[];
+    // ── Navigator not ready yet — skip until it has mounted ─────────────────
+    if (!navigationState?.key) return;
 
-    // ── Fast-path: if we already have a cached profile + session, navigate
-    //    immediately WITHOUT waiting for isLoading to resolve. This eliminates
-    //    the ~3-second flash of the onboarding screen on app resume.
-    if (session && profile?.onboardingDone && profile?.id) {
-      const isUpdatePassword = segments.join('/') === '(auth)/update-password';
-      if (isUpdatePassword) return; // Stay on the screen to type new password
+    const timer = setTimeout(() => {
+      const inAuthGroup   = segments[0] === '(auth)';
+      const inOnboarding  = segments[0] === 'onboarding';
+      const isTermsModal  = segments.join('/') === 'modals/terms' || (segments[0] === '(auth)' && segments[1] === 'terms');
+      const allSegments   = segments as string[];
 
-      if (inAuthGroup || inOnboarding || allSegments.length === 0) {
-        router.replace('/(tabs)/tracker');
+      // ── Fast-path: if we already have a cached profile + session, navigate
+      //    immediately WITHOUT waiting for isLoading to resolve. This eliminates
+      //    the ~3-second flash of the onboarding screen on app resume.
+      if (session && profile?.onboardingDone && profile?.id) {
+        const isUpdatePassword = segments.join('/') === '(auth)/update-password';
+        if (isUpdatePassword) return; // Stay on the screen to type new password
+
+        if (inAuthGroup || inOnboarding || allSegments.length === 0) {
+          router.replace('/(tabs)/tracker');
+        }
+        return;
       }
-      return;
-    }
 
-    // ── Slow-path: wait for the network fetch to complete before deciding
-    if (isLoading) return;
+      // ── Slow-path: wait for the network fetch to complete before deciding
+      if (isLoading) return;
 
-    // ── Guard: if there's a session but no profile yet (and not loading),
-    //    this is a transient state during OAuth (e.g. Google login fires
-    //    onAuthStateChange multiple times). Wait — do NOT redirect to onboarding
-    //    because a profile fetch may still be resolving in the background.
-    if (session && !profile) return;
+      // ── Guard: if there's a session but no profile yet (and not loading),
+      //    this is a transient state during OAuth (e.g. Google login fires
+      //    onAuthStateChange multiple times). Wait — do NOT redirect to onboarding
+      //    because a profile fetch may still be resolving in the background.
+      if (session && !profile) return;
 
-    if (!session) {
-      if (!inAuthGroup) {
-        router.replace('/(auth)/welcome');
+      if (!session) {
+        if (!inAuthGroup) {
+          router.replace('/(auth)/welcome');
+        }
+      } else if (!profile || !profile.onboardingDone || !profile.id) {
+        // Session exists but profile is invalid or incomplete → onboarding
+        if (!inOnboarding && !isTermsModal) {
+          router.replace('/onboarding');
+        }
+      } else {
+        const isUpdatePassword = segments.join('/') === '(auth)/update-password';
+        if (isUpdatePassword) return; // Stay on the screen to type new password
+        
+        if (inAuthGroup || inOnboarding || allSegments.length === 0) {
+          router.replace('/(tabs)/tracker');
+        }
       }
-    } else if (!profile || !profile.onboardingDone || !profile.id) {
-      // Session exists but profile is invalid or incomplete → onboarding
-      if (!inOnboarding && !isTermsModal) {
-        router.replace('/onboarding');
-      }
-    } else {
-      const isUpdatePassword = segments.join('/') === '(auth)/update-password';
-      if (isUpdatePassword) return; // Stay on the screen to type new password
-      
-      if (inAuthGroup || inOnboarding || allSegments.length === 0) {
-        router.replace('/(tabs)/tracker');
-      }
-    }
-  }, [session, profile, isLoading, segments]);
+    }, 10);
+
+    return () => clearTimeout(timer);
+  }, [navigationState?.key, session, profile, isLoading, segments]);
 
   return null;
 }

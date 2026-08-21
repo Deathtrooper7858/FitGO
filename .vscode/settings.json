@@ -23,5 +23,6 @@
   },
   "java.import.exclusions": [
     "**/node_modules/**"
-  ]
+  ],
+  "cmake.ignoreCMakeListsMissing": true
 }
