@@ -1,8 +1,10 @@
 module.exports = ({ config }) => {
-  if (process.env.APP_VARIANT === 'development') {
+  const variant = process.env.APP_VARIANT;
+
+  if (variant === 'development') {
     return {
       ...config,
-      name: 'fitgo-dev',
+      name: 'FitGO (Dev)',
       scheme: 'fitgo-dev',
       ios: {
         ...config.ios,
@@ -15,5 +17,34 @@ module.exports = ({ config }) => {
     };
   }
 
-  return config;
+  if (variant === 'preview') {
+    return {
+      ...config,
+      name: 'FitGO (Preview)',
+      scheme: 'fitgo-preview',
+      ios: {
+        ...config.ios,
+        bundleIdentifier: 'com.fitgo.app.preview',
+      },
+      android: {
+        ...config.android,
+        package: 'com.fitgo.app.preview',
+      },
+    };
+  }
+
+  // Production variant (default)
+  return {
+    ...config,
+    name: 'FitGO',
+    scheme: 'fitgo',
+    ios: {
+      ...config.ios,
+      bundleIdentifier: 'com.fitgo.app',
+    },
+    android: {
+      ...config.android,
+      package: 'com.fitgo.app',
+    },
+  };
 };

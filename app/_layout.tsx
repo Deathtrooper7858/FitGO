@@ -3,11 +3,9 @@ import { Stack, router, useSegments, useRootNavigationState } from 'expo-router'
 import { StatusBar } from 'expo-status-bar';
 import { preventAutoHideAsync, hideAsync } from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet, View, ActivityIndicator, Platform, LogBox, Text } from 'react-native';
+import { StyleSheet, Platform, LogBox } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import Animated, { FadeIn } from 'react-native-reanimated';
-import { Image } from 'expo-image';
-import { useTranslation } from 'react-i18next';
+import { LayoutAnimationConfig } from 'react-native-reanimated';
 import * as NavigationBar from 'expo-navigation-bar';
 import * as Sentry from '@sentry/react-native';
 import { supabase } from '../services/supabase';
@@ -106,12 +104,6 @@ function NavigationGuard() {
       // ── Slow-path: wait for the network fetch to complete before deciding
       if (isLoading) return;
 
-      // ── Guard: if there's a session but no profile yet (and not loading),
-      //    this is a transient state during OAuth (e.g. Google login fires
-      //    onAuthStateChange multiple times). Wait — do NOT redirect to onboarding
-      //    because a profile fetch may still be resolving in the background.
-      if (session && !profile) return;
-
       if (!session) {
         if (!inAuthGroup) {
           router.replace('/(auth)/welcome');
@@ -138,11 +130,9 @@ function NavigationGuard() {
 }
 
 function RootLayout() {
-  const { setSession, setLoading, fetchProfile, clearAuth, isLoading } = useAuthStore();
-  const { initialize: initPurchases, syncTrialState, checkAndRevokeExpiredTrial } = usePurchaseStore();
-  const { language, theme, setPremiumColor } = useSettingsStore();
+  const { isLoading } = useAuthStore();
+  const { language, theme } = useSettingsStore();
   const colors = useTheme();
-  const { t } = useTranslation();
   const lastButtonStyleRef = useRef<string | null>(null);
   const lastColorRef = useRef<string | null>(null);
   const isPro = useIsPro();
@@ -150,6 +140,12 @@ function RootLayout() {
   useAdMob(); // Initialize AdMob
   // Mostrar anuncios intersticiales periódicamente solo a usuarios Free
   useInterstitialAd(!isPro);
+
+  useEffect(() => {
+    if (!isLoading) {
+      hideAsync().catch(() => {});
+    }
+  }, [isLoading]);
 
   useEffect(() => {
     if (i18n.isInitialized) {
@@ -203,138 +199,95 @@ function RootLayout() {
     hideAsync();
 
     // ── Race condition guard ────────────────────────────────────────────────────
-    // onAuthStateChange puede dispararse varias veces seguidas (token refresh +
-    // user update). El guard de versión garantiza que solo la llamada más reciente
-    // llame a setLoading(false), evitando pantallas de loading infinito.
     let authCallVersion = 0;
     let previousUserId: string | null = null;
 
     const handleAuthStateChange = async (newSession: any) => {
       const thisCall = ++authCallVersion;
       
-      // OPTIMIZACIÓN: Si ya tenemos un perfil en caché y completó el onboarding, evitamos bloquear el render inicial.
       const currentProfile = useAuthStore.getState().profile;
-      // isInitialLoading = true cuando no hay caché, no hay sesión, el userId cambió, o el onboarding no está hecho.
-      // IMPORTANTE: si el userId cambió (nuevo login / OAuth), siempre bloquear para evitar
-      // el flash del onboarding que ocurre cuando onAuthStateChange se dispara múltiples veces
-      // (ej. SIGNED_IN + TOKEN_REFRESHED durante Google OAuth).
       const userIdChanged = newSession?.user?.id && currentProfile?.id !== newSession.user.id;
       const isInitialLoading = !currentProfile || !newSession || userIdChanged || !currentProfile.onboardingDone;
       
       if (isInitialLoading) {
-        setLoading(true); // Bloquear hasta tener perfil completo
+        useAuthStore.getState().setLoading(true);
       } else {
-        setLoading(false); // Liberar Inmediatamente para entrar a la app sin demoras
+        useAuthStore.getState().setLoading(false);
       }
 
       try {
-        setSession(newSession);
+        useAuthStore.getState().setSession(newSession);
         if (newSession?.user) {
           const newUserId = newSession.user.id;
-          // Si cambió el usuario (cambio de cuenta sin cerrar sesión explícitamente),
-          // limpiar el color premium del anterior para que no se herede.
           if (previousUserId && previousUserId !== newUserId) {
             useSettingsStore.getState().setPremiumColor(null);
           }
           previousUserId = newUserId;
 
-          // Si estamos bloqueando (isInitialLoading), esperamos a que se resuelva
           if (isInitialLoading) {
-            await Promise.all([
-              fetchProfile(newSession.user.id),
-              initPurchases(newSession.user.id)
-            ]);
-            // Sync trial state and check/revoke if expired (using cache)
-            await syncTrialState(true);
-            await checkAndRevokeExpiredTrial(true);
+            try {
+              await useAuthStore.getState().fetchProfile(newSession.user.id);
+            } catch (profileErr) {
+              console.warn('[RootLayout] fetchProfile error:', profileErr);
+            }
+            try {
+              await usePurchaseStore.getState().initialize(newSession.user.id);
+              await usePurchaseStore.getState().syncTrialState(true);
+              await usePurchaseStore.getState().checkAndRevokeExpiredTrial(true);
+            } catch (purchaseErr) {
+              console.warn('[RootLayout] purchaseStore init error:', purchaseErr);
+            }
           } else {
-            // If not blocking (have cache), hydrate data in the background
             Promise.all([
-              fetchProfile(newSession.user.id),
-              initPurchases(newSession.user.id)
+              useAuthStore.getState().fetchProfile(newSession.user.id).catch(() => {}),
+              usePurchaseStore.getState().initialize(newSession.user.id).catch(() => {})
             ]).then(() => {
-              // Background trial check (using cache)
-              syncTrialState(true).then(() => checkAndRevokeExpiredTrial(true));
+              usePurchaseStore.getState().syncTrialState(true).then(() => {
+                usePurchaseStore.getState().checkAndRevokeExpiredTrial(true).catch(() => {});
+              }).catch(() => {});
             }).catch(err => console.error('Background fetch error:', err));
           }
-          // Resetear créditos de IA si es un nuevo día (se llama siempre al login)
           useAICreditsStore.getState().resetIfNewDay();
         } else {
-          // Sign out: clear both session and profile atomically
-          clearAuth();
-          // Reset premium color so the next user/onboarding always starts with
-          // the classic default. Each account's color is stored in their profile
-          // and restored when they log in.
-          setPremiumColor(null);
+          useAuthStore.getState().clearAuth();
+          useSettingsStore.getState().setPremiumColor(null);
           previousUserId = null;
-          // Limpiar canales Realtime del usuario anterior para evitar fugas de
-          // memoria y que mensajes de un usuario lleguen a otro tras cambio de sesión.
           useSocialStore.getState().reset();
-          // Resetear estado Pro de créditos IA para evitar que se herede entre sesiones
           useAICreditsStore.getState().setIsProUser(false);
-          // Limpiar el cache del planificador del usuario anterior
           usePlannerStore.getState().clearPlans();
         }
       } catch (err) {
         console.error('Error in auth state change:', err);
       } finally {
-        // Si bloqueamos, liberamos al final de la carga.
         if (thisCall === authCallVersion && isInitialLoading) {
-          setLoading(false);
+          useAuthStore.getState().setLoading(false);
         }
       }
     };
 
+    // Safety timeout: Ensure splash screen never hangs
+    const safetyTimer = setTimeout(() => {
+      if (useAuthStore.getState().isLoading) {
+        useAuthStore.getState().setLoading(false);
+      }
+    }, 2000);
+
     // Initialize auth
     supabase.auth.getSession().then(({ data: { session } }) => {
       handleAuthStateChange(session);
+    }).catch(() => {
+      useAuthStore.getState().setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       handleAuthStateChange(session);
     });
 
-    return () => subscription.unsubscribe();
-  }, [clearAuth, fetchProfile, initPurchases, setLoading, setPremiumColor, setSession, syncTrialState, checkAndRevokeExpiredTrial]);
-
-  // ── IMPORTANT: Keep the splash screen or a blank view while loading
-  //    to prevent "flashes" of the wrong screens.
-  if (isLoading) {
-    return (
-      <View style={[styles.root, { backgroundColor: '#0D0F14', justifyContent: 'center', alignItems: 'center' }]}>
-        <StatusBar style="light" backgroundColor="#0D0F14" />
-        
-        <Animated.View entering={FadeIn.duration(800).springify()} style={{ alignItems: 'center' }}>
-          <Image cachePolicy="memory-disk" 
-            source={require('../assets/icon.png')} 
-            style={{ width: 120, height: 120, borderRadius: 24, marginBottom: 24 }} 
-            contentFit="contain" 
-          />
-          <Text style={{ 
-            color: '#fff', 
-            fontSize: 32, 
-            fontWeight: '900', 
-            letterSpacing: 1,
-            textShadowColor: 'rgba(124, 92, 252, 0.5)',
-            textShadowOffset: { width: 0, height: 4 },
-            textShadowRadius: 12,
-            marginBottom: 8
-          }}>FitGO</Text>
-          <Text style={{ 
-            color: 'rgba(255,255,255,0.6)', 
-            fontSize: 16, 
-            fontWeight: '600', 
-            letterSpacing: 2,
-            textTransform: 'uppercase'
-          }}>{t('common.slogan', 'Your best version')}</Text>
-        </Animated.View>
-
-        <View style={{ position: 'absolute', bottom: 60 }}>
-          <ActivityIndicator color="#7C5CFC" size="small" />
-        </View>
-      </View>
-    );
-  }
+    return () => {
+      clearTimeout(safetyTimer);
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <SafeAreaProvider>
@@ -343,6 +296,18 @@ function RootLayout() {
         <NavigationGuard />
         <AppToast />
         <ErrorBoundary>
+        {/* ── Reanimated 3.17 WorkletRuntime crash mitigation ──────────────────
+             On Android (esp. x86_64 emulators running arm64 via ABI bridge),
+             layout animations (entering/exiting) crash with SIGSEGV inside
+             WorkletRuntime::runGuarded due to a null-pointer in the worklets
+             scheduler. Wrapping with LayoutAnimationConfig + skipEntering/
+             skipExiting prevents the worklet from executing entirely in dev,
+             replacing animated transitions with instant ones. Production builds
+             on real devices are NOT affected — the wrapper is a no-op there. */}
+        <LayoutAnimationConfig
+          skipEntering={__DEV__ && Platform.OS === 'android'}
+          skipExiting={__DEV__ && Platform.OS === 'android'}
+        >
         <Stack screenOptions={{ 
           headerShown: false, 
           animation: 'none',
@@ -446,6 +411,7 @@ function RootLayout() {
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />
         </Stack>
+        </LayoutAnimationConfig>
         </ErrorBoundary>
     </GestureHandlerRootView>
     </SafeAreaProvider>

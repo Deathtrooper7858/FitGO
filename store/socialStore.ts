@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import * as FileSystem from 'expo-file-system/legacy';
+import * as FileSystem from 'expo-file-system';
 import { decode } from 'base64-arraybuffer';
 import { supabase } from '../services/supabase';
 import { triggerInstantNotification } from '../services/notifications';
@@ -933,7 +933,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         .from('direct_messages')
         .select('*, sender:sender_id(id, name, avatar_url, name_color, is_pro)')
         .eq('receiver_id', userId)
-        .or('content.ilike.%código de invitación:%,content.ilike.%invite code:%,content.ilike.%invitation code:%,content.ilike.%squad invite:%')
+        .or('content.ilike.%#INV-%,content.ilike.%código de invitación:%,content.ilike.%invite code:%,content.ilike.%invitation code:%,content.ilike.%squad invite:%')
         .order('created_at', { ascending: false });
         
       if (error) throw error;

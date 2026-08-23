@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
   ScrollView, Alert, ActivityIndicator,
@@ -8,7 +8,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  ChevronLeft, AlertCircle
+  ChevronLeft, AlertCircle, ArrowRight, ShieldCheck
 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Spacing } from '../constants';
@@ -25,13 +25,12 @@ import {
   DietaryRestrictionsStep, MedicalConditionsStep, MedicationsStep,
   DietTypeStep, DietStep, PersonalizationStep, TermsStep, ProjectionStep
 } from '../components/onboarding';
-import { STEPS, Step, OnboardingData, FOOD_CATEGORIES } from '../components/onboarding/constants';
+import { STEPS, OnboardingData, FOOD_CATEGORIES } from '../components/onboarding/constants';
 
 // ─── Main Onboarding Screen ────────────────────────────────────────────────────
 export default function OnboardingScreen() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const { theme } = useSettingsStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [data, setData]               = useState<Partial<OnboardingData>>({
     availableFoods: [],
@@ -46,12 +45,12 @@ export default function OnboardingScreen() {
   });
   const [saving, setSaving]           = useState(false);
   const [error, setError]             = useState<string | null>(null);
-  const { setProfile, profile }       = useAuthStore();
+  const { setProfile }              = useAuthStore();
   const { setMassUnit, setLengthUnit, setPremiumColor } = useSettingsStore();
 
   useEffect(() => {
     setPremiumColor(null);
-  }, []);
+  }, [setPremiumColor]);
 
   const [alert, setAlert] = useState<{
     visible: boolean;
@@ -112,9 +111,9 @@ export default function OnboardingScreen() {
 
   const stepId = STEPS[currentStep];
 
-  const updateData = (partial: Partial<OnboardingData>) => {
+  const updateData = useCallback((partial: Partial<OnboardingData>) => {
     setData((prev) => ({ ...prev, ...partial }));
-  };
+  }, []);
 
   const canProceed = () => {
     if (stepId === 'goal')     return !!data.goal;
@@ -124,9 +123,9 @@ export default function OnboardingScreen() {
     }
     if (stepId === 'activity') return !!data.activityLevel;
     if (stepId === 'lifestyle') return !!data.lifestyle;
-    if (stepId === 'dietaryRestrictions') return !!data.dietaryRestrictions;
-    if (stepId === 'medicalConditions') return !!data.medicalConditions;
-    if (stepId === 'medications') return !!data.medicationsSupplements;
+    if (stepId === 'dietaryRestrictions') return true; // optional step
+    if (stepId === 'medicalConditions') return true;
+    if (stepId === 'medications') return true;
     if (stepId === 'dietType') return !!data.dietType;
     if (stepId === 'diet') {
       const cur = data.availableFoods ?? [];
@@ -203,7 +202,7 @@ export default function OnboardingScreen() {
       if (d.dietType === 'keto')         macroRatio = { protein: 0.25, carbs: 0.05, fat: 0.7 };
       if (d.dietType === 'low_fat')      macroRatio = { protein: 0.3, carbs: 0.55, fat: 0.15 };
 
-      const { targetCalories, protein, carbs, fat } = calculateMacros(tdee, d.goal);
+      const { targetCalories } = calculateMacros(tdee, d.goal);
       const finalProtein = Math.round((targetCalories * macroRatio.protein) / 4);
       const finalCarbs = Math.round((targetCalories * macroRatio.carbs) / 4);
       const finalFat = Math.round((targetCalories * macroRatio.fat) / 9);
@@ -275,7 +274,7 @@ export default function OnboardingScreen() {
       setLengthUnit(isFt ? 'ft' : 'cm');
 
       setProfile(profileData);
-      router.replace('/(tabs)/dashboard');
+      router.replace('/(tabs)/tracker');
     } catch (err) {
       console.error('[Onboarding] Error:', err);
       Alert.alert(t('common.error'), t('profile.updateFailed'));
@@ -284,19 +283,37 @@ export default function OnboardingScreen() {
     }
   };
 
-  const stepComponents: Record<Step, React.ReactNode> = {
-    goal:     <GoalStep     value={data} onChange={updateData} />,
-    stats:    <StatsStep    value={data} onChange={updateData} />,
-    activity: <ActivityStep value={data} onChange={updateData} />,
-    lifestyle: <LifestyleStep value={data} onChange={updateData} />,
-    dietaryRestrictions: <DietaryRestrictionsStep value={data} onChange={updateData} />,
-    medicalConditions:   <MedicalConditionsStep value={data} onChange={updateData} />,
-    medications:         <MedicationsStep value={data} onChange={updateData} />,
-    dietType: <DietTypeStep value={data} onChange={updateData} />,
-    diet:     <DietStep     value={data} onChange={updateData} />,
-    personalization: <PersonalizationStep value={data} onChange={updateData} />,
-    terms: <TermsStep value={data} onChange={updateData} />,
-    projection: <ProjectionStep value={data} onChange={updateData} />,
+  // Only render the ACTIVE step — never instantiate all 12 at once
+  const activeStepComponent = useMemo(() => {
+    const props = { value: data, onChange: updateData };
+    switch (stepId) {
+      case 'goal':                 return <GoalStep                {...props} />;
+      case 'stats':                return <StatsStep               {...props} />;
+      case 'activity':             return <ActivityStep            {...props} />;
+      case 'lifestyle':            return <LifestyleStep           {...props} />;
+      case 'dietaryRestrictions':  return <DietaryRestrictionsStep {...props} />;
+      case 'medicalConditions':    return <MedicalConditionsStep   {...props} />;
+      case 'medications':          return <MedicationsStep         {...props} />;
+      case 'dietType':             return <DietTypeStep            {...props} />;
+      case 'diet':                 return <DietStep                {...props} />;
+      case 'personalization':      return <PersonalizationStep     {...props} />;
+      case 'terms':                return <TermsStep               {...props} />;
+      case 'projection':           return <ProjectionStep          {...props} />;
+      default:                     return null;
+    }
+  }, [stepId, data, updateData]);
+
+  const getFooterSecurityText = () => {
+    if (currentStep === 0) {
+      return t('onboarding.securityGoal', 'Your data is secure and protected.');
+    }
+    if (currentStep >= 1 && currentStep <= 3) {
+      return t('onboarding.securityStats', 'Your information stays private. You can update or remove your information anytime.');
+    }
+    if (currentStep === 4) {
+      return t('onboarding.securityDiet', 'You can change this later');
+    }
+    return t('onboarding.securityGeneral', 'Your data is encrypted and completely private.');
   };
 
   return (
@@ -326,19 +343,33 @@ export default function OnboardingScreen() {
       <View style={s.header}>
         <View style={s.headerTop}>
           {currentStep > 0 ? (
-            <TouchableOpacity style={s.backIconBtn} onPress={() => setCurrentStep((s) => s - 1)}>
-              <ChevronLeft size={28} color={colors.textPrimary} />
+            <TouchableOpacity
+              style={[s.backIconBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              onPress={() => setCurrentStep((s) => s - 1)}
+              activeOpacity={0.8}
+            >
+              <ChevronLeft size={24} color={colors.textPrimary} />
             </TouchableOpacity>
-          ) : <View style={{ width: 40 }} />}
+          ) : (
+            <View style={{ width: 42 }} />
+          )}
 
           <View style={s.progressWrap}>
             {STEPS.map((_, i) => (
               <View
                 key={i}
-                style={[s.progressSegment, { backgroundColor: colors.border }, i <= currentStep && { backgroundColor: colors.primary }]}
+                style={[
+                  s.progressSegment,
+                  { backgroundColor: colors.border + '60' },
+                  i <= currentStep && { backgroundColor: '#8B5CF6' }
+                ]}
               />
             ))}
           </View>
+
+          <Text style={s.stepCountText}>
+            {`${currentStep + 1} of ${STEPS.length}`}
+          </Text>
 
           <TouchableOpacity
             style={s.exitBtnSmall}
@@ -369,7 +400,7 @@ export default function OnboardingScreen() {
           keyboardShouldPersistTaps="always"
           showsVerticalScrollIndicator={false}
         >
-          {stepComponents[stepId]}
+          {activeStepComponent}
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -380,21 +411,32 @@ export default function OnboardingScreen() {
           disabled={!canProceed() || saving}
           activeOpacity={0.85}
         >
-          <LinearGradient colors={[colors.primary, '#4338CA']} style={s.nextGrad}>
+          <LinearGradient colors={['#7C5CFC', '#4F46E5']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.nextGrad}>
             {saving ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <ActivityIndicator color="#fff" />
-                <Text style={s.nextText}>{currentStep === STEPS.length - 1 ? t('onboarding.creatingPlan', 'Creating plan...') : t('common.loading', 'Loading...')}</Text>
+                <Text style={s.nextText}>
+                  {currentStep === STEPS.length - 1 ? t('onboarding.creatingPlan', 'Creating plan...') : t('common.loading', 'Loading...')}
+                </Text>
               </View>
             ) : (
               <View style={s.nextContent}>
                 <Text style={s.nextText}>
-                {currentStep === STEPS.length - 1 ? t('onboarding.createPlan') : t('onboarding.continue')}
-              </Text>
+                  {currentStep === STEPS.length - 1 ? t('onboarding.createPlan') : t('onboarding.continue', 'Continue')}
+                </Text>
+                <ArrowRight size={20} color="#FFF" strokeWidth={2.5} />
               </View>
             )}
           </LinearGradient>
         </TouchableOpacity>
+
+        {/* Security & Privacy footnote */}
+        <View style={s.securityRow}>
+          <ShieldCheck size={16} color="#10B981" />
+          <Text style={[s.securityText, { color: colors.textSecondary }]}>
+            {getFooterSecurityText()}
+          </Text>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -402,37 +444,58 @@ export default function OnboardingScreen() {
 
 const s = StyleSheet.create({
   safe:                 { flex: 1 },
-  header:               { paddingTop: 14, paddingHorizontal: Spacing.base, paddingBottom: 10 },
-  headerTop:            { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  header:               { paddingTop: 12, paddingHorizontal: Spacing.base, paddingBottom: 10 },
+  headerTop:            { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
   backIconBtn:          {
-    width: 40, height: 40,
+    width: 42, height: 42,
     justifyContent: 'center', alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 14,
+    borderWidth: 1.5,
   },
-  progressWrap:         { flex: 1, flexDirection: 'row', gap: 5 },
+  progressWrap:         { flex: 1, flexDirection: 'row', gap: 4 },
   progressSegment:      {
     flex: 1,
-    height: 5,
-    borderRadius: 4,
+    height: 4.5,
+    borderRadius: 3,
+  },
+  stepCountText:        {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#8B5CF6',
+    marginRight: 4,
   },
   scroll:               { flex: 1 },
-  content:              { padding: Spacing.base, paddingTop: 32, paddingBottom: 40 },
-  footer:               { padding: Spacing.base, paddingBottom: 32 },
+  content:              { padding: Spacing.base, paddingTop: 16, paddingBottom: 32 },
+  footer:               { paddingHorizontal: Spacing.base, paddingBottom: 24, gap: 14 },
   nextBtn:              {
     borderRadius: 22,
     overflow: 'hidden',
-    elevation: 10,
+    elevation: 8,
     shadowColor: '#7C5CFC',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.4,
     shadowRadius: 14
   },
   nextBtnDisabled:      { opacity: 0.45 },
-  nextGrad:             { padding: 19, alignItems: 'center' },
-  nextContent:          { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  nextText:             { color: '#fff', fontWeight: '900', fontSize: 18, letterSpacing: 0.4 },
-  exitBtnSmall:         { padding: 4 },
-  exitText:             { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1.2 },
+  nextGrad:             { paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
+  nextContent:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  nextText:             { color: '#fff', fontWeight: '800', fontSize: 17, letterSpacing: 0.3 },
+  exitBtnSmall:         { paddingVertical: 6, paddingHorizontal: 4 },
+  exitText:             { fontSize: 12, fontWeight: '700', textTransform: 'capitalize' },
+  securityRow:          {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+  },
+  securityText:         {
+    fontSize: 12,
+    fontWeight: '500',
+    textAlign: 'center',
+    lineHeight: 16,
+    opacity: 0.8,
+  },
   errorContainer:       {
     position: 'absolute',
     top: 60,

@@ -8,28 +8,54 @@
       "developmentClient": true,
       "distribution": "internal",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDevelopmentDebug"
       },
       "ios": {
         "simulator": true
       },
+      "cache": {
+        "key": "development-v1",
+        "paths": [
+          "node_modules",
+          "android/.gradle",
+          "~/.gradle/caches",
+          "~/.gradle/wrapper"
+        ]
+      },
       "env": {
         "APP_VARIANT": "development",
-        "EAS_SKIP_AUTO_FINGERPRINT": "1"
+        "EAS_SKIP_AUTO_FINGERPRINT": "1",
+        "GRADLE_OPTS": "-Xmx4096m -XX:+UseG1GC",
+        "reactNativeArchitectures": "arm64-v8a"
       }
     },
     "preview": {
       "distribution": "internal",
       "channel": "preview",
+      "resourceClass": "default",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleProductionRelease"
       },
       "ios": {
         "simulator": true
       },
+      "cache": {
+        "key": "preview-v1",
+        "paths": [
+          "node_modules",
+          "android/.gradle",
+          "~/.gradle/caches",
+          "~/.gradle/wrapper"
+        ]
+      },
       "env": {
+        "APP_VARIANT": "production",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true",
-        "EAS_SKIP_AUTO_FINGERPRINT": "1"
+        "EAS_SKIP_AUTO_FINGERPRINT": "1",
+        "GRADLE_OPTS": "-Xmx4096m -XX:+UseG1GC",
+        "reactNativeArchitectures": "arm64-v8a"
       }
     },
     "production": {
@@ -37,11 +63,26 @@
       "channel": "production",
       "credentialsSource": "local",
       "node": "22.14.0",
+      "resourceClass": "default",
+      "android": {
+        "buildType": "app-bundle",
+        "gradleCommand": ":app:bundleProductionRelease"
+      },
+      "cache": {
+        "key": "production-v1",
+        "paths": [
+          "node_modules",
+          "android/.gradle",
+          "~/.gradle/caches",
+          "~/.gradle/wrapper"
+        ]
+      },
       "env": {
         "APP_VARIANT": "production",
         "NODE_OPTIONS": "--max-old-space-size=4096",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true",
-        "EAS_SKIP_AUTO_FINGERPRINT": "1"
+        "EAS_SKIP_AUTO_FINGERPRINT": "1",
+        "GRADLE_OPTS": "-Xmx6144m -XX:+UseG1GC"
       }
     }
   },
@@ -49,4 +90,3 @@
     "production": {}
   }
 }
-

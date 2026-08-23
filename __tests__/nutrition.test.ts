@@ -1,5 +1,6 @@
 import { recalculateStreak } from '../store/nutrition/utils';
 import { selectDailyTotals } from '../store/nutrition/selectors';
+import { getLocalDateString, addDays } from '../utils/date';
 
 describe('recalculateStreak', () => {
   it('returns 0 for empty activeDays', () => {
@@ -7,9 +8,9 @@ describe('recalculateStreak', () => {
   });
 
   it('counts consecutive days backwards', () => {
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-    const twoDaysAgo = new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0];
+    const today = getLocalDateString();
+    const yesterday = addDays(today, -1);
+    const twoDaysAgo = addDays(today, -2);
 
     expect(recalculateStreak({ [today]: true, [yesterday]: true, [twoDaysAgo]: true })).toBe(3);
   });

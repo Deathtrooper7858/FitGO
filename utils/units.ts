@@ -60,7 +60,7 @@ export const convertTemp = (value: number, from: TempUnit, to: TempUnit): number
   return value;
 };
 
-export const formatValue = (value: number, precision: number = 1): string => {
-  if (value === undefined || value === null) return '--';
+export const formatValue = (value: number | undefined | null, precision: number = 1): string => {
+  if (value === undefined || value === null || !Number.isFinite(value)) return '--';
   return value.toFixed(precision);
 };

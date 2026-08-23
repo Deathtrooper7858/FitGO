@@ -118,4 +118,10 @@ describe('formatValue', () => {
   it('handles zero', () => {
     expect(formatValue(0)).toBe('0.0');
   });
+
+  it('handles NaN and Infinity', () => {
+    expect(formatValue(NaN)).toBe('--');
+    expect(formatValue(Infinity)).toBe('--');
+    expect(formatValue(-Infinity)).toBe('--');
+  });
 });

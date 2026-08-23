@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import Purchases, { LOG_LEVEL, PurchasesOffering } from 'react-native-purchases';
+import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 import Constants from 'expo-constants';
 
 const API_KEYS = {
@@ -31,27 +31,30 @@ export class RevenueCatService {
     }
 
     try {
-      Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+      Purchases.setLogLevel(LOG_LEVEL.WARN);
 
       const apiKey = Platform.OS === 'ios' ? API_KEYS.apple : API_KEYS.google;
 
-      if (apiKey.startsWith('test_')) {
-        if (__DEV__) console.log('[RevenueCat] Using placeholder API key. Ensure you have set the correct keys in .env');
+      if (!apiKey) {
+        if (__DEV__) console.log('[RevenueCat] No API key provided in environment.');
+        return;
       }
 
       Purchases.configure({ apiKey, appUserID: userId });
       
       if (__DEV__) console.log('[RevenueCat] Initialized successfully');
     } catch (e: any) {
-      if (__DEV__) console.log('[RevenueCat] Failed to initialize:', e.message);
+      if (__DEV__) console.log('[RevenueCat] Failed to initialize:', e?.message);
     }
   }
 
   async login(userId: string) {
     try {
       await Purchases.logIn(userId);
-    } catch (e) {
-      console.error('Error logging in to RevenueCat', e);
+    } catch (e: any) {
+      if (!e?.message?.includes('BILLING_UNAVAILABLE')) {
+        console.warn('[RevenueCat] Login warning:', e?.message);
+      }
     }
   }
 
@@ -59,7 +62,7 @@ export class RevenueCatService {
     try {
       await Purchases.logOut();
     } catch (e) {
-      console.error('Error logging out of RevenueCat', e);
+      console.warn('[RevenueCat] Logout warning:', e);
     }
   }
 
@@ -67,8 +70,10 @@ export class RevenueCatService {
     try {
       const offerings = await Purchases.getOfferings();
       return offerings.current;
-    } catch (e) {
-      console.error('Error fetching offerings', e);
+    } catch (e: any) {
+      if (!e?.message?.includes('BILLING_UNAVAILABLE')) {
+        console.warn('[RevenueCat] Offerings warning:', e?.message);
+      }
       return null;
     }
   }
@@ -77,8 +82,10 @@ export class RevenueCatService {
     try {
       const customerInfo = await Purchases.getCustomerInfo();
       return !!customerInfo.entitlements.active[ENTITLEMENT_ID];
-    } catch (e) {
-      console.error('Error checking entitlement', e);
+    } catch (e: any) {
+      if (!e?.message?.includes('BILLING_UNAVAILABLE')) {
+        console.warn('[RevenueCat] Check entitlement warning:', e?.message);
+      }
       return false;
     }
   }

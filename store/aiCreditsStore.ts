@@ -52,8 +52,8 @@ export const useAICreditsStore = create<AICreditsState>()(
        * Pro users always return true without consuming.
        */
       consumeCredit: () => {
-        const { creditsLeft, isProUser, resetIfNewDay } = get();
-        resetIfNewDay();
+        get().resetIfNewDay();
+        const { creditsLeft, isProUser } = get();
 
         if (isProUser) return true;
 
@@ -62,8 +62,9 @@ export const useAICreditsStore = create<AICreditsState>()(
           return false;
         }
 
-        set({ creditsLeft: Math.max(0, creditsLeft - 1) });
-        console.log('[AICredits] Credit consumed, remaining:', creditsLeft - 1);
+        const remaining = Math.max(0, creditsLeft - 1);
+        set({ creditsLeft: remaining });
+        console.log('[AICredits] Credit consumed, remaining:', remaining);
         return true;
       },
 
@@ -71,6 +72,7 @@ export const useAICreditsStore = create<AICreditsState>()(
        * Adds credits (after watching a rewarded ad).
        */
       rechargeCredits: (amount = AD_CONFIG.rewardedAdCredits) => {
+        get().resetIfNewDay();
         const { creditsLeft, totalAdsWatched } = get();
         if (totalAdsWatched >= 3) {
           console.log('[AICredits] Max daily ads reached.');

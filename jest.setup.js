@@ -18,3 +18,44 @@ jest.mock('expo-secure-store', () => ({
   setItemAsync: jest.fn(() => Promise.resolve()),
   deleteItemAsync: jest.fn(() => Promise.resolve()),
 }));
+
+// Mock react-native-google-mobile-ads
+jest.mock('react-native-google-mobile-ads', () => ({
+  TestIds: {
+    BANNER: 'ca-app-pub-3940256099942544/6300978111',
+    INTERSTITIAL: 'ca-app-pub-3940256099942544/1033173712',
+    REWARDED: 'ca-app-pub-3940256099942544/5224354917',
+    REWARDED_INTERSTITIAL: 'ca-app-pub-3940256099942544/5354046379',
+    APP_OPEN: 'ca-app-pub-3940256099942544/3419835294',
+  },
+  AdEventType: {
+    LOADED: 'loaded',
+    ERROR: 'error',
+    OPENED: 'opened',
+    CLOSED: 'closed',
+  },
+  RewardedAdEventType: {
+    LOADED: 'loaded',
+    EARNED_REWARD: 'earned_reward',
+  },
+  RewardedAd: {
+    createForAdRequest: jest.fn(() => ({
+      load: jest.fn(),
+      show: jest.fn(),
+      addAdEventListener: jest.fn(() => jest.fn()),
+      loaded: true,
+    })),
+  },
+  InterstitialAd: {
+    createForAdRequest: jest.fn(() => ({
+      load: jest.fn(),
+      show: jest.fn(),
+      addAdEventListener: jest.fn(() => jest.fn()),
+      loaded: true,
+    })),
+  },
+  MobileAds: jest.fn(() => ({
+    initialize: jest.fn(() => Promise.resolve()),
+  })),
+}));
+

@@ -37,10 +37,10 @@ export const useProgressStore = create<ProgressState>()(
       name: 'ff-progress',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (s) => ({ photos: s.photos, evaluations: s.evaluations }),
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => (_state, error) => {
         // Mark store as hydrated once AsyncStorage has finished loading
-        if (state) {
-          state._hydrated = true;
+        if (!error) {
+          useProgressStore.setState({ _hydrated: true });
         }
       },
     }

@@ -5,7 +5,7 @@ import { getLocalDateString } from '../../utils/date';
 import { supabase } from '../../services/supabase';
 import { useAuthStore } from '../authStore';
 import { useToastStore } from '../toastStore';
-import { useLeagueStore, getStreakMultiplier } from '../leagueStore';
+import { useLeagueStore } from '../leagueStore';
 import { NotificationTriggers } from '../../utils/notificationTriggers';
 import i18n from '../../i18n';
 import { memoRecalculateStreak } from './utils';
@@ -134,11 +134,7 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
           void (async () => {
             try {
               const ls = useLeagueStore.getState();
-              const multiplier = getStreakMultiplier(ls.myStreak);
-              const finalPts = Math.round(10 * multiplier);
-              useLeagueStore.setState((state: any) => ({
-                myPoints: state.myPoints + finalPts, mySquadPoints: state.mySquadPoints + finalPts, todayPointsEarned: state.todayPointsEarned + finalPts,
-              }));
+              await ls.awardPoints(profile.id, 10, 'meal_log');
               const totals = selectDailyTotals(get());
               if (profile.targetCalories && profile.macros) {
                 await ls.checkAndAwardMacroPoints(profile.id,

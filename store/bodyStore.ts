@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../services/supabase';
-import { SecureStorage } from '../utils/storage';
 import i18n from '../i18n';
 import { reportError } from '../utils/errorReporter';
 import { BodyMeasurement } from './types';
@@ -167,7 +167,7 @@ export const useBodyStore = create<BodyState>()(
     }),
     {
       name: 'ff-body-measurements',
-      storage: createJSONStorage(() => SecureStorage),
+      storage: createJSONStorage(() => AsyncStorage),
     }
   )
 );

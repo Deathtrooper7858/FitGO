@@ -51,9 +51,10 @@ const AUDIO_MODEL  = 'whisper-large-v3';
  */
 
 // Helper to use Supabase Edge Function as a proxy
-async function fetchGroq(payload: any, retries = 2): Promise<any> {
+async function fetchGroq(payload: any): Promise<any> {
+  let timerId: any = null;
   const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error('AI Service Error: Request timed out. Please try again.')), 45000);
+    timerId = setTimeout(() => reject(new Error('AI Service Error: Request timed out. Please try again.')), 45000);
   });
 
   const doFetch = async (): Promise<any> => {
@@ -100,7 +101,11 @@ async function fetchGroq(payload: any, retries = 2): Promise<any> {
     }
   };
 
-  return Promise.race([doFetch(), timeoutPromise]);
+  try {
+    return await Promise.race([doFetch(), timeoutPromise]);
+  } finally {
+    if (timerId) clearTimeout(timerId);
+  }
 }
 
 // ─── Coach system prompt ──────────────────────────────────────────────────────

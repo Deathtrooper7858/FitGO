@@ -1,10 +1,13 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Keyboard, StyleSheet } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Check } from 'lucide-react-native';
+import { Check, Pencil } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../hooks/useTheme';
 import { step, OnboardingData } from './constants';
+import { FloatingHeroIcon } from './FloatingHeroIcon';
 
 interface HealthProfileStepProps {
   icon: React.ElementType;
@@ -23,7 +26,7 @@ export function HealthProfileStep({
   itemsObj,
   fieldKey,
   data,
-  onChange
+  onChange,
 }: HealthProfileStepProps) {
   const { t } = useTranslation();
   const colors = useTheme();
@@ -31,8 +34,10 @@ export function HealthProfileStep({
 
   const selected = data[fieldKey] || [];
   const predefinedKeys = Object.keys(itemsObj);
-  const customValues = selected.filter(k => !predefinedKeys.includes(k));
-  const [localCustomText, setLocalCustomText] = useState(customValues.length > 0 ? customValues[0].replace('custom:', '') : '');
+  const customValues = selected.filter((k) => !predefinedKeys.includes(k));
+  const [localCustomText, setLocalCustomText] = useState(
+    customValues.length > 0 ? customValues[0].replace('custom:', '') : ''
+  );
   const [customFocused, setCustomFocused] = useState(false);
 
   const selectedRef = useRef(selected);
@@ -40,22 +45,26 @@ export function HealthProfileStep({
   const localTextRef = useRef(localCustomText);
   localTextRef.current = localCustomText;
 
-  const toggle = useCallback((id: string) => {
-    const cur = selectedRef.current;
-    if (id === 'none') {
-      onChange({ [fieldKey]: ['none'] });
-      return;
-    }
-    const newSelection = cur.includes(id)
-      ? cur.filter(x => x !== id)
-      : [...cur.filter(x => x !== 'none'), id];
-    onChange({ [fieldKey]: newSelection });
-  }, [onChange, fieldKey]);
+  const toggle = useCallback(
+    (id: string) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      const cur = selectedRef.current;
+      if (id === 'none') {
+        onChange({ [fieldKey]: ['none'] });
+        return;
+      }
+      const newSelection = cur.includes(id)
+        ? cur.filter((x) => x !== id)
+        : [...cur.filter((x) => x !== 'none'), id];
+      onChange({ [fieldKey]: newSelection });
+    },
+    [onChange, fieldKey]
+  );
 
   const commitCustomText = useCallback(() => {
     const cur = selectedRef.current;
     const text = localTextRef.current;
-    const base = cur.filter(k => predefinedKeys.includes(k) && k !== 'none');
+    const base = cur.filter((k) => predefinedKeys.includes(k) && k !== 'none');
     if (text.trim() === '') {
       onChange({ [fieldKey]: [...base] });
     } else {
@@ -63,134 +72,172 @@ export function HealthProfileStep({
     }
   }, [onChange, fieldKey, predefinedKeys]);
 
+  const isCustomActive = localCustomText.length > 0 || customFocused;
+
   return (
     <View style={step.container}>
       <View style={step.headerSection}>
-        <View style={[step.targetCircle, { backgroundColor: colors.primary + '15', shadowColor: colors.primary }]}>
-          <Icon size={36} color={colors.primary} />
-        </View>
+        <FloatingHeroIcon
+          icon={<Icon size={44} color="#8B5CF6" />}
+          color="#8B5CF6"
+          glowColor="#7C5CFC"
+        />
         <Text style={[step.title, { color: colors.textPrimary }]}>{t(titleKey)}</Text>
         <Text style={[step.sub, { color: colors.textSecondary }]}>{t(subKey)}</Text>
       </View>
 
-      <View style={{ gap: 12 }}>
-        {Object.entries(itemsObj).map(([key, label]) => {
+      <View style={{ gap: 10 }}>
+        {Object.entries(itemsObj).map(([key, label], index) => {
           const isActive = selected.includes(key);
           return (
-            <View key={key} style={{ gap: 8 }}>
+            <Animated.View
+              key={key}
+              entering={FadeInUp.delay(60 + index * 50).springify().damping(18)}
+            >
               <TouchableOpacity
                 style={[
                   step.optionCard,
-                  { backgroundColor: colors.surface, borderColor: colors.border, paddingVertical: 14, paddingHorizontal: 16 },
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border,
+                    paddingVertical: 14,
+                    paddingHorizontal: 16,
+                  },
                   isActive && {
                     borderColor: colors.primary,
                     shadowColor: colors.primary,
                     shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.15,
+                    shadowOpacity: 0.2,
                     shadowRadius: 8,
-                    elevation: 3
-                  }
+                    elevation: 4,
+                  },
                 ]}
                 onPress={() => toggle(key)}
-                activeOpacity={0.8}
+                activeOpacity={0.82}
               >
                 {isActive && (
                   <LinearGradient
-                    colors={[colors.primary + '14', colors.primary + '03']}
+                    colors={[colors.primary + '18', colors.primary + '04']}
                     style={StyleSheet.absoluteFill}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                   />
                 )}
-                <Text style={[
-                  step.optionTitle,
-                  { color: colors.textPrimary, flex: 1, fontSize: 16 },
-                  isActive && { color: colors.primary, fontWeight: '800' }
-                ]}>
+                <Text
+                  style={[
+                    step.optionTitle,
+                    { color: colors.textPrimary, flex: 1, fontSize: 15, marginBottom: 0 },
+                    isActive && { color: colors.primary, fontWeight: '800' },
+                  ]}
+                >
                   {label}
                 </Text>
 
-                <View style={[
-                  step.radioOuter,
-                  {
-                    borderColor: isActive ? colors.primary : colors.border,
-                    borderRadius: 8,
-                    backgroundColor: isActive ? colors.primary : 'transparent',
-                    borderWidth: 2
-                  }
-                ]}>
+                <View
+                  style={[
+                    step.radioOuter,
+                    {
+                      borderColor: isActive ? colors.primary : colors.border,
+                      backgroundColor: isActive ? colors.primary : 'transparent',
+                      borderWidth: 2,
+                    },
+                  ]}
+                >
                   {isActive && <Check size={14} color="#fff" strokeWidth={4} />}
                 </View>
               </TouchableOpacity>
-            </View>
+            </Animated.View>
           );
         })}
 
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => { inputRef.current?.focus(); }}
-          style={[
-            step.optionCard,
-            { backgroundColor: colors.surface, borderColor: colors.border, paddingVertical: 14, flexDirection: 'column', alignItems: 'stretch' },
-            (localCustomText.length > 0 || customFocused) && {
-              borderColor: colors.primary,
-              shadowColor: colors.primary,
-              shadowOpacity: 0.1,
-              shadowRadius: 10,
-              elevation: 2
-            }
-          ]}
+        <Animated.View
+          entering={FadeInUp.delay(60 + Object.keys(itemsObj).length * 50).springify().damping(18)}
         >
-          {localCustomText.length > 0 && (
-            <LinearGradient
-              colors={[colors.primary + '0C', colors.primary + '02']}
-              style={StyleSheet.absoluteFill}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 0, y: 1 }}
+          <View
+            style={[
+              step.optionCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                padding: 14,
+                flexDirection: 'column',
+                alignItems: 'stretch',
+              },
+              isCustomActive && {
+                borderColor: colors.primary,
+                shadowColor: colors.primary,
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+                elevation: 4,
+              },
+            ]}
+          >
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+                marginBottom: isCustomActive ? 12 : 0,
+              }}
+              onPress={() => inputRef.current?.focus()}
+              activeOpacity={0.8}
+            >
+              <Pencil size={18} color={isCustomActive ? colors.primary : colors.textSecondary} />
+              <Text
+                style={[
+                  step.optionTitle,
+                  { color: colors.textPrimary, flex: 1, fontSize: 15, marginBottom: 0 },
+                  isCustomActive && { color: colors.primary, fontWeight: '800' },
+                ]}
+              >
+                {t('onboarding.otherSpecify', 'Other (specify)')}
+              </Text>
+              <View
+                style={[
+                  step.radioOuter,
+                  {
+                    borderColor: isCustomActive ? colors.primary : colors.border,
+                    backgroundColor: isCustomActive ? colors.primary : 'transparent',
+                    borderWidth: 2,
+                  },
+                ]}
+              >
+                {isCustomActive && <Check size={14} color="#fff" strokeWidth={4} />}
+              </View>
+            </TouchableOpacity>
+
+            <TextInput
+              ref={inputRef}
+              style={{
+                backgroundColor: colors.background,
+                color: colors.textPrimary,
+                paddingHorizontal: 14,
+                height: 46,
+                borderRadius: 14,
+                borderWidth: 1.5,
+                borderColor: customFocused ? colors.primary : colors.border,
+                fontSize: 14,
+                fontWeight: '600',
+              }}
+              placeholder={t('onboarding.otherPlaceholder', 'Type here...')}
+              placeholderTextColor={colors.textMuted}
+              value={localCustomText}
+              onChangeText={setLocalCustomText}
+              onFocus={() => setCustomFocused(true)}
+              onBlur={() => {
+                setCustomFocused(false);
+                commitCustomText();
+              }}
+              autoCorrect={false}
+              autoCapitalize="none"
+              returnKeyType="done"
+              onSubmitEditing={() => {
+                commitCustomText();
+                Keyboard.dismiss();
+              }}
             />
-          )}
-          <Text style={[
-            step.optionTitle,
-            { color: colors.textPrimary, marginLeft: 16, marginBottom: 12, fontSize: 16 },
-            (localCustomText.length > 0 || customFocused) && { color: colors.primary, fontWeight: '800' }
-          ]}>
-            {t('onboarding.otherSpecify')}
-          </Text>
-          <TextInput
-            ref={inputRef}
-            style={{
-              backgroundColor: colors.background,
-              color: colors.textPrimary,
-              padding: 14,
-              borderRadius: 16,
-              borderWidth: 1.5,
-              borderColor: customFocused ? colors.primary : colors.border,
-              marginHorizontal: 16,
-              marginBottom: 8,
-              fontSize: 15,
-              fontWeight: '600',
-              minHeight: 48,
-            }}
-            placeholder={t('onboarding.otherPlaceholder')}
-            placeholderTextColor={colors.textMuted}
-            value={localCustomText}
-            onChangeText={setLocalCustomText}
-            onFocus={() => setCustomFocused(true)}
-            onBlur={() => {
-              setCustomFocused(false);
-              commitCustomText();
-            }}
-            autoCorrect={false}
-            autoCapitalize="none"
-            returnKeyType="done"
-            blurOnSubmit={true}
-            onSubmitEditing={() => {
-              commitCustomText();
-              Keyboard.dismiss();
-            }}
-          />
-        </TouchableOpacity>
-        <View style={{ height: 80 }} />
+          </View>
+        </Animated.View>
       </View>
     </View>
   );

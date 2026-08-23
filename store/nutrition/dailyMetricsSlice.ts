@@ -1,6 +1,7 @@
 import type { ActivityLog } from '../types';
 import { useAuthStore } from '../authStore';
 import { useToastStore } from '../toastStore';
+import { useLeagueStore } from '../leagueStore';
 import { supabase } from '../../services/supabase';
 import i18n from '../../i18n';
 import { scheduleSyncDailyMetrics } from './utils';
@@ -131,7 +132,17 @@ export function createDailyMetricsSlice(set: any, get: any): DailyMetricsSlice {
               id: activity.id, user_id: profile.id, name: activity.name, icon: activity.icon,
               calories: activity.calories, duration: activity.duration, logged_at: activity.loggedAt.split('T')[0],
             });
-            if (error) console.warn('[NutritionStore] addActivityLog Supabase sync error (offline?):', error.message);
+            if (error) {
+              console.warn('[NutritionStore] addActivityLog Supabase sync error (offline?):', error.message);
+            } else {
+              try {
+                const ls = useLeagueStore.getState();
+                await ls.awardPoints(profile.id, 50, 'activity_log');
+                await ls.fetchMySquad(profile.id);
+              } catch (e) {
+                __DEV__ && console.warn('[NutritionStore] Activity points award error:', e);
+              }
+            }
           } catch (err: any) {
             console.warn('[NutritionStore] addActivityLog network error (offline?):', err?.message);
           }

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Platform } from 'react-native';
-import Purchases, { CustomerInfo, PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
+import Purchases, { CustomerInfo, PurchasesOffering, PurchasesPackage, LOG_LEVEL } from 'react-native-purchases';
 import { supabase } from '../services/supabase';
 import { reportError, reportEvent } from '../utils/errorReporter';
 import { useAuthStore } from './authStore';
@@ -55,10 +55,11 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
           : process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID;
 
         if (!apiKey) {
-          console.warn('RevenueCat API key not found in environment variables.');
+          if (__DEV__) console.warn('RevenueCat API key not found in environment variables.');
           return;
         }
 
+        Purchases.setLogLevel(LOG_LEVEL.WARN);
         await Purchases.configure({ apiKey });
         isConfigured = true;
 
@@ -71,19 +72,32 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       // Identify user if logged in and it's a new user ID
       if (userId && userId !== currentUserId) {
         currentUserId = userId;
-        const { customerInfo } = await Purchases.logIn(userId);
-        get().updateCustomerInfo(customerInfo);
+        try {
+          const { customerInfo } = await Purchases.logIn(userId);
+          get().updateCustomerInfo(customerInfo);
+        } catch (loginErr: any) {
+          if (
+            loginErr?.message?.includes('BILLING_UNAVAILABLE') ||
+            loginErr?.code === 'PurchaseNotAllowedError' ||
+            loginErr?.message?.includes('Billing is not available')
+          ) {
+            if (__DEV__) console.log('[PurchaseStore] Billing service unavailable on this device/emulator.');
+          } else {
+            console.warn('[PurchaseStore] Purchases.logIn warning:', loginErr?.message);
+          }
+        }
       } else if (!userId) {
-        // If logged out
         currentUserId = null;
       }
-    } catch (err) {
-      reportError(err, { module: 'PurchaseStore', action: 'initialize', severity: 'error' });
+    } catch (err: any) {
+      if (!err?.message?.includes('BILLING_UNAVAILABLE')) {
+        reportError(err, { module: 'PurchaseStore', action: 'initialize', severity: 'error' });
+      }
     }
   },
 
   updateCustomerInfo: (info) => {
-    const isProActive = typeof info.entitlements.active['pro'] !== 'undefined';
+    const isProActive = typeof info?.entitlements?.active?.['pro'] !== 'undefined';
     set({ customerInfo: info, isPro: isProActive });
 
     // Sync state locally with authStore and database
@@ -97,13 +111,11 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       console.log('[PurchaseStore] RevenueCat entitlement active. Upgrading in database...');
       get().grantPro();
     } else if (!isProActive && profile.isPro && !isPrivileged) {
-      // If we already know the trial is active in our store state, do not downgrade
       if (get().isTrialActive) {
         console.log('[PurchaseStore] RevenueCat inactive, but local trial is active. Skipping downgrade.');
         return;
       }
 
-      // Fetch from database to ensure we aren't in a race condition during initialization
       (async () => {
         try {
           const { data, error } = await supabase
@@ -114,14 +126,12 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
 
           if (error) throw error;
 
-          // Re-check role from DB — may have been updated since profile loaded
           const dbRole = data?.role ?? 'user';
           if (['owner', 'super_admin', 'admin'].includes(dbRole)) {
             console.log('[PurchaseStore] DB role is privileged. Skipping downgrade.');
             return;
           }
 
-          // Check if premium subscription is still valid in DB
           if (data?.pro_expires_at) {
             const expires = new Date(data.pro_expires_at);
             if (expires > new Date()) {
@@ -163,15 +173,19 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     try {
       set({ isLoading: true });
       const offerings = await Purchases.getOfferings();
-      if (offerings.current !== null) {
+      if (offerings && offerings.current !== null) {
         set({ offering: offerings.current, isLoading: false });
       } else {
         set({ offering: null, isLoading: false });
       }
     } catch (err: any) {
-      // Ignore ConfigurationError which happens when there are no products in RevenueCat yet
-      if (err?.code === 'ConfigurationError' || err?.message?.includes('ConfigurationError')) {
-        console.log('[PurchaseStore] RevenueCat offerings not configured yet. Skipping...');
+      if (
+        err?.code === 'ConfigurationError' ||
+        err?.message?.includes('ConfigurationError') ||
+        err?.message?.includes('BILLING_UNAVAILABLE') ||
+        err?.code === 'PurchaseNotAllowedError'
+      ) {
+        if (__DEV__) console.log('[PurchaseStore] RevenueCat offerings not available or billing unavailable.');
       } else {
         reportError(err, { module: 'PurchaseStore', action: 'fetchOfferings' });
       }
@@ -185,8 +199,10 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     try {
       const info = await Purchases.getCustomerInfo();
       get().updateCustomerInfo(info);
-    } catch (err) {
-      reportError(err, { module: 'PurchaseStore', action: 'refreshStatus' });
+    } catch (err: any) {
+      if (!err?.message?.includes('BILLING_UNAVAILABLE')) {
+        reportError(err, { module: 'PurchaseStore', action: 'refreshStatus' });
+      }
     }
   },
 
@@ -198,14 +214,11 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       const { customerInfo } = await Purchases.purchasePackage(pkg);
       get().updateCustomerInfo(customerInfo);
       
-      // Force grantPro in test environment ONLY with test API keys (NOT __DEV__ to prevent abuse)
-      const isProActive = typeof customerInfo.entitlements.active['pro'] !== 'undefined';
+      const isProActive = typeof customerInfo?.entitlements?.active?.['pro'] !== 'undefined';
       const apiKey = Platform.OS === 'ios'
         ? process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_IOS
         : process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID;
       
-      // ONLY grant Pro in sandbox/test environments (test_ prefix), NEVER based on __DEV__
-      // __DEV__ can be true in development builds distributed to testers, which would be abuse
       if (!isProActive && apiKey?.startsWith('test_')) {
         console.log('[PurchaseStore] Test environment detected. Explicitly granting Pro status...');
         await get().grantPro();
@@ -251,7 +264,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       
       set({ isPro: true, isLoading: false });
 
-      // If user is owner/admin/super_admin, keep their role — just mark isPro
       const isPrivileged = ['owner', 'super_admin', 'admin'].includes(profile.role ?? '');
       if (isPrivileged) {
         useAuthStore.getState().setProfile({ ...profile, isPro: true });
@@ -272,7 +284,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     try {
       set({ isLoading: true });
 
-      // Read current role from DB to be safe
       const { data: dbUser } = await supabase
         .from('users')
         .select('role')
@@ -283,7 +294,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       const isPrivileged = ['owner', 'super_admin', 'admin'].includes(dbRole);
 
       if (isPrivileged) {
-        // Privileged roles: only clear Pro flag & dates, keep role
         await supabase
           .from('users')
           .update({ is_pro: false, pro_will_renew: false, pro_expires_at: null })
@@ -302,7 +312,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       }
       
       set({ isPro: false, isLoading: false });
-      // Clear nameColor so trial/pro perks are fully revoked locally
       useAuthStore.getState().setProfile({ ...profile, isPro: false, role: 'user', nameColor: undefined });
       useSettingsStore.getState().setPremiumColor(null);
       await supabase.auth.updateUser({ data: { name_color: null } });
@@ -316,18 +325,16 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     const profile = useAuthStore.getState().profile;
     if (!profile?.id) return false;
 
-    // Privileged roles are always considered Pro
     const isPrivileged = ['owner', 'super_admin', 'admin'].includes(profile.role ?? '');
     if (isPrivileged) {
       set({ isPro: true });
       return true;
     }
 
-    // Check with RevenueCat first if on mobile device
     if (Platform.OS !== 'web' && isConfigured) {
       try {
         const info = await Purchases.getCustomerInfo();
-        const isProActive = typeof info.entitlements.active['pro'] !== 'undefined';
+        const isProActive = typeof info?.entitlements?.active?.['pro'] !== 'undefined';
         set({ customerInfo: info });
 
         if (isProActive) {
@@ -335,11 +342,10 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
           return true;
         }
       } catch (err) {
-        reportError(err, { module: 'PurchaseStore', action: 'verifyProStatus.revenueCat' });
+        // Continue to fallback check
       }
     }
 
-    // Fallback/Web check from Supabase database
     try {
       set({ isLoading: true });
       const { data, error } = await supabase
@@ -352,23 +358,19 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
 
       const dbRole = data.role ?? 'user';
 
-      // Re-check privileged from DB (may differ from cached profile)
       if (['owner', 'super_admin', 'admin'].includes(dbRole)) {
         set({ isPro: true, isLoading: false });
         useAuthStore.getState().setProfile({ ...profile, isPro: true, role: dbRole as any });
         return true;
       }
 
-      // Check premium subscription expiry
       let isProNow = false;
       if (data.is_pro) {
         if (data.pro_expires_at && new Date(data.pro_expires_at) < new Date()) {
-          // Subscription expired — trigger downgrade
           console.log('[PurchaseStore] pro_expires_at has passed. Downgrading...');
           await get().cancelPro();
           isProNow = false;
         } else if (data.trial_expires_at && new Date(data.trial_expires_at) < new Date()) {
-          // Trial expired — trigger downgrade
           console.log('[PurchaseStore] Trial expired. Downgrading...');
           await get().cancelPro();
           isProNow = false;
@@ -391,8 +393,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       return false;
     }
   },
-
-  // ── Trial ────────────────────────────────────────────────────────────────
 
   hasUsedTrial: () => {
     return !!get().trialUsedAt;
@@ -447,14 +447,12 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     try {
       set({ isLoading: true });
       
-      // Llamar al RPC para que el backend asigne las fechas seguras
       const { error } = await supabase.rpc('start_free_trial');
       if (error) throw error;
 
       const now = new Date();
       const expiresAt = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
 
-      // Sincronizamos el estado local (asumiendo que el server hizo exactamente lo mismo)
       set({
         trialUsedAt: now.toISOString(),
         trialExpiresAt: expiresAt.toISOString(),
@@ -462,7 +460,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
         isLoading: false,
       });
       
-      // Refrescar el perfil completo para sincronizar
       await useAuthStore.getState().fetchProfile(profile.id);
 
     } catch (err: any) {
@@ -506,14 +503,12 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       const expires = new Date(trialExpiresAt);
 
       if (now >= expires && isProInDb) {
-        // Trial has expired — revoke Pro
         console.log('[PurchaseStore] Trial expired. Revoking Pro access...');
         await get().cancelPro();
         set({ isTrialActive: false, trialUsedAt, trialExpiresAt });
       } else if (now < expires && isProInDb) {
         set({ isTrialActive: true, trialUsedAt, trialExpiresAt });
       } else if (now >= expires && !isProInDb) {
-        // Already revoked server-side (cron ran), just sync local state
         set({ isTrialActive: false, trialUsedAt, trialExpiresAt });
         const currentProfile = useAuthStore.getState().profile;
         if (currentProfile?.isPro) {
