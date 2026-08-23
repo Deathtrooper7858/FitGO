@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/i18n/routing";
 import { Zap, Mail, Lock, AlertCircle, ArrowRight, ArrowLeft, User } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { useTranslations } from "next-intl";

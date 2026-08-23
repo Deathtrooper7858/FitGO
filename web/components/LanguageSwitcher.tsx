@@ -32,6 +32,7 @@ export default function LanguageSwitcher() {
         className="bg-transparent text-sm text-text-secondary hover:text-text-primary cursor-pointer outline-none focus:ring-0 appearance-none pr-4"
         value={locale}
         onChange={onSelectChange}
+        aria-label="Seleccionar idioma / Select language"
       >
         {languages.map((lang) => (
           <option key={lang.code} value={lang.code} className="bg-surface text-text-primary">
