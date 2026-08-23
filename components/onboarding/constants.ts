@@ -284,7 +284,7 @@ export const FOOD_CATEGORIES = [
     ]
   },
   {
-    id: 'beverages', title: 'beverages', min: 0,
+    id: 'beverages', title: 'beverages', min: 1,
     items: [
       { id: 'water', label: 'water', emoji: '💧' },
       { id: 'sparkling_water', label: 'sparkling_water', emoji: '🫧' },

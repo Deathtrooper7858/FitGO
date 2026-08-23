@@ -153,10 +153,10 @@ export default function ChatModal() {
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [isSendingAudio, setIsSendingAudio] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const durationTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const durationTimerRef = useRef<any>(null);
 
   const scrollViewRef = useRef<ScrollView>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<any>(null);
   const channelRef = useRef<any>(null);
 
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);

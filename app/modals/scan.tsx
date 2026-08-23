@@ -330,39 +330,42 @@ export default function ScanModal() {
     const ts = logTime.toISOString().split('T')[1] || '12:00:00.000Z';
     const finalLoggedAt = date ? `${date}T${ts}` : logTime.toISOString();
 
-    const localLogs = editedFoods.map((food) => ({
-      id: Crypto.randomUUID(),
-      foodItem: {
+    const localLogs = editedFoods.map((food) => {
+      const origG = food.originalGrams > 0 ? food.originalGrams : (food.grams > 0 ? food.grams : 100);
+      return {
         id: Crypto.randomUUID(),
-        name: food.name,
-        calories: Math.round((food.originalCal / food.originalGrams) * 100),
-        protein: Math.round((food.originalProt / food.originalGrams) * 100),
-        carbs: Math.round((food.originalCarbs / food.originalGrams) * 100),
-        fat: Math.round((food.originalFat / food.originalGrams) * 100),
-        sugar: food.originalSugar ? Math.round((food.originalSugar / food.originalGrams) * 100) : undefined,
-        fiber: food.originalFiber ? Math.round((food.originalFiber / food.originalGrams) * 100) : undefined,
-        sodium: food.originalSodium ? Math.round((food.originalSodium / food.originalGrams) * 100) : undefined,
-        iron: food.originalIron ? Math.round((food.originalIron / food.originalGrams) * 100) : undefined,
-        calcium: food.originalCalcium ? Math.round((food.originalCalcium / food.originalGrams) * 100) : undefined,
-        saturatedFat: food.originalSatFat ? Math.round((food.originalSatFat / food.originalGrams) * 100) : undefined,
-        transFat: food.originalTransFat ? Math.round((food.originalTransFat / food.originalGrams) * 100) : undefined,
-        source: 'custom' as const,
-      },
-      grams: food.grams,
-      meal: targetMeal,
-      loggedAt: finalLoggedAt,
-      calories: food.calories,
-      protein: food.protein,
-      carbs: food.carbs,
-      fat: food.fat,
-      sugar: food.sugar,
-      fiber: food.fiber,
-      sodium: food.sodium,
-      iron: food.iron,
-      calcium: food.calcium,
-      saturatedFat: food.saturatedFat,
-      transFat: food.transFat,
-    }));
+        foodItem: {
+          id: Crypto.randomUUID(),
+          name: food.name,
+          calories: Math.round(((food.originalCal || food.calories) / origG) * 100),
+          protein: Math.round(((food.originalProt || food.protein) / origG) * 100),
+          carbs: Math.round(((food.originalCarbs || food.carbs) / origG) * 100),
+          fat: Math.round(((food.originalFat || food.fat) / origG) * 100),
+          sugar: food.originalSugar ? Math.round((food.originalSugar / origG) * 100) : undefined,
+          fiber: food.originalFiber ? Math.round((food.originalFiber / origG) * 100) : undefined,
+          sodium: food.originalSodium ? Math.round((food.originalSodium / origG) * 100) : undefined,
+          iron: food.originalIron ? Math.round((food.originalIron / origG) * 100) : undefined,
+          calcium: food.originalCalcium ? Math.round((food.originalCalcium / origG) * 100) : undefined,
+          saturatedFat: food.originalSatFat ? Math.round((food.originalSatFat / origG) * 100) : undefined,
+          transFat: food.originalTransFat ? Math.round((food.originalTransFat / origG) * 100) : undefined,
+          source: 'custom' as const,
+        },
+        grams: food.grams,
+        meal: targetMeal,
+        loggedAt: finalLoggedAt,
+        calories: food.calories,
+        protein: food.protein,
+        carbs: food.carbs,
+        fat: food.fat,
+        sugar: food.sugar,
+        fiber: food.fiber,
+        sodium: food.sodium,
+        iron: food.iron,
+        calcium: food.calcium,
+        saturatedFat: food.saturatedFat,
+        transFat: food.transFat,
+      };
+    });
 
     try {
       await Promise.all(localLogs.map(log => addLog(log)));

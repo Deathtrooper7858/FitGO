@@ -37,7 +37,6 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0D0F14"
       },
-      "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "resize",
       "permissions": [
         "CAMERA",
@@ -72,7 +71,6 @@
         }
       ],
       "expo-secure-store",
-      "expo-sharing",
       "expo-asset",
       "expo-web-browser",
       "@react-native-community/datetimepicker",
@@ -85,7 +83,6 @@
       ],
       "react-native-fast-tflite",
       "expo-video",
-      "expo-image",
       [
         "react-native-google-mobile-ads",
         {

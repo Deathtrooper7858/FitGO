@@ -4,11 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Apple, ChevronLeft, Sparkles, AlertCircle, Search, Check, ChevronDown, ChevronUp, Utensils } from 'lucide-react-native';
+import { ChevronLeft, Sparkles, AlertCircle, Search, Check, ChevronDown, ChevronUp, Utensils } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuthStore } from '../../store';
 import { supabase } from '../../services/supabase';
-import { Radius, Spacing } from '../../constants';
 
 import { FOOD_CATEGORIES } from '../../components/onboarding/constants';
 
@@ -229,21 +228,18 @@ export default function FoodSelectionModal() {
                           key={item.id}
                           style={[
                             s.pill,
-                            { backgroundColor: colors.background, borderColor: colors.border },
-                            active && { borderColor: meta.gradient[0], backgroundColor: meta.gradient[0] + '15' }
+                            { backgroundColor: active ? meta.gradient[0] + '25' : colors.surface, borderColor: active ? meta.gradient[0] : colors.border },
                           ]}
                           onPress={() => toggle(item.id)}
-                          activeOpacity={0.7}
+                          activeOpacity={0.75}
                         >
-                          <View style={[s.pillEmoji, { backgroundColor: active ? meta.gradient[0] + '25' : colors.surfaceAlt }]}>
-                            <Text style={{ fontSize: 17 }}>{item.emoji}</Text>
-                          </View>
-                          <Text style={[s.pillText, { color: active ? colors.textPrimary : colors.textSecondary }, active && { fontWeight: '700' }]}>
+                          <Text style={{ fontSize: 19 }}>{item.emoji}</Text>
+                          <Text style={[s.pillText, { color: active ? colors.textPrimary : colors.textSecondary }, active && { fontWeight: '800' }]}>
                             {t(`onboarding.foodItems.${item.label}`) || item.label}
                           </Text>
                           {active && (
                             <View style={[s.checkDot, { backgroundColor: meta.gradient[0] }]}>
-                              <Check size={9} color="#FFF" strokeWidth={3} />
+                              <Check size={9} color="#FFF" strokeWidth={3.5} />
                             </View>
                           )}
                         </TouchableOpacity>
@@ -360,15 +356,13 @@ const s = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   pill: {
     flexDirection: 'row', alignItems: 'center',
-    borderRadius: 20, borderWidth: 1.5,
-    paddingRight: 12, paddingLeft: 4, paddingVertical: 4,
-    overflow: 'hidden',
+    borderRadius: 14, borderWidth: 1.5,
+    paddingHorizontal: 12, paddingVertical: 10,
+    gap: 8,
+    minWidth: '47%', flex: 1,
   },
-  pillEmoji: {
-    width: 30, height: 30, borderRadius: 15,
-    justifyContent: 'center', alignItems: 'center', marginRight: 6,
-  },
-  pillText: { fontSize: 14, fontWeight: '600', marginRight: 4 },
+  pillEmoji: {},
+  pillText: { fontSize: 14, fontWeight: '600', flex: 1, backgroundColor: 'transparent' },
   checkDot: {
     width: 16, height: 16, borderRadius: 8,
     justifyContent: 'center', alignItems: 'center', marginLeft: 2,

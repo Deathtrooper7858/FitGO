@@ -30,7 +30,6 @@ import { useIsPro } from '../../../hooks/useIsPro';
 const BarChart = React.lazy(() => import('react-native-gifted-charts').then(m => ({ default: m.BarChart })));
 
 const MEALS = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
-type Meal = typeof MEALS[number];
 
 const NEAT_CALORIES: Record<string, number> = { seated: 200, standing_sometimes: 439, standing_mostly: 600, moving: 850, physical_work: 1200 };
 const EXERCISE_CALORIES: Record<string, number> = { none: 0, '1-2': 150, '3-4': 300, '5-6': 450, daily: 700 };
@@ -59,18 +58,19 @@ export default function TrackerScreen() {
   const dailyNeat = useNutritionStore(s => s.dailyNeat);
   const dailyExercise = useNutritionStore(s => s.dailyExercise);
   const activityLogs = useNutritionStore(s => s.activityLogs);
-  const addActivityLog = useNutritionStore(s => s.addActivityLog);
   const removeActivityLog = useNutritionStore(s => s.removeActivityLog);
   const addExtraSnack = useNutritionStore(s => s.addExtraSnack);
   const removeExtraSnack = useNutritionStore(s => s.removeExtraSnack);
   const removeLog = useNutritionStore(s => s.removeLog);
-  const setLogs = useNutritionStore(s => s.setLogs);
-  const setActivityLogs = useNutritionStore(s => s.setActivityLogs);
   const totalUnreadCount = useSocialStore(s => s.totalUnreadCount);
   const friends = useSocialStore(s => s.friends);
 
   // Derived
-  const macros = { protein: profile?.macros?.protein || 150, carbs: profile?.macros?.carbs || 250, fat: profile?.macros?.fat || 65 };
+  const macros = useMemo(() => ({
+    protein: profile?.macros?.protein || 150,
+    carbs: profile?.macros?.carbs || 250,
+    fat: profile?.macros?.fat || 65
+  }), [profile?.macros?.protein, profile?.macros?.carbs, profile?.macros?.fat]);
   const { calories: rawCalories, protein, carbs, fat, sugar, fiber, sodium, iron, calcium, saturatedFat } = useNutritionStore(selectDailyTotals);
   const calories = Math.round(convertEnergy(rawCalories, 'kcal', energyUnit));
   const target = Math.round(convertEnergy(profile?.targetCalories || 2000, 'kcal', energyUnit));
@@ -127,9 +127,14 @@ export default function TrackerScreen() {
     })();
     return () => { mounted = false; if (sub?.remove) sub.remove(); };
   }, []);
+  const todayStr = useMemo(() => getLocalDateString(new Date()), []);
   const pedometerTotal = historicalSteps + liveSteps;
-  const currentSteps = Math.max(steps, pedometerTotal);
-  useEffect(() => { if (pedometerTotal > steps) setSteps(pedometerTotal); }, [pedometerTotal]);
+  const currentSteps = selectedDate === todayStr ? Math.max(steps, pedometerTotal) : steps;
+  useEffect(() => {
+    if (selectedDate === todayStr && pedometerTotal > steps) {
+      setSteps(pedometerTotal);
+    }
+  }, [pedometerTotal, selectedDate, todayStr, steps, setSteps]);
 
   // Alert
   const [alert, setAlert] = useState<{ visible: boolean; type: AlertType; title: string; message: string; confirmText?: string; cancelText?: string; onConfirm: (v?: string) => void; onCancel?: () => void; actions?: any[]; showInput?: boolean; initialInputValue?: string; keyboardType?: any }>({
@@ -161,7 +166,7 @@ export default function TrackerScreen() {
     const um = social.subscribeToUnreadMessages(profile.id);
     const us = social.subscribeToSocialEvents(profile.id);
     return () => { um(); us(); };
-  }, [profile?.id]);
+  }, [profile?.id, fetchHistory]);
 
   useEffect(() => {
     if (!profile?.id) return;
@@ -170,7 +175,7 @@ export default function TrackerScreen() {
       try { await fetchLogs(profile.id, selectedDate); } catch { showAlert('error', t('common.error'), t('tracker.loadFailed') || 'Could not load data'); }
       finally { setIsFetching(false); }
     })();
-  }, [profile?.id, selectedDate]);
+  }, [profile?.id, selectedDate, fetchLogs, t]);
 
   // Handlers
   const handleAddMeal = (meal: string) => router.push({ pathname: '/modals/scan', params: { initialMeal: meal, date: selectedDate } } as any);

@@ -11,7 +11,7 @@
  *  3. FitGoWaterWidget  – Agua consumida vs meta (mediano)
  */
 import React from 'react';
-import { WidgetTaskHandlerProps , FlexWidget, TextWidget, SvgWidget } from 'react-native-android-widget';
+import { WidgetTaskHandlerProps, FlexWidget, TextWidget } from 'react-native-android-widget';
 
 import { loadWidgetData, WidgetData } from './utils/widgetData';
 
@@ -19,9 +19,9 @@ import { loadWidgetData, WidgetData } from './utils/widgetData';
 // Widget 1: Main (Calorías + Proteína + Racha)  – 4×2 cells
 // ─────────────────────────────────────────────────────────
 function FitGoMainWidget({ data }: { data: WidgetData }) {
-  const calsRemaining = Math.max(0, data.calsTarget - data.calsConsumed);
-  const calsPercent = Math.min(100, Math.round((data.calsConsumed / data.calsTarget) * 100));
-  const protPercent = Math.min(100, Math.round((data.protein / data.proteinTarget) * 100));
+  const calsRemaining = Math.max(0, (data.calsTarget || 2000) - (data.calsConsumed || 0));
+  const calsPercent = data.calsTarget > 0 ? Math.min(100, Math.round(((data.calsConsumed || 0) / data.calsTarget) * 100)) : 0;
+  const protPercent = data.proteinTarget > 0 ? Math.min(100, Math.round(((data.protein || 0) / data.proteinTarget) * 100)) : 0;
 
   return (
     <FlexWidget
@@ -125,9 +125,9 @@ function FitGoStreakWidget({ streak, name }: { streak: number; name: string }) {
 // Widget 3: Agua – 2×2 cells
 // ─────────────────────────────────────────────────────────
 function FitGoWaterWidget({ waterMl, waterTarget }: { waterMl: number; waterTarget: number }) {
-  const glasses = Math.round(waterMl / 250); // 1 vaso = 250ml
-  const targetGlasses = Math.round(waterTarget / 250);
-  const percent = Math.min(100, Math.round((waterMl / waterTarget) * 100));
+  const glasses = Math.round((waterMl || 0) / 250); // 1 vaso = 250ml
+  const targetGlasses = Math.round((waterTarget || 2000) / 250);
+  const percent = waterTarget > 0 ? Math.min(100, Math.round(((waterMl || 0) / waterTarget) * 100)) : 0;
 
   return (
     <FlexWidget

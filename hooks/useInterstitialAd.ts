@@ -13,7 +13,7 @@ import { AD_UNIT_IDS, AD_CONFIG } from '../constants/adConfig';
 const INTERSTITIAL_INTERVAL_MS = AD_CONFIG.interstitialCooldownMs;
 
 let interstitialInstance: InterstitialAd | null = null;
-let lastShownAt: number = 0;
+let lastShownAt: number = Date.now();
 
 function getOrCreateInterstitial(): InterstitialAd {
   if (!interstitialInstance) {

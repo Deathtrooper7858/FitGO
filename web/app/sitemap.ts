@@ -5,7 +5,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const locales = routing.locales;
 
-  const staticRoutes = ['', '/about', '/about-us', '/pricing', '/login', '/register', '/forgot-password', '/privacy', '/terms'];
+  const staticRoutes = ['', '/about', '/about-us', '/pricing', '/ranking', '/squads-ranking', '/login', '/register', '/forgot-password', '/privacy', '/terms'];
 
   return locales.flatMap((locale) =>
     staticRoutes.map((route) => ({

@@ -14,6 +14,7 @@ export function generateStaticParams() {
 }
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://fitgo.app"),
   title: {
     default: "FitGO — Tu mejor versión",
     template: "%s | FitGO",
@@ -41,12 +42,21 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_ES",
     siteName: "FitGO",
+    images: [
+      {
+        url: "/icon-192.svg",
+        width: 192,
+        height: 192,
+        alt: "FitGO Logo",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "FitGO — Tu mejor versión",
     description:
       "La app de fitness más fluida y gamificada. Progreso, nutrición y entrenamiento en un solo lugar.",
+    images: ["/icon-192.svg"],
   },
   robots: {
     index: true,

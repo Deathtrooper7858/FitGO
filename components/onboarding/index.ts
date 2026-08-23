@@ -11,3 +11,4 @@ export { PersonalizationStep } from './PersonalizationStep';
 export { TermsStep } from './TermsStep';
 export { ProjectionStep } from './ProjectionStep';
 export { HealthProfileStep } from './HealthProfileStep';
+export { FloatingHeroIcon } from './FloatingHeroIcon';

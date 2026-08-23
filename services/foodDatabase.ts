@@ -86,7 +86,8 @@ export async function searchFoodOFF(query: string, language: string = 'en', page
 }
 
 // ─── OpenFoodFacts barcode lookup ──────────────────────────────────────────────
-export async function getFoodByBarcode(barcode: string, language: string = 'es'): Promise<FoodItem | null> {
+export async function getFoodByBarcode(barcode: string, language: string = 'en'): Promise<FoodItem | null> {
+  const langKey = language.substring(0, 2).toLowerCase();
   try {
     const { data } = await axios.get(`${OFF_BASE}/api/v0/product/${barcode}.json`, {
       headers: {
@@ -100,18 +101,26 @@ export async function getFoodByBarcode(barcode: string, language: string = 'es')
       const nut = p.nutriments || {};
       const cal = nut['energy-kcal_100g'] ?? (nut['energy_100g'] ? Math.round(nut['energy_100g'] / 4.184) : 0);
 
-      // Try multiple language variations for product name
-      const name = p.product_name_es || 
-                   p.product_name || 
-                   p.product_name_en || 
-                   p.generic_name_es || 
-                   p.generic_name || 
-                   p.product_name_fr || 
-                   p.product_name_pt || 
-                   p.product_name_de || 
-                   p.product_name_it || 
-                   p.product_name_ru || 
-                   '';
+      // Try active language first, then standard fallbacks
+      let name = p[`product_name_${langKey}`] || 
+                 p.product_name || 
+                 p.product_name_en || 
+                 p.product_name_es || 
+                 p[`generic_name_${langKey}`] || 
+                 p.generic_name || 
+                 p.generic_name_en || 
+                 p.generic_name_es || 
+                 p.product_name_fr || 
+                 p.product_name_pt || 
+                 p.product_name_de || 
+                 p.product_name_it || 
+                 p.product_name_ru || 
+                 '';
+
+      if (!name) {
+        const localizedKey = Object.keys(p).find(k => k.startsWith('product_name_') && p[k]);
+        if (localizedKey) name = p[localizedKey];
+      }
 
       if (name && name !== 'Unknown product') {
         return {

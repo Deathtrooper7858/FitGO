@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getLocalDateString } from '../utils/date';
-import { SecureStorage } from '../utils/storage';
 import { CoachMessage } from './types';
 
 interface CoachSession {
@@ -116,7 +116,7 @@ export const useCoachStore = create<CoachState>()(
     }),
     {
       name: 'ff-coach',
-      storage: createJSONStorage(() => SecureStorage),
+      storage: createJSONStorage(() => AsyncStorage),
       partialize: (s) => ({
         msgCount:    s.msgCount,
         lastResetDate: s.lastResetDate,

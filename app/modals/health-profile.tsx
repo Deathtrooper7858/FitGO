@@ -1,34 +1,53 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ScrollView, ActivityIndicator, Alert, TextInput, Platform
+  ScrollView, ActivityIndicator, Alert, Platform
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, Apple, Heart, Activity, Check, AlertCircle } from 'lucide-react-native';
+import { ChevronLeft, Apple, Heart, Pill } from 'lucide-react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuthStore } from '../../store';
 import { supabase } from '../../services/supabase';
-import { Radius, Spacing } from '../../constants';
+import { OnboardingData } from '../../components/onboarding/constants';
+import {
+  DietaryRestrictionsStep,
+  MedicalConditionsStep,
+  MedicationsStep,
+} from '../../components/onboarding';
+
+type TabId = 'restrictions' | 'conditions' | 'medications';
+
+const HEALTH_TABS: { id: TabId; labelKey: string; defaultLabel: string; icon: React.ElementType }[] = [
+  { id: 'restrictions',  labelKey: 'profile.dietaryRestrictions',   defaultLabel: 'Diet',        icon: Apple   },
+  { id: 'conditions',   labelKey: 'profile.medicalConditions',      defaultLabel: 'Health',      icon: Heart   },
+  { id: 'medications',  labelKey: 'profile.medicationsSupplements', defaultLabel: 'Medications', icon: Pill    },
+];
 
 export default function HealthProfileModal() {
   const { t } = useTranslation();
   const colors = useTheme();
   const { profile, setProfile } = useAuthStore();
-  
-  const [data, setData] = useState({
-    dietaryRestrictions: profile?.dietaryRestrictions || [],
-    medicalConditions: profile?.medicalConditions || [],
+
+  // Mirror the OnboardingData shape so step components work identically
+  const [data, setData] = useState<Partial<OnboardingData>>({
+    dietaryRestrictions:    profile?.dietaryRestrictions    || [],
+    medicalConditions:      profile?.medicalConditions      || [],
     medicationsSupplements: profile?.medicationsSupplements || [],
   });
-  const [activeTab, setActiveTab] = useState<'restrictions' | 'conditions' | 'medications'>('restrictions');
-  const [saving, setSaving] = useState(false);
 
-  const HEALTH_TABS: ('restrictions' | 'conditions' | 'medications')[] = ['restrictions', 'conditions', 'medications'];
+  const [activeTab, setActiveTab] = useState<TabId>('restrictions');
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const handleChange = (patch: Partial<OnboardingData>) => {
+    setData(prev => ({ ...prev, ...patch }));
+    if (saveSuccess) setSaveSuccess(false);
+  };
 
   const swipeGesture = Gesture.Pan()
     .activeOffsetX([-30, 30])
@@ -36,40 +55,38 @@ export default function HealthProfileModal() {
     .onEnd((e) => {
       if (Math.abs(e.velocityX) > 400 || Math.abs(e.translationX) > 80) {
         Haptics.selectionAsync();
-        const currentIndex = HEALTH_TABS.indexOf(activeTab);
+        const ids = HEALTH_TABS.map(t => t.id);
+        const currentIndex = ids.indexOf(activeTab);
         const direction = e.translationX > 0 ? -1 : 1;
         const newIndex = currentIndex + direction;
-        if (newIndex >= 0 && newIndex < HEALTH_TABS.length) {
-          setActiveTab(HEALTH_TABS[newIndex]);
+        if (newIndex >= 0 && newIndex < ids.length) {
+          setActiveTab(ids[newIndex]);
         }
       }
     });
-
-  const updateData = (fieldKey: keyof typeof data, val: string[]) => {
-    setData(prev => ({ ...prev, [fieldKey]: val }));
-  };
 
   const handleSave = async () => {
     if (!profile) return;
     setSaving(true);
     try {
       const { error } = await supabase.from('users').update({
-        dietary_restrictions: data.dietaryRestrictions,
-        medical_conditions: data.medicalConditions,
+        dietary_restrictions:    data.dietaryRestrictions,
+        medical_conditions:      data.medicalConditions,
         medications_supplements: data.medicationsSupplements,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }).eq('id', profile.id);
 
       if (error) throw error;
 
       setProfile({
         ...profile,
-        dietaryRestrictions: data.dietaryRestrictions,
-        medicalConditions: data.medicalConditions,
-        medicationsSupplements: data.medicationsSupplements,
+        dietaryRestrictions:    data.dietaryRestrictions    || [],
+        medicalConditions:      data.medicalConditions      || [],
+        medicationsSupplements: data.medicationsSupplements || [],
       });
 
-      router.back();
+      setSaveSuccess(true);
+      setTimeout(() => router.back(), 600);
     } catch (err) {
       console.error(err);
       Alert.alert(t('common.error'), t('profile.healthProfileFailed', 'Update failed'));
@@ -78,305 +95,120 @@ export default function HealthProfileModal() {
     }
   };
 
-  const renderSection = (
-    icon: React.ElementType,
-    titleKey: string,
-    subKey: string,
-    itemsObj: Record<string, string>,
-    fieldKey: keyof typeof data
-  ) => {
-    const selected = data[fieldKey] || [];
-    const predefinedKeys = Object.keys(itemsObj);
-    const customValues = selected.filter(k => !predefinedKeys.includes(k));
-    const customText = customValues.length > 0 ? customValues[0].replace('custom:', '') : '';
-
-    const toggle = (id: string) => {
-      if (id === 'none') {
-        updateData(fieldKey, ['none']);
-        return;
-      }
-
-
-
-      const newSelection = selected.includes(id) 
-        ? selected.filter(x => x !== id) 
-        : [...selected.filter(x => x !== 'none'), id];
-      updateData(fieldKey, newSelection);
-    };
-
-    const setCustomText = (text: string) => {
-      const base = selected.filter(k => predefinedKeys.includes(k) && k !== 'none');
-      
-      if (text.trim() === '') {
-        updateData(fieldKey, [...base]);
-      } else {
-        updateData(fieldKey, [...base, `custom:${text}`]);
-      }
-    };
-
-
-    return (
-      <View style={styles.section}>
-        <View style={styles.headerSection}>
-          <View style={[styles.targetCircle, { backgroundColor: colors.primary + '15', shadowColor: colors.primary }]}>
-            {React.createElement(icon, { size: 24, color: colors.primary })}
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.title, { color: colors.textPrimary }]}>{t(titleKey)}</Text>
-            <Text style={[styles.sub, { color: colors.textSecondary }]}>{t(subKey)}</Text>
-          </View>
-        </View>
-
-        <View style={{ gap: 8 }}>
-          {Object.entries(itemsObj).map(([key, label]) => {
-            const isActive = selected.includes(key);
-            return (
-              <View key={key} style={{ gap: 8 }}>
-                <TouchableOpacity
-                  style={[
-                    styles.optionCard, 
-                    { backgroundColor: colors.surface, borderColor: colors.border, paddingVertical: 14, paddingHorizontal: 16 }, 
-                    isActive && { 
-                      borderColor: colors.primary, 
-                      backgroundColor: colors.primary + '12',
-                      shadowColor: colors.primary,
-                      shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 0.15,
-                      shadowRadius: 8,
-                    }
-                  ]}
-                  onPress={() => toggle(key)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[
-                    styles.optionTitle, 
-                    { color: colors.textPrimary, flex: 1, fontSize: 16 },
-                    isActive && { color: colors.primary, fontWeight: '800' }
-                  ]}>
-                    {label}
-                  </Text>
-                  <View style={[
-                    styles.radioOuter, 
-                    { 
-                      borderColor: isActive ? colors.primary : colors.border, 
-                      borderRadius: 8,
-                      backgroundColor: isActive ? colors.primary : 'transparent',
-                      borderWidth: 2
-                    }
-                  ]}>
-                    {isActive && <Check size={14} color="#fff" strokeWidth={4} />}
-                  </View>
-                </TouchableOpacity>
-
-
-              </View>
-            );
-          })}
-
-          
-          <View style={[
-              styles.optionCard, 
-              { backgroundColor: colors.surface, borderColor: colors.border, paddingVertical: 14, flexDirection: 'column', alignItems: 'stretch' },
-              customText.length > 0 && { 
-                borderColor: colors.primary, 
-                backgroundColor: colors.primary + '12',
-                shadowColor: colors.primary,
-                shadowOpacity: 0.1,
-                shadowRadius: 10
-              }
-            ]}>
-            <Text style={[
-              styles.optionTitle, 
-              { color: colors.textPrimary, marginLeft: 16, marginBottom: 12, fontSize: 16 },
-              customText.length > 0 && { color: colors.primary, fontWeight: '800' }
-            ]}>
-              {t('onboarding.otherSpecify', 'Other (specify)')}
-            </Text>
-            <TextInput
-              style={{
-                backgroundColor: colors.background,
-                color: colors.textPrimary,
-                padding: 14,
-                borderRadius: 16,
-                borderWidth: 1.5,
-                borderColor: colors.border,
-                marginHorizontal: 16,
-                fontSize: 15,
-                fontWeight: '600'
-              }}
-              placeholder={t('onboarding.otherPlaceholder', 'Type here...')}
-              placeholderTextColor={colors.textMuted}
-              value={customText}
-              onChangeText={setCustomText}
-              onFocus={() => { if(selected.includes('none')) toggle('none'); }}
-            />
-          </View>
-        </View>
-      </View>
-    );
-  };
-
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <ChevronLeft size={28} color={colors.textPrimary} />
+    <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]} edges={['top']}>
+
+      {/* ── Header ── */}
+      <View style={[s.header, { borderBottomColor: colors.border + '44' }]}>
+        <TouchableOpacity
+          style={[s.backBtn, { backgroundColor: colors.surface }]}
+          onPress={() => router.back()}
+        >
+          <ChevronLeft size={22} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>{t('profile.editHealthProfile', 'Edit Health Profile')}</Text>
+        <Text style={[s.headerTitle, { color: colors.textPrimary }]}>
+          {t('profile.editHealthProfile', 'Health Profile')}
+        </Text>
         <View style={{ width: 40 }} />
       </View>
 
-      {/* Tabs */}
-      <View style={[styles.tabBar, { borderBottomColor: colors.border + '33' }]}>
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'restrictions' && { borderBottomColor: colors.primary }]} 
-          onPress={() => setActiveTab('restrictions')}
-        >
-          <Apple size={18} color={activeTab === 'restrictions' ? colors.primary : colors.textMuted} />
-          <Text 
-            style={[styles.tabText, { color: activeTab === 'restrictions' ? colors.textPrimary : colors.textMuted }]}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-          >
-            {t('profile.dietaryRestrictions').split(' ')[0]}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'conditions' && { borderBottomColor: colors.primary }]} 
-          onPress={() => setActiveTab('conditions')}
-        >
-          <Heart size={18} color={activeTab === 'conditions' ? colors.primary : colors.textMuted} />
-          <Text 
-            style={[styles.tabText, { color: activeTab === 'conditions' ? colors.textPrimary : colors.textMuted }]}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-          >
-            {t('profile.medicalConditions').split(' ')[0]}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'medications' && { borderBottomColor: colors.primary }]} 
-          onPress={() => setActiveTab('medications')}
-        >
-          <Activity size={18} color={activeTab === 'medications' ? colors.primary : colors.textMuted} />
-          <Text 
-            style={[styles.tabText, { color: activeTab === 'medications' ? colors.textPrimary : colors.textMuted }]}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-          >
-            {t('profile.medicationsSupplements').split(' ')[0]}
-          </Text>
-        </TouchableOpacity>
+      {/* ── Tab Bar ── */}
+      <View style={[s.tabBar, { backgroundColor: colors.surface, borderBottomColor: colors.border + '33' }]}>
+        {HEALTH_TABS.map(tab => {
+          const active = activeTab === tab.id;
+          const Icon = tab.icon;
+          return (
+            <TouchableOpacity
+              key={tab.id}
+              style={[s.tab, active && { borderBottomColor: colors.primary }]}
+              onPress={() => {
+                Haptics.selectionAsync();
+                setActiveTab(tab.id);
+              }}
+            >
+              <Icon size={18} color={active ? colors.primary : colors.textMuted} />
+              <Text style={[s.tabText, { color: active ? colors.primary : colors.textMuted }]} numberOfLines={1} adjustsFontSizeToFit>
+                {t(tab.labelKey, tab.defaultLabel).split(' ')[0]}
+              </Text>
+              {active && (
+                <View style={[s.tabUnderline, { backgroundColor: colors.primary }]} />
+              )}
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
+      {/* ── Step Content (reuses onboarding components 1:1) ── */}
       <GestureDetector gesture={swipeGesture}>
-        <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-          {activeTab === 'restrictions' && renderSection(
-            Apple, 
-            "onboarding.dietaryRestrictionsTitle", 
-            "onboarding.dietaryRestrictionsSub", 
-            t('onboarding.dietaryItems', { returnObjects: true }) as Record<string, string>, 
-            "dietaryRestrictions"
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={s.content}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {activeTab === 'restrictions' && (
+            <DietaryRestrictionsStep value={data} onChange={handleChange} />
           )}
-          {activeTab === 'conditions' && renderSection(
-            Heart, 
-            "onboarding.medicalConditionsTitle", 
-            "onboarding.medicalConditionsSub", 
-            t('onboarding.medicalItems', { returnObjects: true }) as Record<string, string>, 
-            "medicalConditions"
+          {activeTab === 'conditions' && (
+            <MedicalConditionsStep value={data} onChange={handleChange} />
           )}
-          {activeTab === 'medications' && renderSection(
-            Activity, 
-            "onboarding.medicationsTitle", 
-            "onboarding.medicationsSub", 
-            t('onboarding.medicationItems', { returnObjects: true }) as Record<string, string>, 
-            "medicationsSupplements"
+          {activeTab === 'medications' && (
+            <MedicationsStep value={data} onChange={handleChange} />
           )}
-          <View style={{ height: 40 }} />
+          <View style={{ height: 120 }} />
         </ScrollView>
       </GestureDetector>
 
-      <View style={[styles.footer, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving} activeOpacity={0.8}>
-          <LinearGradient colors={['#7C5CFC', '#4338CA']} style={styles.saveGrad}>
+      {/* ── Save Footer ── */}
+      <View style={[s.footer, { borderTopColor: colors.border + '44' }]}>
+        <TouchableOpacity
+          style={s.saveBtn}
+          onPress={handleSave}
+          disabled={saving}
+          activeOpacity={0.85}
+        >
+          <LinearGradient
+            colors={saveSuccess ? ['#10B981', '#059669'] : ['#7C5CFC', '#4338CA']}
+            style={s.saveGrad}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+          >
             {saving ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.saveText}>{t('common.save')}</Text>
+              <Text style={s.saveText}>
+                {saveSuccess ? `✓ ${t('common.saved', 'Saved!')}` : t('common.save', 'Save Changes')}
+              </Text>
             )}
           </LinearGradient>
         </TouchableOpacity>
       </View>
+
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1 },
+const s = StyleSheet.create({
+  safe:        { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.base,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
   },
-  backBtn: { padding: Spacing.xs },
-  headerTitle: { fontSize: 18, fontWeight: '700' },
-  scroll: { flex: 1 },
-  content: { padding: Spacing.xl, paddingTop: Spacing.md, paddingBottom: 120 },
-  section: { marginBottom: 20 },
-  headerSection: { alignItems: 'center', marginBottom: 20 },
-  targetCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  backBtn: {
+    width: 40, height: 40,
+    borderRadius: 13,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 15,
-    elevation: 10
   },
-  title: { fontSize: 22, fontWeight: '900', marginBottom: 6, textAlign: 'center' },
-  sub: { fontSize: 13, textAlign: 'center', opacity: 0.7, paddingHorizontal: 20 },
-  optionCard: {
-    padding: 16,
-    borderRadius: 18,
-    borderWidth: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  optionTitle: { fontSize: 15, fontWeight: '800' },
-  radioOuter: {
-    width: 22, height: 22, borderRadius: 6, borderWidth: 2,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  radioInner: { width: 10, height: 10, borderRadius: 3 },
-  footer: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    padding: 20, paddingBottom: Platform.OS === 'ios' ? 40 : 20,
-    backgroundColor: 'transparent'
-  },
-  saveBtn: { 
-    borderRadius: Radius.xl, 
-    overflow: 'hidden', 
-    elevation: 8, 
-    shadowColor: '#7C5CFC', 
-    shadowOffset: { width: 0, height: 4 }, 
-    shadowOpacity: 0.3, 
-    shadowRadius: 8 
-  },
-  saveGrad: { paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
-  saveText: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
+  headerTitle: { fontSize: 17, fontWeight: '800', letterSpacing: -0.3 },
+
   tabBar: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
     borderBottomWidth: 1,
-    gap: 8,
+    paddingHorizontal: 8,
   },
   tab: {
     flex: 1,
@@ -387,11 +219,52 @@ const styles = StyleSheet.create({
     gap: 4,
     borderBottomWidth: 3,
     borderBottomColor: 'transparent',
+    position: 'relative',
+  },
+  tabUnderline: {
+    position: 'absolute',
+    bottom: 0, left: 8, right: 8,
+    height: 3, borderRadius: 2,
   },
   tabText: {
     fontSize: 11,
     fontWeight: '800',
     textTransform: 'uppercase',
-    letterSpacing: 0.5
+    letterSpacing: 0.5,
+  },
+
+  content: {
+    flexGrow: 1,
+    paddingBottom: 40,
+  },
+
+  footer: {
+    position: 'absolute',
+    bottom: 0, left: 0, right: 0,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 36 : 20,
+    borderTopWidth: 1,
+  },
+  saveBtn: {
+    borderRadius: 18,
+    overflow: 'hidden',
+    shadowColor: '#7C5CFC',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  saveGrad: {
+    paddingVertical: 17,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  saveText: {
+    color: '#FFF',
+    fontSize: 17,
+    fontWeight: '800',
+    letterSpacing: 0.3,
   },
 });

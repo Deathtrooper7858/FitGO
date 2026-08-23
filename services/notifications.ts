@@ -15,48 +15,48 @@ let notificationHandlerSet = false;
 export const CHANNELS = {
   messages: {
     id: 'messages',
-    name: '💬 ' + i18n.t('notifications.channels.messages'),
-    description: i18n.t('notifications.channels.messagesDesc'),
+    get name() { return '💬 ' + i18n.t('notifications.channels.messages'); },
+    get description() { return i18n.t('notifications.channels.messagesDesc'); },
     importance: 5, // IMPORTANCE_HIGH
     lightColor: '#7C5CFC',
     vibrationPattern: [0, 100, 50, 100],
   },
   social: {
     id: 'social',
-    name: '👥 ' + i18n.t('notifications.channels.social'),
-    description: i18n.t('notifications.channels.socialDesc'),
+    get name() { return '👥 ' + i18n.t('notifications.channels.social'); },
+    get description() { return i18n.t('notifications.channels.socialDesc'); },
     importance: 4, // IMPORTANCE_DEFAULT
     lightColor: '#4FC3F7',
     vibrationPattern: [0, 200, 100, 200],
   },
   nutrition: {
     id: 'nutrition',
-    name: '🥗 ' + i18n.t('notifications.channels.nutrition'),
-    description: i18n.t('notifications.channels.nutritionDesc'),
+    get name() { return '🥗 ' + i18n.t('notifications.channels.nutrition'); },
+    get description() { return i18n.t('notifications.channels.nutritionDesc'); },
     importance: 3, // IMPORTANCE_LOW
     lightColor: '#81C784',
     vibrationPattern: [0, 150],
   },
   fitness: {
     id: 'fitness',
-    name: '🏋️ ' + i18n.t('notifications.channels.fitness'),
-    description: i18n.t('notifications.channels.fitnessDesc'),
+    get name() { return '🏋️ ' + i18n.t('notifications.channels.fitness'); },
+    get description() { return i18n.t('notifications.channels.fitnessDesc'); },
     importance: 4,
     lightColor: '#FFB74D',
     vibrationPattern: [0, 200, 100, 200],
   },
   achievements: {
     id: 'achievements',
-    name: '🏆 ' + i18n.t('notifications.channels.achievements'),
-    description: i18n.t('notifications.channels.achievementsDesc'),
+    get name() { return '🏆 ' + i18n.t('notifications.channels.achievements'); },
+    get description() { return i18n.t('notifications.channels.achievementsDesc'); },
     importance: 5,
     lightColor: '#FFD700',
     vibrationPattern: [0, 100, 80, 100, 80, 300],
   },
   reminders: {
     id: 'reminders',
-    name: '⏰ ' + i18n.t('notifications.channels.reminders'),
-    description: i18n.t('notifications.channels.remindersDesc'),
+    get name() { return '⏰ ' + i18n.t('notifications.channels.reminders'); },
+    get description() { return i18n.t('notifications.channels.remindersDesc'); },
     importance: 3,
     lightColor: '#CE93D8',
     vibrationPattern: [0, 250, 250, 250],
@@ -64,7 +64,7 @@ export const CHANNELS = {
   default: {
     id: 'default',
     name: 'FitGO',
-    description: i18n.t('notifications.channels.defaultDesc'),
+    get description() { return i18n.t('notifications.channels.defaultDesc'); },
     importance: 4,
     lightColor: '#7C5CFC',
     vibrationPattern: [0, 250, 250, 250],
@@ -127,7 +127,7 @@ async function ensureChannels(notif: any) {
         enableLights: true,
         showBadge: true,
       });
-    } catch (e) {
+    } catch {
       // Non-fatal
     }
   }

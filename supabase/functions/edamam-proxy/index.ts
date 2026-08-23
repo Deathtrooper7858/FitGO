@@ -7,6 +7,10 @@ const ALLOWED_ORIGINS = new Set([
   "https://abvidinpswnfxijjfnic.supabase.co",
   "exp+com.fitgo.app://",
   "com.fitgo.app://",
+  "exp+com.fitgo.app.dev://",
+  "com.fitgo.app.dev://",
+  "exp+com.fitgo.app.preview://",
+  "com.fitgo.app.preview://",
 ]);
 
 const RATE_LIMIT_MAX = 30;

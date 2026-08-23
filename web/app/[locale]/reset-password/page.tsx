@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { Link, useRouter } from "@/i18n/routing";
 import { Zap, Lock, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { useTranslations } from "next-intl";
@@ -56,7 +55,7 @@ export default function ResetPasswordPage() {
           className="inline-flex items-center gap-2 text-text-muted hover:text-text-primary transition-colors text-sm font-semibold mb-8"
         >
           <ArrowLeft size={16} />
-          Volver al inicio
+          {t("back")}
         </Link>
 
         <div className="text-center mb-8">

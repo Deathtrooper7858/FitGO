@@ -38,7 +38,7 @@ const getLang = (code: string) => LANG_NAMES[code] || 'English';
 const isRomanceLang = (lang: string) => ['Spanish', 'French', 'Portuguese', 'Italian'].includes(lang);
 
 // ─── Model IDs ────────────────────────────────────────────────────────────────
-const CHAT_MODEL   = 'llama-3.3-70b-versatile'; //no cambiar en proximos
+const CHAT_MODEL   = 'openai/gpt-oss-120b'; // Modelo principal multilingüe
 const FAST_MODEL   = 'openai/gpt-oss-20b'; // Modelo rápido de reemplazo
 const VISION_MODEL = 'qwen-3.6-27b'; // Updated from deprecated Llama 4 Scout
 const AUDIO_MODEL  = 'whisper-large-v3';
@@ -51,18 +51,19 @@ const AUDIO_MODEL  = 'whisper-large-v3';
  */
 
 // Helper to use Supabase Edge Function as a proxy
-async function fetchGroq(payload: any, retries = 2): Promise<any> {
+async function fetchGroq(payload: any): Promise<any> {
+  let timerId: any = null;
   const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error('AI Service Error: Request timed out. Please try again.')), 45000);
+    timerId = setTimeout(() => reject(new Error('AI Service Error: Request timed out. Please try again.')), 45000);
   });
 
   const doFetch = async (): Promise<any> => {
     let modelsArray = [payload.model];
     
     if (payload.model === CHAT_MODEL) {
-      modelsArray = [CHAT_MODEL, 'openai/gpt-oss-120b', FAST_MODEL];
+      modelsArray = [CHAT_MODEL, 'llama-3.3-70b-versatile', FAST_MODEL];
     } else if (payload.model === FAST_MODEL) {
-      modelsArray = [FAST_MODEL, 'openai/gpt-oss-120b', CHAT_MODEL];
+      modelsArray = [FAST_MODEL, CHAT_MODEL, 'llama-3.3-70b-versatile'];
     }
 
     const attemptPayload = { ...payload, models: modelsArray, model: undefined };
@@ -100,7 +101,11 @@ async function fetchGroq(payload: any, retries = 2): Promise<any> {
     }
   };
 
-  return Promise.race([doFetch(), timeoutPromise]);
+  try {
+    return await Promise.race([doFetch(), timeoutPromise]);
+  } finally {
+    if (timerId) clearTimeout(timerId);
+  }
 }
 
 // ─── Coach system prompt ──────────────────────────────────────────────────────

@@ -51,7 +51,6 @@ const TabIcon = React.memo(function TabIcon({ Icon, label, focused, badgeCount }
 });
 
 const TAB_ROUTES = [
-  '/(tabs)/profile',
   '/(tabs)/tracker',
   '/(tabs)/dashboard',
   '/(tabs)/coach',
@@ -80,27 +79,29 @@ export default function TabsLayout() {
   const tabBarHeight = baseHeight + paddingBottom;
 
   const getCurrentTabIndex = useCallback(() => {
-    if (pathname.includes('profile'))   return 0;
-    if (pathname.includes('tracker'))   return 1;
-    if (pathname.includes('dashboard')) return 2;
-    if (pathname.includes('coach'))     return 3;
-    if (pathname.includes('planner'))   return 4;
-    if (pathname.includes('social'))    return 5;
-    return 1;
+    if (pathname.includes('tracker'))   return 0;
+    if (pathname.includes('dashboard')) return 1;
+    if (pathname.includes('coach'))     return 2;
+    if (pathname.includes('planner'))   return 3;
+    if (pathname.includes('social'))    return 4;
+    return 0;
   }, [pathname]);
 
   const navigateTab = useCallback((direction: number) => {
+    // Si estamos en perfil u otra ruta fuera de las tabs principales, ignorar swipe
+    if (pathname.includes('profile')) return;
+
     // Vibrar siempre que se detecte el gesto, sin importar si hay cambio
     Haptics.selectionAsync();
     const currentIndex = getCurrentTabIndex();
     const nextIndex = currentIndex + direction;
     if (nextIndex < 0 || nextIndex >= TAB_ROUTES.length) return;
-    if (nextIndex === 4 && !isProActually) {
+    if (nextIndex === 3 && !isProActually) {
       router.push('/modals/paywall');
       return;
     }
     router.push(TAB_ROUTES[nextIndex] as any);
-  }, [getCurrentTabIndex, isProActually]);
+  }, [getCurrentTabIndex, isProActually, pathname]);
 
   const gestureStartY = React.useRef(0);
 
