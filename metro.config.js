@@ -12,11 +12,9 @@ const isProd = process.env.NODE_ENV === 'production' || process.env.APP_VARIANT 
 config.maxWorkers = isProd ? Math.max(2, os.cpus().length - 1) : 2;
 
 // ── Resolver: extensiones priorizadas ────────────────────────────────────────
-// Poner .ts y .tsx primero evita que Metro intente todas las extensiones antes
-// de encontrar el archivo correcto → menos stat() calls en disco.
-config.resolver.sourceExts = [
-  'ts', 'tsx', 'js', 'jsx', 'json', 'cjs', 'mjs',
-];
+config.resolver.sourceExts = Array.from(
+  new Set(['ts', 'tsx', 'js', 'jsx', 'json', 'cjs', 'mjs', ...config.resolver.sourceExts])
+);
 
 // ── Resolver: Package Exports (Node 12+ ESM) ─────────────────────────────────
 // Usa el campo "exports" de package.json para resolución → menos fallbacks,
@@ -41,10 +39,6 @@ config.resolver.blockList = [
   /.*[\/\\]node_modules[\/\\].*[\/\\]android[\/\\]build[\/\\].*/,
   /.*[\/\\]node_modules[\/\\].*[\/\\]\.gradle[\/\\].*/,
   /.*[\/\\]node_modules[\/\\].*[\/\\]cpp[\/\\].*/,
-
-  // ── worklets-core: excluir completamente fuentes nativas ──
-  /.*[\/\\]node_modules[\/\\]react-native-worklets-core[\/\\]android[\/\\].*/,
-  /.*[\/\\]node_modules[\/\\]react-native-worklets-core[\/\\]ios[\/\\].*/,
 
   // ── Directorios pesados sin código JS ejecutable ──
   /.*[\/\\]node_modules[\/\\].*[\/\\]__tests__[\/\\].*/,

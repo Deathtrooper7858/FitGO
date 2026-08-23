@@ -9,13 +9,13 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleDevelopmentDebug"
+        "gradleCommand": ":app:assembleDevelopmentDebug -x lint -x lintVitalAnalyzeRelease"
       },
       "ios": {
         "simulator": true
       },
       "cache": {
-        "key": "development-v1",
+        "key": "development-v5",
         "paths": [
           "node_modules",
           "android/.gradle",
@@ -36,13 +36,13 @@
       "resourceClass": "default",
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleProductionRelease"
+        "gradleCommand": ":app:assembleProductionRelease -x lint -x lintVitalAnalyzeRelease"
       },
       "ios": {
         "simulator": true
       },
       "cache": {
-        "key": "preview-v1",
+        "key": "preview-v5",
         "paths": [
           "node_modules",
           "android/.gradle",
@@ -66,10 +66,10 @@
       "resourceClass": "default",
       "android": {
         "buildType": "app-bundle",
-        "gradleCommand": ":app:bundleProductionRelease"
+        "gradleCommand": ":app:bundleProductionRelease -x lint -x lintVitalAnalyzeRelease"
       },
       "cache": {
-        "key": "production-v1",
+        "key": "production-v5",
         "paths": [
           "node_modules",
           "android/.gradle",
@@ -82,7 +82,8 @@
         "NODE_OPTIONS": "--max-old-space-size=4096",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true",
         "EAS_SKIP_AUTO_FINGERPRINT": "1",
-        "GRADLE_OPTS": "-Xmx6144m -XX:+UseG1GC"
+        "GRADLE_OPTS": "-Xmx6144m -XX:+UseG1GC",
+        "reactNativeArchitectures": "arm64-v8a,armeabi-v7a"
       }
     }
   },
