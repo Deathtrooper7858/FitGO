@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import * as FileSystem from 'expo-file-system';
 import { decode } from 'base64-arraybuffer';
 import { supabase } from '../services/supabase';
 import { triggerInstantNotification } from '../services/notifications';

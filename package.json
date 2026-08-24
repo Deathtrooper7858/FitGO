@@ -1,6 +1,6 @@
 {
   "name": "fitgo",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "main": "index.ts",
   "scripts": {
     "start": "react-native start",
@@ -92,8 +92,8 @@
     "react-native-gesture-handler": "~2.30.0",
     "react-native-gifted-charts": "^1.4.76",
     "react-native-google-mobile-ads": "16.3.3",
-    "react-native-nitro-image": "^0.15.1",
-    "react-native-nitro-modules": "^0.35.9",
+    "react-native-nitro-image": "^0.15.2",
+    "react-native-nitro-modules": "^0.37.0",
     "react-native-purchases": "^10.1.0",
     "react-native-reanimated": "4.2.1",
     "react-native-safe-area-context": "~5.6.2",
@@ -132,7 +132,6 @@
       "reactNativeDirectoryCheck": {
         "exclude": [
           "react-native-fast-tflite",
-          "react-native-nitro-image",
           "expo-av"
         ]
       }

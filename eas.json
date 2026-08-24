@@ -14,7 +14,7 @@
         "simulator": true
       },
       "cache": {
-        "key": "development-v5",
+        "key": "development-v7",
         "paths": [
           "node_modules",
           "android/.gradle",
