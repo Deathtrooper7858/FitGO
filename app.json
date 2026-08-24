@@ -49,12 +49,7 @@
         "com.android.vending.BILLING",
         "com.google.android.gms.permission.AD_ID"
       ],
-      "intentFilters": [],
-      "usesPermissions": [
-        {
-          "name": "com.google.android.gms.permission.AD_ID"
-        }
-      ]
+      "intentFilters": []
     },
     "web": {
       "bundler": "metro",

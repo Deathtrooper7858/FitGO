@@ -1,5 +1,32 @@
 const { withProjectBuildGradle, withAppBuildGradle } = require('@expo/config-plugins');
 
+const withMultiDex = (expoConfig) => {
+  return withAppBuildGradle(expoConfig, (modConfig) => {
+    let contents = modConfig.modResults.contents;
+
+    // Inject multiDexEnabled into defaultConfig if not already present
+    if (!contents.includes('multiDexEnabled')) {
+      contents = contents.replace(
+        /versionName\s+"[^"]+"\s*\n/,
+        (match) => `${match}        multiDexEnabled true\n`
+      );
+    }
+
+    // Inject multidex dependency if not already present
+    if (!contents.includes('androidx.multidex:multidex')) {
+      contents = contents.replace(
+        /implementation\("com\.facebook\.react:react-android"\)/,
+        `implementation("com.facebook.react:react-android")\n    implementation("androidx.multidex:multidex:2.0.1")`
+      );
+    }
+
+    modConfig.modResults.contents = contents;
+    return modConfig;
+  });
+};
+
+
+
 const withDisableLintVital = (expoConfig) => {
   let updatedConfig = withProjectBuildGradle(expoConfig, (modConfig) => {
     const lintDisableCode = `
@@ -85,6 +112,6 @@ module.exports = ({ config }) => {
     };
   }
 
-  return withDisableLintVital(finalConfig);
+  return withMultiDex(withDisableLintVital(finalConfig));
 };
 
