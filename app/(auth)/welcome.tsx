@@ -437,7 +437,7 @@ export default function WelcomeScreen() {
           styles.scrollContent,
           {
             paddingTop: Math.max(insets.top + 56, 90),
-            paddingBottom: Math.max(insets.bottom + 16, 28),
+            paddingBottom: Math.max(insets.bottom, Platform.OS === 'android' ? 24 : 16) + 32,
           },
         ]}
         showsVerticalScrollIndicator={false}

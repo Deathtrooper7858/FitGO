@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { shallow } from 'zustand/vanilla/shallow';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getLocalDateString } from '../utils/date';
 import type { FoodItem } from '../services/foodDatabase';

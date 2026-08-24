@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  TextInput, ActivityIndicator, Alert, Animated
+  TextInput, ActivityIndicator, Alert, Animated,
+  KeyboardAvoidingView, Platform
 } from 'react-native';
 import * as Crypto from 'expo-crypto';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -322,7 +323,8 @@ export default function AddActivityModal() {
           </TouchableOpacity>
         </View>
 
-        <ScrollView contentContainerStyle={s.detailScroll} showsVerticalScrollIndicator={false}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <ScrollView contentContainerStyle={s.detailScroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           {/* Main Hero Icon Card */}
           <View style={[s.detailHeroCard, { backgroundColor: colors.surface, borderColor: colors.border, overflow: 'hidden' }]}>
             <LinearGradient
@@ -697,6 +699,7 @@ export default function AddActivityModal() {
             </TouchableOpacity>
           </View>
         </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
       </View>
     );

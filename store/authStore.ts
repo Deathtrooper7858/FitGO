@@ -56,7 +56,7 @@ async function loadHealthData(): Promise<Record<string, any>> {
 }
 
 export const useAuthStore = create<AuthState>()(
-  (set) => ({
+  (set, get) => ({
       session:    null,
       profile:    null,
       isLoading:  true,
@@ -173,8 +173,3 @@ export const useAuthStore = create<AuthState>()(
       }
     })
 );
-
-// Helper to access state outside of React hooks
-function get() {
-  return useAuthStore.getState();
-}

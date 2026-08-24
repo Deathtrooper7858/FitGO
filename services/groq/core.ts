@@ -40,7 +40,7 @@ const isRomanceLang = (lang: string) => ['Spanish', 'French', 'Portuguese', 'Ita
 // ─── Model IDs ────────────────────────────────────────────────────────────────
 const CHAT_MODEL   = 'openai/gpt-oss-120b'; // Modelo principal multilingüe
 const FAST_MODEL   = 'openai/gpt-oss-20b'; // Modelo rápido de reemplazo
-const VISION_MODEL = 'qwen-3.6-27b'; // Updated from deprecated Llama 4 Scout
+const VISION_MODEL = 'qwen/qwen3.6-27b'; // Active multimodal vision model on Groq
 const AUDIO_MODEL  = 'whisper-large-v3';
 
 /**
@@ -61,9 +61,11 @@ async function fetchGroq(payload: any): Promise<any> {
     let modelsArray = [payload.model];
     
     if (payload.model === CHAT_MODEL) {
-      modelsArray = [CHAT_MODEL, 'llama-3.3-70b-versatile', FAST_MODEL];
+      modelsArray = [CHAT_MODEL, FAST_MODEL, 'qwen/qwen3.6-27b'];
     } else if (payload.model === FAST_MODEL) {
-      modelsArray = [FAST_MODEL, CHAT_MODEL, 'llama-3.3-70b-versatile'];
+      modelsArray = [FAST_MODEL, CHAT_MODEL, 'qwen/qwen3.6-27b'];
+    } else if (payload.model === VISION_MODEL) {
+      modelsArray = [VISION_MODEL];
     }
 
     const attemptPayload = { ...payload, models: modelsArray, model: undefined };

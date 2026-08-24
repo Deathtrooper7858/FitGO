@@ -96,7 +96,9 @@ export const useAdStore = create<AdState>()(
         get().checkAndResetEnergy();
         const current = get().aiTextEnergy;
         if (current >= 1) {
-          set({ aiTextEnergy: current - 1, aiEnergy: current - 1 });
+          // NOTE: aiEnergy is a legacy alias for aiPhotoEnergy only.
+          // Do NOT update aiEnergy here — text energy is tracked separately.
+          set({ aiTextEnergy: current - 1 });
           return true;
         }
         return false;
@@ -139,7 +141,7 @@ export const useAdStore = create<AdState>()(
         }
         set({
           aiTextEnergy: aiTextEnergy + 1,
-          aiEnergy: aiTextEnergy + 1,
+          // NOTE: aiEnergy tracks aiPhotoEnergy only — do not update for text ops.
           textAdsWatchedToday: textAdsWatchedToday + 1,
         });
         console.log(`[AdStore] Text credit added. Watched: ${textAdsWatchedToday + 1}/${MAX_ADS_PER_DAY}`);
@@ -171,7 +173,7 @@ export const useAdStore = create<AdState>()(
       addTextEnergy: (amount) => {
         set((state) => ({
           aiTextEnergy: state.aiTextEnergy + amount,
-          aiEnergy: state.aiTextEnergy + amount,
+          // NOTE: aiEnergy tracks aiPhotoEnergy only — do not update for text ops.
         }));
       },
 

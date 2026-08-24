@@ -223,7 +223,12 @@ Deno.serve(async (req) => {
            currentBody = rawFormData;
            if (model) currentBody.set('model', model);
         } else {
-           currentBody = JSON.stringify({ ...parsed, models: undefined, model: model });
+           // Some models (e.g. qwen) do not support response_format — strip it to prevent
+           // "Failed to validate JSON / failed_generation" errors on those fallback models.
+           const isQwen = typeof model === 'string' && model.toLowerCase().includes('qwen');
+           const bodyPayload: Record<string, any> = { ...parsed, models: undefined, model };
+           if (isQwen) delete bodyPayload.response_format;
+           currentBody = JSON.stringify(bodyPayload);
         }
 
         const groqResponse = await fetch(url, {
@@ -271,8 +276,22 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // For 4xx errors (e.g. bad request), no point in retrying models/keys usually
-        // Break out of the keys loop entirely
+        // If 400/404 error is model-specific (not found, decommissioned, or failed JSON validation on this model), try next fallback model
+        const errMsg = (typeof groqData?.error === 'string' ? groqData.error : (groqData?.error?.message || '')).toLowerCase();
+        if (
+          groqResponse.status === 404 ||
+          (groqResponse.status === 400 && (
+            errMsg.includes('does not exist') ||
+            errMsg.includes('decommissioned') ||
+            errMsg.includes('model') ||
+            errMsg.includes('failed to validate json')
+          ))
+        ) {
+          console.warn(`[Groq Proxy] Model error for ${model} (${errMsg}). Retrying with next model fallback.`);
+          continue;
+        }
+
+        // For other client 4xx errors, do not retry
         shouldAdvanceKey = false;
         finalResponse = new Response(JSON.stringify(groqData), {
           headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },

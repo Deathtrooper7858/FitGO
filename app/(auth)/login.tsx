@@ -302,18 +302,23 @@ export default function LoginScreen() {
           const { url } = res as { type: 'success'; url: string };
           try {
             setGlobalLoading(true);
-            const session = await createSessionFromUrl(url);
-            if (!session) {
-              setGlobalLoading(false);
-              showAlert(t('common.error'), t('auth.sessionFailed'), 'error');
+            const { data: { session: existingSession } } = await supabase.auth.getSession();
+            if (!existingSession) {
+              await createSessionFromUrl(url);
             }
           } catch (sessionError: any) {
+            const { data: { session: checkSession } } = await supabase.auth.getSession();
+            const errMsg = sessionError?.message || '';
+            const isFlowStateError = errMsg.toLowerCase().includes('flow state') || errMsg.toLowerCase().includes('pkce');
+            if (!checkSession && !isFlowStateError) {
+              showAlert(
+                t('common.error'),
+                errMsg || t('auth.googleLoginFailed'),
+                'error'
+              );
+            }
+          } finally {
             setGlobalLoading(false);
-            showAlert(
-              t('common.error'),
-              sessionError.message ?? t('auth.googleLoginFailed'),
-              'error'
-            );
           }
         }
       } else {

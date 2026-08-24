@@ -2,13 +2,16 @@
  * OAuth Callback Screen — fitgo://auth/callback
  *
  * Expo Router intercepts the deep link from Google OAuth and navigates here.
- * This screen exchanges the PKCE code for a session and lets
- * NavigationGuard in _layout.tsx handle the redirect to the correct screen.
+ * This screen exchanges the PKCE code for a session. After the exchange,
+ * we poll until _layout.tsx has populated the session in the store, then
+ * navigate explicitly — instead of relying solely on NavigationGuard firing
+ * while this screen is in the 'auth' segment (not '(auth)').
  */
 import { useEffect, useRef } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '../../services/supabase';
+import { useAuthStore } from '../../store/authStore';
 
 export default function AuthCallbackScreen() {
   const params = useLocalSearchParams<{ code?: string; error?: string; error_description?: string }>();
@@ -29,17 +32,38 @@ export default function AuthCallbackScreen() {
 
         // Case 2: PKCE code flow (Google uses this)
         if (params.code) {
+          const { data: { session: existingSession } } = await supabase.auth.getSession();
+          if (existingSession) {
+            // Session already exists (set by login.tsx handleOAuth before deep-link fired)
+            router.replace('/(tabs)/tracker');
+            return;
+          }
+
           const { error } = await supabase.auth.exchangeCodeForSession(params.code);
           if (error) {
-            console.error('[AuthCallback] exchangeCodeForSession error:', error.message);
+            console.warn('[AuthCallback] exchangeCodeForSession error:', error.message);
+            // Check if session was already established by login/register screen
+            const { data: { session: checkSession } } = await supabase.auth.getSession();
+            if (checkSession) {
+              router.replace('/(tabs)/tracker');
+              return;
+            }
             router.replace('/(auth)/welcome');
             return;
           }
-          // ✅ Session created — NavigationGuard will redirect to /(tabs)/tracker
+
+          // ✅ Code exchanged. _layout.tsx's onAuthStateChange will call fetchProfile.
+          // Poll until the store has a valid session, then navigate.
+          await waitForAuthAndNavigate();
           return;
         }
 
-        // Case 3: No code, no error — fallback
+        // Case 3: No code, no error — check if session exists already
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (currentSession) {
+          router.replace('/(tabs)/tracker');
+          return;
+        }
         console.warn('[AuthCallback] No code or error in params, redirecting to welcome');
         router.replace('/(auth)/welcome');
       } catch (e: any) {
@@ -49,7 +73,7 @@ export default function AuthCallbackScreen() {
     };
 
     handle();
-  }, []);
+  }, [params.code, params.error, params.error_description]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#0D0F14', justifyContent: 'center', alignItems: 'center', gap: 16 }}>
@@ -59,4 +83,45 @@ export default function AuthCallbackScreen() {
       </Text>
     </View>
   );
+}
+
+/**
+ * Polls the authStore until isLoading is false and session exists,
+ * then navigates to the correct screen.
+ * Safety timeout: 8 seconds → redirects to welcome to avoid infinite loop.
+ */
+async function waitForAuthAndNavigate(): Promise<void> {
+  const POLL_INTERVAL_MS = 150;
+  const TIMEOUT_MS = 8000;
+  const start = Date.now();
+
+  while (Date.now() - start < TIMEOUT_MS) {
+    await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+
+    const { session, profile, isLoading } = useAuthStore.getState();
+
+    // Still initializing — keep waiting
+    if (isLoading) continue;
+
+    if (session && profile?.id) {
+      if (profile.onboardingDone) {
+        router.replace('/(tabs)/tracker');
+      } else {
+        router.replace('/onboarding');
+      }
+      return;
+    }
+
+    // isLoading=false but no session → something went wrong
+    if (!session) {
+      console.warn('[AuthCallback] No session after code exchange, redirecting to welcome');
+      router.replace('/(auth)/welcome');
+      return;
+    }
+  }
+
+  // Timeout — force navigate based on current state
+  console.warn('[AuthCallback] Timeout waiting for auth, falling back');
+  const { session } = useAuthStore.getState();
+  router.replace(session ? '/(tabs)/tracker' : '/(auth)/welcome');
 }

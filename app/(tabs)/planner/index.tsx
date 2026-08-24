@@ -38,6 +38,21 @@ import { generateNutritionHTML, generateWorkoutHTML } from '../../../components/
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 type PlannerMode = 'nutrition' | 'workouts';
 
+/** Strips raw API/AI jargon and returns a friendly user-facing error string. */
+function sanitizeAIError(msg: string, fallback: string): string {
+  if (!msg) return fallback;
+  const cleaned = msg.replace(/^AI Service Error:\s*/i, '').trim();
+  if (/failed to validate json|failed_generation/i.test(cleaned))
+    return 'The AI couldn\'t generate the plan right now. Please try again.';
+  if (/rate limit|tokens per day|too many requests|all apis are rate limited/i.test(cleaned))
+    return 'The AI service is busy right now. Please try again in a few minutes.';
+  if (/timed out/i.test(cleaned))
+    return 'The request took too long. Please check your connection and try again.';
+  if (/network|no internet/i.test(cleaned))
+    return 'No internet connection detected. Please check your network.';
+  return cleaned || fallback;
+}
+
 function getStartOfWeek(date: Date) {
   const d = new Date(date);
   const day = d.getDay();
@@ -213,7 +228,7 @@ export default function PlannerScreen() {
         if (planId) { await supabase.from('workout_plan_items').delete().eq('plan_id', planId).eq('day_of_week', day); await supabase.from('workout_plan_items').insert([{ plan_id: planId, day_of_week: day, routine_name: newPlans[day].name || t('planner.restDay', 'Rest Day'), exercises: newPlans[day].exercises || [] }]); }
       }
       setShowSuccess(true);
-    } catch (err: any) { showAlert('error', t('common.error'), err?.message ?? t('planner.analysisFailedSub')); }
+    } catch (err: any) { showAlert('error', t('common.error'), sanitizeAIError(err?.message ?? '', t('planner.analysisFailedSub'))); }
     finally { setLoading(false); }
   };
 
@@ -249,7 +264,7 @@ export default function PlannerScreen() {
         if (planData) { await supabase.from('workout_plan_items').insert(DAYS.map(d => ({ plan_id: planData.id, day_of_week: d, routine_name: (plansOnly as Record<string, any>)[d]?.name || t('planner.restDay', 'Rest Day'), exercises: (plansOnly as Record<string, any>)[d]?.exercises || [] }))); }
       }
       setShowSuccess(true);
-    } catch (err: any) { showAlert('error', t('common.error'), err?.message ?? t('planner.analysisFailedSub')); }
+    } catch (err: any) { showAlert('error', t('common.error'), sanitizeAIError(err?.message ?? '', t('planner.analysisFailedSub'))); }
     finally { setLoading(false); }
   };
 

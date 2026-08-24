@@ -2,7 +2,6 @@ import { useCallback, useEffect } from 'react';
 import { RewardedAd, RewardedAdEventType, AdEventType } from 'react-native-google-mobile-ads';
 import { router } from 'expo-router';
 import { useAICreditsStore } from '../store/aiCreditsStore';
-import { usePurchaseStore } from '../store';
 import { AD_UNIT_IDS, AD_CONFIG } from '../constants/adConfig';
 import { useIsPro } from './useIsPro';
 
@@ -67,18 +66,33 @@ export function useAICredits() {
 
       const ad = getRewardedAd();
 
-      const earnedListener = ad.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
+      // Guard: prevent multiple resolutions and ensure all listeners get cleaned up.
+      let resolved = false;
+      let earnedUnsub: (() => void) | undefined;
+      let closeUnsub: (() => void) | undefined;
+      let loadUnsub: (() => void) | undefined;
+      let errorUnsub: (() => void) | undefined;
+
+      const cleanup = () => {
+        earnedUnsub?.();
+        closeUnsub?.();
+        loadUnsub?.();
+        errorUnsub?.();
+      };
+
+      earnedUnsub = ad.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
+        if (resolved) return;
+        resolved = true;
         rechargeCredits(AD_CONFIG.rewardedAdCredits);
-        earnedListener();
-        closeListener();
-        // Reload ad for next use
+        cleanup();
         rewardedAd = null;
         resolve(true);
       });
 
-      const closeListener = ad.addAdEventListener(AdEventType.CLOSED, () => {
-        earnedListener();
-        closeListener();
+      closeUnsub = ad.addAdEventListener(AdEventType.CLOSED, () => {
+        if (resolved) return;
+        resolved = true;
+        cleanup();
         rewardedAd = null;
         resolve(false);
       });
@@ -86,13 +100,16 @@ export function useAICredits() {
       if (ad.loaded) {
         ad.show();
       } else {
-        // Try to load and show
-        const loadListener = ad.addAdEventListener(AdEventType.LOADED, () => {
-          loadListener();
+        // Not yet loaded — wait for LOADED or ERROR before showing
+        loadUnsub = ad.addAdEventListener(AdEventType.LOADED, () => {
+          loadUnsub?.();
+          loadUnsub = undefined;
           ad.show();
         });
-        const errorListener = ad.addAdEventListener(AdEventType.ERROR, () => {
-          errorListener();
+        errorUnsub = ad.addAdEventListener(AdEventType.ERROR, () => {
+          if (resolved) return;
+          resolved = true;
+          cleanup();
           resolve(false);
         });
         ad.load();

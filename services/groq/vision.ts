@@ -30,9 +30,13 @@ export async function analyzeFoodPhoto(base64Image: string, language: string = '
       model: VISION_MODEL,
       messages: [
         {
+          role: 'system',
+          content: 'You are a nutrition expert that analyzes food images and returns data strictly in JSON format.'
+        },
+        {
           role: 'user',
           content: [
-            { type: 'text', text: `You are a nutrition expert that analyzes food images and returns data in JSON format.\n\n${prompt}` },
+            { type: 'text', text: prompt },
             {
               type: 'image_url',
               image_url: { url: prepared.dataUrl },
@@ -40,8 +44,9 @@ export async function analyzeFoodPhoto(base64Image: string, language: string = '
           ],
         },
       ],
-      max_tokens: 1024,
+      max_tokens: 1500,
       temperature: 0.2,
+      response_format: { type: 'json_object' },
     });
 
     let text = (data.choices[0]?.message?.content ?? '').trim();
@@ -115,6 +120,10 @@ If the image is not a physique photo, kindly mention it in the feedback but try 
       model: VISION_MODEL,
       messages: [
         {
+          role: 'system',
+          content: 'You are a professional biomechanics analyst and elite fitness coach. You respond strictly in JSON format matching the schema.'
+        },
+        {
           role: 'user',
           content: [
             { type: 'text', text: prompt },
@@ -125,7 +134,7 @@ If the image is not a physique photo, kindly mention it in the feedback but try 
           ],
         },
       ],
-      max_tokens: 600,
+      max_tokens: 1500,
       temperature: 0.3,
       response_format: { type: 'json_object' },
     });

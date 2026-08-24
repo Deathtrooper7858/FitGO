@@ -24,26 +24,39 @@ function mapSupabaseRowToFoodLog(d: any): FoodLog {
       protein: d.grams > 0 ? Math.round((d.protein / d.grams) * 100) : d.protein,
       carbs: d.grams > 0 ? Math.round((d.carbs / d.grams) * 100) : d.carbs,
       fat: d.grams > 0 ? Math.round((d.fat / d.grams) * 100) : d.fat,
-      fiber: d.grams > 0 ? Math.round((d.fiber / d.grams) * 100) : d.fiber,
-      sugar: d.grams > 0 ? Math.round((d.sugar / d.grams) * 100) : d.sugar,
-      sodium: d.grams > 0 ? Math.round((d.sodium / d.grams) * 100) : d.sodium,
-      saturatedFat: d.grams > 0 ? Math.round((d.saturated_fat / d.grams) * 100) : d.saturated_fat,
-      transFat: d.grams > 0 ? Math.round((d.trans_fat / d.grams) * 100) : d.trans_fat,
-      cholesterol: d.grams > 0 ? Math.round((d.cholesterol / d.grams) * 100) : d.cholesterol,
-      iron: d.grams > 0 ? Math.round((d.iron / d.grams) * 100) : d.iron,
-      calcium: d.grams > 0 ? Math.round((d.calcium / d.grams) * 100) : d.calcium,
+      // ?? 0 guards against undefined columns (new DB columns not yet populated)
+      fiber: d.grams > 0 ? Math.round(((d.fiber ?? 0) / d.grams) * 100) : (d.fiber ?? 0),
+      sugar: d.grams > 0 ? Math.round(((d.sugar ?? 0) / d.grams) * 100) : (d.sugar ?? 0),
+      sodium: d.grams > 0 ? Math.round(((d.sodium ?? 0) / d.grams) * 100) : (d.sodium ?? 0),
+      saturatedFat: d.grams > 0 ? Math.round(((d.saturated_fat ?? 0) / d.grams) * 100) : (d.saturated_fat ?? 0),
+      transFat: d.grams > 0 ? Math.round(((d.trans_fat ?? 0) / d.grams) * 100) : (d.trans_fat ?? 0),
+      cholesterol: d.grams > 0 ? Math.round(((d.cholesterol ?? 0) / d.grams) * 100) : (d.cholesterol ?? 0),
+      iron: d.grams > 0 ? Math.round(((d.iron ?? 0) / d.grams) * 100) : (d.iron ?? 0),
+      calcium: d.grams > 0 ? Math.round(((d.calcium ?? 0) / d.grams) * 100) : (d.calcium ?? 0),
       source: 'custom',
     },
     grams: d.grams, meal: d.meal, loggedAt: d.logged_at,
     calories: d.calories, protein: d.protein, carbs: d.carbs, fat: d.fat,
-    fiber: d.fiber, sugar: d.sugar, sodium: d.sodium, iron: d.iron, calcium: d.calcium,
-    saturatedFat: d.saturated_fat, transFat: d.trans_fat, cholesterol: d.cholesterol,
+    fiber: d.fiber ?? 0, sugar: d.sugar ?? 0, sodium: d.sodium ?? 0, iron: d.iron ?? 0, calcium: d.calcium ?? 0,
+    saturatedFat: d.saturated_fat ?? 0, transFat: d.trans_fat ?? 0, cholesterol: d.cholesterol ?? 0,
     user_id: d.user_id, is_favorite: d.is_favorite,
   };
 }
 
 const _fetchLogsInProgress = new Set<string>();
 const _fetchHistoryInProgress = new Set<string>();
+
+// Debounce squad fetches to prevent N+1 Supabase queries when the user
+// logs multiple foods in quick succession (each addLog previously triggered
+// a full fetchMySquad with multiple DB round-trips).
+let _squadFetchTimer: ReturnType<typeof setTimeout> | null = null;
+function debouncedSquadFetch(userId: string, delayMs = 3000): void {
+  if (_squadFetchTimer) clearTimeout(_squadFetchTimer);
+  _squadFetchTimer = setTimeout(() => {
+    _squadFetchTimer = null;
+    useLeagueStore.getState().fetchMySquad(userId);
+  }, delayMs);
+}
 
 export interface FoodLogSlice {
   todayLogs: FoodLog[];
@@ -142,7 +155,8 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
                   { calories: profile.targetCalories, protein: profile.macros.protein, carbs: profile.macros.carbs, fat: profile.macros.fat }
                 );
               }
-              await ls.fetchMySquad(profile.id);
+              // Debounced to avoid N+1 queries when multiple foods are logged quickly
+              debouncedSquadFetch(profile.id);
             } catch (e) { __DEV__ && console.warn('[NutritionStore] Gamification error:', e); }
           })();
         } catch (err) { console.warn('[NutritionStore] addLog sync error:', err); throw err; }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,6 +18,31 @@ import { useIsPro } from '../../hooks/useIsPro';
 import { AdTimerOverlay } from '../../components/AdTimerOverlay';
 import { RewardedAdGate } from '../../components/RewardedAdGate';
 import { getLocalDateString } from '../../utils/date';
+import { CustomAlert } from '../../components/CustomAlert';
+
+/** Strips raw API/AI jargon from error messages and returns a user-friendly string. */
+function sanitizeAIError(msg: string): string {
+  if (!msg) return '';
+  // Remove the "AI Service Error:" prefix if present
+  const cleaned = msg.replace(/^AI Service Error:\s*/i, '').trim();
+  // Map known technical messages to friendly ones
+  if (/failed to validate json/i.test(cleaned)) {
+    return 'The AI couldn\'t process the request right now. Please try again in a moment.';
+  }
+  if (/rate limit|tokens per day|too many requests/i.test(cleaned)) {
+    return 'The AI service is currently busy. Please try again in a few minutes.';
+  }
+  if (/timed out/i.test(cleaned)) {
+    return 'The request took too long. Please check your connection and try again.';
+  }
+  if (/network|no internet/i.test(cleaned)) {
+    return 'No internet connection. Please check your network and try again.';
+  }
+  if (/all apis are rate limited/i.test(cleaned)) {
+    return 'All AI servers are busy right now. Please try again in a few minutes.';
+  }
+  return cleaned;
+}
 
 const Accordion = ({ title, icon, color, defaultExpanded = false, children, colors }: any) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
@@ -86,6 +111,8 @@ export default function ProgressEvaluationModal() {
   const [targetArea, setTargetArea] = useState<TargetArea>('full');
   const [userContext, setUserContext] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMsg, setAlertMsg] = useState('');
   const [result, setResult] = useState<{
     id?: string;
     feedback: string;
@@ -238,9 +265,13 @@ export default function ProgressEvaluationModal() {
       };
       setResult(newEvaluation);
       addEvaluation(newEvaluation);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert(t('evaluation.error', 'An error occurred while analyzing the image.'));
+      const rawMsg: string = error?.message ?? '';
+      const friendlyMsg = sanitizeAIError(rawMsg) ||
+        t('evaluation.error', 'An error occurred while analyzing the image.');
+      setAlertMsg(friendlyMsg);
+      setAlertVisible(true);
     } finally {
       setIsAnalyzing(false);
     }
@@ -329,7 +360,8 @@ export default function ProgressEvaluationModal() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={s.scroll} contentContainerStyle={s.content}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView style={s.scroll} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         {showHistory ? (
           <View>
              <TouchableOpacity style={s.backToMainBtn} onPress={() => setShowHistory(false)}>
@@ -481,9 +513,19 @@ export default function ProgressEvaluationModal() {
              <Text style={[s.secondaryBtnText, { color: colors.textPrimary }]}>{t('evaluation.backToMain', 'Volver al Inicio')}</Text>
           </TouchableOpacity>
         )}
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       <AdTimerOverlay featureId="evaluation" />
+
+      <CustomAlert
+        visible={alertVisible}
+        type="error"
+        title={t('common.error', 'Error')}
+        message={alertMsg}
+        confirmText="OK"
+        onConfirm={() => setAlertVisible(false)}
+      />
     </SafeAreaView>
   );
 }

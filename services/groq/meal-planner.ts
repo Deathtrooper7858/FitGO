@@ -97,9 +97,15 @@ Return ONLY valid JSON — no markdown, no explanation, just the JSON object:
 
   const data = await fetchGroq({
     model: CHAT_MODEL,
-    messages: [{ role: 'user', content: prompt }],
-    max_tokens: 4000,
-    temperature: 0.55,
+    messages: [
+      {
+        role: 'system',
+        content: 'You are an expert sports nutritionist and dietitian AI. You must respond ONLY with a valid JSON object matching the requested schema. Do not include markdown or explanations.'
+      },
+      { role: 'user', content: prompt }
+    ],
+    max_tokens: 6000,
+    temperature: 0.5,
     response_format: { type: 'json_object' },
   });
 
@@ -171,9 +177,15 @@ Return ONLY valid JSON (no markdown):
 
   const data = await fetchGroq({
     model: CHAT_MODEL,
-    messages: [{ role: 'user', content: prompt }],
-    max_tokens: 800,
-    temperature: 0.55,
+    messages: [
+      {
+        role: 'system',
+        content: 'You are an expert sports nutritionist AI. You must respond ONLY with a valid JSON object matching the requested schema.'
+      },
+      { role: 'user', content: prompt }
+    ],
+    max_tokens: 1500,
+    temperature: 0.5,
     response_format: { type: 'json_object' },
   });
 
@@ -205,8 +217,14 @@ Return ONLY a valid JSON object:
   try {
     const data = await fetchGroq({
       model: FAST_MODEL,
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 300,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert nutritionist AI. You must respond ONLY with a valid JSON object.'
+        },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: 500,
       temperature: 0.7,
       response_format: { type: 'json_object' },
     });

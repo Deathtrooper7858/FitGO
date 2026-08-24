@@ -30,14 +30,25 @@ export const useSyncStore = create<SyncState>()(
       isProcessing: false,
 
       enqueueTask: (task) => {
+        const MAX_QUEUE_SIZE = 100;
+        const MAX_TASK_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+        const now = Date.now();
         const newTask: SyncTask = {
           ...task,
           id: Math.random().toString(36).substring(2, 15),
-          createdAt: Date.now(),
+          createdAt: now,
         };
-        set((state) => ({ queue: [...state.queue, newTask] }));
-        console.log(`[SyncQueue] Tarea añadida a la cola: ${newTask.table} (${newTask.method})`);
-        
+
+        set((state) => {
+          // Prune tasks older than 24h first, then cap to MAX_QUEUE_SIZE
+          const validQueue = state.queue
+            .filter(t => now - t.createdAt < MAX_TASK_AGE_MS)
+            .slice(-(MAX_QUEUE_SIZE - 1)); // keep last N-1 to make room for new task
+          console.log(`[SyncQueue] Tarea añadida a la cola: ${newTask.table} (${newTask.method})`);
+          return { queue: [...validQueue, newTask] };
+        });
+
         // Si hay internet, intentamos procesar inmediatamente
         if (useNetworkStore.getState().isInternetReachable) {
           get().processQueue();

@@ -84,9 +84,15 @@ Return ONLY valid JSON (no markdown). Use this exact structure:
 
   const data = await fetchGroq({
     model: CHAT_MODEL,
-    messages: [{ role: 'user', content: prompt }],
-    max_tokens: 3500,
-    temperature: 0.6,
+    messages: [
+      {
+        role: 'system',
+        content: 'You are an elite fitness trainer AI. You must respond ONLY with a valid JSON object matching the requested schema. Do not include markdown or explanations.'
+      },
+      { role: 'user', content: prompt }
+    ],
+    max_tokens: 5000,
+    temperature: 0.5,
     response_format: { type: 'json_object' },
   });
 
@@ -113,30 +119,36 @@ Return ONLY valid JSON (no markdown). Use this exact structure:
 export async function generateDailyWorkoutPlan(userProfile: any, language: string = 'en', day: string): Promise<any> {
   const targetLang = getLang(language);
   const homeWorkoutText = userProfile.homeWorkout 
-    ? `- Workout Environment: Home workout / Calisthenics with: ${userProfile.homeEquipment || 'basic household items'}` 
-    : "- Workout Environment: Full Gym access.";
+    ? `- Environment: Home / Calisthenics (${userProfile.homeEquipment || 'bodyweight only'}).` 
+    : "- Environment: Full Gym.";
 
-  const prompt = `Create a 1-day workout plan for the user for the day: ${day}.
+  const prompt = `Create a 1-day workout routine for ${day}:
 - Goal: ${userProfile.goal}
-- Activity Level: ${userProfile.activityLevel}
-- Medical Conditions: ${userProfile.medicalConditions?.join(', ') || 'None'}
+- Level: ${userProfile.activityLevel}
 ${homeWorkoutText}
+IMPORTANT: Exercise names and descriptions MUST be in ${targetLang}.
 
-IMPORTANT: All exercise names MUST be in ${targetLang}. Return ONLY valid JSON (no markdown).
+Return ONLY valid JSON (no markdown):
 {
   "${day}": {
-    "name": "${isRomanceLang(targetLang) ? 'Pecho y Tríceps' : 'Chest & Triceps'}",
+    "name": "Routine Name in ${targetLang}",
     "exercises": [
-      { "name": "${isRomanceLang(targetLang) ? 'Press de Banca' : 'Bench Press'}", "englishName": "Bench Press", "sets": 3, "reps": "10-12", "rest": "90s" }
+      { "name": "Exercise Name in ${targetLang}", "englishName": "English Name", "sets": 3, "reps": "10-12", "rest": "60s" }
     ]
   }
 }`;
 
   const data = await fetchGroq({
     model: CHAT_MODEL,
-    messages: [{ role: 'user', content: prompt }],
-    max_tokens: 800,
-    temperature: 0.6,
+    messages: [
+      {
+        role: 'system',
+        content: 'You are an elite fitness trainer AI. You must respond ONLY with a valid JSON object matching the requested schema.'
+      },
+      { role: 'user', content: prompt }
+    ],
+    max_tokens: 1500,
+    temperature: 0.5,
     response_format: { type: 'json_object' },
   });
 
@@ -145,7 +157,7 @@ IMPORTANT: All exercise names MUST be in ${targetLang}. Return ONLY valid JSON (
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error('Failed to parse daily workout plan from AI. Please try again.');
+    throw new Error('Failed to parse daily workout from AI. Please try again.');
   }
 }
 
@@ -174,8 +186,14 @@ Structure:
 
   const data = await fetchGroq({
     model: FAST_MODEL,
-    messages: [{ role: 'user', content: prompt }],
-    max_tokens: 800,
+    messages: [
+      {
+        role: 'system',
+        content: 'You are an expert fitness coach. You must respond ONLY with a valid JSON object.'
+      },
+      { role: 'user', content: prompt }
+    ],
+    max_tokens: 1200,
     temperature: 0.3,
     response_format: { type: 'json_object' },
   });

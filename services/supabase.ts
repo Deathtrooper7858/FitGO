@@ -77,8 +77,10 @@ export const supabase = createClient(
     global: {
       fetch: fetchWithTimeout,
       headers: {
+        // NOTE: Cache-Control is intentionally omitted from global headers.
+        // Applying max-age to Supabase POST requests (mutations, auth, RPCs) could
+        // cause proxies or service workers to cache write responses incorrectly.
         'Connection': 'keep-alive',
-        'Cache-Control': 'max-age=30',
       },
     },
   }

@@ -1,17 +1,15 @@
-import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { useTheme } from '../../hooks/useTheme';
-import { useSettingsStore } from '../../store';
 
 export default function AuthLayout() {
   const colors = useTheme();
-  const { setPremiumColor } = useSettingsStore();
 
-  // Garantizar que las pantallas de autenticación siempre muestren
-  // el color clásico, sin importar lo que haya en el store persistido.
-  useEffect(() => {
-    setPremiumColor(null);
-  }, [setPremiumColor]);
+  // NOTE: premiumColor is intentionally NOT reset here.
+  // The root _layout.tsx already clears it in the auth state listener
+  // whenever the session is null (logout) or the user ID changes (account switch).
+  // Resetting it here was causing a race condition: expo-router mounts this layout
+  // transiently during startup before redirecting authenticated users to the tabs,
+  // which wiped the persisted premium color before fetchProfile could restore it.
 
   return (
     <Stack

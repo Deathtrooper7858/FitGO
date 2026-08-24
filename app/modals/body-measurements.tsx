@@ -296,7 +296,7 @@ export default function BodyMeasurementsModal() {
           </TouchableOpacity>
         </View>
 
-        <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" showsVerticalScrollIndicator={false}>
           <View style={s.infoSection}>
             <View style={[s.infoBadge, { backgroundColor: `${colors.primary}10`, borderColor: `${colors.primary}20` }]}>
               <Info size={14} color={colors.primary} />

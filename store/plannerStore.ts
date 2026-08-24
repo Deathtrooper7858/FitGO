@@ -12,7 +12,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { SecureStorage } from '../utils/storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface PlanItem {
@@ -99,7 +99,10 @@ export const usePlannerStore = create<PlannerState>()(
     }),
     {
       name: 'ff-planner',
-      storage: createJSONStorage(() => SecureStorage),
+      // AsyncStorage is appropriate here: plan data (meal/exercise names) is not sensitive,
+      // and SecureStorage's 2KB/key limit on Android Keystore causes silent data loss
+      // when a 7-day meal + workout plan is stored (easily exceeds limit).
+      storage: createJSONStorage(() => AsyncStorage),
     }
   )
 );

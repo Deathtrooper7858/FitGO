@@ -64,9 +64,6 @@ LogBox.ignoreLogs([
   'AuthRetryableFetchError: Aborted'
 ]);
 
-// Safely detect if edge-to-edge is enabled
-let isEdgeToEdgeActive = false;
-
 preventAutoHideAsync();
 
 // ─── Navigation Guard ─────────────────────────────────────────────────────────
@@ -83,7 +80,7 @@ function NavigationGuard() {
     if (!navigationState?.key) return;
 
     const timer = setTimeout(() => {
-      const inAuthGroup   = segments[0] === '(auth)';
+      const inAuthGroup   = segments[0] === '(auth)' || segments[0] === 'auth';
       const inOnboarding  = segments[0] === 'onboarding';
       const isTermsModal  = segments.join('/') === 'modals/terms' || (segments[0] === '(auth)' && segments[1] === 'terms');
       const allSegments   = segments as string[];
@@ -180,16 +177,14 @@ function RootLayout() {
         lastButtonStyleRef.current = targetButtonStyle;
       }
 
-      if (!isEdgeToEdgeActive) {
-        const inTabs = segments[0] === '(tabs)';
-        const targetColor = inTabs ? colors.surface : colors.background;
-        
-        if (lastColorRef.current !== targetColor) {
-          NavigationBar.setPositionAsync('relative');
-          NavigationBar.setBackgroundColorAsync(targetColor);
-          NavigationBar.setBorderColorAsync(targetColor);
-          lastColorRef.current = targetColor;
-        }
+      const inTabs = segments[0] === '(tabs)';
+      const targetColor = inTabs ? colors.surface : colors.background;
+      
+      NavigationBar.setPositionAsync('relative');
+      if (lastColorRef.current !== targetColor) {
+        NavigationBar.setBackgroundColorAsync(targetColor);
+        NavigationBar.setBorderColorAsync(targetColor);
+        lastColorRef.current = targetColor;
       }
     }
   }, [theme, segments, colors]);
@@ -316,6 +311,7 @@ function RootLayout() {
           <Stack.Screen name="index" />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="auth/callback" />
           <Stack.Screen name="onboarding" />
           <Stack.Screen
             name="modals/scan"

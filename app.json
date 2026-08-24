@@ -31,7 +31,7 @@
     },
     "android": {
       "package": "com.fitgo.app",
-      "versionCode": 15,
+      "versionCode": 16,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0D0F14"
@@ -48,6 +48,12 @@
         "android.permission.ACTIVITY_RECOGNITION",
         "com.android.vending.BILLING",
         "com.google.android.gms.permission.AD_ID"
+      ],
+      "intentFilters": [],
+      "usesPermissions": [
+        {
+          "name": "com.google.android.gms.permission.AD_ID"
+        }
       ]
     },
     "web": {
