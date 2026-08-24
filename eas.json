@@ -8,8 +8,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "android": {
-        "buildType": "apk",
-        "gradleCommand": ":app:assembleDevelopmentDebug -x lint -x lintVitalAnalyzeRelease"
+        "buildType": "apk"
       },
       "ios": {
         "simulator": true
@@ -35,8 +34,7 @@
       "channel": "preview",
       "resourceClass": "default",
       "android": {
-        "buildType": "apk",
-        "gradleCommand": ":app:assembleProductionRelease -x lint -x lintVitalAnalyzeRelease"
+        "buildType": "apk"
       },
       "ios": {
         "simulator": true
@@ -65,8 +63,7 @@
       "node": "22.14.0",
       "resourceClass": "default",
       "android": {
-        "buildType": "app-bundle",
-        "gradleCommand": ":app:bundleProductionRelease -x lint -x lintVitalAnalyzeRelease"
+        "buildType": "app-bundle"
       },
       "cache": {
         "key": "production-v5",

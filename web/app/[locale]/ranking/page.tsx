@@ -272,9 +272,9 @@ export default function RankingPage() {
                       )}
                     </div>
 
-                    <div className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center overflow-hidden" style={{ background: "linear-gradient(135deg, #334155, #1E293B)" }}>
+                    <div className="relative w-10 h-10 rounded-full shrink-0 flex items-center justify-center overflow-hidden" style={{ background: "linear-gradient(135deg, #334155, #1E293B)" }}>
                       {user.avatar_url ? (
-                        <Image src={user.avatar_url} alt="" fill sizes="40px" className="object-cover" />
+                        <Image src={user.avatar_url} alt="" fill sizes="40px" unoptimized className="object-cover" />
                       ) : (
                         <span className="text-sm font-bold text-text-primary">
                           {(user.name || "?")[0].toUpperCase()}
