@@ -79,48 +79,31 @@ function NavigationGuard() {
     // ── Navigator not ready yet — skip until it has mounted ─────────────────
     if (!navigationState?.key) return;
 
-    const timer = setTimeout(() => {
-      const inAuthGroup   = segments[0] === '(auth)' || segments[0] === 'auth';
-      const inOnboarding  = segments[0] === 'onboarding';
-      const isTermsModal  = segments.join('/') === 'modals/terms' || (segments[0] === '(auth)' && segments[1] === 'terms');
-      const allSegments   = segments as string[];
+    // ── Auth still resolving — never navigate while loading to prevent flashes
+    if (isLoading) return;
 
-      // ── Fast-path: if we already have a cached profile + session, navigate
-      //    immediately WITHOUT waiting for isLoading to resolve. This eliminates
-      //    the ~3-second flash of the onboarding screen on app resume.
-      if (session && profile?.onboardingDone && profile?.id) {
-        const isUpdatePassword = segments.join('/') === '(auth)/update-password';
-        if (isUpdatePassword) return; // Stay on the screen to type new password
+    const inAuthGroup   = segments[0] === '(auth)' || segments[0] === 'auth';
+    const inOnboarding  = segments[0] === 'onboarding';
+    const isTermsModal  = segments.join('/') === 'modals/terms' || (segments[0] === '(auth)' && segments[1] === 'terms');
+    const allSegments   = segments as string[];
 
-        if (inAuthGroup || inOnboarding || allSegments.length === 0) {
-          router.replace('/(tabs)/tracker');
-        }
-        return;
+    if (!session) {
+      if (!inAuthGroup) {
+        router.replace('/(auth)/welcome');
       }
-
-      // ── Slow-path: wait for the network fetch to complete before deciding
-      if (isLoading) return;
-
-      if (!session) {
-        if (!inAuthGroup) {
-          router.replace('/(auth)/welcome');
-        }
-      } else if (!profile || !profile.onboardingDone || !profile.id) {
-        // Session exists but profile is invalid or incomplete → onboarding
-        if (!inOnboarding && !isTermsModal) {
-          router.replace('/onboarding');
-        }
-      } else {
-        const isUpdatePassword = segments.join('/') === '(auth)/update-password';
-        if (isUpdatePassword) return; // Stay on the screen to type new password
-        
-        if (inAuthGroup || inOnboarding || allSegments.length === 0) {
-          router.replace('/(tabs)/tracker');
-        }
+    } else if (!profile || !profile.onboardingDone || !profile.id) {
+      // Session exists but profile is invalid or incomplete → onboarding
+      if (!inOnboarding && !isTermsModal) {
+        router.replace('/onboarding');
       }
-    }, 10);
+    } else {
+      const isUpdatePassword = segments.join('/') === '(auth)/update-password';
+      if (isUpdatePassword) return; // Stay on the screen to type new password
 
-    return () => clearTimeout(timer);
+      if (inAuthGroup || inOnboarding || allSegments.length === 0) {
+        router.replace('/(tabs)/tracker');
+      }
+    }
   }, [navigationState?.key, session, profile, isLoading, segments]);
 
   return null;
@@ -190,9 +173,6 @@ function RootLayout() {
   }, [theme, segments, colors]);
 
   useEffect(() => {
-    // Hide the native OS splash screen immediately so our custom RN splash takes over
-    hideAsync();
-
     // ── Race condition guard ────────────────────────────────────────────────────
     let authCallVersion = 0;
     let previousUserId: string | null = null;
@@ -202,13 +182,13 @@ function RootLayout() {
       
       const currentProfile = useAuthStore.getState().profile;
       const userIdChanged = newSession?.user?.id && currentProfile?.id !== newSession.user.id;
-      const isInitialLoading = !currentProfile || !newSession || userIdChanged || !currentProfile.onboardingDone;
+      // isInitialLoading: must fetch profile from network before we can decide where to route.
+      // Only skip if: we already have a valid, complete profile for this exact user.
+      const isInitialLoading = !currentProfile?.id || !newSession || userIdChanged || !currentProfile.onboardingDone;
       
-      if (isInitialLoading) {
-        useAuthStore.getState().setLoading(true);
-      } else {
-        useAuthStore.getState().setLoading(false);
-      }
+      // Always set loading=true upfront so NavigationGuard doesn't fire early.
+      // It will be set to false in the finally block once everything resolves.
+      useAuthStore.getState().setLoading(true);
 
       try {
         useAuthStore.getState().setSession(newSession);
@@ -254,7 +234,10 @@ function RootLayout() {
       } catch (err) {
         console.error('Error in auth state change:', err);
       } finally {
-        if (thisCall === authCallVersion && isInitialLoading) {
+        // Always release the loading gate for the latest call.
+        // We unconditionally set loading=true at the top, so we must always
+        // reset it here — otherwise the NavigationGuard will block forever.
+        if (thisCall === authCallVersion) {
           useAuthStore.getState().setLoading(false);
         }
       }
