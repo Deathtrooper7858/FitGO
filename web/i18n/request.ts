@@ -1,12 +1,12 @@
 import {getRequestConfig} from 'next-intl/server';
 import {routing} from './routing';
 
-function cleanDottedKeys(obj: Record<string, any>): Record<string, any> {
-  const out: Record<string, any> = {};
+function cleanDottedKeys(obj: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(obj)) {
     const cleanKey = k.replace(/\./g, ' ');
     if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
-      out[cleanKey] = cleanDottedKeys(v);
+      out[cleanKey] = cleanDottedKeys(v as Record<string, unknown>);
     } else {
       out[cleanKey] = v;
     }
@@ -22,7 +22,7 @@ export default getRequestConfig(async ({requestLocale}) => {
   }
 
   const mobileTranslations = cleanDottedKeys((await import(`../../i18n/translations/${locale}.json`)).default);
-  let webTranslations: Record<string, any> = {};
+  let webTranslations: Record<string, unknown> = {};
   try {
     webTranslations = cleanDottedKeys((await import(`../../i18n/web-translations/${locale}.json`)).default);
   } catch {

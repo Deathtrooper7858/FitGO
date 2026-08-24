@@ -5,26 +5,8 @@ const withDisableLintVital = (expoConfig) => {
     const lintDisableCode = `
 subprojects { subproject ->
   subproject.tasks.configureEach { task ->
-    if (task.name.startsWith("lintVital")) {
+    if (task.name.startsWith("lintVital") || task.name.startsWith("lint")) {
       task.enabled = false
-    }
-  }
-  def configLint = {
-    if (subproject.hasProperty('android')) {
-      subproject.android {
-        lintOptions {
-          abortOnError false
-          checkReleaseBuilds false
-          checkDependencies false
-        }
-      }
-    }
-  }
-  if (subproject.state.executed) {
-    configLint()
-  } else {
-    subproject.afterEvaluate {
-      configLint()
     }
   }
 }
