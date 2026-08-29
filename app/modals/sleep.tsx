@@ -26,7 +26,7 @@ export default function SleepModal() {
       return `${String(wakeH).padStart(2, '0')}:${String(wakeM).padStart(2, '0')}`;
     }
     return '07:00';
-  }, []);
+  }, [dailySleep, selectedDate]);
 
   const [bedtime, setBedtime] = useState('23:00');
   const [waketime, setWaketime] = useState(initialWaketime);

@@ -55,7 +55,7 @@ export function WeightChart({
           } else {
             dateLabel = String(m.date || '');
           }
-        } catch (_e) {
+        } catch {
           dateLabel = String(m.date || '');
         }
         return {
@@ -64,14 +64,14 @@ export function WeightChart({
           dataPointText: `${displayW}${massUnit}`,
         };
       });
-  }, [measurements, profile?.weight, language, massUnit]);
+  }, [measurements, profile?.weight, language, massUnit, t]);
 
   const chartSpacing = useMemo(() => {
     const minSpacing = 75;
     const availableWidth = SCREEN_WIDTH - 64;
     if (weightData.length <= 1) return minSpacing;
     return Math.max(minSpacing, availableWidth / (weightData.length - 1));
-  }, [weightData.length]);
+  }, [weightData.length, SCREEN_WIDTH]);
 
   const startingWeight = profile?.startingWeight || (measurements.length > 0 ? (measurements[measurements.length - 1].weight || profile?.weight || 80) : (profile?.weight || 80));
   const currentWeight = lastMeasure?.weight || profile?.weight || 80;

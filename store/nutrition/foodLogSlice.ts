@@ -72,6 +72,7 @@ export interface FoodLogSlice {
   removeFavorite: (id: string) => void;
   fetchLogs: (userId: string, date: string) => Promise<void>;
   fetchHistory: (userId: string) => Promise<void>;
+  copyDayMeals: (sourceDate: string, targetDate: string) => Promise<void>;
 }
 
 export const initialFoodLogState = {
@@ -327,6 +328,57 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
         }
       } catch (err) { console.error('[NutritionStore] fetchHistory error:', err); }
       finally { _fetchHistoryInProgress.delete(userId); }
+    },
+
+    copyDayMeals: async (sourceDate: string, targetDate: string) => {
+      const { todayLogs } = get();
+      const user = useAuthStore.getState().profile;
+      const sourceLogs = todayLogs.filter((l: FoodLog) => l.loggedAt && l.loggedAt.startsWith(sourceDate));
+      if (sourceLogs.length === 0) return;
+
+      const newLogs: FoodLog[] = sourceLogs.map((l: FoodLog) => {
+        const timePart = l.loggedAt.includes('T') ? l.loggedAt.split('T')[1] : '12:00:00.000Z';
+        const newId = Crypto.randomUUID();
+        return {
+          ...l,
+          id: newId,
+          loggedAt: `${targetDate}T${timePart}`,
+        };
+      });
+
+      set((s: any) => ({
+        todayLogs: [...s.todayLogs, ...newLogs],
+      }));
+
+      if (user?.id) {
+        try {
+          const rows = newLogs.map((l: FoodLog) => ({
+            id: l.id,
+            user_id: user.id,
+            food_name: l.foodItem.name,
+            food_id: l.foodItem.id,
+            grams: l.grams,
+            meal: l.meal,
+            calories: l.calories,
+            protein: l.protein,
+            carbs: l.carbs,
+            fat: l.fat,
+            fiber: l.fiber ?? 0,
+            sugar: l.sugar ?? 0,
+            sodium: l.sodium ?? 0,
+            saturated_fat: l.saturatedFat ?? 0,
+            trans_fat: l.transFat ?? 0,
+            cholesterol: l.cholesterol ?? 0,
+            iron: l.iron ?? 0,
+            calcium: l.calcium ?? 0,
+            logged_at: l.loggedAt,
+            is_favorite: l.is_favorite ?? false,
+          }));
+          await supabase.from('food_logs').insert(rows);
+        } catch (err) {
+          console.error('[NutritionStore] copyDayMeals supabase error:', err);
+        }
+      }
     },
   };
 }

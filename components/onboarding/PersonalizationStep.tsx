@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
 import {
   Scale,
   Target,
@@ -34,7 +33,7 @@ export function PersonalizationStep({ value: data, onChange }: StepProps) {
     } else if (data.goal === 'gain' && tar <= cur) {
       onChange({ targetWeight: data.weightUnit === 'lbs' ? cur + 4 : cur + 2 });
     }
-  }, [data.goal, data.weightUnit]);
+  }, [data.goal, data.weightUnit, data.weight, data.targetWeight, onChange]);
 
   const heightM = (data.height ?? 170) / 100;
   const defaultW = data.weightUnit === 'lbs' ? 154 : 70;

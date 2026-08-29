@@ -39,7 +39,7 @@ export default function ShoppingListModal({ visible, onClose, mealPlans, languag
         .catch(() => {})
         .finally(() => setLoading(false));
     }
-  }, [visible]);
+  }, [visible, mealPlans, language]);
 
   const handleExportPDF = async () => {
     setExporting(true);

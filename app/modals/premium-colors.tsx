@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
 import { Check, X, Crown, Lock, Sparkles } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
@@ -48,7 +47,7 @@ export default function PremiumColorsModal() {
       setActualIsPro(status);
       setLoading(false);
     });
-  }, [hasProRole]);
+  }, [hasProRole, verifyProStatus]);
 
   const handleSelect = async (color: typeof PREMIUM_COLORS[0]) => {
     Haptics.selectionAsync();

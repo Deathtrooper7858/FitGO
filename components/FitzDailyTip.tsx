@@ -56,7 +56,7 @@ export function FitzDailyTip({ streakDays }: { streakDays: number }) {
     };
     
     fetchTip();
-  }, [profile?.id, streakDays, language]);
+  }, [profile, workouts, streakDays, language, t]);
 
   return (
     <Animated.View entering={FadeInDown.duration(800).springify()} style={styles.container}>

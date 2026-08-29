@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { X, Camera, Send, MessageSquare } from 'lucide-react-native';
-import { Radius, Spacing } from '../../../constants';
+import { Radius } from '../../../constants';
 import { GlassCard } from '../../../components/GlassCard';
 import { PostCard } from './PostCard';
 import { CommentList } from './CommentList';

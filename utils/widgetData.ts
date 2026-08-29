@@ -63,7 +63,7 @@ export async function loadWidgetData(): Promise<WidgetData> {
         defaults.waterMl = state.dailyWater?.[dateStr] || 0;
       }
     }
-  } catch (e) {
+  } catch {
     // Fail silently — show defaults if no data yet
   }
 

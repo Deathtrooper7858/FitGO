@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView,
   KeyboardAvoidingView, Platform, ActivityIndicator, Modal, Alert,
@@ -179,7 +179,16 @@ export default function ChatModal() {
       if (durationTimerRef.current) clearInterval(durationTimerRef.current);
     }
     return () => { if (durationTimerRef.current) clearInterval(durationTimerRef.current); };
-  }, [isRecording]);
+  }, [isRecording, pulseAnim]);
+
+  const loadMessages = useCallback(async () => {
+    if (!profile?.id || !friendId) return;
+    setIsLoading(true);
+    const msgs = await socialStore.fetchDirectMessages(profile.id, friendId);
+    setMessages(msgs);
+    setIsLoading(false);
+    setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: false }), 100);
+  }, [profile?.id, friendId, socialStore]);
 
   // Real-time subscription
   useEffect(() => {
@@ -208,7 +217,7 @@ export default function ChatModal() {
       channelRef.current = channel;
       return () => { supabase.removeChannel(channel); channelRef.current = null; };
     }
-  }, [profile?.id, friendId]);
+  }, [profile?.id, friendId, loadMessages, roomName, socialStore]);
 
   const handleTyping = (text: string) => {
     setNewMessage(text);
@@ -219,15 +228,6 @@ export default function ChatModal() {
         channelRef.current?.send({ type: 'broadcast', event: 'typing', payload: { userId: profile.id, isTyping: false } });
       }, 3000);
     }
-  };
-
-  const loadMessages = async () => {
-    if (!profile?.id || !friendId) return;
-    setIsLoading(true);
-    const msgs = await socialStore.fetchDirectMessages(profile.id, friendId);
-    setMessages(msgs);
-    setIsLoading(false);
-    setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: false }), 100);
   };
 
   const optimisticSend = (content: string, image_url?: string, audio_url?: string) => {
@@ -350,7 +350,7 @@ export default function ChatModal() {
 
   const handleCancelRecording = async () => {
     setIsRecording(false);
-    try { await recorder.stop(); } catch (_) {}
+    try { await recorder.stop(); } catch {}
   };
 
   const formatDuration = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;

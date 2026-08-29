@@ -11,7 +11,7 @@ interface AvatarViewerModalProps {
   onClose: () => void;
 }
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 const AVATAR_SIZE = Math.min(width * 0.78, 300);
 
 export function AvatarViewerModal({ visible, avatarUrl, name, onClose }: AvatarViewerModalProps) {

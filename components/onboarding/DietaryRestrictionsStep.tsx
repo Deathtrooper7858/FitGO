@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -31,7 +31,7 @@ export function DietaryRestrictionsStep({ value: data, onChange }: StepProps) {
   const colors = useTheme();
   const inputRef = useRef<any>(null);
 
-  const selected = data.dietaryRestrictions || [];
+  const selected = useMemo(() => data.dietaryRestrictions || [], [data.dietaryRestrictions]);
   const customValues = selected.filter((k) => k.startsWith('custom:'));
   const [customText, setCustomText] = useState(
     customValues.length > 0 ? customValues[0].replace('custom:', '') : ''

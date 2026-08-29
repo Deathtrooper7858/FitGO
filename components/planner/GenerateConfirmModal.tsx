@@ -49,7 +49,7 @@ export default function GenerateConfirmModal({ visible, onConfirm, onChangeFoods
       scaleAnim.setValue(0.85);
       opacityAnim.setValue(0);
     }
-  }, [visible]);
+  }, [visible, opacityAnim, scaleAnim]);
 
   const hasFoods = (availableFoods?.length ?? 0) > 0;
 

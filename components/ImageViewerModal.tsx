@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, TouchableOpacity, StyleSheet, Text, Dimensions, SafeAreaView } from 'react-native';
+import { Modal, View, TouchableOpacity, StyleSheet, Dimensions, SafeAreaView } from 'react-native';
 import { Image } from 'expo-image';
 import { X } from 'lucide-react-native';
 

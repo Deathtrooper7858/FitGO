@@ -160,6 +160,7 @@ export async function generateDailyMealPlan(userProfile: any, language: string =
 - Goal: ${goalContext}
 - Target Calories: ${targetCal} kcal (Must hit EXACTLY ±50 kcal)
 - Macro Targets: Protein ${macros.protein}g | Carbs ${macros.carbs}g | Fat ${macros.fat}g
+- Activity Level: ${activityLabel}
 - Diet Preference: ${userProfile.preferences?.[0] ?? 'Balanced'}
 - Restrictions: ${userProfile.dietaryRestrictions?.filter((r:string) => r !== 'none').join(', ') || 'None'}
 - Medical Conditions: ${userProfile.medicalConditions?.filter((c:string) => c !== 'none').join(', ') || 'None'}

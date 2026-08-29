@@ -7,7 +7,7 @@ import * as Crypto from 'expo-crypto';
 import { useTranslation } from 'react-i18next';
 import { Spacing } from '../../constants';
 import { FoodItem } from '../../services/foodDatabase';
-import { useSettingsStore, useAuthStore, useNutritionStore } from '../../store';
+import { useSettingsStore, useNutritionStore } from '../../store';
 import { useTheme } from '../../hooks/useTheme';
 import { convertEnergy } from '../../utils/units';
 import { parseVoiceLog } from '../../services/groq';

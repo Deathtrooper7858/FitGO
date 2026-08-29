@@ -4,8 +4,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import Svg, { Circle, Path, G, Defs, RadialGradient, Stop } from 'react-native-svg';
-import { useTheme } from '../hooks/useTheme';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 interface MacroRewardAnimationProps {
   visible: boolean;
@@ -19,7 +18,6 @@ interface MacroRewardAnimationProps {
  * Dispara animaciones escalonadas y haptic feedback pesado (estilo gaming).
  */
 export default function MacroRewardAnimation({ visible, points, onHide }: MacroRewardAnimationProps) {
-  const colors = useTheme();
 
   // ─── Animation Values ────────────────────────────────────────────────────
   const backdropOpacity  = useRef(new Animated.Value(0)).current;
@@ -116,7 +114,7 @@ export default function MacroRewardAnimation({ visible, points, onHide }: MacroR
 
       return () => clearTimeout(timer);
     }
-  }, [visible]);
+  }, [visible, backdropOpacity, cardOpacity, cardScale, onHide, particleRotate, pulse1, pulse2, ringOpacity, ringScale, starBurst, textOpacity, textTranslate]);
 
   const rotate = particleRotate.interpolate({
     inputRange: [0, 1],

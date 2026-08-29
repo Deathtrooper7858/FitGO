@@ -389,6 +389,14 @@ function RootLayout() {
             name="modals/update-account"
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />
+          <Stack.Screen
+            name="modals/focus-mode"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="modals/shopping-list"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
         </Stack>
         </LayoutAnimationConfig>
         </ErrorBoundary>

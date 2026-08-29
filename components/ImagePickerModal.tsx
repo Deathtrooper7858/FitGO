@@ -1,11 +1,11 @@
 import React from 'react';
 import {
   View, Text, StyleSheet, Modal, TouchableOpacity,
-  TouchableWithoutFeedback, Animated, Platform
+  TouchableWithoutFeedback, Platform
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Camera, Image as ImageIcon, X } from 'lucide-react-native';
 import { useTheme } from '../hooks/useTheme';
-import { useTranslation } from 'react-i18next';
 import { Spacing, Radius } from '../constants';
 
 interface ImagePickerModalProps {

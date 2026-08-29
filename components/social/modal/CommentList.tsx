@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { Image } from 'expo-image';
 import { Check, X, Pencil, Trash2, Send } from 'lucide-react-native';
-import { Radius, Spacing } from '../../../constants';
+import { Radius } from '../../../constants';
 
 interface CommentListProps {
   postId: string;

@@ -1,9 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Trophy, Heart, MessageSquare, Trash2 } from 'lucide-react-native';
-import { Radius, Spacing } from '../../../constants';
+import { Radius } from '../../../constants';
 import { GlassCard } from '../../../components/GlassCard';
 import { ALL_BADGES, useTranslatedBadge } from '../../../hooks/useAchievements';
 import { PostAudioPlayer } from './PostCard';
@@ -29,18 +28,6 @@ export default function SocialProfileTab({
   const myPosts = socialStore.posts.filter((p: any) => p.user_id === profile?.id);
   const currentBadgeId = profile?.selectedBadge || (profile?.role === 'owner' ? 'owner' : profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
   const currentBadge = useTranslatedBadge(currentBadgeId) || ALL_BADGES.verified;
-
-  const getRank = (points: number) => {
-    if (points >= 10000) return { label: 'S+', color: '#FFD700', bg: '#FFD70020' };
-    if (points >= 5000) return { label: 'S', color: '#A855F7', bg: '#A855F720' };
-    if (points >= 2000) return { label: 'A', color: '#3B82F6', bg: '#3B82F620' };
-    if (points >= 1000) return { label: 'B', color: '#10B981', bg: '#10B98120' };
-    if (points >= 500) return { label: 'C', color: '#F59E0B', bg: '#F59E0B20' };
-    if (points >= 100) return { label: 'D', color: '#8B4513', bg: '#8B451320' };
-    return { label: 'F', color: '#6B7280', bg: '#6B728020' };
-  };
-
-  const userGrade = userRankInfo ? getRank(userRankInfo.points) : getRank(0);
 
   return (
     <View style={s.tabContent}>

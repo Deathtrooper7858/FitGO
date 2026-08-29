@@ -77,6 +77,7 @@ function getNotifications() {
   if (NotificationsModule === null) {
     try {
       // Use require for lazy loading
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const notif = require('expo-notifications');
       
       // In some environments, it might be nested under .default

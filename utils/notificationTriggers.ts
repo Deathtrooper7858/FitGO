@@ -1,5 +1,4 @@
 import { scheduleReminder, triggerInstantNotification, sendRemotePushNotification } from '../services/notifications';
-import { Reminder } from '../store/types';
 import i18n from '../i18n';
 
 /**

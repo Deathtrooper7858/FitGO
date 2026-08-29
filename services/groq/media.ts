@@ -192,7 +192,7 @@ Example: "¡Buenos días bestia! Llevas 3 días imparable, a romperla hoy. 🦍"
       temperature: 0.8,
     });
     return data.choices[0]?.message?.content?.trim() || `¡A darle con todo hoy! 🔥`;
-  } catch (err) {
+  } catch {
     return `¡A darle con todo hoy! 🔥`;
   }
 }

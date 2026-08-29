@@ -5,14 +5,13 @@ import {
   StyleSheet,
   Modal,
   TouchableOpacity,
-  Dimensions,
   Platform,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Camera, Image as ImageIcon, X, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../hooks/useTheme';
-import { Radius, Spacing } from '../constants';
-import { useTranslation } from 'react-i18next';
+import { Radius } from '../constants';
 
 interface PhotoSourceModalProps {
   visible: boolean;

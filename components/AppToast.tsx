@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 
 import { useTranslation } from 'react-i18next';
@@ -39,6 +39,17 @@ export function AppToast() {
     }
   }, [toastQueue, currentToast]);
 
+  const closeToast = useCallback(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: -50, duration: 300, useNativeDriver: true }),
+      Animated.timing(scaleAnim, { toValue: 0.9, duration: 300, useNativeDriver: true }),
+    ]).start(() => {
+      setCurrentToast(undefined);
+      showNext();
+    });
+  }, [fadeAnim, slideAnim, scaleAnim, showNext]);
+
   useEffect(() => {
     if (currentToast) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -56,18 +67,7 @@ export function AppToast() {
 
       return () => clearTimeout(timer);
     }
-  }, [currentToast]);
-
-  const closeToast = () => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: -50, duration: 300, useNativeDriver: true }),
-      Animated.timing(scaleAnim, { toValue: 0.9, duration: 300, useNativeDriver: true }),
-    ]).start(() => {
-      setCurrentToast(undefined);
-      showNext();
-    });
-  };
+  }, [currentToast, closeToast, fadeAnim, slideAnim, scaleAnim]);
 
   if (!currentToast) return null;
 

@@ -41,6 +41,7 @@ interface NutritionState {
   removeFavorite: (id: string) => void;
   fetchLogs: (userId: string, date: string) => Promise<void>;
   fetchHistory: (userId: string) => Promise<void>;
+  copyDayMeals: (sourceDate: string, targetDate: string) => Promise<void>;
 
   setStreak: (days: number) => void;
   updateActivity: (date: string) => void;

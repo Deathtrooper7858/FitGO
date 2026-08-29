@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -38,7 +38,7 @@ export function FireStreakBadge({ streakDays, style, size = 'default' }: { strea
       pulseOpacity.value = 0;
       scale.value = 1;
     }
-  }, [isOnFire]);
+  }, [isOnFire, pulseOpacity, scale]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: pulseOpacity.value,

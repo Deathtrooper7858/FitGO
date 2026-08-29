@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, ActivityIndicator,
   Animated, Easing,
@@ -44,11 +44,9 @@ export const AIEnergyGate = React.memo(function AIEnergyGate({ visible, onClose,
     aiPhotoEnergy, aiTextEnergy,
     photoAdsWatchedToday, textAdsWatchedToday,
     watchAdForPhotoCredit, watchAdForTextCredit,
-    remainingAdsToday,
   } = useAdStore();
 
   const [loadingAd, setLoadingAd] = useState(false);
-  const [earnedCount, setEarnedCount] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const successTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -79,12 +77,11 @@ export const AIEnergyGate = React.memo(function AIEnergyGate({ visible, onClose,
     );
     if (canWatchAd && !loadingAd) loop.start();
     return () => loop.stop();
-  }, [visible, canWatchAd, loadingAd]);
+  }, [visible, canWatchAd, loadingAd, pulseAnim]);
 
   // Reset state when modal closes
   useEffect(() => {
     if (!visible) {
-      setEarnedCount(0);
       setShowSuccess(false);
       setLoadingAd(false);
     }
@@ -107,7 +104,6 @@ export const AIEnergyGate = React.memo(function AIEnergyGate({ visible, onClose,
         setLoadingAd(false);
 
         if (granted) {
-          setEarnedCount(prev => prev + 1);
           setShowSuccess(true);
           successTimer.current = setTimeout(() => {
             setShowSuccess(false);

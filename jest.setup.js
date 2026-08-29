@@ -1,3 +1,7 @@
+// Set default test env vars
+process.env.EXPO_PUBLIC_SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://mock.supabase.co';
+process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'mock-anon-key';
+
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(() => Promise.resolve()),
@@ -59,3 +63,22 @@ jest.mock('react-native-google-mobile-ads', () => ({
   })),
 }));
 
+// Mock @sentry/react-native to prevent timer leaks in tests
+jest.mock('@sentry/react-native', () => ({
+  init: jest.fn(),
+  wrap: jest.fn((component) => component),
+  captureException: jest.fn(),
+  captureMessage: jest.fn(),
+  addBreadcrumb: jest.fn(),
+  setUser: jest.fn(),
+  setTag: jest.fn(),
+  setExtra: jest.fn(),
+  reactNavigationIntegration: jest.fn(),
+}));
+
+if (typeof afterAll !== 'undefined') {
+  afterAll(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+}

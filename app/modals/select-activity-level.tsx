@@ -8,7 +8,6 @@ import {
   ChevronLeft, 
   Monitor, 
   Footprints, 
-  Activity, 
   Dumbbell, 
   Flame,
   Zap,
@@ -57,14 +56,6 @@ const ACTIVITY_OPTIONS = [
     color: '#EF4444' 
   },
 ];
-
-const EXERCISE_TO_ACTIVITY: Record<string, UserProfile['activityLevel']> = {
-  'none':  'sedentary',
-  '1-2':   'light',
-  '3-4':   'moderate',
-  '5-6':   'active',
-  'daily': 'very_active',
-};
 
 const ACTIVITY_TO_EXERCISE: Record<string, string> = {
   'sedentary':   'none',

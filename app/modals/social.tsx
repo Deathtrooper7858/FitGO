@@ -1,25 +1,24 @@
 import React, { useState, useEffect, Suspense } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Platform, Share, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Share, Modal } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, Trophy, Users, Sword, Plus, ArrowLeft, Bot, Check, X, MessageSquare, Heart, Share2, Send, Trash2, Camera, Pencil } from 'lucide-react-native';
+import { Trophy, Users, Sword, Plus, ArrowLeft, Bot, Check, X } from 'lucide-react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { getNameStyle } from '../../utils/styles';
 import { useTheme } from '../../hooks/useTheme';
-import { Radius, Spacing } from '../../constants';
+import { Radius } from '../../constants';
 import { GlassCard } from '../../components/GlassCard';
 import { useSocialStore, useAuthStore, useSettingsStore, useNutritionStore } from '../../store';
 import { generateSocialChallenge } from '../../services/groq';
 import { ImagePickerModal } from '../../components/ImagePickerModal';
 import { supabase } from '../../services/supabase';
 import { getLocalDateString } from '../../utils/date';
-import { useAchievements, ALL_BADGES } from '../../hooks/useAchievements';
 
 const SocialProfileTab = React.lazy(() => import('../../components/social/modal/SocialProfileTab'));
 const SocialFeedTab = React.lazy(() => import('../../components/social/modal/SocialFeedTab'));
@@ -73,7 +72,6 @@ export default function SocialModal() {
   const { language, premiumColor } = useSettingsStore();
   const socialStore = useSocialStore();
   const nutritionStore = useNutritionStore();
-  const { achievements, unlockedCount } = useAchievements();
 
   const TABS: TabType[] = ['you', 'feed', 'friends', 'ranking', 'challenges'];
 
@@ -158,7 +156,7 @@ export default function SocialModal() {
     return () => {
       if (unsubscribeEvents) unsubscribeEvents();
     };
-  }, [profile?.id]);
+  }, [profile?.id, socialStore]);
 
   useEffect(() => {
     let commentsChannel: any = null;
@@ -173,7 +171,7 @@ export default function SocialModal() {
     return () => {
       if (commentsChannel) supabase.removeChannel(commentsChannel);
     };
-  }, [expandedComments]);
+  }, [expandedComments, socialStore]);
 
   const handleCamera = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -316,7 +314,7 @@ export default function SocialModal() {
     try {
       const response = await generateSocialChallenge(language);
       setAiRecommendation(response);
-    } catch (err) {
+    } catch {
       setAiRecommendation('Camina 10,000 pasos durante 3 días seguidos.');
     } finally {
       setAiLoading(false);

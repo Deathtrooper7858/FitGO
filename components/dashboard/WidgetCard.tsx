@@ -20,7 +20,7 @@ export function WidgetAdTimer({ featureId }: { featureId: string }) {
       setTimeLeft(premiumAdRemainingSeconds(featureId));
     }, 1000);
     return () => clearInterval(timer);
-  }, [isPro, featureId]);
+  }, [isPro, featureId, premiumAdRemainingSeconds]);
 
   if (isPro || !hasPremiumAdAccess(featureId) || timeLeft <= 0) return null;
 

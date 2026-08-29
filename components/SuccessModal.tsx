@@ -18,7 +18,7 @@ interface SuccessModalProps {
 export const SuccessModal: React.FC<SuccessModalProps> = ({ visible, title, message, buttonText = 'OK', onClose }) => {
 
   const colors = useTheme();
-  const [scale] = React.useState(new Animated.Value(0));
+  const scale = React.useRef(new Animated.Value(0)).current;
 
   const { premiumColor } = useSettingsStore();
   const isProActually = useIsPro();
@@ -38,7 +38,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({ visible, title, mess
     } else {
       scale.setValue(0);
     }
-  }, [visible]);
+  }, [visible, scale]);
 
   if (!visible) return null;
 

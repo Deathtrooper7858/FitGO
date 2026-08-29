@@ -77,7 +77,7 @@ export default function CalendarModal() {
       year,
       month,
     };
-  }, [viewDate]);
+  }, [viewDate, t]);
 
   const changeMonth = (offset: number) => {
     const newDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + offset, 1);
@@ -95,9 +95,7 @@ export default function CalendarModal() {
 
   // Premium gradient colors derived from the user's selected accent color
   const p = colors.primary;
-  const pFaint  = hexToRgba(p, 0.08);
   const pLight  = hexToRgba(p, 0.15);
-  const pMedium = hexToRgba(p, 0.25);
   const pGlow   = hexToRgba(p, 0.4);
 
   // Mini-Rachas Milestones logic

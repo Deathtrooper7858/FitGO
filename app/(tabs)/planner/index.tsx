@@ -168,7 +168,7 @@ export default function PlannerScreen() {
       } catch (_err) { console.error('[Planner] Load error:', _err); }
       finally { setInitialLoading(false); }
     })();
-  }, [profile?.id]);
+  }, [profile?.id, clearPlans, clearMealPlans, setMealPlans, clearWorkoutPlans, setWorkoutPlans]);
 
   // Sunday 23:59 auto-reset
 
@@ -189,7 +189,7 @@ export default function PlannerScreen() {
     };
     scheduleWeeklyReset();
     return () => { if (resetTimerRef.current) clearTimeout(resetTimerRef.current); if (resetWarningTimerRef.current) clearTimeout(resetWarningTimerRef.current); };
-  }, [profile?.id]);
+  }, [profile?.id, clearPlans]);
 
   // Alert helper
   const [alert, setAlert] = useState<{ visible: boolean; type: AlertType; title: string; message: string; onConfirm: () => void }>({ visible: false, type: 'info', title: '', message: '', onConfirm: () => { } });

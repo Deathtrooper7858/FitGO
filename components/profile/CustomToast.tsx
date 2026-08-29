@@ -28,7 +28,7 @@ export function CustomToast({ message, type, onHide }: CustomToastProps) {
     }, 3500);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [fadeAnim, slideAnim, onHide]);
 
   const isError = type === 'error';
 

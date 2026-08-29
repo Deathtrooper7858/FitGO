@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Modal, View, Text, StyleSheet, TouchableOpacity, Animated, Platform, TextInput, KeyboardTypeOptions } from 'react-native';
+import { Modal, View, Text, StyleSheet, TouchableOpacity, Animated, TextInput, KeyboardTypeOptions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AlertCircle, CheckCircle2, Info, HelpCircle, XCircle, Sparkles } from 'lucide-react-native';
 import { useTheme } from '../hooks/useTheme';
@@ -75,7 +75,7 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
       opacity.setValue(0);
       pulse.setValue(1);
     }
-  }, [visible]);
+  }, [visible, initialInputValue, opacity, pulse, scale]);
 
   if (!visible) return null;
 

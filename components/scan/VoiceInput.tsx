@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useAudioRecorder, RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync } from 'expo-audio';
 import { transcribeAudio } from '../../services/groq';
-import { Radius } from '../../constants';
 
 interface VoiceInputProps {
   onTextResult: (text: string) => void;

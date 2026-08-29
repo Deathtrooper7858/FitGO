@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation, Platform, ScrollView, Modal, Pressable, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation, ScrollView, Modal, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,7 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../../services/supabase';
 import { translateExerciseDetails } from '../../services/groq';
 import { useTheme } from '../../hooks/useTheme';
-import { Radius, Shadow, Spacing } from '../../constants';
+import { Radius, Spacing } from '../../constants';
 import { useIsPro } from '../../hooks/useIsPro';
 import { useAdStore } from '../../store/adStore';
 import { AdTimerOverlay } from '../../components/AdTimerOverlay';

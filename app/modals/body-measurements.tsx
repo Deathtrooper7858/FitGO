@@ -1,22 +1,18 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, Alert, KeyboardAvoidingView, Platform,
-  Dimensions, FlatList, NativeSyntheticEvent, NativeScrollEvent,
+  TextInput, KeyboardAvoidingView, Platform,
   ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import * as Haptics from 'expo-haptics';
 import { 
   Scale, 
   Percent, 
   Ruler, 
-  ChevronLeft, 
   X, 
-  Save, 
   History, 
   TrendingDown, 
   TrendingUp,
@@ -26,14 +22,10 @@ import {
 import { Spacing, Radius } from '../../constants';
 import { useBodyStore, useAuthStore, BodyMeasurement, useNutritionStore, useSettingsStore } from '../../store';
 import { useTheme } from '../../hooks/useTheme';
-import { convertMass, convertLength, formatValue } from '../../utils/units';
+import { convertMass, convertLength } from '../../utils/units';
 import { CustomAlert, AlertType } from '../../components/CustomAlert';
 import { supabase } from '../../services/supabase';
 import { calculateTDEE, calculateMacros } from '../../services/foodDatabase';
-
-  
-const { width } = Dimensions.get('window');
-const ITEM_WIDTH = 12;
 
 interface Field {
   key: keyof BodyMeasurement;
@@ -190,7 +182,7 @@ export default function BodyMeasurementsModal() {
           router.dismissAll();
         }
       });
-    } catch (err) {
+    } catch {
       showAlert('error', t('common.error'), t('profile.saveMeasurementsFailed'));
     } finally {
 

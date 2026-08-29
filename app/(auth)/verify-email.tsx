@@ -31,7 +31,7 @@ export default function VerifyEmailScreen() {
     };
 
     verify();
-  }, [params.code, params.access_token]);
+  }, [params.code, params.access_token, t]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

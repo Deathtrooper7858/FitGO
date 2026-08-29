@@ -58,7 +58,7 @@ export function EditModal({
       setValue(initialValue ?? '');
       setSelectedColor(initialNameColor ?? '');
     }
-  }, [visible]);
+  }, [visible, initialValue, initialNameColor]);
 
   let FieldIcon = User;
   let suffix = '';

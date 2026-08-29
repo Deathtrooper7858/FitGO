@@ -33,7 +33,6 @@ import { useSettingsStore } from '../store';
 import { useIsPro } from '../hooks/useIsPro';
 import { useTheme } from '../hooks/useTheme';
 import exercisesData from '../excercise/exercises.json';
-import { Radius } from '../constants';
 import { getLocalDateString } from '../utils/date';
 
 // ─── Muscle label map (Spanish readable names) ───────────────────────────────
@@ -264,7 +263,7 @@ function MedalBadge({
       glowOpacity.value = 0.3;
       scale.value = withSpring(0.92, { damping: 15, stiffness: 250 });
     }
-  }, [isActive]);
+  }, [isActive, glowOpacity, scale]);
 
   const glowStyle = useAnimatedStyle(() => ({
     opacity: glowOpacity.value,
@@ -404,7 +403,7 @@ function MuscleTooltip({
         if (finished) runOnJS(setIsMounted)(false);
       });
     }
-  }, [visible, isMounted]);
+  }, [visible, isMounted, backdropOpacity, cardTranslateY]);
 
   const backdropStyle = useAnimatedStyle(() => ({
     opacity: backdropOpacity.value,
@@ -658,7 +657,7 @@ export default function MuscleSymmetryCard() {
       damping: 20,
       stiffness: 280,
     });
-  }, []);
+  }, [toggleAnim]);
 
   // Pulse overlay
   const pulseOpacity = useSharedValue(0);
@@ -673,7 +672,7 @@ export default function MuscleSymmetryCard() {
         true
       );
     }
-  }, [hasHistory]);
+  }, [hasHistory, pulseOpacity]);
 
   const pulseStyle = useAnimatedStyle(() => ({
     opacity: interpolate(pulseOpacity.value, [0, 1], [0, 0.35], Extrapolation.CLAMP),

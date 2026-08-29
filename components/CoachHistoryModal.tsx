@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   View, Text, StyleSheet, Modal, TouchableOpacity,
-  Pressable, Alert
+  Pressable
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';

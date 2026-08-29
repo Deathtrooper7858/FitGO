@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { Platform } from 'react-native';
 import Purchases, { CustomerInfo, PurchasesOffering, PurchasesPackage, LOG_LEVEL } from 'react-native-purchases';
 import { supabase } from '../services/supabase';
-import { reportError, reportEvent } from '../utils/errorReporter';
+import { reportError } from '../utils/errorReporter';
 import { useAuthStore } from './authStore';
 import { useSettingsStore } from './settingsStore';
 
@@ -341,7 +341,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
           set({ isPro: true });
           return true;
         }
-      } catch (err) {
+      } catch {
         // Continue to fallback check
       }
     }

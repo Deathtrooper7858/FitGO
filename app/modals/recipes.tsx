@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Keyboard } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -30,10 +30,9 @@ export default function RecipesModal() {
   const featureId = 'recipes';
   const hasAccess = isPro || hasPremiumAdAccess(featureId);
 
-  const loadRecipes = async (foodName?: string) => {
+  const loadRecipes = useCallback(async (foodName?: string) => {
     if (!hasAccess) return;
     setLoading(true);
-    // Remove Keyboard.dismiss() to prevent closing the keyboard while user is typing
     try {
       const newRecipes = await generateRecipes(profile?.goal ?? 'maintain', language, 8, foodName);
       setRecipes(newRecipes);
@@ -42,7 +41,7 @@ export default function RecipesModal() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [hasAccess, profile?.goal, language, setRecipes]);
 
   // Track previous language to detect changes
   const prevLang = useRef(language);
@@ -57,7 +56,7 @@ export default function RecipesModal() {
         setTimeout(() => loadRecipes(), 100);
       }
     }
-  }, [language]);
+  }, [language, hasAccess, activeTab, loadRecipes, setRecipes]);
 
   // Debounce logic for automatic search
   useEffect(() => {
@@ -73,13 +72,13 @@ export default function RecipesModal() {
     }, 1200); // 1.2s debounce to avoid spamming the AI
 
     return () => clearTimeout(handler);
-  }, [searchQuery, hasAccess, activeTab]);
+  }, [searchQuery, hasAccess, activeTab, recipes.length, loadRecipes]);
 
   useEffect(() => {
     if (recipes.length === 0 && hasAccess && activeTab === 'search') {
       loadRecipes();
     }
-  }, [hasAccess]);
+  }, [hasAccess, recipes.length, activeTab, loadRecipes]);
 
   if (!hasAccess) {
     return (

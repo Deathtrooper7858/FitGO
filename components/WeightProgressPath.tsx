@@ -39,7 +39,6 @@ export function WeightProgressPath({
   const W = width;
   const H = 160;
   const padX = 28;
-  const padY = 40;
   const midY = H / 2;
 
   // Sanitize weight inputs to guarantee finite, valid numbers and avoid NaN crashes
@@ -55,8 +54,6 @@ export function WeightProgressPath({
   // Clamp pct between 0 and 1 (handle edge cases where user already past goal)
   const isLoss = targetW < startW;
   const totalRange = Math.abs(startW - targetW) || 1;
-  const currentProgress = Math.abs(startW - currW);
-  const rawPct = Math.min(Math.max(currentProgress / totalRange, 0), 1);
   const pct = isLoss
     ? (startW - currW) / totalRange
     : (currW - startW) / totalRange;

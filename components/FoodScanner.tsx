@@ -5,11 +5,12 @@ import { useTensorflowModel } from 'react-native-fast-tflite';
 
 export default function FoodScanner() {
   const { hasPermission, requestPermission } = useCameraPermission();
-  const [prediction, setPrediction] = useState<string>('Apuntando...');
+  const [prediction] = useState<string>('Apuntando...');
   
   const device = useCameraDevice('back');
 
   // Load the model from local assets - using an empty delegates array for default CPU execution
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const plugin = useTensorflowModel(require('../assets/models/food101.tflite'), []);
   const model = plugin.state === 'loaded' ? plugin.model : undefined;
 
@@ -17,7 +18,7 @@ export default function FoodScanner() {
     if (!hasPermission) {
       requestPermission();
     }
-  }, [hasPermission]);
+  }, [hasPermission, requestPermission]);
 
   const frameOutput = useFrameOutput({
     pixelFormat: 'rgb',

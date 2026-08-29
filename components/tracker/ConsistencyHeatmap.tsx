@@ -19,7 +19,17 @@ interface ConsistencyHeatmapProps {
   t: any;
 }
 
-export function ConsistencyHeatmap({ heatmapDays, isPro, onUpgrade, colors, t }: ConsistencyHeatmapProps) {
+export const ConsistencyHeatmap = React.memo(function ConsistencyHeatmap({ heatmapDays, isPro, onUpgrade, colors, t }: ConsistencyHeatmapProps) {
+  const intensityColors = React.useMemo(() => [
+    colors.border + '40',
+    colors.primary + '15',
+    colors.primary + '40',
+    colors.primary + '70',
+    colors.primary,
+  ], [colors.primary, colors.border]);
+
+  const cellBorderColor = React.useMemo(() => colors.primary + '30', [colors.primary]);
+
   return (
     <GlassCard noPadding showStripe accentColor={colors.secondary}>
       <View style={[s.card, { borderWidth: 0 }]}>
@@ -39,17 +49,19 @@ export function ConsistencyHeatmap({ heatmapDays, isPro, onUpgrade, colors, t }:
           <>
             <View style={s.heatmapGrid}>
               {heatmapDays.map((day, idx) => {
-                const opacity = day.intensity === 0 ? '15' : day.intensity === 1 ? '40' : day.intensity === 2 ? '70' : 'FF';
+                const bg = day.hasLogs
+                  ? (intensityColors[Math.min(Math.max(day.intensity + 1, 1), 4)])
+                  : intensityColors[0];
                 return (
                   <View
                     key={idx}
                     style={[
                       s.heatCell,
                       {
-                        backgroundColor: day.hasLogs ? colors.primary + opacity : colors.border + '40',
+                        backgroundColor: bg,
                         borderRadius: 4,
                         borderWidth: 1,
-                        borderColor: day.hasLogs ? colors.primary + '30' : 'transparent',
+                        borderColor: day.hasLogs ? cellBorderColor : 'transparent',
                       }
                     ]}
                   />
@@ -86,7 +98,7 @@ export function ConsistencyHeatmap({ heatmapDays, isPro, onUpgrade, colors, t }:
       </View>
     </GlassCard>
   );
-}
+});
 
 const s = StyleSheet.create({
   card: { borderRadius: Radius.xl, padding: 20 },

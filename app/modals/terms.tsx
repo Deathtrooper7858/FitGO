@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Dimensions,
   Linking,
   Platform,
   LayoutAnimation,
@@ -25,14 +24,10 @@ import {
   ArrowRight,
   Sparkles,
   CheckCircle2,
-  Shield,
-  FileCheck,
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../../hooks/useTheme';
-import { Spacing, Radius } from '../../constants';
 import {
   STRUCTURED_TERMS,
   STRUCTURED_PRIVACY,
@@ -43,12 +38,9 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const { width } = Dimensions.get('window');
-
 export default function LegalScreen() {
   const { tab } = useLocalSearchParams();
-  const { t, i18n } = useTranslation();
-  const colors = useTheme();
+  const { i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
 

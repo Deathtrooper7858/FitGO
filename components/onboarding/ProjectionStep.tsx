@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
 import Svg, {
   Path,
   Defs,
@@ -38,7 +37,7 @@ export function ProjectionStep({ value: data }: StepProps) {
   const weeks = isMaintaining ? 4 : Math.max(2, Math.round(diffKg / velocityKgPerWeek));
   const days = weeks * 7;
 
-  const { dateLabels, yLabels, yValues } = useMemo(() => {
+  const { dateLabels, yLabels } = useMemo(() => {
     const today = new Date();
     const endD = new Date();
     endD.setDate(today.getDate() + days);

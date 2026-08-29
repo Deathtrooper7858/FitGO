@@ -8,11 +8,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { 
   Target, Flame, Dumbbell, Heart, Zap, Monitor, Footprints, 
-  Activity, Scale, ChevronLeft, ChevronRight, Building2, Hammer, Plus, Minus,
+  Activity, Scale, ChevronLeft, ChevronRight, Building2, Hammer,
   Sparkles, AlertCircle
 } from 'lucide-react-native';
 import { useTheme } from '../hooks/useTheme';
-import { Spacing, Radius } from '../constants';
+import { Spacing } from '../constants';
 import { useAuthStore, useSettingsStore } from '../store';
 
 const STEPS_COUNT = 5;

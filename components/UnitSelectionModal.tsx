@@ -5,16 +5,12 @@ import {
   StyleSheet,
   Modal,
   TouchableOpacity,
-  Dimensions,
   Platform,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Check, X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../hooks/useTheme';
-import { Radius, Spacing } from '../constants';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { Radius } from '../constants';
 
 interface UnitOption {
   value: string;

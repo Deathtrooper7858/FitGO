@@ -13,8 +13,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useAudioRecorder, useAudioRecorderState, RecordingPresets, setAudioModeAsync, requestRecordingPermissionsAsync } from 'expo-audio';
 import {
   Sparkles, Send, Camera, Mic, Clock,
-  MessageSquarePlus, Apple, Salad, Flame,
-  BarChart2, Edit2, Heart, Compass, Zap, Activity, Dumbbell
+  MessageSquarePlus, Edit2
 } from 'lucide-react-native';
 import Animated from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
@@ -252,9 +251,8 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
   const { language } = useSettingsStore();
   const store = useCoachStore();
   const messages = store[config.messagesKey];
-  const sessions = store[config.sessionsKey];
   const sessionId = store[config.sessionIdKey];
-  const { isTyping, msgCount, addMessage, setMessages, setTyping, incrementCount, checkAndResetDaily, setCurrentSessionId, setSessions, removeLastPair } = store;
+  const { isTyping, addMessage, setMessages, setTyping, incrementCount, checkAndResetDaily, setCurrentSessionId, setSessions, removeLastPair } = store;
   const { profile } = useAuthStore();
   const { isPro } = usePurchaseStore();
   const isProActually = !!isPro || !!profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
@@ -267,9 +265,9 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
     if (config.useParamPrompt && params.prompt) {
       setInput(params.prompt as string);
     }
-  }, [config.useParamPrompt, params.prompt]);
+  }, [config.useParamPrompt, params.prompt, checkAndResetDaily, setTyping]);
 
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     if (!profile?.id) return;
     const { data } = await supabase
       .from('coach_sessions')
@@ -278,9 +276,9 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
       .eq('coach_type', coachType)
       .order('created_at', { ascending: false });
     if (data) setSessions(data, coachType);
-  };
+  }, [profile?.id, coachType, setSessions]);
 
-  useEffect(() => { loadSessions(); }, [profile?.id]);
+  useEffect(() => { loadSessions(); }, [profile?.id, loadSessions]);
 
   useEffect(() => {
     if (!profile?.id) return;
@@ -323,7 +321,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
       }
     }
     loadHistory();
-  }, [profile?.id, language, sessionId]);
+  }, [profile?.id, language, sessionId, coachType, isSending, messages.length, profile, setMessages, t]);
 
   const handleNewChat = useCallback(() => {
     setCurrentSessionId(null, coachType);
@@ -333,7 +331,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
       content: t(`coach.${coachType}.welcome`),
       timestamp: new Date().toISOString(),
     }], coachType);
-  }, [coachType, t]);
+  }, [coachType, t, setCurrentSessionId, setMessages]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -407,7 +405,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
         try {
           const text = await transcribeAudio(uri);
           if (text.trim()) setInput(text);
-        } catch (err) {
+        } catch {
           Alert.alert(t('common.error', 'Error'), t('tracker.voiceFailedSub', 'No pudimos procesar tu voz. Inténtalo de nuevo.'));
         } finally {
           setIsTranscribing(false);
@@ -558,7 +556,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
       setTyping(false);
       setIsSending(false);
     }
-  }, [input, selectedImage, isTyping, isSending, profile, messages, language, tryUseAI, coachType]);
+  }, [input, selectedImage, isTyping, isSending, profile, messages, language, tryUseAI, coachType, addMessage, incrementCount, isProActually, loadSessions, sessionId, setCurrentSessionId, setTyping]);
 
   const handleEditMessage = useCallback((m: CoachMessage) => {
     setInput(m.content);
@@ -566,7 +564,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
     if (sessionId) {
       supabase.from('coach_conversations').delete().eq('session_id', sessionId).gte('created_at', m.timestamp).then();
     }
-  }, [coachType, sessionId]);
+  }, [coachType, sessionId, removeLastPair]);
 
   const renderMessage = useCallback(({ item, index }: { item: CoachMessage; index: number }) => {
     const isLastUser = item.role === 'user' && (index === messages.length - 1 || (index === messages.length - 2 && messages[index + 1]?.role === 'model'));
@@ -579,7 +577,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
         onEdit={handleEditMessage}
       />
     );
-  }, [messages.length, config.badgeImage, setViewingImage, handleEditMessage]);
+  }, [messages, config.badgeImage, setViewingImage, handleEditMessage]);
 
   const canSend = (input.trim().length > 0 || !!selectedImage) && !isTyping && !isSending;
   const showSuggestions = messages.length <= 1 && !isTyping;

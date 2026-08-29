@@ -58,13 +58,13 @@ const fetchWithTimeout: typeof fetch = async (input, init) => {
 };
 
 export const supabase = createClient(
-  supabaseUrl,
-  supabaseAnonKey,
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-anon-key',
   {
     auth: {
       storage:            SecureStorage,
-      autoRefreshToken:   true,
-      persistSession:     true,
+      autoRefreshToken:   process.env.NODE_ENV !== 'test' && !process.env.JEST_WORKER_ID,
+      persistSession:     process.env.NODE_ENV !== 'test' && !process.env.JEST_WORKER_ID,
       detectSessionInUrl: false,
       flowType:           'pkce',
     },

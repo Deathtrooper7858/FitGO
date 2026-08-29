@@ -20,7 +20,7 @@ export function AdTimerOverlay({ featureId }: AdTimerOverlayProps) {
       setTimeLeft(premiumAdRemainingSeconds(featureId));
     }, 1000);
     return () => clearInterval(timer);
-  }, [isPro, featureId]);
+  }, [isPro, featureId, premiumAdRemainingSeconds]);
 
   if (isPro || !hasPremiumAdAccess(featureId)) return null;
 

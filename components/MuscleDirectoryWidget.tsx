@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../hooks/useTheme';
-import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronDown, Dumbbell, Activity, Flame, ChevronUp } from 'lucide-react-native';
+import { useTheme } from '../hooks/useTheme';
 import { Radius, Shadow, Spacing } from '../constants';
 
 

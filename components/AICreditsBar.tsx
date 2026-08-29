@@ -4,7 +4,6 @@ import { Zap } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useTheme } from '../hooks/useTheme';
 import { useAICredits } from '../hooks/useAICredits';
-import { AD_CONFIG } from '../constants/adConfig';
 
 interface AICreditsBarProps {
   /** If true, shows a compact single-line version */

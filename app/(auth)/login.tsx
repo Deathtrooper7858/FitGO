@@ -32,7 +32,6 @@ import {
   Check,
   CheckCircle2,
   ShieldCheck,
-  Zap,
 } from 'lucide-react-native';
 import Svg, {
   Path,

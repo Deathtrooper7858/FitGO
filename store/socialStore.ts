@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { decode } from 'base64-arraybuffer';
 import { supabase } from '../services/supabase';
 import { triggerInstantNotification } from '../services/notifications';
 import { useAuthStore } from './authStore';
@@ -166,6 +165,7 @@ interface SocialState {
   addFriend: (userId1: string, userId2: string) => Promise<void>;
   acceptFriend: (friendshipId: string) => Promise<void>;
   rejectFriend: (friendshipId: string) => Promise<void>;
+  removeFriend: (friendshipId: string) => Promise<void>;
   fetchChallenges: (userId: string) => Promise<void>;
   createChallenge: (challenge: Partial<Challenge>, participantIds: string[]) => Promise<void>;
   fetchChallengeParticipants: (challengeId: string) => Promise<any[]>;
@@ -527,6 +527,16 @@ export const useSocialStore = create<SocialState>((set, get) => ({
       set(s => ({ friends: s.friends.filter(f => f.id !== friendshipId) }));
     } catch (err) {
       console.warn('[SocialStore] Error rejecting friend:', err);
+    }
+  },
+
+  removeFriend: async (friendshipId: string) => {
+    try {
+      const { error } = await supabase.from('friends').delete().eq('id', friendshipId);
+      if (error) throw error;
+      set(s => ({ friends: s.friends.filter(f => f.id !== friendshipId) }));
+    } catch (err) {
+      console.warn('[SocialStore] Error removing friend:', err);
     }
   },
 

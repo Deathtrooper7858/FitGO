@@ -11,10 +11,8 @@ import {
   Activity, 
   Zap, 
   Hammer,
-  ChevronRight,
   Building2,
-  Coffee,
-  Briefcase
+  ChevronRight
 } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { useNutritionStore, useAuthStore, UserProfile } from '../../store';
@@ -59,14 +57,6 @@ const NEAT_OPTIONS = [
     color: '#EF4444'
   },
 ];
-
-const ACTIVITY_TO_NEAT: Record<string, string> = {
-  'sedentary':   'seated',
-  'light':       'standing_sometimes',
-  'moderate':    'standing_mostly',
-  'active':      'moving',
-  'very_active': 'physical_work',
-};
 
 export default function SelectNeatModal() {
   const { t } = useTranslation();

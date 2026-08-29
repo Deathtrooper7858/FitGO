@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Image } from 'expo-image';
@@ -14,7 +14,6 @@ import { GlassCard } from '../../components/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
 import { useAchievements, useTranslatedBadge, ALL_BADGES } from '../../hooks/useAchievements';
 import { Radius } from '../../constants';
-import { CustomAlert } from '../../components/CustomAlert';
 import { AvatarViewerModal } from '../../components/AvatarViewerModal';
 // TEMPORARILY DISABLED FOR EXPO GO COMPATIBILITY
 // import LottieView from 'lottie-react-native';
@@ -40,7 +39,6 @@ export default function UserProfileModal() {
   const [userFriends, setUserFriends] = useState<any[]>([]);
   const [totalFriends, setTotalFriends] = useState(0);
   const [showAchievements, setShowAchievements] = useState(false);
-  const [deleteFriendAlert, setDeleteFriendAlert] = useState<{ friendId: string; friendName: string } | null>(null);
   const [avatarViewerVisible, setAvatarViewerVisible] = useState(false);
 
   const isMe = userId === myProfile?.id;
@@ -270,7 +268,24 @@ export default function UserProfileModal() {
                   </View>
                   <TouchableOpacity
                     style={{ height: 46, borderRadius: Radius.xl, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.error + '15', borderWidth: 1, borderColor: colors.error + '40', flexDirection: 'row', gap: 8 }}
-                    onPress={() => setDeleteFriendAlert({ friendId: friendStatus.id, friendName: displayUser.name || 'este usuario' })}
+                    onPress={() => {
+                      Alert.alert(
+                        t('profile.removeFriendTitle', 'Eliminar amigo'),
+                        t('profile.removeFriendConfirm', '¿Estás seguro de que deseas eliminar a {{name}} de tus amigos?', { name: displayUser.name || 'este usuario' }),
+                        [
+                          { text: t('common.cancel', 'Cancelar'), style: 'cancel' },
+                          {
+                            text: t('common.delete', 'Eliminar'),
+                            style: 'destructive',
+                            onPress: async () => {
+                              if (friendStatus?.id) {
+                                await socialStore.removeFriend(friendStatus.id);
+                              }
+                            },
+                          },
+                        ]
+                      );
+                    }}
                   >
                     <Trash2 size={16} color={colors.error} />
                     <Text style={{ color: colors.error, fontWeight: '700', fontSize: 15 }}>{t('profile.removeFriend', 'Eliminar Amigo')}</Text>

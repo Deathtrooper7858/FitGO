@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Droplets, Plus } from 'lucide-react-native';
+import { Droplets, Plus, ShoppingCart } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { useTheme } from '../../hooks/useTheme';
@@ -58,6 +58,25 @@ function MealPlanView({
               <Text style={[mv.summaryLbl, { color: colors.textMuted }]}>{t('tracker.remaining')}</Text>
             </View>
           </View>
+
+          <TouchableOpacity
+            style={[mv.shoppingBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push('/modals/shopping-list')}
+            activeOpacity={0.8}
+          >
+            <View style={[mv.shoppingIconWrap, { backgroundColor: colors.primary + '20' }]}>
+              <ShoppingCart size={18} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[mv.shoppingTitle, { color: colors.textPrimary }]}>
+                {t('planner.shoppingListTitle', 'Lista de Compras Inteligente')}
+              </Text>
+              <Text style={[mv.shoppingSub, { color: colors.textSecondary }]}>
+                {t('planner.shoppingListSubtitle', 'Ingredientes generados para tu semana')}
+              </Text>
+            </View>
+            <Text style={{ fontSize: 16 }}>🛒</Text>
+          </TouchableOpacity>
 
           {isActiveToday && plannedMacros.p > 0 && (
             <View style={[mv.macroBarsWrap, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -172,6 +191,10 @@ const mv = StyleSheet.create({
   summaryDivider: { width: 1, height: 50 },
   summaryVal:  { fontSize: 28, fontWeight: '900' },
   summaryLbl:  { fontSize: 12, fontWeight: '700', marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.8 },
+  shoppingBtn: { flexDirection: 'row', alignItems: 'center', marginTop: 12, borderRadius: 20, padding: 14, borderWidth: 1, gap: 12 },
+  shoppingIconWrap: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+  shoppingTitle: { fontSize: 14, fontWeight: '800' },
+  shoppingSub: { fontSize: 12, fontWeight: '500', marginTop: 1 },
   macroBarsWrap: { marginTop: 14, borderRadius: 24, padding: 20, borderWidth: 1, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
   macroTitle: { fontSize: 15, fontWeight: '800', marginBottom: 14 },
   macroBarRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },

@@ -15,13 +15,15 @@ interface CalorieArcProps {
   t: any;
 }
 
-export function CalorieArc({ consumed, target, energyLabel, colors }: CalorieArcProps) {
+export const CalorieArc = React.memo(function CalorieArc({ consumed, target, energyLabel, colors }: CalorieArcProps) {
   const safeConsumed = Number(consumed) || 0;
   const safeTarget = Number(target) || 2000;
-  const pct = Number.isFinite(safeConsumed / Math.max(safeTarget, 1))
-    ? Math.min(Math.max(safeConsumed / Math.max(safeTarget, 1), 0), 1)
-    : 0;
-  const strokeDashoffset = CIRCUMFERENCE - pct * CIRCUMFERENCE;
+  const strokeDashoffset = React.useMemo(() => {
+    const pct = Number.isFinite(safeConsumed / Math.max(safeTarget, 1))
+      ? Math.min(Math.max(safeConsumed / Math.max(safeTarget, 1), 0), 1)
+      : 0;
+    return CIRCUMFERENCE - pct * CIRCUMFERENCE;
+  }, [safeConsumed, safeTarget]);
 
   return (
     <View style={s.arcWrap}>
@@ -67,7 +69,7 @@ export function CalorieArc({ consumed, target, energyLabel, colors }: CalorieArc
       </View>
     </View>
   );
-}
+});
 
 const s = StyleSheet.create({
   arcWrap: { alignItems: 'center', justifyContent: 'center', marginTop: 10, height: RING_SIZE },

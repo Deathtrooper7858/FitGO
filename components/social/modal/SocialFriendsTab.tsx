@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator 
 import { Image } from 'expo-image';
 import { Search, Plus, Check, X, Trash2, MessageSquare } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Radius, Spacing } from '../../../constants';
+import { Radius } from '../../../constants';
 import { GlassCard } from '../../../components/GlassCard';
 
 interface SocialFriendsTabProps {
