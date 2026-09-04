@@ -9,9 +9,9 @@
     "android:dev:run": "powershell -Command \"adb reverse tcp:8081 tcp:8081; cd android; .\\gradlew.bat app:installDevelopmentDebug --build-cache -PreactNativeArchitectures=arm64-v8a -PreactNativeDevServerPort=8081; Write-Host 'Re-estableciendo tunel adb...'; adb reverse tcp:8081 tcp:8081; Start-Sleep -Seconds 1; adb shell am start -a android.intent.action.VIEW -d 'exp+fitgo-dev://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081' com.fitgo.app.dev; Write-Host 'App lanzada.'\"",
     "android:clean": "powershell -Command \"Remove-Item -Recurse -Force android\\.gradle-build -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force android\\build -ErrorAction SilentlyContinue; powershell -ExecutionPolicy Bypass -File scripts/clean-gradle-cache.ps1; Write-Host 'Android clean done.'\"",
     "open:android": "adb reverse tcp:8081 tcp:8081 & adb shell am start -a android.intent.action.VIEW -d \"exp+fitgo-dev://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081\" com.fitgo.app.dev",
-    "android": "cross-env ANDROID_HOME=C:/Users/wrait/AppData/Local/Android/Sdk ANDROID_SDK_ROOT=C:/Users/wrait/AppData/Local/Android/Sdk expo run:android",
-    "android:build": "cross-env ANDROID_HOME=C:/Users/wrait/AppData/Local/Android/Sdk ANDROID_SDK_ROOT=C:/Users/wrait/AppData/Local/Android/Sdk expo run:android",
-    "android:dev": "cross-env ANDROID_HOME=C:/Users/wrait/AppData/Local/Android/Sdk ANDROID_SDK_ROOT=C:/Users/wrait/AppData/Local/Android/Sdk APP_VARIANT=development expo run:android --variant developmentDebug",
+    "android": "cross-env ANDROID_HOME=C:/Users/Anubiz/AppData/Local/Android/Sdk ANDROID_SDK_ROOT=C:/Users/Anubiz/AppData/Local/Android/Sdk expo run:android",
+    "android:build": "cross-env ANDROID_HOME=C:/Users/Anubiz/AppData/Local/Android/Sdk ANDROID_SDK_ROOT=C:/Users/Anubiz/AppData/Local/Android/Sdk expo run:android",
+    "android:dev": "cross-env ANDROID_HOME=C:/Users/Anubiz/AppData/Local/Android/Sdk ANDROID_SDK_ROOT=C:/Users/Anubiz/AppData/Local/Android/Sdk APP_VARIANT=development expo run:android --variant developmentDebug",
     "android:install": "adb install -r android/app/build/outputs/apk/debug/app-debug.apk",
     "ios": "expo run:ios",
     "web": "expo start --web",
@@ -30,8 +30,8 @@
     "build:preview": "npx eas-cli build --profile preview --platform android",
     "build:prod": "npx eas-cli build --profile production --platform android",
     "build:prod:all": "npx eas-cli build --profile production --platform all",
-    "android:prod:bundle": "powershell -Command \"$env:ANDROID_HOME='C:/Users/wrait/AppData/Local/Android/Sdk'; $env:ANDROID_SDK_ROOT='C:/Users/wrait/AppData/Local/Android/Sdk'; $env:APP_VARIANT='production'; $env:SENTRY_DISABLE_AUTO_UPLOAD='true'; cd android; .\\gradlew.bat app:bundleProductionRelease\"",
-    "android:prod:apk": "powershell -Command \"$env:ANDROID_HOME='C:/Users/wrait/AppData/Local/Android/Sdk'; $env:ANDROID_SDK_ROOT='C:/Users/wrait/AppData/Local/Android/Sdk'; $env:APP_VARIANT='production'; $env:SENTRY_DISABLE_AUTO_UPLOAD='true'; cd android; .\\gradlew.bat app:assembleProductionRelease\"",
+    "android:prod:bundle": "powershell -Command \"$env:ANDROID_HOME='C:/Users/Anubiz/AppData/Local/Android/Sdk'; $env:ANDROID_SDK_ROOT='C:/Users/Anubiz/AppData/Local/Android/Sdk'; $env:APP_VARIANT='production'; $env:SENTRY_DISABLE_AUTO_UPLOAD='true'; cd android; .\\gradlew.bat app:bundleRelease\"",
+    "android:prod:apk": "powershell -Command \"$env:ANDROID_HOME='C:/Users/Anubiz/AppData/Local/Android/Sdk'; $env:ANDROID_SDK_ROOT='C:/Users/Anubiz/AppData/Local/Android/Sdk'; $env:APP_VARIANT='production'; $env:SENTRY_DISABLE_AUTO_UPLOAD='true'; cd android; .\\gradlew.bat app:assembleRelease\"",
     "prepare": "node -e \"try { require('husky')() } catch (e) {}\""
   },
   "overrides": {

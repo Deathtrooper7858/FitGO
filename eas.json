@@ -36,7 +36,7 @@
       "resourceClass": "default",
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleProductionRelease"
+        "gradleCommand": ":app:assembleRelease"
       },
       "ios": {
         "simulator": true
@@ -61,12 +61,12 @@
     "production": {
       "autoIncrement": true,
       "channel": "production",
-      "credentialsSource": "local",
+      "credentialsSource": "remote",
       "node": "22.14.0",
       "resourceClass": "default",
       "android": {
         "buildType": "app-bundle",
-        "gradleCommand": ":app:bundleProductionRelease"
+        "gradleCommand": ":app:bundleRelease"
       },
       "cache": {
         "key": "production-v6",
