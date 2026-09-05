@@ -69,7 +69,7 @@
         "gradleCommand": ":app:bundleProductionRelease"
       },
       "cache": {
-        "key": "production-v6",
+        "key": "production-v7",
         "paths": [
           "node_modules",
           "android/.gradle",
