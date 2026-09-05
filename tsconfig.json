@@ -25,6 +25,11 @@
   "exclude": [
     "supabase",
     "node_modules",
-    "web"
+    "web",
+    "scratch",
+    ".bundle",
+    "android",
+    ".agents",
+    "dist"
   ]
 }

@@ -94,6 +94,9 @@ function NavigationGuard() {
     } else if (!profile || !profile.onboardingDone || !profile.id) {
       // Session exists but profile is invalid or incomplete → onboarding
       if (!inOnboarding && !isTermsModal) {
+        if (segments[0] === 'auth' && router.canGoBack()) {
+          router.back();
+        }
         router.replace('/onboarding');
       }
     } else {
@@ -101,6 +104,9 @@ function NavigationGuard() {
       if (isUpdatePassword) return; // Stay on the screen to type new password
 
       if (inAuthGroup || inOnboarding || allSegments.length === 0) {
+        if (segments[0] === 'auth' && router.canGoBack()) {
+          router.back();
+        }
         router.replace('/(tabs)/tracker');
       }
     }
@@ -123,7 +129,10 @@ function RootLayout() {
 
   useEffect(() => {
     if (!isLoading) {
-      hideAsync().catch(() => {});
+      const timer = setTimeout(() => {
+        hideAsync().catch(() => {});
+      }, 50);
+      return () => clearTimeout(timer);
     }
   }, [isLoading]);
 
@@ -160,6 +169,12 @@ function RootLayout() {
         lastButtonStyleRef.current = targetButtonStyle;
       }
 
+      // In Android 15+ (API 35+), edge-to-edge is enforced by the system.
+      // Modifying navigation bar background color is deprecated and ignored.
+      if (typeof Platform.Version === 'number' && Platform.Version >= 35) {
+        return;
+      }
+
       const inTabs = segments[0] === '(tabs)';
       const targetColor = inTabs ? colors.surface : colors.background;
       
@@ -182,13 +197,13 @@ function RootLayout() {
       
       const currentProfile = useAuthStore.getState().profile;
       const userIdChanged = newSession?.user?.id && currentProfile?.id !== newSession.user.id;
-      // isInitialLoading: must fetch profile from network before we can decide where to route.
-      // Only skip if: we already have a valid, complete profile for this exact user.
+      // isInitialLoading: must fetch profile from network only if we don't already have a valid complete profile
       const isInitialLoading = !currentProfile?.id || !newSession || userIdChanged || !currentProfile.onboardingDone;
       
-      // Always set loading=true upfront so NavigationGuard doesn't fire early.
-      // It will be set to false in the finally block once everything resolves.
-      useAuthStore.getState().setLoading(true);
+      // Always set loading=true upfront only if we don't have a ready profile
+      if (isInitialLoading) {
+        useAuthStore.getState().setLoading(true);
+      }
 
       try {
         useAuthStore.getState().setSession(newSession);
@@ -205,23 +220,18 @@ function RootLayout() {
             } catch (profileErr) {
               console.warn('[RootLayout] fetchProfile error:', profileErr);
             }
-            try {
-              await usePurchaseStore.getState().initialize(newSession.user.id);
-              await usePurchaseStore.getState().syncTrialState(true);
-              await usePurchaseStore.getState().checkAndRevokeExpiredTrial(true);
-            } catch (purchaseErr) {
-              console.warn('[RootLayout] purchaseStore init error:', purchaseErr);
-            }
-          } else {
-            Promise.all([
-              useAuthStore.getState().fetchProfile(newSession.user.id).catch(() => {}),
-              usePurchaseStore.getState().initialize(newSession.user.id).catch(() => {})
-            ]).then(() => {
-              usePurchaseStore.getState().syncTrialState(true).then(() => {
-                usePurchaseStore.getState().checkAndRevokeExpiredTrial(true).catch(() => {});
-              }).catch(() => {});
-            }).catch(err => console.error('Background fetch error:', err));
           }
+
+          // Initialize purchases and background refreshes without blocking screen routing
+          Promise.all([
+            !isInitialLoading ? useAuthStore.getState().fetchProfile(newSession.user.id).catch(() => {}) : Promise.resolve(),
+            usePurchaseStore.getState().initialize(newSession.user.id).catch(() => {})
+          ]).then(() => {
+            usePurchaseStore.getState().syncTrialState(true).then(() => {
+              usePurchaseStore.getState().checkAndRevokeExpiredTrial(true).catch(() => {});
+            }).catch(() => {});
+          }).catch(err => console.error('Background fetch error:', err));
+
           useAICreditsStore.getState().resetIfNewDay();
         } else {
           useAuthStore.getState().clearAuth();
@@ -235,29 +245,38 @@ function RootLayout() {
         console.error('Error in auth state change:', err);
       } finally {
         // Always release the loading gate for the latest call.
-        // We unconditionally set loading=true at the top, so we must always
-        // reset it here — otherwise the NavigationGuard will block forever.
         if (thisCall === authCallVersion) {
           useAuthStore.getState().setLoading(false);
         }
       }
     };
 
-    // Safety timeout: Ensure splash screen never hangs
+    // Safety timeout: Ensure splash screen never hangs (4.5s max for slow mobile networks)
     const safetyTimer = setTimeout(() => {
       if (useAuthStore.getState().isLoading) {
         useAuthStore.getState().setLoading(false);
       }
-    }, 2000);
+    }, 4500);
 
-    // Initialize auth
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      handleAuthStateChange(session);
-    }).catch(() => {
-      useAuthStore.getState().setLoading(false);
-    });
+    // Initialize auth: First restore cached profile from SecureStorage, then get session
+    (async () => {
+      try {
+        await useAuthStore.getState().loadCachedProfile();
+      } catch (e) {
+        console.warn('[RootLayout] loadCachedProfile error:', e);
+      }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        handleAuthStateChange(session);
+      } catch {
+        useAuthStore.getState().setLoading(false);
+      }
+    })();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Ignore INITIAL_SESSION here because getSession() already handles initial startup
+      if (event === 'INITIAL_SESSION') return;
       handleAuthStateChange(session);
     });
 
@@ -270,7 +289,7 @@ function RootLayout() {
   return (
     <SafeAreaProvider>
     <GestureHandlerRootView style={[styles.root, { backgroundColor: colors.background }]}>
-        <StatusBar style={theme === 'dark' ? 'light' : 'dark'} backgroundColor={colors.background} />
+        <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
         <NavigationGuard />
         <AppToast />
         <ErrorBoundary>
@@ -286,11 +305,14 @@ function RootLayout() {
           skipEntering={__DEV__ && Platform.OS === 'android'}
           skipExiting={__DEV__ && Platform.OS === 'android'}
         >
-        <Stack screenOptions={{ 
-          headerShown: false, 
-          animation: 'none',
-          contentStyle: { backgroundColor: colors.background }
-        }}>
+        <Stack
+          initialRouteName="index"
+          screenOptions={{ 
+            headerShown: false, 
+            animation: 'none',
+            contentStyle: { backgroundColor: colors.background }
+          }}
+        >
           <Stack.Screen name="index" />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
@@ -343,10 +365,6 @@ function RootLayout() {
           />
           <Stack.Screen
             name="modals/food-selection"
-            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen
-            name="modals/social"
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />
           <Stack.Screen

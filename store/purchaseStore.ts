@@ -35,6 +35,18 @@ interface PurchaseState {
 let isConfigured = false;
 let currentUserId: string | null = null;
 
+export const isProEntitlementActive = (info: CustomerInfo | null): boolean => {
+  if (!info?.entitlements?.active) return false;
+  const active = info.entitlements.active;
+  return Boolean(
+    active['pro'] ||
+    active['fitgo Pro'] ||
+    active['FitGO Pro'] ||
+    active['FitGo Pro'] ||
+    active['premium']
+  );
+};
+
 export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   isPro: false,
   offering: null,
@@ -97,7 +109,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   },
 
   updateCustomerInfo: (info) => {
-    const isProActive = typeof info?.entitlements?.active?.['pro'] !== 'undefined';
+    const isProActive = isProEntitlementActive(info);
     set({ customerInfo: info, isPro: isProActive });
 
     // Sync state locally with authStore and database
@@ -214,7 +226,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       const { customerInfo } = await Purchases.purchasePackage(pkg);
       get().updateCustomerInfo(customerInfo);
       
-      const isProActive = typeof customerInfo?.entitlements?.active?.['pro'] !== 'undefined';
+      const isProActive = isProEntitlementActive(customerInfo);
       const apiKey = Platform.OS === 'ios'
         ? process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_IOS
         : process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID;
@@ -334,7 +346,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     if (Platform.OS !== 'web' && isConfigured) {
       try {
         const info = await Purchases.getCustomerInfo();
-        const isProActive = typeof info?.entitlements?.active?.['pro'] !== 'undefined';
+        const isProActive = isProEntitlementActive(info);
         set({ customerInfo: info });
 
         if (isProActive) {

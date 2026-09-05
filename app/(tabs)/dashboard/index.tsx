@@ -27,7 +27,7 @@ import { GoalWizardModal } from '../../../components/GoalWizardModal';
 import { PremiumGate } from '../../../components/PremiumGate';
 import { useAdStore } from '../../../store/adStore';
 import { CustomAlert, AlertType } from '../../../components/CustomAlert';
-import { calculateProgressPct, handleGoalSave } from '../../../hooks/useDashboardLogic';
+import { calculateProgressPct } from '../../../hooks/useDashboardLogic';
 import { renderDashboardWidget } from '../../../components/dashboard/WidgetRenderer';
 import { useIsPro } from '../../../hooks/useIsPro';
 
@@ -173,12 +173,12 @@ const DEFAULT_WIDGETS = ['weight', 'bodyFat', 'muscle_directory', 'recipe_search
 export default function DashboardScreen() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const { language, premiumColor } = useSettingsStore();
+  const { language, premiumColor, massUnit = 'kg' } = useSettingsStore();
   const { profile, setProfile } = useAuthStore();
   const dailySleep = useNutritionStore(s => s.dailySleep);
   const selectedDate = useNutritionStore(s => s.selectedDate);
   const fetchLogs = useNutritionStore(s => s.fetchLogs);
-  const { fetchMeasurements, getForDate, measurements } = useBodyStore();
+  const { fetchMeasurements, getForDate, measurements, latest } = useBodyStore();
   const { achievements } = useAchievements();
   
   const totalsData = useNutritionStore(selectDailyTotals);
@@ -206,17 +206,24 @@ export default function DashboardScreen() {
   }, [profile?.id, selectedDate, navigation, fetchLogs, fetchMeasurements]);
 
   const dateMeasurement = getForDate(selectedDate);
+  const latestMeasurement = latest();
   const oldestWeight = (measurements.length > 0 ? measurements[measurements.length - 1].weight : null)
+    || profile?.startingWeight
     || profile?.weight
     || 70;
     
   const initialWeight = Number(profile?.startingWeight || oldestWeight) || 70;
-  const currentWeight = Number(dateMeasurement?.weight || profile?.weight) || 70;
-  const targetWeight  = Number(profile?.targetWeight || currentWeight) || 70;
+  const currentWeightKg = Number(dateMeasurement?.weight || latestMeasurement?.weight || profile?.weight) || 70;
+  const currentWeight = currentWeightKg;
+  const targetWeightKg  = Number(profile?.targetWeight || currentWeightKg) || 70;
   const sleepHours = Number(dailySleep[selectedDate]) || 0;
-  const bodyFat = dateMeasurement?.bodyFat;
+  const bodyFat = dateMeasurement?.bodyFat || latestMeasurement?.bodyFat;
 
-  const progressPct = calculateProgressPct(profile?.goal, initialWeight, currentWeight, targetWeight);
+  const isLbs = massUnit === 'lb';
+  const displayCurrentWeight = isLbs ? (currentWeightKg * 2.20462).toFixed(1) : currentWeightKg.toFixed(1);
+  const displayTargetWeight = isLbs ? (targetWeightKg * 2.20462).toFixed(1) : targetWeightKg.toFixed(1);
+
+  const progressPct = calculateProgressPct(profile?.goal, initialWeight, currentWeightKg, targetWeightKg);
   const safeProgressPct = progressPct;
 
   const todayStr = getLocalDateString();
@@ -332,7 +339,12 @@ export default function DashboardScreen() {
     setIsEditing(false);
     if (profile?.id) {
       setProfile({ ...profile, widgetsOrder });
-      await supabase.from('users').update({ widgets_order: widgetsOrder }).eq('id', profile.id);
+      try {
+        const { error } = await supabase.from('users').update({ widgets_order: widgetsOrder }).eq('id', profile.id);
+        if (error) throw error;
+      } catch {
+        showAlert('error', t('common.error', 'Error'), t('profile.updateFailed', 'Error al guardar el orden de widgets.'));
+      }
     }
   };
 
@@ -359,11 +371,16 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([
-      fetchLogs(profile?.id || '', selectedDate),
-      fetchMeasurements(profile?.id || '')
-    ]);
-    setRefreshing(false);
+    try {
+      await Promise.all([
+        fetchLogs(profile?.id || '', selectedDate),
+        fetchMeasurements(profile?.id || '')
+      ]);
+    } catch {
+      showAlert('error', t('common.error', 'Error'), t('dashboard.refreshError', 'No se pudieron actualizar los datos.'));
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   return (
@@ -456,11 +473,11 @@ export default function DashboardScreen() {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, alignItems: 'flex-end' }}>
             <View>
               <Text style={{ fontSize: 13, color: colors.textMuted, marginBottom: 4 }}>{t('profile.currentWeight')}</Text>
-              <Text style={{ fontSize: 26, fontWeight: '900', color: colors.textPrimary }}>{currentWeight} <Text style={{ fontSize: 16, opacity: 0.5 }}>kg</Text></Text>
+              <Text style={{ fontSize: 26, fontWeight: '900', color: colors.textPrimary }}>{displayCurrentWeight} <Text style={{ fontSize: 16, opacity: 0.5 }}>{massUnit}</Text></Text>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={{ fontSize: 13, color: colors.textMuted, marginBottom: 4, textAlign: 'right' }}>{t('profile.targetWeight')}</Text>
-              <Text style={{ fontSize: 26, fontWeight: '900', color: goalInfo.accent }}>{targetWeight} <Text style={{ fontSize: 16, opacity: 0.5 }}>kg</Text></Text>
+              <Text style={{ fontSize: 26, fontWeight: '900', color: goalInfo.accent }}>{displayTargetWeight} <Text style={{ fontSize: 16, opacity: 0.5 }}>{massUnit}</Text></Text>
             </View>
           </View>
 
@@ -548,13 +565,17 @@ export default function DashboardScreen() {
         visible={goalModalVisible}
         onClose={() => setGoalModalVisible(false)}
         initialData={{
-          weight: profile?.weight || 70,
-          targetWeight: profile?.targetWeight || profile?.weight || 70,
+          weight: latestMeasurement?.weight || profile?.weight || 70,
+          targetWeight: profile?.targetWeight || latestMeasurement?.weight || profile?.weight || 70,
+          height: profile?.height || 170,
+          age: profile?.age || 25,
+          sex: profile?.sex || 'male',
           goal: profile?.goal || 'maintain',
-          lifestyle: profile?.lifestyle || 'seated',
-          exerciseLevel: profile?.activityLevel || 'none'
+          lifestyle: profile?.lifestyle || 'standing_sometimes',
+          activityLevel: profile?.activityLevel || 'moderate',
+          dietType: profile?.dietType || 'recommended',
         }}
-        onSave={(newData) => handleGoalSave(newData, profile, setProfile, setGoalModalVisible, showAlert as any, t as any)}
+        onSave={() => setGoalModalVisible(false)}
       />
     </SafeAreaView>
     </View>

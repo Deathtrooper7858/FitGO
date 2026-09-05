@@ -1,21 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert,
-  Modal, Platform, TextInput
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  Modal, Platform, ActivityIndicator, KeyboardAvoidingView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
-import { 
-  Target, Flame, Dumbbell, Heart, Zap, Monitor, Footprints, 
-  Activity, Scale, ChevronLeft, ChevronRight, Building2, Hammer,
-  Sparkles, AlertCircle
+import {
+  ChevronLeft, X, ArrowRight, Check, AlertCircle
 } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
+
 import { useTheme } from '../hooks/useTheme';
 import { Spacing } from '../constants';
-import { useAuthStore, useSettingsStore } from '../store';
+import { useAuthStore, useSettingsStore, useNutritionStore, useBodyStore, UserProfile } from '../store';
+import { calculateTDEE, calculateMacros } from '../services/foodDatabase';
+import { supabase } from '../services/supabase';
+import { getLocalDateString } from '../utils/date';
+import { CustomAlert, AlertType } from './CustomAlert';
 
-const STEPS_COUNT = 5;
+import {
+  GoalStep,
+  StatsStep,
+  ActivityStep,
+  LifestyleStep,
+  DietTypeStep,
+  PersonalizationStep,
+  ProjectionStep,
+} from './onboarding';
+import { OnboardingData } from './onboarding/constants';
 
 export const ACTIVITY_TO_EXERCISE: Record<string, string> = {
   'sedentary':   'none',
@@ -25,541 +38,427 @@ export const ACTIVITY_TO_EXERCISE: Record<string, string> = {
   'very_active': 'daily',
 };
 
+const WIZARD_STEPS = [
+  'goal',
+  'stats',
+  'activity',
+  'lifestyle',
+  'dietType',
+  'personalization',
+  'projection',
+] as const;
+
 interface GoalWizardModalProps {
   visible: boolean;
   onClose: () => void;
-  onSave: (data: any) => void;
-  initialData: any;
+  onSave?: (data: any) => void;
+  initialData?: any;
 }
 
 export function GoalWizardModal({ visible, onClose, onSave, initialData }: GoalWizardModalProps) {
   const { t } = useTranslation();
   const colors = useTheme();
   const profile = useAuthStore(s => s.profile);
+  const setProfile = useAuthStore(s => s.setProfile);
   const massUnit = useSettingsStore(s => s.massUnit) || 'kg';
-  const [step, setStep] = useState(0);
-  const [data, setData] = useState(initialData);
+  const lengthUnit = useSettingsStore(s => s.lengthUnit) || 'cm';
+  const setMassUnit = useSettingsStore(s => s.setMassUnit);
+  const setLengthUnit = useSettingsStore(s => s.setLengthUnit);
+  const latestMeasurement = useBodyStore(s => s.latest());
+
+  const [currentStep, setCurrentStep] = useState(0);
+  const [data, setData] = useState<Partial<OnboardingData>>({});
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [alert, setAlert] = useState<{
+    visible: boolean;
+    type: AlertType;
+    title: string;
+    message: string;
+    confirmText?: string;
+    onConfirm: () => void;
+  }>({
+    visible: false,
+    type: 'info',
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
+  const showAlert = (type: AlertType, title: string, message: string, onConfirm?: () => void) => {
+    setAlert({
+      visible: true,
+      type,
+      title,
+      message,
+      confirmText: 'OK',
+      onConfirm: () => {
+        onConfirm?.();
+        setAlert(prev => ({ ...prev, visible: false }));
+      },
+    });
+  };
 
   useEffect(() => {
-    if (visible) {
-      setStep(0);
-      setData(initialData);
+    if (error) {
+      const timer = setTimeout(() => setError(null), 3500);
+      return () => clearTimeout(timer);
     }
-  }, [visible, initialData]);
+  }, [error]);
 
-  const GOALS = [
-    { 
-      id: 'lose',     
-      icon: <Flame size={26} color="#FF4D4D" />, 
-      title: t('onboarding.loseTitle'),   
-      sub: t('onboarding.loseSub'),
-      accent: '#FF4D4D'
-    },
-    { 
-      id: 'gain',     
-      icon: <Dumbbell size={26} color="#4D94FF" />, 
-      title: t('onboarding.gainTitle'),   
-      sub: t('onboarding.gainSub'),
-      accent: '#4D94FF'
-    },
-    { 
-      id: 'maintain', 
-      icon: <Heart size={26} color="#4DFF88" />, 
-      title: t('onboarding.stayTitle'),  
-      sub: t('onboarding.staySub'),
-      accent: '#4DFF88'
-    },
-  ] as const;
+  // When opening modal, initialize data from initialData or current profile and measurement state
+  useEffect(() => {
+    if (visible) {
+      setCurrentStep(0);
+      setError(null);
 
-  const LIFESTYLE_OPTIONS = [
-    { 
-      id: 'seated',             
-      label: t('onboarding.lifestyleSeated'),             
-      sub: t('onboarding.lifestyleSeatedEx'), 
-      icon: <Monitor size={22} color="#6B7280" />,
-      color: '#6B7280' 
-    },
-    { 
-      id: 'standing_sometimes', 
-      label: t('onboarding.lifestyleStandingSometimes'), 
-      sub: t('onboarding.lifestyleStandingSometimesEx'),
-      icon: <Footprints size={22} color="#10B981" />, 
-      color: '#10B981' 
-    },
-    { 
-      id: 'standing_mostly',    
-      label: t('onboarding.lifestyleStandingMostly'), 
-      sub: t('onboarding.lifestyleStandingMostlyEx'),
-      icon: <Activity size={22} color="#3B82F6" />, 
-      color: '#3B82F6' 
-    },
-    { 
-      id: 'moving',             
-      label: t('onboarding.lifestyleMoving'),          
-      sub: t('onboarding.lifestyleMovingEx'), 
-      icon: <Zap size={22} color="#F59E0B" />,
-      color: '#F59E0B' 
-    },
-    { 
-      id: 'physical_work',      
-      label: t('onboarding.lifestylePhysical'),      
-      sub: t('onboarding.lifestylePhysicalEx'), 
-      icon: <Hammer size={22} color="#EF4444" />,
-      color: '#EF4444' 
-    },
-  ] as const;
+      const isLbs = massUnit === 'lb';
+      const isFt = lengthUnit === 'ft';
+      const currentW = initialData?.weight ?? latestMeasurement?.weight ?? profile?.weight ?? 70;
+      const targetW = initialData?.targetWeight ?? profile?.targetWeight ?? currentW;
+      const currentH = initialData?.height ?? profile?.height ?? 170;
 
-  const ACTIVITIES = [
-    { 
-      id: 'none',   
-      label: t('onboarding.activitySedentary'),  
-      sub: t('onboarding.activitySedentaryEx'), 
-      icon: <Monitor size={24} color="#6B7280" />,
-      color: '#6B7280' 
-    },
-    { 
-      id: '1-2',    
-      label: t('onboarding.activityLight'),   
-      sub: t('onboarding.activityLightEx'),     
-      icon: <Footprints size={24} color="#10B981" />,
-      color: '#10B981' 
-    },
-    { 
-      id: '3-4',    
-      label: t('onboarding.activityModerate'),   
-      sub: t('onboarding.activityModerateEx'),  
-      icon: <Dumbbell size={24} color="#3B82F6" />,
-      color: '#3B82F6' 
-    },
-    { 
-      id: '5-6',    
-      label: t('onboarding.activityActive'),   
-      sub: t('onboarding.activityActiveEx'),    
-      icon: <Flame size={24} color="#F59E0B" />,
-      color: '#F59E0B' 
-    },
-    { 
-      id: 'daily',  
-      label: t('onboarding.activityVeryActive'), 
-      sub: t('onboarding.activityVeryActiveEx'), 
-      icon: <Zap size={24} color="#EF4444" />,
-      color: '#EF4444' 
-    },
-  ] as const;
+      setData({
+        goal: initialData?.goal ?? profile?.goal ?? 'maintain',
+        sex: initialData?.sex ?? profile?.sex ?? 'male',
+        customGender: initialData?.customGender ?? profile?.customGender,
+        age: initialData?.age ?? profile?.age ?? 25,
+        weight: isLbs ? Math.round(currentW * 2.20462) : Math.round(currentW * 10) / 10,
+        height: isFt ? parseFloat((currentH / 30.48).toFixed(1)) : Math.round(currentH),
+        weightUnit: isLbs ? 'lbs' : 'kg',
+        heightUnit: isFt ? 'ft' : 'cm',
+        activityLevel: initialData?.activityLevel ?? profile?.activityLevel ?? 'moderate',
+        lifestyle: initialData?.lifestyle ?? profile?.lifestyle ?? 'standing_sometimes',
+        dietType: initialData?.dietType ?? profile?.dietType ?? (profile?.preferences?.[0] as any) ?? 'recommended',
+        targetWeight: isLbs ? Math.round(targetW * 2.20462) : Math.round(targetW * 10) / 10,
+        velocity: (profile?.preferences?.[1] as any) ?? 'moderate',
+        dietaryRestrictions: profile?.dietaryRestrictions ?? [],
+        medicalConditions: profile?.medicalConditions ?? [],
+        medicationsSupplements: profile?.medicationsSupplements ?? [],
+        availableFoods: profile?.availableFoods ?? [],
+      });
+    }
+  }, [visible, initialData, profile, latestMeasurement, massUnit, lengthUnit]);
+
+  const updateData = useCallback((partial: Partial<OnboardingData>) => {
+    setData(prev => ({ ...prev, ...partial }));
+  }, []);
+
+  const stepId = WIZARD_STEPS[currentStep];
+
+  const canProceed = useMemo(() => {
+    if (stepId === 'goal') return !!data.goal;
+    if (stepId === 'stats') {
+      const sexOk = !!data.sex && (data.sex !== 'other' || !!data.customGender);
+      return sexOk && !!data.age && !!data.weight && !!data.height;
+    }
+    if (stepId === 'activity') return !!data.activityLevel;
+    if (stepId === 'lifestyle') return !!data.lifestyle;
+    if (stepId === 'dietType') return !!data.dietType;
+    if (stepId === 'personalization') return !!data.targetWeight && !!data.velocity;
+    if (stepId === 'projection') return true;
+    return true;
+  }, [stepId, data]);
 
   const handleNext = () => {
-    if (step === 4) {
-      if (data.goal === 'lose' && data.targetWeight > data.weight) {
-        Alert.alert(t('common.error'), t('profile.loseWeightValidation', 'El peso objetivo debe ser menor al actual'));
+    if (stepId === 'personalization') {
+      const curWeight = data.weight ?? 0;
+      const tarWeight = data.targetWeight ?? curWeight;
+
+      if (data.goal === 'lose' && tarWeight >= curWeight) {
+        setError(t('profile.loseWeightValidation', 'Target weight must be less than current weight'));
         return;
       }
-      if (data.goal === 'gain' && data.targetWeight < data.weight) {
-        Alert.alert(t('common.error'), t('profile.gainWeightValidation', 'El peso objetivo debe ser mayor al actual'));
+      if (data.goal === 'gain' && tarWeight <= curWeight) {
+        setError(t('profile.gainWeightValidation', 'Target weight must be greater than current weight'));
         return;
+      }
+      if (data.goal === 'maintain' && tarWeight !== curWeight) {
+        updateData({ targetWeight: curWeight });
       }
     }
-    if (step < STEPS_COUNT - 1) {
-      const nextStep = step + 1;
-      if (nextStep === 4 && data.goal === 'maintain') {
-        setData({ ...data, targetWeight: data.weight });
-      }
-      setStep(nextStep);
+
+    if (currentStep < WIZARD_STEPS.length - 1) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      setCurrentStep(s => s + 1);
     } else {
-      onSave(data);
+      handleComplete();
     }
   };
 
   const handleBack = () => {
-    if (step > 0) setStep(step - 1);
-    else onClose();
+    if (currentStep > 0) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      setCurrentStep(s => s - 1);
+    } else {
+      onClose();
+    }
   };
 
-  const heightM = (profile?.height ?? 170) / 100;
-  const isLbs = massUnit === 'lb';
-  const defaultW = isLbs ? 154 : 70;
-  const currentVal = data.targetWeight ?? data.weight ?? defaultW;
-  const currentValKg = isLbs ? currentVal / 2.20462 : currentVal;
-  const targetBMI = currentValKg / (heightM * heightM);
-  
-  const idealMin = Math.round(18.5 * heightM * heightM);
-  const idealMax = Math.round(24.9 * heightM * heightM);
-  const idealMinDisplay = isLbs ? Math.round(idealMin * 2.20462) : idealMin;
-  const idealMaxDisplay = isLbs ? Math.round(idealMax * 2.20462) : idealMax;
-  const unitLabel = isLbs ? 'lbs' : 'kg';
+  const handleComplete = async () => {
+    if (!profile) return;
+    setSaving(true);
+    try {
+      const d = data as OnboardingData;
+      const isLbs = d.weightUnit === 'lbs';
+      const isFt = d.heightUnit === 'ft';
+      const wKg = isLbs ? Math.round(d.weight / 2.20462) : (d.weight ?? profile.weight);
+      const tKg = isLbs ? Math.round(d.targetWeight / 2.20462) : (d.targetWeight ?? profile.targetWeight ?? wKg);
+      const hCm = isFt ? Math.round(d.height * 30.48) : (d.height ?? profile.height);
 
-  let statusColor = '#10B981';
-  let statusIcon = <Sparkles size={16} color={statusColor} />;
-  let statusText = '';
+      const finalActivityLevel = d.activityLevel || profile.activityLevel || 'moderate';
+      const finalLifestyle = d.lifestyle || profile.lifestyle || 'standing_sometimes';
 
-  if (data.goal === 'lose') {
-    if (targetBMI < 18.5) {
-      statusColor = '#EF4444';
-      statusIcon = <AlertCircle size={16} color={statusColor} />;
-      statusText = t('onboarding.warningUnderweight', { min: idealMinDisplay, max: idealMaxDisplay, unit: unitLabel, defaultValue: `Este objetivo es demasiado bajo. Tu rango ideal es ${idealMinDisplay}-${idealMaxDisplay} ${unitLabel}.` });
-    } else if (targetBMI > 24.9) {
-      statusColor = '#F59E0B';
-      statusIcon = <AlertCircle size={16} color={statusColor} />;
-      statusText = t('onboarding.recOverweightStep', { min: idealMinDisplay, max: idealMaxDisplay, unit: unitLabel, defaultValue: `Buen paso inicial. Recuerda que tu peso ideal a largo plazo es ${idealMinDisplay}-${idealMaxDisplay} ${unitLabel}.` });
-    } else {
-      statusText = t('onboarding.loseHealthy', { defaultValue: `¡Excelente meta! Alcanzarás un peso muy saludable para tu estatura.` });
+      const { tdee } = calculateTDEE({
+        weight: wKg,
+        height: hCm,
+        age: d.age || profile.age || 25,
+        sex: d.sex || profile.sex || 'male',
+        activityLevel: finalActivityLevel,
+        lifestyleLevel: finalLifestyle,
+      });
+
+      let macroRatio = { protein: 0.3, carbs: 0.4, fat: 0.3 };
+      if (d.dietType === 'high_protein') macroRatio = { protein: 0.4, carbs: 0.3, fat: 0.3 };
+      if (d.dietType === 'low_carb')     macroRatio = { protein: 0.35, carbs: 0.15, fat: 0.5 };
+      if (d.dietType === 'keto')         macroRatio = { protein: 0.25, carbs: 0.05, fat: 0.7 };
+      if (d.dietType === 'low_fat')      macroRatio = { protein: 0.3, carbs: 0.55, fat: 0.15 };
+
+      const { targetCalories } = calculateMacros(tdee, d.goal);
+      const finalProtein = Math.round((targetCalories * macroRatio.protein) / 4);
+      const finalCarbs = Math.round((targetCalories * macroRatio.carbs) / 4);
+      const finalFat = Math.round((targetCalories * macroRatio.fat) / 9);
+
+      const newStartingWeight = (profile.goal !== d.goal)
+        ? wKg
+        : (profile.startingWeight || profile.weight || wKg);
+
+      const dbUpdates: Record<string, any> = {
+        weight: wKg,
+        target_weight: tKg,
+        starting_weight: newStartingWeight,
+        goal: d.goal,
+        activity_level: finalActivityLevel,
+        lifestyle: finalLifestyle,
+        lifestyle_level: finalLifestyle,
+        diet_type: d.dietType,
+        age: d.age || profile.age,
+        sex: d.sex || profile.sex,
+        height: hCm,
+        tdee,
+        target_calories: targetCalories,
+        macros: { protein: finalProtein, carbs: finalCarbs, fat: finalFat },
+        preferences: [d.dietType, d.velocity || 'moderate'],
+        updated_at: new Date().toISOString(),
+      };
+
+      if (d.customGender !== undefined) {
+        dbUpdates.custom_gender = d.customGender;
+      }
+
+      // NOTE: Do NOT include exercise_level in users table!
+      const { error: dbError } = await supabase
+        .from('users')
+        .update(dbUpdates)
+        .eq('id', profile.id);
+
+      if (dbError) throw dbError;
+
+      // Update units
+      setMassUnit(isLbs ? 'lb' : 'kg');
+      setLengthUnit(isFt ? 'ft' : 'cm');
+
+      // Record body measurement for current date
+      const { addMeasurement } = useBodyStore.getState();
+      await addMeasurement({
+        id: `bm-${Date.now()}`,
+        date: getLocalDateString(),
+        weight: wKg,
+      });
+
+      // Update Auth Profile
+      const updatedProfile: UserProfile = {
+        ...profile,
+        weight: wKg,
+        targetWeight: tKg,
+        startingWeight: newStartingWeight,
+        goal: d.goal,
+        activityLevel: finalActivityLevel,
+        lifestyle: finalLifestyle,
+        dietType: d.dietType,
+        age: d.age || profile.age,
+        sex: d.sex || profile.sex,
+        height: hCm,
+        tdee,
+        targetCalories,
+        macros: { protein: finalProtein, carbs: finalCarbs, fat: finalFat },
+        preferences: [d.dietType, d.velocity || 'moderate'],
+        customGender: d.customGender !== undefined ? d.customGender : profile.customGender,
+      };
+      setProfile(updatedProfile);
+
+      // Update Nutrition store
+      const { setNeat, setExerciseLevel } = useNutritionStore.getState();
+      setNeat(finalLifestyle);
+      setExerciseLevel(ACTIVITY_TO_EXERCISE[finalActivityLevel] || 'none');
+
+      // Notify external caller if provided
+      onSave?.(updatedProfile);
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      showAlert('success', t('common.success', 'Éxito'), t('profile.updateSuccess', 'Objetivos actualizados correctamente.'), () => {
+        onClose();
+      });
+    } catch (err: any) {
+      console.error('[GoalWizardModal] Error updating goals:', err);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      showAlert('error', t('common.error', 'Error'), t('profile.updateFailed', 'Error al actualizar tu cuenta.'));
+    } finally {
+      setSaving(false);
     }
-  } else if (data.goal === 'gain') {
-    if (targetBMI > 27.5) {
-      statusColor = '#F59E0B';
-      statusIcon = <AlertCircle size={16} color={statusColor} />;
-      statusText = t('onboarding.warningOverweightGain', { min: idealMinDisplay, max: idealMaxDisplay, unit: unitLabel, defaultValue: `Cuidado con subir demasiada grasa. Tu rango saludable base es ${idealMinDisplay}-${idealMaxDisplay} ${unitLabel}.` });
-    } else if (targetBMI < 18.5) {
-      statusColor = '#EF4444';
-      statusIcon = <AlertCircle size={16} color={statusColor} />;
-      statusText = t('onboarding.warningUnderweightGain', { min: idealMinDisplay, max: idealMaxDisplay, unit: unitLabel, defaultValue: `Este objetivo sigue siendo bajo. Tu rango ideal es ${idealMinDisplay}-${idealMaxDisplay} ${unitLabel}.` });
-    } else {
-      statusText = t('onboarding.gainHealthy', { defaultValue: `¡Perfecto para ganar masa muscular manteniendo un peso saludable!` });
+  };
+
+  const activeStepComponent = useMemo(() => {
+    switch (stepId) {
+      case 'goal':
+        return <GoalStep value={data} onChange={updateData} />;
+      case 'stats':
+        return <StatsStep value={data} onChange={updateData} />;
+      case 'activity':
+        return <ActivityStep value={data} onChange={updateData} />;
+      case 'lifestyle':
+        return <LifestyleStep value={data} onChange={updateData} />;
+      case 'dietType':
+        return <DietTypeStep value={data} onChange={updateData} />;
+      case 'personalization':
+        return <PersonalizationStep value={data} onChange={updateData} />;
+      case 'projection':
+        return <ProjectionStep value={data} onChange={updateData} />;
+      default:
+        return null;
     }
-  } else {
-    if (targetBMI < 18.5) {
-      statusColor = '#F59E0B';
-      statusIcon = <AlertCircle size={16} color={statusColor} />;
-      statusText = t('onboarding.warningUnderweightMaintain', { defaultValue: `Actualmente tienes bajo peso. Te recomendamos cambiar tu meta a ganar masa muscular.` });
-    } else if (targetBMI > 24.9) {
-      statusColor = '#F59E0B';
-      statusIcon = <AlertCircle size={16} color={statusColor} />;
-      statusText = t('onboarding.warningOverweightMaintain', { defaultValue: `Tu peso actual es alto. Te sugerimos considerar la meta de pérdida de peso.` });
-    } else {
-      statusText = t('onboarding.maintainHealthy', { defaultValue: `¡Excelente! Estás en un peso ideal para mantenerte en forma y saludable.` });
-    }
-  }
+  }, [stepId, data, updateData]);
+
+  if (!visible) return null;
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={false}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-        {/* Background Decoration */}
-        <View style={wm.glow1} />
-        <View style={wm.glow2} />
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent={false}
+      onRequestClose={onClose}
+    >
+      <SafeAreaView style={[wm.safe, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
+        <CustomAlert
+          visible={alert.visible}
+          type={alert.type}
+          title={alert.title}
+          message={alert.message}
+          confirmText={alert.confirmText}
+          onConfirm={alert.onConfirm}
+        />
 
+        {error && (
+          <View style={wm.errorContainer}>
+            <LinearGradient
+              colors={[colors.error + 'EE', colors.error]}
+              style={wm.errorGradient}
+            >
+              <AlertCircle size={20} color="#FFF" />
+              <Text style={wm.errorText}>{error}</Text>
+            </LinearGradient>
+          </View>
+        )}
+
+        {/* Header */}
         <View style={wm.header}>
           <View style={wm.headerTop}>
-            <TouchableOpacity onPress={handleBack} style={wm.backBtn}>
-              <ChevronLeft size={28} color={colors.textPrimary} />
+            <TouchableOpacity
+              style={[wm.iconBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              onPress={handleBack}
+              activeOpacity={0.7}
+            >
+              <ChevronLeft size={22} color={colors.textPrimary} />
             </TouchableOpacity>
-            
+
             <View style={wm.progressWrap}>
-              {Array.from({ length: STEPS_COUNT }).map((_, i) => (
+              {WIZARD_STEPS.map((_, i) => (
                 <View
                   key={i}
-                  style={[wm.progressSegment, { backgroundColor: colors.border }, i <= step && { backgroundColor: colors.primary }]}
+                  style={[
+                    wm.progressSegment,
+                    { backgroundColor: colors.border + '60' },
+                    i <= currentStep && { backgroundColor: '#8B5CF6' }
+                  ]}
                 />
               ))}
             </View>
 
-            <TouchableOpacity onPress={onClose} style={wm.exitBtn}>
-              <Text style={[wm.exitText, { color: colors.textMuted }]}>{t('common.cancel', 'CANCELAR')}</Text>
+            <TouchableOpacity
+              style={[wm.iconBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
+              <X size={20} color={colors.textPrimary} />
             </TouchableOpacity>
+          </View>
+
+          <View style={wm.stepCounterRow}>
+            <Text style={[wm.stepCountText, { color: colors.textMuted }]}>
+              {`${t('common.step', 'Paso')} ${currentStep + 1} / ${WIZARD_STEPS.length}`}
+            </Text>
           </View>
         </View>
 
-        <ScrollView contentContainerStyle={wm.scroll} showsVerticalScrollIndicator={false}>
-          {step === 0 && (
-            <View style={{ paddingTop: 20 }}>
-              <View style={stepStyle.headerSection}>
-                <View style={[stepStyle.targetCircle, { backgroundColor: colors.primary + '15', shadowColor: colors.primary }]}>
-                  <Scale size={42} color={colors.primary} />
+        {/* Step Body */}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <ScrollView
+            style={wm.scroll}
+            contentContainerStyle={wm.content}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            {activeStepComponent}
+          </ScrollView>
+        </KeyboardAvoidingView>
+
+        {/* Footer */}
+        <View style={[wm.footer, { borderTopColor: colors.border + '20', backgroundColor: colors.background }]}>
+          <TouchableOpacity
+            style={[wm.nextBtn, (!canProceed || saving) && wm.nextBtnDisabled]}
+            onPress={handleNext}
+            disabled={!canProceed || saving}
+            activeOpacity={0.85}
+          >
+            <LinearGradient
+              colors={canProceed ? ['#7C5CFC', '#4F46E5'] : [colors.border, colors.border]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={wm.nextGrad}
+            >
+              {saving ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <ActivityIndicator color="#fff" size="small" />
+                  <Text style={wm.nextText}>{t('common.loading', 'Cargando...')}</Text>
                 </View>
-                <Text style={[stepStyle.title, { color: colors.textPrimary }]}>{t('profile.currentWeight')}</Text>
-                <Text style={[stepStyle.sub, { color: colors.textSecondary }]}>{t('profile.enterWeight')}</Text>
-              </View>
-
-              <View style={wm.weightControl}>
-                <TouchableOpacity 
-                  style={[wm.weightBtn, { borderColor: colors.border, backgroundColor: colors.surface + '80' }]} 
-                  onPress={() => setData({...data, weight: Math.max(20, (data.weight || 70) - 1)})}
-                >
-                  <Text style={{ fontSize: 32, color: colors.primary }}>-</Text>
-                </TouchableOpacity>
-                <View style={wm.weightValue}>
-                  <TextInput 
-                    style={[wm.weightText, { color: colors.textPrimary, padding: 0, minWidth: 100, textAlign: 'center' }]}
-                    keyboardType="numeric"
-                    value={data.weight !== undefined ? data.weight.toString() : ''}
-                    placeholder="70"
-                    placeholderTextColor={colors.textMuted}
-                    onChangeText={(text: string) => {
-                      if (text === '') {
-                        setData({...data, weight: undefined});
-                      } else {
-                        const val = parseFloat(text.replace(',', '.').replace(/[^0-9.]/g, ''));
-                        if (!isNaN(val)) setData({...data, weight: val});
-                      }
-                    }}
-                  />
-                  <Text style={[wm.weightUnit, { color: colors.textSecondary }]}>kg</Text>
+              ) : (
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <Text style={wm.nextText}>
+                    {currentStep === WIZARD_STEPS.length - 1
+                      ? t('profile.updateGoals', 'Actualizar objetivos')
+                      : t('common.next', 'Siguiente')}
+                  </Text>
+                  {currentStep === WIZARD_STEPS.length - 1 ? (
+                    <Check size={20} color="#fff" />
+                  ) : (
+                    <ArrowRight size={20} color="#fff" />
+                  )}
                 </View>
-                <TouchableOpacity 
-                  style={[wm.weightBtn, { borderColor: colors.border, backgroundColor: colors.surface + '80' }]} 
-                  onPress={() => setData({...data, weight: (data.weight || 70) + 1})}
-                >
-                  <Text style={{ fontSize: 32, color: colors.primary }}>+</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-
-          {step === 1 && (
-            <View style={{ paddingTop: 20 }}>
-              <View style={stepStyle.headerSection}>
-                <View style={[stepStyle.targetCircle, { backgroundColor: colors.primary + '15', shadowColor: colors.primary, elevation: 10 }]}>
-                  <Target size={42} color={colors.primary} />
-                </View>
-                <Text style={[stepStyle.title, { color: colors.textPrimary }]}>{t('onboarding.goalTitle')}</Text>
-                <Text style={[stepStyle.sub, { color: colors.textSecondary }]}>{t('onboarding.goalSub')}</Text>
-              </View>
-
-              <View style={stepStyle.optionList}>
-                {GOALS.map(g => {
-                  const isActive = data.goal === g.id;
-                  return (
-                    <TouchableOpacity 
-                      key={g.id} 
-                      style={[
-                        stepStyle.optionCard, 
-                        { backgroundColor: 'transparent', borderColor: colors.border },
-                        isActive && { 
-                          borderColor: g.accent, 
-                          backgroundColor: g.accent + '15',
-                          shadowColor: g.accent,
-                          shadowOffset: { width: 0, height: 4 },
-                          shadowOpacity: 0.2,
-                          shadowRadius: 8,
-                        }
-                      ]} 
-                      onPress={() => setData({...data, goal: g.id})}
-                    >
-                      <View style={[
-                        stepStyle.iconContainer, 
-                        { backgroundColor: colors.background, borderColor: isActive ? g.accent + '40' : colors.border + '40' },
-                        isActive && { shadowColor: g.accent, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 8 }
-                      ]}>
-                        {g.icon}
-                      </View>
-                      <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                        <Text style={[stepStyle.optionTitle, { color: colors.textPrimary }, isActive && { color: g.accent }]}>{g.title}</Text>
-                        <Text style={[stepStyle.optionSub, { color: colors.textSecondary }]}>{g.sub}</Text>
-                      </View>
-                      <View style={[stepStyle.radioOuter, { borderColor: isActive ? g.accent : colors.border }]}>
-                        {isActive && <View style={[stepStyle.radioInner, { backgroundColor: g.accent }]} />}
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          )}
-
-          {step === 2 && (
-            <View style={{ paddingTop: 20 }}>
-              <View style={stepStyle.headerSection}>
-                <View style={[stepStyle.targetCircle, { backgroundColor: colors.primary + '15', shadowColor: colors.primary }]}>
-                  <Dumbbell size={42} color={colors.primary} />
-                </View>
-                <Text style={[stepStyle.title, { color: colors.textPrimary }]}>{t('onboarding.activityTitle')}</Text>
-                <Text style={[stepStyle.sub, { color: colors.textSecondary }]}>{t('onboarding.activitySub')}</Text>
-              </View>
-
-              <View style={stepStyle.optionList}>
-                {ACTIVITIES.map(a => {
-                  const isActive = data.exerciseLevel === a.id;
-                  return (
-                    <TouchableOpacity 
-                      key={a.id} 
-                      style={[
-                        stepStyle.optionCard, 
-                        { backgroundColor: 'transparent', borderColor: colors.border },
-                        isActive && { 
-                          borderColor: a.color, 
-                          backgroundColor: a.color + '15',
-                          shadowColor: a.color,
-                          shadowOffset: { width: 0, height: 4 },
-                          shadowOpacity: 0.2,
-                          shadowRadius: 8,
-                        }
-                      ]} 
-                      onPress={() => setData({...data, exerciseLevel: a.id})}
-                    >
-                      <View style={[
-                        stepStyle.iconContainer, 
-                        { backgroundColor: colors.background, borderColor: isActive ? a.color : 'rgba(255,255,255,0.05)' },
-                        isActive && { shadowColor: a.color, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 8 }
-                      ]}>
-                        {a.icon}
-                      </View>
-                      <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                        <Text style={[stepStyle.optionTitle, { color: colors.textPrimary }, isActive && { color: a.color }]}>{a.label}</Text>
-                        <Text style={[stepStyle.optionSub, { color: colors.textSecondary }]}>{a.sub}</Text>
-                      </View>
-                      <View style={[stepStyle.radioOuter, { borderColor: isActive ? a.color : colors.border }]}>
-                        {isActive && <View style={[stepStyle.radioInner, { backgroundColor: a.color }]} />}
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          )}
-
-          {step === 3 && (
-            <View style={{ paddingTop: 20 }}>
-              <View style={stepStyle.headerSection}>
-                <View style={[stepStyle.targetCircle, { backgroundColor: colors.primary + '15', shadowColor: colors.primary }]}>
-                  <Building2 size={42} color={colors.primary} />
-                </View>
-                <Text style={[stepStyle.title, { color: colors.textPrimary }]}>{t('onboarding.lifestyleTitle')}</Text>
-                <Text style={[stepStyle.sub, { color: colors.textSecondary }]}>{t('onboarding.lifestyleSub')}</Text>
-              </View>
-
-              <View style={stepStyle.optionList}>
-                {LIFESTYLE_OPTIONS.map(a => {
-                  const isActive = data.lifestyle === a.id;
-                  return (
-                    <TouchableOpacity 
-                      key={a.id} 
-                      style={[
-                        stepStyle.optionCard, 
-                        { backgroundColor: 'transparent', borderColor: colors.border },
-                        isActive && { 
-                          borderColor: a.color, 
-                          backgroundColor: a.color + '15',
-                          shadowColor: a.color,
-                          shadowOffset: { width: 0, height: 4 },
-                          shadowOpacity: 0.2,
-                          shadowRadius: 8,
-                        }
-                      ]} 
-                      onPress={() => setData({...data, lifestyle: a.id})}
-                    >
-                      <View style={[
-                        stepStyle.iconContainer, 
-                        { backgroundColor: colors.background, borderColor: isActive ? a.color : 'rgba(255,255,255,0.05)' },
-                        isActive && { shadowColor: a.color, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 8 }
-                      ]}>
-                        {a.icon}
-                      </View>
-                      <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                        <Text style={[stepStyle.optionTitle, { color: colors.textPrimary }, isActive && { color: a.color }]}>{a.label}</Text>
-                        <Text style={[stepStyle.optionSub, { color: colors.textSecondary }]}>{a.sub}</Text>
-                      </View>
-                      <View style={[stepStyle.radioOuter, { borderColor: isActive ? a.color : colors.border }]}>
-                        {isActive && <View style={[stepStyle.radioInner, { backgroundColor: a.color }]} />}
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          )}
-
-          {step === 4 && (
-            <View style={{ paddingTop: 20 }}>
-              <View style={stepStyle.headerSection}>
-                <View style={[stepStyle.targetCircle, { backgroundColor: colors.primary + '15', shadowColor: colors.primary }]}>
-                  <Target size={42} color={colors.primary} />
-                </View>
-                <Text style={[stepStyle.title, { color: colors.textPrimary }]}>{t('onboarding.targetWeight')}</Text>
-                <Text style={[stepStyle.sub, { color: colors.textSecondary }]}>
-                  {data.goal === 'maintain' 
-                    ? t('profile.maintainWeightInfo')
-                    : t('profile.enterWeight')}
-                </Text>
-              </View>
-              
-              <View style={wm.weightControl}>
-                <TouchableOpacity 
-                  style={[
-                    wm.weightBtn, 
-                    { borderColor: colors.border, backgroundColor: colors.surface + '80' },
-                    (data.goal === 'maintain' || (data.goal === 'gain' && (data.targetWeight || data.weight) <= data.weight)) && { opacity: 0.3 }
-                  ]} 
-                  onPress={() => {
-                    const currentTarget = data.targetWeight || data.weight;
-                    if (data.goal === 'maintain') return;
-                    if (data.goal === 'gain' && currentTarget <= data.weight) return;
-                    setData({...data, targetWeight: Math.max(20, currentTarget - 1)});
-                  }}
-                  disabled={data.goal === 'maintain' || (data.goal === 'gain' && (data.targetWeight || data.weight) <= data.weight)}
-                >
-                  <Text style={{ fontSize: 32, color: colors.primary }}>-</Text>
-                </TouchableOpacity>
-
-                <View style={wm.weightValue}>
-                  <TextInput 
-                    style={[wm.weightText, { color: colors.textPrimary, padding: 0, minWidth: 100, textAlign: 'center' }]}
-                    keyboardType="numeric"
-                    value={data.targetWeight !== undefined ? data.targetWeight.toString() : ''}
-                    placeholder={data.weight !== undefined ? data.weight.toString() : '70'}
-                    placeholderTextColor={colors.textMuted}
-                    onChangeText={(text: string) => {
-                      if (text === '') {
-                        setData({...data, targetWeight: undefined});
-                      } else {
-                        const val = parseFloat(text.replace(',', '.').replace(/[^0-9.]/g, ''));
-                        if (!isNaN(val)) setData({...data, targetWeight: val});
-                      }
-                    }}
-                  />
-                  <Text style={[wm.weightUnit, { color: colors.textSecondary }]}>kg</Text>
-                </View>
-
-                <TouchableOpacity 
-                  style={[
-                    wm.weightBtn, 
-                    { borderColor: colors.border, backgroundColor: colors.surface + '80' },
-                    (data.goal === 'maintain' || (data.goal === 'lose' && (data.targetWeight || data.weight) >= data.weight)) && { opacity: 0.3 }
-                  ]} 
-                  onPress={() => {
-                    const currentTarget = data.targetWeight || data.weight;
-                    if (data.goal === 'maintain') return;
-                    if (data.goal === 'lose' && currentTarget >= data.weight) return;
-                    setData({...data, targetWeight: currentTarget + 1});
-                  }}
-                  disabled={data.goal === 'maintain' || (data.goal === 'lose' && (data.targetWeight || data.weight) >= data.weight)}
-                >
-                  <Text style={{ fontSize: 32, color: colors.primary }}>+</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Target Weight Warning Box */}
-              <View style={{ 
-                flexDirection: 'row', 
-                alignItems: 'center', 
-                backgroundColor: statusColor + '12', 
-                padding: 14, 
-                borderRadius: 16, 
-                borderWidth: 1.5, 
-                borderColor: statusColor + '40',
-                marginTop: 32,
-                marginHorizontal: 10
-              }}>
-                <View style={{ 
-                  width: 34, height: 34, borderRadius: 17, 
-                  backgroundColor: statusColor + '20', 
-                  justifyContent: 'center', alignItems: 'center',
-                  marginRight: 12 
-                }}>
-                  {statusIcon}
-                </View>
-                <Text style={{ color: statusColor, fontSize: 13, flex: 1, fontWeight: '600', lineHeight: 19 }}>
-                  {statusText}
-                </Text>
-              </View>
-            </View>
-          )}
-        </ScrollView>
-
-        <View style={wm.footer}>
-          <TouchableOpacity style={wm.nextBtn} onPress={handleNext} activeOpacity={0.85}>
-            <LinearGradient colors={[colors.primary, '#4338CA']} style={wm.nextGrad}>
-              <View style={wm.nextContent}>
-                <Text style={wm.nextText}>{step === STEPS_COUNT - 1 ? t('common.save') : t('common.continue')}</Text>
-                <ChevronRight size={20} color="#fff" />
-              </View>
+              )}
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -568,86 +467,113 @@ export function GoalWizardModal({ visible, onClose, onSave, initialData }: GoalW
   );
 }
 
-const stepStyle = StyleSheet.create({
-  headerSection:    { alignItems: 'center', marginBottom: 20 },
-  targetCircle:     { 
-    width: 90, 
-    height: 90, 
-    borderRadius: 45, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    marginBottom: 24,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-  },
-  title:            { fontSize: 26, fontWeight: '900', marginBottom: 8, textAlign: 'center', letterSpacing: -0.5 },
-  sub:              { fontSize: 14, marginBottom: 24, textAlign: 'center', opacity: 0.7, paddingHorizontal: 40, lineHeight: 20 },
-  optionList:       { gap: 12 },
-  optionCard:       { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    gap: 16, 
-    paddingHorizontal: 20,
-    paddingVertical: 18, 
-    borderRadius: 28, 
-    borderWidth: 2,
-    marginBottom: 8,
-  },
-  iconContainer:    {
-    width: 58,
-    height: 58,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-  },
-  optionTitle:      { fontSize: 19, fontWeight: '900', marginBottom: 2, flexShrink: 1, letterSpacing: -0.3 },
-  optionSub:        { fontSize: 13, opacity: 0.6, lineHeight: 18, flexShrink: 1, fontWeight: '500' },
-  radioOuter:       {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 1.5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 4,
-    opacity: 0.8
-  },
-  radioInner:       {
-    width: 14,
-    height: 14,
-    borderRadius: 7
-  },
-});
-
 const wm = StyleSheet.create({
-  header: { paddingTop: 12, paddingHorizontal: Spacing.base },
-  headerTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  backBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
-  progressWrap: { flex: 1, flexDirection: 'row', gap: 6 },
-  progressSegment: { flex: 1, height: 6, borderRadius: 3 },
-  exitBtn: { padding: 8 },
-  exitText: { fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
-  scroll: { padding: Spacing.base, paddingBottom: 40 },
-  weightControl: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 24, marginTop: 40 },
-  weightBtn: { width: 72, height: 72, borderRadius: 24, borderWidth: 2.5, justifyContent: 'center', alignItems: 'center' },
-  weightValue: { alignItems: 'center' },
-  weightText: { fontSize: 56, fontWeight: '900', letterSpacing: -1 },
-  weightUnit: { fontSize: 20, fontWeight: '700', opacity: 0.5, marginTop: -4 },
-  footer: { padding: Spacing.base, paddingBottom: Platform.OS === 'ios' ? 36 : 24 },
-  nextBtn: { borderRadius: 24, overflow: 'hidden', shadowColor: '#7C5CFC', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12 },
-  nextGrad: { paddingVertical: 20, alignItems: 'center' },
-  nextContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  nextText: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
-  glow1: {
-    position: 'absolute', top: -100, left: -100,
-    width: 300, height: 300, borderRadius: 150,
-    backgroundColor: '#7C5CFC', opacity: 0.08,
+  safe: {
+    flex: 1,
   },
-  glow2: {
-    position: 'absolute', bottom: -100, right: -100,
-    width: 350, height: 350, borderRadius: 175,
-    backgroundColor: '#22D3EE', opacity: 0.05,
+  header: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Platform.OS === 'android' ? Spacing.sm : 0,
+    paddingBottom: Spacing.sm,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  progressWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: 4,
+    height: 5,
+    alignItems: 'center',
+  },
+  progressSegment: {
+    flex: 1,
+    height: 5,
+    borderRadius: 3,
+  },
+  stepCounterRow: {
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  stepCountText: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  scroll: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing['2xl'] + 20,
+  },
+  footer: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderTopWidth: 1,
+  },
+  nextBtn: {
+    height: 56,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#7C5CFC',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  nextBtnDisabled: {
+    opacity: 0.5,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  nextGrad: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nextText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  errorContainer: {
+    position: 'absolute',
+    top: Platform.OS === 'android' ? 50 : 60,
+    left: Spacing.lg,
+    right: Spacing.lg,
+    zIndex: 999,
+  },
+  errorGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  errorText: {
+    color: '#FFF',
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
   },
 });

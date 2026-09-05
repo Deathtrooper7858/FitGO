@@ -31,6 +31,7 @@ export interface UserProfile extends HealthProfile {
   premiumColor?:   string;
   sex:             'male' | 'female' | 'other';
   genderOther?:    string;
+  customGender?:   string;
   age:             number;
   weight:          number;   // kg
   height:          number;   // cm
@@ -186,6 +187,6 @@ export interface AppNotification {
   iconType: 'lucide' | 'lottie' | 'emoji';
   lucideIcon?: string;
   lottieFile?: string;
-  tier: 'bronce' | 'plata' | 'oro' | 'diamante' | 'success' | 'info' | 'warning';
+  tier: 'bronce' | 'plata' | 'oro' | 'diamante' | 'success' | 'info' | 'warning' | 'error';
   isAchievement?: boolean;
 }

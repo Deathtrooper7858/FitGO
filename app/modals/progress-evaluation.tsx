@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,7 +18,7 @@ import { useIsPro } from '../../hooks/useIsPro';
 import { AdTimerOverlay } from '../../components/AdTimerOverlay';
 import { RewardedAdGate } from '../../components/RewardedAdGate';
 import { getLocalDateString } from '../../utils/date';
-import { CustomAlert } from '../../components/CustomAlert';
+import { CustomAlert, AlertType } from '../../components/CustomAlert';
 
 /** Strips raw API/AI jargon from error messages and returns a user-friendly string. */
 function sanitizeAIError(msg: string): string {
@@ -77,31 +77,72 @@ export default function ProgressEvaluationModal() {
   const currentUserId = profile?.id;
   const userEvaluations = evaluations.filter(e => !e.userId || e.userId === currentUserId);
 
+  const [alert, setAlert] = useState<{
+    visible: boolean;
+    type: AlertType;
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm: () => void;
+    onCancel?: () => void;
+  }>({
+    visible: false,
+    type: 'info',
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
+  const showAlert = (
+    type: AlertType,
+    title: string,
+    message: string,
+    onConfirm?: () => void,
+    onCancel?: () => void,
+    confirmText?: string,
+    cancelText?: string
+  ) => {
+    setAlert({
+      visible: true,
+      type,
+      title,
+      message,
+      confirmText,
+      cancelText,
+      onConfirm: () => {
+        onConfirm?.();
+        setAlert(prev => ({ ...prev, visible: false }));
+      },
+      onCancel: onCancel ? () => {
+        onCancel();
+        setAlert(prev => ({ ...prev, visible: false }));
+      } : undefined,
+    });
+  };
+
   const handleDeleteItem = (item: typeof evaluations[0]) => {
-    Alert.alert(
+    showAlert(
+      'confirm',
       t('evaluation.deleteConfirmTitle', 'Eliminar Evaluación'),
       t('evaluation.deleteConfirmMsg', '¿Estás seguro de que deseas eliminar esta evaluación del historial?'),
-      [
-        { text: t('common.cancel', 'Cancelar'), style: 'cancel' },
-        { 
-          text: t('common.delete', 'Eliminar'), 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const fileUri = item.fileName ? `${FileSystem.documentDirectory}${item.fileName}` : item.uri;
-              if (fileUri) {
-                const info = await FileSystem.getInfoAsync(fileUri);
-                if (info.exists) {
-                  await FileSystem.deleteAsync(fileUri, { idempotent: true });
-                }
-              }
-            } catch (err) {
-              console.warn('Error deleting photo file:', err);
+      async () => {
+        try {
+          const fileUri = item.fileName ? `${FileSystem.documentDirectory}${item.fileName}` : item.uri;
+          if (fileUri) {
+            const info = await FileSystem.getInfoAsync(fileUri);
+            if (info.exists) {
+              await FileSystem.deleteAsync(fileUri, { idempotent: true });
             }
-            deleteEvaluation(item.id);
           }
+        } catch (err) {
+          console.warn('Error deleting photo file:', err);
         }
-      ]
+        deleteEvaluation(item.id);
+      },
+      undefined,
+      t('common.delete', 'Eliminar'),
+      t('common.cancel', 'Cancelar')
     );
   };
 
@@ -111,8 +152,6 @@ export default function ProgressEvaluationModal() {
   const [targetArea, setTargetArea] = useState<TargetArea>('full');
   const [userContext, setUserContext] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [alertMsg, setAlertMsg] = useState('');
   const [result, setResult] = useState<{
     id?: string;
     feedback: string;
@@ -186,34 +225,45 @@ export default function ProgressEvaluationModal() {
       if (useCamera) {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== 'granted') {
-          alert(t('common.cameraPermissionDenied', 'Se necesita permiso para la cámara.'));
+          showAlert('warning', t('common.permissionRequired', 'Permiso requerido'), t('common.cameraPermissionDenied', 'Se necesita permiso para la cámara.'));
           return;
         }
         result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions ? ImagePicker.MediaTypeOptions.Images : ['images'],
+          mediaTypes: ['images'],
           allowsEditing: false,
           aspect: [3, 4],
-          quality: 0.8,
+          quality: 0.5,
           base64: true,
         });
       } else {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-          alert(t('common.galleryPermissionDenied', 'Se necesita permiso para la galería.'));
+          showAlert('warning', t('common.permissionRequired', 'Permiso requerido'), t('common.galleryPermissionDenied', 'Se necesita permiso para la galería.'));
           return;
         }
         result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions ? ImagePicker.MediaTypeOptions.Images : ['images'],
+          mediaTypes: ['images'],
           allowsEditing: false,
           aspect: [3, 4],
-          quality: 0.8,
+          quality: 0.5,
           base64: true,
         });
       }
 
       if (!result.canceled && result.assets && result.assets[0]) {
-        setImageUri(result.assets[0].uri);
-        setBase64Image(result.assets[0].base64 || null);
+        const asset = result.assets[0];
+        setImageUri(asset.uri);
+        let b64 = asset.base64 || null;
+        if (!b64 && asset.uri) {
+          try {
+            b64 = await FileSystem.readAsStringAsync(asset.uri, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+          } catch (readErr) {
+            console.warn('[Evaluation] Could not read image as base64:', readErr);
+          }
+        }
+        setBase64Image(b64);
         setResult(null); // Clear previous result
         setShowHistory(false);
       }
@@ -223,10 +273,21 @@ export default function ProgressEvaluationModal() {
   };
 
   const handleAnalyze = async () => {
-    if (!base64Image || !imageUri) return;
+    let currentBase64 = base64Image;
+    if (!currentBase64 && imageUri) {
+      try {
+        currentBase64 = await FileSystem.readAsStringAsync(imageUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        setBase64Image(currentBase64);
+      } catch (err) {
+        console.warn('[Evaluation] Fallback base64 read failed:', err);
+      }
+    }
+    if (!currentBase64 || !imageUri) return;
     setIsAnalyzing(true);
     try {
-      const response = await analyzePhysiquePhoto(base64Image, language, targetArea, userContext);
+      const response = await analyzePhysiquePhoto(currentBase64, language, targetArea, userContext);
       
       // Save image to filesystem for persistence
       const fileName = `eval_${Date.now()}.jpg`;
@@ -237,7 +298,7 @@ export default function ProgressEvaluationModal() {
       try {
         if (imageUri.startsWith('content://') || imageUri.startsWith('ph://')) {
           // Use base64 data we already have for maximum compatibility
-          await FileSystem.writeAsStringAsync(localUri, base64Image, {
+          await FileSystem.writeAsStringAsync(localUri, currentBase64, {
             encoding: FileSystem.EncodingType.Base64,
           });
         } else {
@@ -246,7 +307,7 @@ export default function ProgressEvaluationModal() {
       } catch (copyErr) {
         console.warn('[Evaluation] Image copy failed, using base64 fallback:', copyErr);
         // Final fallback: write from base64
-        await FileSystem.writeAsStringAsync(localUri, base64Image, {
+        await FileSystem.writeAsStringAsync(localUri, currentBase64, {
           encoding: FileSystem.EncodingType.Base64,
         });
       }
@@ -270,8 +331,7 @@ export default function ProgressEvaluationModal() {
       const rawMsg: string = error?.message ?? '';
       const friendlyMsg = sanitizeAIError(rawMsg) ||
         t('evaluation.error', 'An error occurred while analyzing the image.');
-      setAlertMsg(friendlyMsg);
-      setAlertVisible(true);
+      showAlert('error', t('common.error', 'Error'), friendlyMsg);
     } finally {
       setIsAnalyzing(false);
     }
@@ -307,18 +367,18 @@ export default function ProgressEvaluationModal() {
         )}
 
         <Accordion title={t('evaluation.strengths', 'Puntos Fuertes')} icon={<CheckCircle size={20} color={colors.success} />} color={colors.success} defaultExpanded={true} colors={colors}>
-          {res.strengths.map((str, i) => (
+          {(Array.isArray(res.strengths) ? res.strengths : []).map((str, i) => (
             <Text key={i} style={[s.listItem, { color: colors.textPrimary }]}>• {str}</Text>
           ))}
         </Accordion>
 
         <Accordion title={t('evaluation.improvements', 'Áreas de Mejora')} icon={<ArrowUpCircle size={20} color={colors.warning} />} color={colors.warning} defaultExpanded={true} colors={colors}>
-          {res.improvements.map((imp, i) => (
+          {(Array.isArray(res.improvements) ? res.improvements : []).map((imp, i) => (
             <Text key={i} style={[s.listItem, { color: colors.textPrimary }]}>• {imp}</Text>
           ))}
         </Accordion>
         
-        {res.recommendations && res.recommendations.length > 0 && (
+        {Array.isArray(res.recommendations) && res.recommendations.length > 0 && (
           <Accordion title={t('evaluation.recommendations', 'Recomendaciones')} icon={<Text style={{fontSize: 20}}>💡</Text>} color="#F59E0B" defaultExpanded={false} colors={colors}>
             {res.recommendations.map((rec, i) => (
               <Text key={i} style={[s.listItem, { color: colors.textPrimary }]}>• {rec}</Text>
@@ -519,12 +579,14 @@ export default function ProgressEvaluationModal() {
       <AdTimerOverlay featureId="evaluation" />
 
       <CustomAlert
-        visible={alertVisible}
-        type="error"
-        title={t('common.error', 'Error')}
-        message={alertMsg}
-        confirmText="OK"
-        onConfirm={() => setAlertVisible(false)}
+        visible={alert.visible}
+        type={alert.type}
+        title={alert.title}
+        message={alert.message}
+        confirmText={alert.confirmText}
+        cancelText={alert.cancelText}
+        onConfirm={alert.onConfirm}
+        onCancel={alert.onCancel}
       />
     </SafeAreaView>
   );

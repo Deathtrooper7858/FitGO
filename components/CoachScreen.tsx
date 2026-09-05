@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TextInput,
   TouchableOpacity, KeyboardAvoidingView, Platform,
-  ActivityIndicator, Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { requestCameraPermissionsAsync, requestMediaLibraryPermissionsAsync, launchCameraAsync, launchImageLibraryAsync } from 'expo-image-picker';
@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { useKeyboardNavBar } from '../hooks/useKeyboardNavBar';
 import { useKeyboardHeight } from '../hooks/useKeyboardHeight';
 import { useAICredits } from '../hooks/useAICredits';
-import { useAuthStore, useCoachStore, CoachMessage, useSettingsStore, usePurchaseStore, usePlannerStore, useWorkoutHistoryStore, useLeagueStore, useNutritionStore, useBodyStore } from '../store';
+import { useAuthStore, useCoachStore, CoachMessage, useSettingsStore, usePurchaseStore, usePlannerStore, useWorkoutHistoryStore, useLeagueStore, useNutritionStore, useBodyStore, useToastStore } from '../store';
 import { sendCoachMessage, buildCoachSystemPrompt, transcribeAudio } from '../services/groq';
 import { supabase } from '../services/supabase';
 import { Spacing, Radius } from '../constants';
@@ -249,10 +249,17 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
   const { t } = useTranslation();
   const colors = useTheme();
   const { language } = useSettingsStore();
-  const store = useCoachStore();
-  const messages = store[config.messagesKey];
-  const sessionId = store[config.sessionIdKey];
-  const { isTyping, addMessage, setMessages, setTyping, incrementCount, checkAndResetDaily, setCurrentSessionId, setSessions, removeLastPair } = store;
+  const messages = useCoachStore(s => s[config.messagesKey]);
+  const sessionId = useCoachStore(s => s[config.sessionIdKey]);
+  const isTyping = useCoachStore(s => s.isTyping);
+  const addMessage = useCoachStore(s => s.addMessage);
+  const setMessages = useCoachStore(s => s.setMessages);
+  const setTyping = useCoachStore(s => s.setTyping);
+  const incrementCount = useCoachStore(s => s.incrementCount);
+  const checkAndResetDaily = useCoachStore(s => s.checkAndResetDaily);
+  const setCurrentSessionId = useCoachStore(s => s.setCurrentSessionId);
+  const setSessions = useCoachStore(s => s.setSessions);
+  const removeLastPair = useCoachStore(s => s.removeLastPair);
   const { profile } = useAuthStore();
   const { isPro } = usePurchaseStore();
   const isProActually = !!isPro || !!profile?.isPro || profile?.role === 'pro_user' || profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'owner';
@@ -348,7 +355,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
     try {
       const { granted } = await requestCameraPermissionsAsync();
       if (!granted) {
-        Alert.alert(t('common.warning', 'Advertencia'), t('profile.cameraPermission', 'Se necesitan permisos de cámara para tomar fotos.'));
+        useToastStore.getState().showToast({ title: t('common.warning', 'Advertencia'), text: t('profile.cameraPermission', 'Se necesitan permisos de cámara para tomar fotos.'), type: 'warning' });
         return;
       }
       const result = await launchCameraAsync({ base64: true, quality: 0.2 });
@@ -356,7 +363,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
         setSelectedImage(result.assets[0].base64!);
       }
     } catch {
-      Alert.alert(t('common.error', 'Error'), t('profile.cameraFailed', 'Error al abrir la cámara'));
+      useToastStore.getState().showToast({ title: t('common.error', 'Error'), text: t('profile.cameraFailed', 'Error al abrir la cámara'), type: 'error' });
     }
   };
 
@@ -364,7 +371,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
     try {
       const { granted } = await requestMediaLibraryPermissionsAsync();
       if (!granted) {
-        Alert.alert(t('common.warning', 'Advertencia'), t('profile.galleryPermission', 'Se necesitan permisos de galería para seleccionar fotos.'));
+        useToastStore.getState().showToast({ title: t('common.warning', 'Advertencia'), text: t('profile.galleryPermission', 'Se necesitan permisos de galería para seleccionar fotos.'), type: 'warning' });
         return;
       }
       const result = await launchImageLibraryAsync({ base64: true, quality: 0.2, mediaTypes: ['images'] });
@@ -372,7 +379,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
         setSelectedImage(result.assets[0].base64!);
       }
     } catch {
-      Alert.alert(t('common.error', 'Error'), t('profile.galleryFailed', 'Error al abrir la galería'));
+      useToastStore.getState().showToast({ title: t('common.error', 'Error'), text: t('profile.galleryFailed', 'Error al abrir la galería'), type: 'error' });
     }
   };
 
@@ -384,7 +391,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
     try {
       const permission = await requestRecordingPermissionsAsync();
       if (permission.status !== 'granted') {
-        Alert.alert(t('common.warning', 'Advertencia'), t('tracker.micPermissionSub', 'Por favor permite acceso al micrófono para usar el registro por voz.'));
+        useToastStore.getState().showToast({ title: t('common.warning', 'Advertencia'), text: t('tracker.micPermissionSub', 'Por favor permite acceso al micrófono para usar el registro por voz.'), type: 'warning' });
         return;
       }
       await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
@@ -406,7 +413,7 @@ export default function CoachScreen({ coachType }: CoachScreenProps) {
           const text = await transcribeAudio(uri);
           if (text.trim()) setInput(text);
         } catch {
-          Alert.alert(t('common.error', 'Error'), t('tracker.voiceFailedSub', 'No pudimos procesar tu voz. Inténtalo de nuevo.'));
+          useToastStore.getState().showToast({ title: t('common.error', 'Error'), text: t('tracker.voiceFailedSub', 'No pudimos procesar tu voz. Inténtalo de nuevo.'), type: 'error' });
         } finally {
           setIsTranscribing(false);
           await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: false }).catch(() => {});

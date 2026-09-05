@@ -22,6 +22,7 @@ import { CalorieArc } from '../../../components/tracker/CalorieArc';
 import { MacroBars } from '../../../components/tracker/MacroBars';
 import { MealCarousel } from '../../../components/tracker/MealCarousel';
 import { WaterTracker } from '../../../components/tracker/WaterTracker';
+import { FastingWidget } from '../../../components/tracker/FastingWidget';
 import { StepsWidget } from '../../../components/tracker/StepsWidget';
 import { ConsistencyHeatmap } from '../../../components/tracker/ConsistencyHeatmap';
 import { DateNavigator } from '../../../components/tracker/DateNavigator';
@@ -51,12 +52,12 @@ export default function TrackerScreen() {
   const setDate = useNutritionStore(s => s.setDate);
   const streakDays = useNutritionStore(s => s.streakDays);
   const addWater = useNutritionStore(s => s.addWater);
-  const dailyWater = useNutritionStore(s => s.dailyWater);
-  const dailySteps = useNutritionStore(s => s.dailySteps);
+  const steps = useNutritionStore(s => s.dailySteps[s.selectedDate] || 0);
+  const rawWater = useNutritionStore(s => s.dailyWater[s.selectedDate] || 0);
+  const currentNeat = useNutritionStore(s => s.dailyNeat[s.selectedDate] || profile?.lifestyle || 'standing_sometimes');
+  const currentExercise = useNutritionStore(s => s.dailyExercise[s.selectedDate] || ACTIVITY_TO_EXERCISE[profile?.activityLevel || 'moderate'] || '3-4');
   const setSteps = useNutritionStore(s => s.setSteps);
   const addSteps = useNutritionStore(s => s.addSteps);
-  const dailyNeat = useNutritionStore(s => s.dailyNeat);
-  const dailyExercise = useNutritionStore(s => s.dailyExercise);
   const activityLogs = useNutritionStore(s => s.activityLogs);
   const removeActivityLog = useNutritionStore(s => s.removeActivityLog);
   const addExtraSnack = useNutritionStore(s => s.addExtraSnack);
@@ -76,10 +77,6 @@ export default function TrackerScreen() {
   const target = Math.round(convertEnergy(profile?.targetCalories || 2000, 'kcal', energyUnit));
   const energyLabel = energyUnit.toUpperCase();
   const isPro = useIsPro();
-  const steps = dailySteps[selectedDate] || 0;
-  const rawWater = dailyWater[selectedDate] || 0;
-  const currentNeat = dailyNeat[selectedDate] || profile?.lifestyle || 'standing_sometimes';
-  const currentExercise = dailyExercise[selectedDate] || ACTIVITY_TO_EXERCISE[profile?.activityLevel || 'moderate'] || '3-4';
   const dayActivities = useMemo(() => activityLogs.filter(a => a.loggedAt.startsWith(selectedDate)), [activityLogs, selectedDate]);
   const baselineRaw = (NEAT_CALORIES[currentNeat] || 0) + (EXERCISE_CALORIES[currentExercise] || 0);
   const activitiesRaw = dayActivities.reduce((acc, a) => acc + a.calories, 0);
@@ -453,6 +450,7 @@ export default function TrackerScreen() {
 
               <ConsistencyHeatmap heatmapDays={heatmapDays} isPro={isPro} onUpgrade={() => router.push('/modals/paywall')} colors={colors} t={t} />
               <WaterTracker waterMl={rawWater} onAddWater={addWater} onCustomWaterPress={handleCustomWater} colors={colors} t={t} volumeUnit={volumeUnit} />
+              <FastingWidget colors={colors} t={t} />
               <StepsWidget steps={currentSteps} onAddSteps={addSteps} colors={colors} t={t} />
             </ScrollView>
           </View>

@@ -79,20 +79,59 @@ ${foodsInstruction}
 9. VARIETY: Do not repeat the same meal more than 2 times across the 7-day plan. Use diverse, realistic, and practical meal ideas.
 10. PORTION SPECIFICITY: Always include realistic portion descriptions in the meal name (e.g., "150g grilled chicken breast with 200g brown rice and salad").
 
-Return ONLY valid JSON — no markdown, no explanation, just the JSON object:
+Return ONLY a single, valid, complete JSON object.
+CRITICAL FORMAT RULES:
+- Do NOT output markdown code fences (such as \`\`\`json).
+- Do NOT include reasoning, commentary, or text before or after the JSON.
+- Output MUST start with '{' and end with '}'.
+- Every single day ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun") MUST contain a complete array of meal objects.
+- NEVER use ellipsis (...) or placeholder syntax like [...] in any property or array.
+
+JSON Schema format:
 {
-  "warning": "[Disclaimer in ${targetLang}]",
+  "warning": "Disclaimer in ${targetLang}",
   "Mon": [
-    { "meal": "breakfast", "name": "Specific meal name with portions in ${targetLang}", "calories": 0, "protein": 0, "carbs": 0, "fat": 0 },
-    { "meal": "lunch", "name": "...", "calories": 0, "protein": 0, "carbs": 0, "fat": 0 },
-    { "meal": "dinner", "name": "...", "calories": 0, "protein": 0, "carbs": 0, "fat": 0 }
+    { "meal": "breakfast", "name": "Meal name and portion in ${targetLang}", "calories": 500, "protein": 35, "carbs": 55, "fat": 15 },
+    { "meal": "lunch", "name": "Meal name and portion in ${targetLang}", "calories": 700, "protein": 50, "carbs": 80, "fat": 20 },
+    { "meal": "dinner", "name": "Meal name and portion in ${targetLang}", "calories": 600, "protein": 45, "carbs": 70, "fat": 18 },
+    { "meal": "snack", "name": "Snack name and portion in ${targetLang}", "calories": 200, "protein": 20, "carbs": 25, "fat": 8 }
   ],
-  "Tue": [...],
-  "Wed": [...],
-  "Thu": [...],
-  "Fri": [...],
-  "Sat": [...],
-  "Sun": [...]
+  "Tue": [
+    { "meal": "breakfast", "name": "Meal name and portion in ${targetLang}", "calories": 500, "protein": 35, "carbs": 55, "fat": 15 },
+    { "meal": "lunch", "name": "Meal name and portion in ${targetLang}", "calories": 700, "protein": 50, "carbs": 80, "fat": 20 },
+    { "meal": "dinner", "name": "Meal name and portion in ${targetLang}", "calories": 600, "protein": 45, "carbs": 70, "fat": 18 },
+    { "meal": "snack", "name": "Snack name and portion in ${targetLang}", "calories": 200, "protein": 20, "carbs": 25, "fat": 8 }
+  ],
+  "Wed": [
+    { "meal": "breakfast", "name": "Meal name and portion in ${targetLang}", "calories": 500, "protein": 35, "carbs": 55, "fat": 15 },
+    { "meal": "lunch", "name": "Meal name and portion in ${targetLang}", "calories": 700, "protein": 50, "carbs": 80, "fat": 20 },
+    { "meal": "dinner", "name": "Meal name and portion in ${targetLang}", "calories": 600, "protein": 45, "carbs": 70, "fat": 18 },
+    { "meal": "snack", "name": "Snack name and portion in ${targetLang}", "calories": 200, "protein": 20, "carbs": 25, "fat": 8 }
+  ],
+  "Thu": [
+    { "meal": "breakfast", "name": "Meal name and portion in ${targetLang}", "calories": 500, "protein": 35, "carbs": 55, "fat": 15 },
+    { "meal": "lunch", "name": "Meal name and portion in ${targetLang}", "calories": 700, "protein": 50, "carbs": 80, "fat": 20 },
+    { "meal": "dinner", "name": "Meal name and portion in ${targetLang}", "calories": 600, "protein": 45, "carbs": 70, "fat": 18 },
+    { "meal": "snack", "name": "Snack name and portion in ${targetLang}", "calories": 200, "protein": 20, "carbs": 25, "fat": 8 }
+  ],
+  "Fri": [
+    { "meal": "breakfast", "name": "Meal name and portion in ${targetLang}", "calories": 500, "protein": 35, "carbs": 55, "fat": 15 },
+    { "meal": "lunch", "name": "Meal name and portion in ${targetLang}", "calories": 700, "protein": 50, "carbs": 80, "fat": 20 },
+    { "meal": "dinner", "name": "Meal name and portion in ${targetLang}", "calories": 600, "protein": 45, "carbs": 70, "fat": 18 },
+    { "meal": "snack", "name": "Snack name and portion in ${targetLang}", "calories": 200, "protein": 20, "carbs": 25, "fat": 8 }
+  ],
+  "Sat": [
+    { "meal": "breakfast", "name": "Meal name and portion in ${targetLang}", "calories": 500, "protein": 35, "carbs": 55, "fat": 15 },
+    { "meal": "lunch", "name": "Meal name and portion in ${targetLang}", "calories": 700, "protein": 50, "carbs": 80, "fat": 20 },
+    { "meal": "dinner", "name": "Meal name and portion in ${targetLang}", "calories": 600, "protein": 45, "carbs": 70, "fat": 18 },
+    { "meal": "snack", "name": "Snack name and portion in ${targetLang}", "calories": 200, "protein": 20, "carbs": 25, "fat": 8 }
+  ],
+  "Sun": [
+    { "meal": "breakfast", "name": "Meal name and portion in ${targetLang}", "calories": 500, "protein": 35, "carbs": 55, "fat": 15 },
+    { "meal": "lunch", "name": "Meal name and portion in ${targetLang}", "calories": 700, "protein": 50, "carbs": 80, "fat": 20 },
+    { "meal": "dinner", "name": "Meal name and portion in ${targetLang}", "calories": 600, "protein": 45, "carbs": 70, "fat": 18 },
+    { "meal": "snack", "name": "Snack name and portion in ${targetLang}", "calories": 200, "protein": 20, "carbs": 25, "fat": 8 }
+  ]
 }`;
 
   const data = await fetchGroq({
@@ -100,23 +139,34 @@ Return ONLY valid JSON — no markdown, no explanation, just the JSON object:
     messages: [
       {
         role: 'system',
-        content: 'You are an expert sports nutritionist and dietitian AI. You must respond ONLY with a valid JSON object matching the requested schema. Do not include markdown or explanations.'
+        content: 'You are an expert sports nutritionist and dietitian AI. You must respond ONLY with a raw valid JSON object matching the requested schema. Never include markdown formatting (such as ```json), thinking tags, or conversational text.'
       },
       { role: 'user', content: prompt }
     ],
-    max_tokens: 6000,
-    temperature: 0.5,
+    max_tokens: 8192,
+    temperature: 0.2,
     response_format: { type: 'json_object' },
   });
 
   let text = (data.choices[0]?.message?.content ?? '').trim();
+  text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
   text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
 
   let parsed: any;
   try {
     parsed = JSON.parse(text);
   } catch {
-    throw new Error('Failed to parse meal plan from AI. Please try again.');
+    const start = text.indexOf('{');
+    const end = text.lastIndexOf('}');
+    if (start !== -1 && end > start) {
+      try {
+        parsed = JSON.parse(text.slice(start, end + 1));
+      } catch {
+        throw new Error('Failed to parse meal plan from AI. Please try again.');
+      }
+    } else {
+      throw new Error('Failed to parse meal plan from AI. Please try again.');
+    }
   }
 
   // Validate that all 7 days are present — a truncated response (due to token limit)
@@ -167,12 +217,13 @@ export async function generateDailyMealPlan(userProfile: any, language: string =
 === FOOD AVAILABILITY ===
 ${foodsInstruction}
 
-Return ONLY valid JSON (no markdown):
+Return ONLY a valid JSON object starting with '{' and ending with '}':
 {
   "${day}": [
-    { "meal": "breakfast", "name": "Meal name in ${targetLang}", "calories": 0, "protein": 0, "carbs": 0, "fat": 0 },
-    { "meal": "lunch", "name": "...", "calories": 0, "protein": 0, "carbs": 0, "fat": 0 },
-    { "meal": "dinner", "name": "...", "calories": 0, "protein": 0, "carbs": 0, "fat": 0 }
+    { "meal": "breakfast", "name": "Meal name and portion in ${targetLang}", "calories": 500, "protein": 35, "carbs": 55, "fat": 15 },
+    { "meal": "lunch", "name": "Meal name and portion in ${targetLang}", "calories": 700, "protein": 50, "carbs": 80, "fat": 20 },
+    { "meal": "dinner", "name": "Meal name and portion in ${targetLang}", "calories": 600, "protein": 45, "carbs": 70, "fat": 18 },
+    { "meal": "snack", "name": "Snack name and portion in ${targetLang}", "calories": 200, "protein": 20, "carbs": 25, "fat": 8 }
   ]
 }`;
 
@@ -181,20 +232,30 @@ Return ONLY valid JSON (no markdown):
     messages: [
       {
         role: 'system',
-        content: 'You are an expert sports nutritionist AI. You must respond ONLY with a valid JSON object matching the requested schema.'
+        content: 'You are an expert sports nutritionist AI. You must respond ONLY with a raw valid JSON object matching the requested schema. Never output markdown code blocks or thinking tags.'
       },
       { role: 'user', content: prompt }
     ],
-    max_tokens: 1500,
-    temperature: 0.5,
+    max_tokens: 2048,
+    temperature: 0.2,
     response_format: { type: 'json_object' },
   });
 
   let text = (data.choices[0]?.message?.content ?? '').trim();
+  text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
   text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
   try {
     return JSON.parse(text);
   } catch {
+    const start = text.indexOf('{');
+    const end = text.lastIndexOf('}');
+    if (start !== -1 && end > start) {
+      try {
+        return JSON.parse(text.slice(start, end + 1));
+      } catch {
+        throw new Error('Failed to parse daily meal plan from AI. Please try again.');
+      }
+    }
     throw new Error('Failed to parse daily meal plan from AI. Please try again.');
   }
 }

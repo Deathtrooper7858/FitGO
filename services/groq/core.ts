@@ -65,10 +65,14 @@ async function fetchGroq(payload: any): Promise<any> {
     } else if (payload.model === FAST_MODEL) {
       modelsArray = [FAST_MODEL, CHAT_MODEL, 'qwen/qwen3.6-27b'];
     } else if (payload.model === VISION_MODEL) {
-      modelsArray = [VISION_MODEL];
+      modelsArray = [VISION_MODEL, 'qwen-3.6-27b', 'qwen-3.8-27b', 'meta-llama/llama-4-scout-17b-16e-instruct'];
     }
 
-    const attemptPayload = { ...payload, models: modelsArray, model: undefined };
+    const attemptPayload: Record<string, any> = { ...payload, models: modelsArray, model: undefined };
+    if (payload.response_format?.type === 'json_object') {
+      attemptPayload.reasoning_format = attemptPayload.reasoning_format || 'hidden';
+      attemptPayload.reasoning_effort = attemptPayload.reasoning_effort || 'low';
+    }
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -86,6 +90,18 @@ async function fetchGroq(payload: any): Promise<any> {
     } catch (error: any) {
       let errorMsg = error.response?.data?.error || error.message || 'Unknown error';
       if (typeof errorMsg === 'object') errorMsg = errorMsg.message || JSON.stringify(errorMsg);
+
+      // If Groq rejected strict server-side JSON validation, automatically retry once without response_format constraint
+      if (
+        payload.response_format &&
+        !payload.__isRetryWithoutFormat &&
+        /failed to validate json|failed_generation|json_validate_failed/i.test(errorMsg)
+      ) {
+        console.warn('[Groq] JSON validation rejected by API validator. Retrying without response_format constraint...');
+        const retryPayload = { ...payload, __isRetryWithoutFormat: true };
+        delete retryPayload.response_format;
+        return fetchGroq(retryPayload);
+      }
 
       if (error.response?.status === 429 || error.response?.status >= 500 || errorMsg.includes('Rate limit') || errorMsg.includes('tokens per day') || errorMsg.includes('Internal server error') || errorMsg.includes('overloaded')) {
         console.error(`[Groq] All proxy models and keys exhausted.`);
@@ -213,9 +229,9 @@ function prepareImageData(base64Image: string): { dataUrl: string; mime: string 
   const clean = base64Image.replace(/^data:image\/\w+;base64,/, '').replace(/\s/g, '');
   if (!clean) return null;
 
-  // Validate base64 size (Groq limit: 4MB)
+  // Validate base64 size (Groq limit: up to 20MB)
   const bytes = Math.ceil((clean.length * 3) / 4);
-  if (bytes > 4 * 1024 * 1024) {
+  if (bytes > 15 * 1024 * 1024) {
     throw new Error(i18n.t('groq.imageTooLarge'));
   }
 

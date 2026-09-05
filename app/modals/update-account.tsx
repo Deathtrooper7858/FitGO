@@ -68,6 +68,11 @@ export default function UpdateAccountScreen() {
       return;
     }
 
+    if (isPasswordChanged && password.length < 6) {
+      showAlert('error', t('common.error', 'Error'), t('auth.passwordTooShort', 'La contraseña debe tener al menos 6 caracteres.'));
+      return;
+    }
+
     setLoading(true);
 
     try {

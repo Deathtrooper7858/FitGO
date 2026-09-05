@@ -63,36 +63,69 @@ subprojects { subproject ->
   return updatedConfig;
 };
 
+const withR8Optimization = (expoConfig) => {
+  return withAppBuildGradle(expoConfig, (modConfig) => {
+    let contents = modConfig.modResults.contents;
+
+    // Ensure enableMinifyInReleaseBuilds defaults to true
+    if (contents.includes("def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBuilds') ?: false).toBoolean()")) {
+      contents = contents.replace(
+        "def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBuilds') ?: false).toBoolean()",
+        "def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBuilds') ?: 'true').toBoolean()"
+      );
+    }
+
+    // Ensure proguard-android-optimize.txt is used
+    if (contents.includes('getDefaultProguardFile("proguard-android.txt")')) {
+      contents = contents.replace(
+        'getDefaultProguardFile("proguard-android.txt")',
+        'getDefaultProguardFile("proguard-android-optimize.txt")'
+      );
+    }
+
+    // Ensure shrinkResources in release defaults to true
+    if (contents.includes("def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'")) {
+      contents = contents.replace(
+        "def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'",
+        "def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'true'"
+      );
+    }
+
+    modConfig.modResults.contents = contents;
+    return modConfig;
+  });
+};
+
 module.exports = ({ config }) => {
-  const variant = process.env.APP_VARIANT;
+  const variant = (process.env.APP_VARIANT || 'development').trim();
 
   let finalConfig;
   if (variant === 'development') {
     finalConfig = {
       ...config,
-      name: 'FitGO (Dev)',
-      scheme: 'fitgo-dev',
+      name: 'FitGO',
+      scheme: 'fitgo',
       ios: {
         ...config.ios,
-        bundleIdentifier: 'com.fitgo.app.dev',
+        bundleIdentifier: 'com.fitgo.app',
       },
       android: {
         ...config.android,
-        package: 'com.fitgo.app.dev',
+        package: 'com.fitgo.app',
       },
     };
   } else if (variant === 'preview') {
     finalConfig = {
       ...config,
-      name: 'FitGO (Preview)',
-      scheme: 'fitgo-preview',
+      name: 'FitGO',
+      scheme: 'fitgo',
       ios: {
         ...config.ios,
-        bundleIdentifier: 'com.fitgo.app.preview',
+        bundleIdentifier: 'com.fitgo.app',
       },
       android: {
         ...config.android,
-        package: 'com.fitgo.app.preview',
+        package: 'com.fitgo.app',
       },
     };
   } else {
@@ -112,6 +145,6 @@ module.exports = ({ config }) => {
     };
   }
 
-  return withMultiDex(withDisableLintVital(finalConfig));
+  return withR8Optimization(withMultiDex(withDisableLintVital(finalConfig)));
 };
 

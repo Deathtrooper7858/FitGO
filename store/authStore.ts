@@ -14,6 +14,7 @@ interface AuthState {
   setLoading:  (v: boolean) => void;
   clearAuth:   () => void;
   fetchProfile: (userId: string) => Promise<void>;
+  loadCachedProfile: () => Promise<UserProfile | null>;
 }
 
 // Sensitive health fields that MUST be stored in SecureStore, not AsyncStorage
@@ -38,12 +39,18 @@ function mergeHealthData(profile: UserProfile, healthData: Record<string, any>):
 
 async function persistProfile(profile: UserProfile | null): Promise<void> {
   if (!profile) {
-    await SecureStorage.removeItem('ff-health-profile');
+    await Promise.all([
+      SecureStorage.removeItem('ff-health-profile'),
+      SecureStorage.removeItem('ff-user-profile'),
+    ]);
     return;
   }
-  // Store sensitive health data in SecureStore
+  // Store sensitive health data as well as the full user profile in SecureStore
   const healthData = extractHealthData(profile);
-  await SecureStorage.setItem('ff-health-profile', JSON.stringify(healthData));
+  await Promise.all([
+    SecureStorage.setItem('ff-health-profile', JSON.stringify(healthData)),
+    SecureStorage.setItem('ff-user-profile', JSON.stringify(profile)),
+  ]);
 }
 
 async function loadHealthData(): Promise<Record<string, any>> {
@@ -55,6 +62,18 @@ async function loadHealthData(): Promise<Record<string, any>> {
   }
 }
 
+async function loadCachedProfile(): Promise<UserProfile | null> {
+  try {
+    const raw = await SecureStorage.getItem('ff-user-profile');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as UserProfile;
+    const cachedHealth = await loadHealthData();
+    return mergeHealthData(parsed, cachedHealth);
+  } catch {
+    return null;
+  }
+}
+
 export const useAuthStore = create<AuthState>()(
   (set, get) => ({
       session:    null,
@@ -63,12 +82,22 @@ export const useAuthStore = create<AuthState>()(
       setSession: (session) => set({ session }),
       setProfile: async (profile) => {
         set({ profile });
-        // Persist health data to SecureStore whenever profile changes
+        // Persist profile and health data to SecureStore whenever profile changes
         await persistProfile(profile);
       },
       setLoading: (isLoading) => set({ isLoading }),
+      loadCachedProfile: async () => {
+        const cached = await loadCachedProfile();
+        if (cached) {
+          set({ profile: cached });
+        }
+        return cached;
+      },
       clearAuth:  async () => {
-        await SecureStorage.removeItem('ff-health-profile');
+        await Promise.all([
+          SecureStorage.removeItem('ff-health-profile'),
+          SecureStorage.removeItem('ff-user-profile'),
+        ]);
         set({ session: null, profile: null, isLoading: false });
       },
       fetchProfile: async (userId: string) => {

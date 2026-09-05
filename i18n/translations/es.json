@@ -136,7 +136,8 @@
     "swipe": "Desliza",
     "all": "Todos",
     "close": "Cerrar",
-    "default": "Predeterminado"
+    "default": "Predeterminado",
+    "hide": "Ocultar"
   },
   "welcome": {
     "motto": "Fit-Go: Tu mejor versión",
@@ -432,14 +433,19 @@
     "registered": "Registrada",
     "kcalAdded": "Se han añadido {{calories}} kcal a tu día.",
     "waterUpdated": "Agua Actualizada",
-    "waterTodayTotal": "Total de hoy: ",
+    "waterTodayTotal": "Total de hoy: {{ml}} ml",
     "waterAdded": "Agua Añadida",
+    "waterAddedDesc": "+{{ml}} ml añadidos • Total: {{total}} ml",
     "stepsAdded": "Pasos Añadidos",
-    "stepsTodayTotal": "Total de hoy: ",
+    "stepsAddedDesc": "+{{steps}} pasos añadidos • Total: {{total}}",
+    "stepsTodayTotal": "Total de hoy: {{steps}} pasos",
     "sleepLogged": "Sueño Registrado",
+    "sleepRegistered": "Sueño Registrado",
+    "sleepRegisteredDesc": "Has registrado {{hours}}h de descanso.",
     "sleepRecorded": "Has registrado ",
     "sleepHours": "horas de sueño.",
-    "exerciseAdded": "Ejercicio Añadido"
+    "exerciseAdded": "Ejercicio Añadido",
+    "exerciseAddedDesc": "{{name}} • {{duration}} min (+{{calories}} kcal)"
   },
   "planner": {
     "title": "Planificador",
@@ -1381,7 +1387,11 @@
     "photoPrecisionHint": "Para mayor precisión, intenta que las proporciones se vean claras.",
     "textPrecisionHint": "Para mayor precisión, menciona explícitamente las cantidades (ej. 200g) y qué comida es.",
     "photoDisclaimer": "El análisis por foto es una estimación. Los valores nutricionales pueden no ser 100% precisos.",
-    "logTime": "Hora de registro"
+    "logTime": "Hora de registro",
+    "alignBarcode": "Centra el código de barras dentro del marco",
+    "enterCodeManually": "Ingresar código manualmente",
+    "manualCodePlaceholder": "ej. 7501055300503",
+    "scanned": "¡Escaneado!"
   },
   "foodDetail": {
     "per": "Por",
@@ -1450,7 +1460,9 @@
       "leaderboard": "Clasificación",
       "leaderboardBody": "🔥 El ranking semanal termina pronto. ¡Sube posiciones!",
       "messages": "Mensajes",
-      "messagesBody": "💬 ¡Tienes nuevos mensajes en FitGO Social!"
+      "messagesBody": "💬 ¡Tienes nuevos mensajes en FitGO Social!",
+      "vitamine": "Vitaminas",
+      "vitamineBody": "¡Recuerda tomar tus vitaminas y suplementos!"
     }
   },
   "paywall": {
@@ -1496,7 +1508,17 @@
       "historyBadge": "DATOS",
       "adsTitle": "Experiencia Sin Anuncios",
       "adsDesc": "Disfruta de FitGO al 100% libre de publicidad molesta o interrupciones",
-      "adsBadge": "VIP"
+      "adsBadge": "VIP",
+      "coach": "🤖 Mensajes ilimitados al Coach IA",
+      "photo": "📸 Reconocimiento de alimentos por foto",
+      "voice": "🎙️ Registro de alimentos por voz",
+      "stats": "📊 Seguimiento completo de medidas corporales",
+      "planner": "📅 Generación de planes nutricionales por IA",
+      "shopping": "🛒 Lista de compras automática",
+      "export": "📤 Exportar planes en PDF",
+      "analysis": "📈 Análisis semanal con IA",
+      "recipes": "🍳 Biblioteca de recetas Pro",
+      "ads": "🚫 Sin anuncios para siempre"
     },
     "rows": {
       "coach": "Coach IA",
@@ -1554,7 +1576,31 @@
       "confirmNote": "Sin pago requerido. La prueba se revoca automáticamente.",
       "confirmCta": "Activar Prueba Gratuita",
       "confirmCancel": "No, gracias"
-    }
+    },
+    "unlock": "Desbloquear FitGO Pro",
+    "heroSub": "Todo lo que necesitas para transformar tu cuerpo, potenciado por IA.",
+    "monthly": "Mensual",
+    "annual": "Anual",
+    "lifetime": "De por vida",
+    "bestValue": "Mejor Valor — Ahorra 50%",
+    "priceNote": "Solo 5$/mes",
+    "once": " una vez",
+    "month": "/mes",
+    "year": "/año",
+    "startTrial": "Iniciar Prueba Gratuita",
+    "legal": "El pago se cargará a tu cuenta. La suscripción se renueva automáticamente a menos que se cancele 24 horas antes.",
+    "fullAccess": "Acceso Total",
+    "restorePurchases": "Restaurar compras",
+    "titleUnlock": "Desbloquear",
+    "titlePro": "FitGO Pro",
+    "feature1": "Planes de nutrición con IA ilimitados",
+    "feature2": "Rutinas de entrenamiento ultra personalizadas",
+    "feature3": "Generador de lista de compras en PDF",
+    "feature4": "Acceso a entrenadores virtuales (Nutriólogo, Entrenador, Médico)",
+    "feature5": "Análisis semanal con IA",
+    "feature6": "Sin anuncios y sin límites",
+    "specialOffer": "OFERTA ESPECIAL",
+    "perMonth": " / mes"
   },
   "muscleDirectory": {
     "chest": "Pecho",
@@ -3125,7 +3171,10 @@
     "Crunches": "Abdominales",
     "Elevación de Piernas": "Elevación de Piernas",
     "Rueda Abdominal": "Rueda Abdominal",
-    "Russian Twists": "Giros rusos"
+    "Russian Twists": "Giros rusos",
+    "isololation assisted seated pectoralis major stretch with stability ball": "Estiramiento del pectoral mayor sentado asistido por aislamiento con balón de estabilidad",
+    "Aperturas com Mancuernas": "Aperturas con Mancuernas",
+    "Remo com Barra": "Remo con Barra"
   },
   "nutritionist": "Alimentación",
   "doctor": "Bienestar",
@@ -4572,7 +4621,14 @@
     "registrationSuccess": "¡REGISTRO EXITOSO!",
     "actionCompleted": "¡ACCIÓN COMPLETADA!",
     "attention": "¡ATENCIÓN!",
-    "notification": "NOTIFICACIÓN"
+    "notification": "NOTIFICACIÓN",
+    "achievementUnlocked": "¡LOGRO DESBLOQUEADO!",
+    "waterLogged": "HIDRATACIÓN",
+    "stepsLogged": "PASOS",
+    "exerciseLogged": "ENTRENAMIENTO",
+    "mealLogged": "NUTRICIÓN",
+    "sleepLogged": "DESCANSO",
+    "measurementsLogged": "MEDIDAS"
   },
   "chat": {
     "cameraPermissionTitle": "Permiso requerido",
@@ -4590,6 +4646,7 @@
   },
   "body": {
     "measurementsUpdated": "Medidas Actualizadas",
+    "measurementsUpdatedDesc": "Tus medidas corporales se han guardado con éxito.",
     "measurementsSaved": "Tus registros corporales han sido guardados."
   },
   "notifications": {

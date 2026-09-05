@@ -4,13 +4,12 @@
     "slug": "fitgo",
     "owner": "deathtrooper",
     "version": "1.0.2",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0F172A",
     "androidNavigationBar": {
-      "barStyle": "light-content",
-      "backgroundColor": "#0F172A"
+      "barStyle": "light-content"
     },
     "scheme": "fitgo",
     "splash": {

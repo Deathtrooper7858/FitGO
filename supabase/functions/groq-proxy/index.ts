@@ -223,12 +223,14 @@ Deno.serve(async (req) => {
            currentBody = rawFormData;
            if (model) currentBody.set('model', model);
         } else {
-           // Some models (e.g. qwen) do not support response_format — strip it to prevent
-           // "Failed to validate JSON / failed_generation" errors on those fallback models.
-           const isQwen = typeof model === 'string' && model.toLowerCase().includes('qwen');
-           const bodyPayload: Record<string, any> = { ...parsed, models: undefined, model };
-           if (isQwen) delete bodyPayload.response_format;
-           currentBody = JSON.stringify(bodyPayload);
+            // Some models (e.g. qwen) do not support response_format — strip it to prevent
+            // "Failed to validate JSON / failed_generation" errors on those fallback models.
+            const isQwen = typeof model === 'string' && model.toLowerCase().includes('qwen');
+            const bodyPayload: Record<string, any> = { ...parsed, models: undefined, model };
+            if (isQwen) delete bodyPayload.response_format;
+            bodyPayload.reasoning_format = bodyPayload.reasoning_format || 'hidden';
+            bodyPayload.reasoning_effort = bodyPayload.reasoning_effort || 'low';
+            currentBody = JSON.stringify(bodyPayload);
         }
 
         const groqResponse = await fetch(url, {
@@ -264,6 +266,40 @@ Deno.serve(async (req) => {
           break; // Exit model loop
         }
 
+        // If Groq rejected strict JSON validation, retry on the same model without response_format constraint
+        const errMsg = (typeof groqData?.error === 'string' ? groqData.error : (groqData?.error?.message || '')).toLowerCase();
+        if (groqResponse.status === 400 && errMsg.includes('failed to validate json') && !rawFormData) {
+          try {
+            const parsedPayload = typeof currentBody === 'string' ? JSON.parse(currentBody) : null;
+            if (parsedPayload?.response_format) {
+              console.warn(`[Groq Proxy] JSON validation rejected on ${model}. Retrying without response_format constraint.`);
+              delete parsedPayload.response_format;
+              const retryResponse = await fetch(url, {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${apiKey}`,
+                  ...(contentType.includes("application/json") ? { "Content-Type": "application/json" } : {}),
+                },
+                body: JSON.stringify(parsedPayload),
+              });
+              const retryText = await retryResponse.text();
+              if (retryResponse.ok) {
+                success = true;
+                finalResponse = new Response(retryText, {
+                  headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+                  status: 200,
+                });
+                if (cacheKey && !isStreaming) {
+                  responseCache.set(cacheKey, { data: retryText, expires: Date.now() + CACHE_TTL_MS });
+                }
+                break;
+              }
+            }
+          } catch (retryErr) {
+            console.warn(`[Groq Proxy] Retry without response_format failed:`, retryErr);
+          }
+        }
+
         // If rate limited, we continue to next model
         if (groqResponse.status === 429) {
           console.warn(`[Groq Proxy] Rate limited on key index ${keyIndex}, model ${model}.`);
@@ -277,7 +313,6 @@ Deno.serve(async (req) => {
         }
 
         // If 400/404 error is model-specific (not found, decommissioned, or failed JSON validation on this model), try next fallback model
-        const errMsg = (typeof groqData?.error === 'string' ? groqData.error : (groqData?.error?.message || '')).toLowerCase();
         if (
           groqResponse.status === 404 ||
           (groqResponse.status === 400 && (

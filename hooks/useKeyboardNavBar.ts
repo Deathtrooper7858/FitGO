@@ -12,6 +12,8 @@ export function useKeyboardNavBar() {
 
   useEffect(() => {
     if (Platform.OS !== 'android') return;
+    // On Android 15+ (API 35+), edge-to-edge is enforced by the system and navigation bar color APIs are deprecated
+    if (typeof Platform.Version === 'number' && Platform.Version >= 35) return;
 
     const inTabs = segments[0] === '(tabs)';
     const targetColor = inTabs ? colors.surface : colors.background;

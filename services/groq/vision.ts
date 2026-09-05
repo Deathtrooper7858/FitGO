@@ -1,6 +1,70 @@
 import i18n from '../../i18n';
 import { getLang, isRomanceLang, prepareImageData, fetchGroq, VISION_MODEL } from './core';
 
+// ─── Robust JSON Parsing Helper ────────────────────────────────────────────────
+function parseVisionJSON(rawText: string, fallbackType: 'food' | 'physique'): any {
+  let text = (rawText ?? '').trim();
+  // Strip reasoning <think>...</think> tags if emitted by model
+  text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+  // Strip markdown code fences
+  text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+
+  let parsed: any;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    // Robust JSON extraction (find first { and last })
+    const startIndex = text.indexOf('{');
+    const endIndex = text.lastIndexOf('}');
+    if (startIndex !== -1 && endIndex > startIndex) {
+      const candidate = text.slice(startIndex, endIndex + 1);
+      try {
+        parsed = JSON.parse(candidate);
+      } catch {
+        try {
+          // Remove trailing commas before closing braces/brackets
+          const cleaned = candidate.replace(/,\s*([}\]])/g, '$1');
+          parsed = JSON.parse(cleaned);
+        } catch {
+          console.error('[Vision] Failed to parse JSON candidate:', candidate);
+          throw new Error(i18n.t('groq.failedToValidateJson', 'The AI couldn\'t process the image right now. Please try again.'));
+        }
+      }
+    } else {
+      console.error('[Vision] No JSON object found in response text:', text);
+      throw new Error(i18n.t('groq.failedToValidateJson', 'The AI couldn\'t process the image right now. Please try again.'));
+    }
+  }
+
+  // Defensive normalization to protect UI callers from crashing on .map() or missing properties
+  if (fallbackType === 'food') {
+    if (!parsed || typeof parsed !== 'object') parsed = {};
+    if (!Array.isArray(parsed.foods)) parsed.foods = [];
+    if (typeof parsed.totalCalories !== 'number') {
+      parsed.totalCalories = parsed.foods.reduce((acc: number, f: any) => acc + (Number(f.calories) || 0), 0);
+    }
+    if (!parsed.confidence) parsed.confidence = 'medium';
+    if (typeof parsed.notes !== 'string') parsed.notes = '';
+  } else if (fallbackType === 'physique') {
+    if (!parsed || typeof parsed !== 'object') parsed = {};
+    if (typeof parsed.feedback !== 'string') parsed.feedback = 'Evaluación completada con éxito.';
+    if (!Array.isArray(parsed.strengths)) {
+      parsed.strengths = parsed.strengths ? [String(parsed.strengths)] : ['Buen desarrollo físico'];
+    }
+    if (!Array.isArray(parsed.improvements)) {
+      parsed.improvements = parsed.improvements ? [String(parsed.improvements)] : ['Mantener progresión constante'];
+    }
+    if (typeof parsed.estimatedFatPercentage !== 'string') {
+      parsed.estimatedFatPercentage = parsed.estimatedFatPercentage ? String(parsed.estimatedFatPercentage) : '15-18%';
+    }
+    if (parsed.recommendations && !Array.isArray(parsed.recommendations)) {
+      parsed.recommendations = [String(parsed.recommendations)];
+    }
+  }
+
+  return parsed;
+}
+
 // ─── Food photo analysis ───────────────────────────────────────────────────────
 export async function analyzeFoodPhoto(base64Image: string, language: string = 'en'): Promise<{
   foods: { 
@@ -49,16 +113,8 @@ export async function analyzeFoodPhoto(base64Image: string, language: string = '
       response_format: { type: 'json_object' },
     });
 
-    let text = (data.choices[0]?.message?.content ?? '').trim();
-    
-    // Robust JSON extraction (find first { and last })
-    const startIndex = text.indexOf('{');
-    const endIndex = text.lastIndexOf('}');
-    if (startIndex !== -1 && endIndex !== -1) {
-      text = text.slice(startIndex, endIndex + 1);
-    }
-    
-    return JSON.parse(text);
+    const text = (data.choices[0]?.message?.content ?? '').trim();
+    return parseVisionJSON(text, 'food');
   } catch (error: any) {
     console.warn('[Groq] Analyze food photo error:', error);
     throw error;
@@ -139,16 +195,8 @@ If the image is not a physique photo, kindly mention it in the feedback but try 
       response_format: { type: 'json_object' },
     });
 
-    let text = (data.choices[0]?.message?.content ?? '').trim();
-    
-    // Robust JSON extraction
-    const startIndex = text.indexOf('{');
-    const endIndex = text.lastIndexOf('}');
-    if (startIndex !== -1 && endIndex !== -1) {
-      text = text.slice(startIndex, endIndex + 1);
-    }
-    
-    return JSON.parse(text);
+    const text = (data.choices[0]?.message?.content ?? '').trim();
+    return parseVisionJSON(text, 'physique');
   } catch (error: any) {
     console.warn('[Groq] Analyze physique photo error:', error);
     throw error;

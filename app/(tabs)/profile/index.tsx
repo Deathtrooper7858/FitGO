@@ -25,7 +25,7 @@ import {
   usePlannerStore, usePurchaseStore, useWorkoutHistoryStore,
 } from '../../../store';
 import { supabase } from '../../../services/supabase';
-import { calculateTDEE, calculateMacros, resolveActivityLevel } from '../../../services/foodDatabase';
+import { calculateTDEE, calculateMacros } from '../../../services/foodDatabase';
 import { useTheme } from '../../../hooks/useTheme';
 import { useAchievements, ALL_BADGES, useTranslatedBadge } from '../../../hooks/useAchievements';
 import LanguageModal from '../../../components/LanguageModal';
@@ -36,8 +36,9 @@ import { CustomAlert, AlertType } from '../../../components/CustomAlert';
 import { UnitSelectionModal } from '../../../components/UnitSelectionModal';
 import { PhotoSourceModal } from '../../../components/PhotoSourceModal';
 import { getLocalDateString } from '../../../utils/date';
+import { exportReportPDF, exportReportCSV } from '../../../utils/reportExporter';
 import { GlobalBackground } from '../../../components/GlobalBackground';
-import { GoalWizardModal, ACTIVITY_TO_EXERCISE } from '../../../components/GoalWizardModal';
+import { GoalWizardModal } from '../../../components/GoalWizardModal';
 
 import { ProfileHeader } from '../../../components/profile/ProfileHeader';
 import { SettingsSection } from '../../../components/profile/SettingsSection';
@@ -64,10 +65,10 @@ export default function ProfileScreen() {
     tempUnit, setTempUnit, premiumColor,
   } = useSettingsStore();
   const { profile, setProfile } = useAuthStore();
-  const { isPro } = usePurchaseStore();
-  const { setNeat, setExerciseLevel } = useNutritionStore();
-  const { latest: latestMeasurement, addMeasurement, measurements } = useBodyStore();
-  const lastMeasure = latestMeasurement();
+  const isPro = usePurchaseStore(s => s.isPro);
+  const addMeasurement = useBodyStore(s => s.addMeasurement);
+  const measurements = useBodyStore(s => s.measurements);
+  const lastMeasure = useBodyStore(s => s.latest());
   const { achievements } = useAchievements();
 
   const [editModal, setEditModal] = useState<any>({ visible: false, field: '', title: '', placeholder: '' });
@@ -83,8 +84,8 @@ export default function ProfileScreen() {
   const [sexModalVisible, setSexModalVisible] = useState(false);
   const [toastMsg, setToastMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [alert, setAlert] = useState<any>({ visible: false, type: 'info' as AlertType, title: '', message: '', onConfirm: () => {} });
-  const showAlert = (type: AlertType, title: string, message: string, onConfirm?: () => void, onCancel?: () => void, confirmText?: string, cancelText?: string) =>
-    setAlert({ visible: true, type, title, message, confirmText, cancelText, onConfirm: () => { onConfirm?.(); setAlert((p: any) => ({ ...p, visible: false })); }, onCancel: onCancel ? () => { onCancel(); setAlert((p: any) => ({ ...p, visible: false })); } : undefined });
+  const showAlert = (type: AlertType, title: string, message: string, onConfirm?: () => void, onCancel?: () => void, confirmText?: string, cancelText?: string, actions?: any[]) =>
+    setAlert({ visible: true, type, title, message, confirmText, cancelText, actions, onConfirm: () => { onConfirm?.(); setAlert((p: any) => ({ ...p, visible: false })); }, onCancel: onCancel ? () => { onCancel(); setAlert((p: any) => ({ ...p, visible: false })); } : undefined });
 
   const availableBadges = useMemo(() => {
     const list = ['verified', 'early_adopter'];
@@ -196,20 +197,8 @@ export default function ProfileScreen() {
     updateProfileField(field, parsed);
   };
 
-  const handleSaveGoal = async (newData: any) => {
-    if (!profile) return;
-    const finalActivityLevel = resolveActivityLevel(newData.lifestyle, newData.exerciseLevel);
-    const { tdee } = calculateTDEE({ weight: newData.weight || profile.weight, height: profile.height, age: profile.age, sex: profile.sex, activityLevel: finalActivityLevel, lifestyleLevel: newData.lifestyle });
-    const { targetCalories, protein, carbs, fat } = calculateMacros(tdee, newData.goal);
-    const updatedProfile = { ...profile, weight: newData.weight, goal: newData.goal, targetWeight: newData.targetWeight, activityLevel: finalActivityLevel, lifestyle: newData.lifestyle, tdee, targetCalories, macros: { protein, carbs, fat }, startingWeight: profile?.startingWeight || profile?.weight || newData.weight };
-    setProfile(updatedProfile); setGoalModalVisible(false);
-    try {
-      const { error } = await supabase.from('users').update({ weight: newData.weight, goal: newData.goal, target_weight: newData.targetWeight, activity_level: finalActivityLevel, lifestyle: newData.lifestyle, tdee, target_calories: targetCalories, macros: { protein, carbs, fat }, starting_weight: profile?.startingWeight || profile?.weight || newData.weight, exercise_level: newData.exerciseLevel }).eq('id', profile.id);
-      if (error) throw error;
-      setNeat(newData.lifestyle); setExerciseLevel(newData.exerciseLevel);
-      if (newData.weight !== profile.weight) { addMeasurement({ id: Date.now().toString(), date: getLocalDateString(), weight: newData.weight, bodyFat: lastMeasure?.bodyFat }); }
-      showAlert('success', t('common.success'), t('profile.updateSuccess'));
-    } catch { showAlert('error', t('common.error'), t('profile.updateFailed')); }
+  const handleSaveGoal = (updatedProfile: any) => {
+    setGoalModalVisible(false);
   };
 
   const handleEditSex = () => setSexModalVisible(true);
@@ -225,7 +214,79 @@ export default function ProfileScreen() {
     temp: makeUnitHandler(t('profile.tempUnit', 'Unidad de temperatura'), [{ value: 'c', label: 'Celsius (°C)' }, { value: 'f', label: 'Fahrenheit (°F)' }], tempUnit, setTempUnit),
   };
 
-  const handleExportData = async () => {
+  const handleExportData = () => {
+    if (!profile) return;
+    showAlert(
+      'info',
+      t('profile.exportTitle', 'Exportar Progreso'),
+      t('profile.exportPrompt', 'Elige el formato en el que deseas exportar tus datos:'),
+      undefined,
+      undefined,
+      undefined,
+      t('common.cancel', 'Cancelar'),
+      [
+        {
+          text: '📄 ' + t('profile.exportPDF', 'Reporte PDF (Nutricionista)'),
+          type: 'primary',
+          onPress: async () => {
+            setToastMsg({ text: t('profile.exporting', 'Exportando datos...'), type: 'success' });
+            try {
+              const logs = useNutritionStore.getState().todayLogs;
+              const water = useNutritionStore.getState().dailyWater;
+              const steps = useNutritionStore.getState().dailySteps;
+              const todayStr = getLocalDateString();
+              await exportReportPDF({
+                profile,
+                startDate: 'Últimos 30 días',
+                endDate: todayStr,
+                logs,
+                dailyWater: water,
+                dailySteps: steps,
+                massUnit,
+                energyUnit,
+              });
+            } catch (err) {
+              console.error('Export PDF error:', err);
+              showAlert('error', t('common.error'), t('profile.exportFailed', 'No se pudo exportar el PDF.'));
+            }
+          }
+        },
+        {
+          text: '📊 ' + t('profile.exportXLSX', 'Hoja Excel Completa (.xlsx)'),
+          type: 'secondary',
+          onPress: () => generateAndShareExcel(),
+        },
+        {
+          text: '📝 ' + t('profile.exportCSV', 'Datos en CSV (.csv)'),
+          type: 'secondary',
+          onPress: async () => {
+            setToastMsg({ text: t('profile.exporting', 'Exportando datos...'), type: 'success' });
+            try {
+              const logs = useNutritionStore.getState().todayLogs;
+              const water = useNutritionStore.getState().dailyWater;
+              const steps = useNutritionStore.getState().dailySteps;
+              const todayStr = getLocalDateString();
+              await exportReportCSV({
+                profile,
+                startDate: 'Histórico',
+                endDate: todayStr,
+                logs,
+                dailyWater: water,
+                dailySteps: steps,
+                massUnit,
+                energyUnit,
+              });
+            } catch (err) {
+              console.error('Export CSV error:', err);
+              showAlert('error', t('common.error'), t('profile.exportFailed', 'No se pudo exportar el CSV.'));
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const generateAndShareExcel = async () => {
     try {
       setToastMsg({ text: t('profile.exporting', 'Exportando datos...'), type: 'success' });
 
@@ -502,9 +563,24 @@ export default function ProfileScreen() {
       <SafeAreaView style={{ flex: 1 }}>
         <EditModal visible={editModal.visible} field={editModal.field} title={editModal.title} placeholder={editModal.placeholder} keyboardType={editModal.keyboardType} initialValue={editModal.initialValue} onSave={handleSaveEdit} onClose={() => setEditModal((p: any) => ({ ...p, visible: false }))} massUnit={massUnit} lengthUnit={lengthUnit} isPro={profile?.isPro} initialNameColor={profile?.nameColor} role={profile?.role} premiumColor={premiumColor} />
         {toastMsg && <CustomToast message={toastMsg.text} type={toastMsg.type} onHide={() => setToastMsg(null)} />}
-        <CustomAlert visible={alert.visible} type={alert.type} title={alert.title} message={alert.message} confirmText={alert.confirmText} cancelText={alert.cancelText} onConfirm={alert.onConfirm} onCancel={alert.onCancel} />
+        <CustomAlert visible={alert.visible} type={alert.type} title={alert.title} message={alert.message} confirmText={alert.confirmText} cancelText={alert.cancelText} onConfirm={alert.onConfirm} onCancel={alert.onCancel} actions={alert.actions} />
         <LanguageModal visible={langModalVisible} currentLang={language} onSelect={handleLanguageSelect} onClose={() => setLangModalVisible(false)} />
-        <GoalWizardModal visible={goalModalVisible} onClose={() => setGoalModalVisible(false)} onSave={handleSaveGoal} initialData={{ weight: lastMeasure?.weight || profile?.weight || 70, goal: profile?.goal, activityLevel: profile?.activityLevel, lifestyle: profile?.lifestyle || 'standing_sometimes', exerciseLevel: ACTIVITY_TO_EXERCISE[profile?.activityLevel || 'moderate'], targetWeight: profile?.targetWeight || lastMeasure?.weight || profile?.weight || 70 }} />
+        <GoalWizardModal
+          visible={goalModalVisible}
+          onClose={() => setGoalModalVisible(false)}
+          onSave={handleSaveGoal}
+          initialData={{
+            weight: lastMeasure?.weight || profile?.weight || 70,
+            height: profile?.height || 170,
+            age: profile?.age || 25,
+            sex: profile?.sex || 'male',
+            goal: profile?.goal || 'maintain',
+            activityLevel: profile?.activityLevel || 'moderate',
+            lifestyle: profile?.lifestyle || 'standing_sometimes',
+            dietType: profile?.dietType || 'recommended',
+            targetWeight: profile?.targetWeight || lastMeasure?.weight || profile?.weight || 70,
+          }}
+        />
         <UnitSelectionModal visible={unitModal.visible} title={unitModal.title} options={unitModal.options} selectedValue={unitModal.selectedValue} onSelect={unitModal.onSelect} onClose={() => setUnitModal((p: any) => ({ ...p, visible: false }))} />
         <BadgeSelectionModal visible={badgeModalVisible} onClose={() => setBadgeModalVisible(false)} onSelect={(id) => updateProfileField('selectedBadge', id)} availableBadges={availableBadges} selectedBadge={currentBadgeId} />
         <PhotoSourceModal visible={photoModalVisible} onSelectCamera={handleSelectCamera} onSelectGallery={handleSelectGallery} onClose={() => setPhotoModalVisible(false)} />

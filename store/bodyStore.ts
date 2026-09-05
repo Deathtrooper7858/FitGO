@@ -111,8 +111,8 @@ export const useBodyStore = create<BodyState>()(
           });
 
           useToastStore.getState().addNotification({
-            title: i18n.t('body.measurementsUpdated'),
-            description: i18n.t('body.measurementsUpdatedDesc'),
+            title: i18n.t('body.measurementsUpdated', { defaultValue: 'Medidas Actualizadas' }),
+            description: i18n.t('body.measurementsUpdatedDesc', { defaultValue: 'Tus medidas corporales se han guardado con éxito.' }),
             iconType: 'lucide',
             lucideIcon: 'Ruler',
             tier: 'plata',

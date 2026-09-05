@@ -62,12 +62,14 @@ export function createDailyMetricsSlice(set: any, get: any): DailyMetricsSlice {
       }
     },
 
+
     setWater: (ml) => {
       const safeml = Math.max(0, ml);
       set((s: any) => ({ dailyWater: { ...s.dailyWater, [s.selectedDate]: safeml } }));
       if (safeml > 0) get().updateActivity(get().selectedDate);
       useToastStore.getState().addNotification({
-        title: i18n.t('tracker.waterUpdated'), description: i18n.t('tracker.waterTodayTotal', { ml: safeml }),
+        title: i18n.t('tracker.waterUpdated', { defaultValue: 'Agua Actualizada' }),
+        description: i18n.t('tracker.waterTodayTotal', { ml: safeml, defaultValue: `Total de hoy: ${safeml} ml` }),
         iconType: 'lucide', lucideIcon: 'Droplets', tier: 'info', isAchievement: false,
       });
       scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
@@ -79,7 +81,8 @@ export function createDailyMetricsSlice(set: any, get: any): DailyMetricsSlice {
       const newVal = get().dailyWater[date] || 0;
       if (newVal > 0) get().updateActivity(date);
       useToastStore.getState().addNotification({
-        title: i18n.t('tracker.waterAdded'), description: i18n.t('tracker.waterAddedDesc', { ml, total: newVal }),
+        title: i18n.t('tracker.waterAdded', { defaultValue: 'Agua Añadida' }),
+        description: i18n.t('tracker.waterAddedDesc', { ml, total: newVal, defaultValue: `+${ml} ml añadidos • Total: ${newVal} ml` }),
         iconType: 'lucide', lucideIcon: 'GlassWater', tier: 'info', isAchievement: false,
       });
       scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
@@ -98,7 +101,8 @@ export function createDailyMetricsSlice(set: any, get: any): DailyMetricsSlice {
       const newVal = get().dailySteps[date] || 0;
       if (newVal > 0) get().updateActivity(date);
       useToastStore.getState().addNotification({
-        title: i18n.t('tracker.stepsAdded'), description: i18n.t('tracker.stepsAddedDesc', { steps, total: newVal }),
+        title: i18n.t('tracker.stepsAdded', { defaultValue: 'Pasos Añadidos' }),
+        description: i18n.t('tracker.stepsAddedDesc', { steps, total: newVal, defaultValue: `+${steps} pasos añadidos • Total: ${newVal}` }),
         iconType: 'lucide', lucideIcon: 'Footprints', tier: 'success', isAchievement: false,
       });
       scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
@@ -109,8 +113,9 @@ export function createDailyMetricsSlice(set: any, get: any): DailyMetricsSlice {
       set((s: any) => ({ dailySleep: { ...s.dailySleep, [date]: hours } }));
       if (hours > 0) get().updateActivity(date);
       useToastStore.getState().addNotification({
-        title: i18n.t('tracker.sleepRegistered'), description: i18n.t('tracker.sleepRegisteredDesc', { hours }),
-        iconType: 'lucide', lucideIcon: 'Moon', tier: 'plata', isAchievement: false,
+        title: i18n.t('tracker.sleepRegistered', { defaultValue: 'Sueño Registrado' }),
+        description: i18n.t('tracker.sleepRegisteredDesc', { hours, defaultValue: `Has registrado ${hours}h de descanso.` }),
+        iconType: 'lucide', lucideIcon: 'Moon', tier: 'info', isAchievement: false,
       });
       scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
     },
@@ -121,8 +126,17 @@ export function createDailyMetricsSlice(set: any, get: any): DailyMetricsSlice {
       set((s: any) => ({ activityLogs: [...s.activityLogs, activity] }));
       get().updateActivity(activity.loggedAt.split('T')[0]);
       useToastStore.getState().addNotification({
-        title: i18n.t('tracker.exerciseAdded'), description: i18n.t('tracker.exerciseAddedDesc', { name: activity.name, duration: activity.duration, calories: activity.calories }),
-        icon: activity.icon || '🔥', iconType: 'emoji', tier: 'success', isAchievement: false,
+        title: i18n.t('tracker.exerciseAdded', { defaultValue: 'Ejercicio Añadido' }),
+        description: i18n.t('tracker.exerciseAddedDesc', {
+          name: activity.name,
+          duration: activity.duration,
+          calories: activity.calories,
+          defaultValue: `${activity.name} • ${activity.duration} min (+${activity.calories} kcal)`,
+        }),
+        icon: activity.icon || '🔥',
+        iconType: 'emoji',
+        tier: 'success',
+        isAchievement: false,
       });
       const { profile } = useAuthStore.getState();
       if (profile?.id) {

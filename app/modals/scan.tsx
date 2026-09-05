@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, TextInput, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -235,14 +236,30 @@ export default function ScanModal() {
     checkAiLimit('photo', async () => {
       try {
         const result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ['images'], allowsEditing: true, quality: 0.1, base64: true,
+          mediaTypes: ['images'], allowsEditing: true, quality: 0.5, base64: true,
         });
-        if (!result.canceled && result.assets[0].base64) {
+        if (!result.canceled && result.assets && result.assets[0]) {
+          const asset = result.assets[0];
+          let b64 = asset.base64 || null;
+          if (!b64 && asset.uri) {
+            try {
+              b64 = await FileSystem.readAsStringAsync(asset.uri, {
+                encoding: FileSystem.EncodingType.Base64,
+              });
+            } catch (readErr) {
+              console.warn('[Scan] Could not read base64 from image uri:', readErr);
+            }
+          }
+          if (!b64) {
+            throw new Error(t('scan.imageReadFailed', 'No se pudo procesar la imagen seleccionada.'));
+          }
+
           setLoading(true);
-          setCapturedUri(result.assets[0].uri);
-          const analysis = await analyzeFoodPhoto(result.assets[0].base64, language);
+          setCapturedUri(asset.uri);
+          const analysis = await analyzeFoodPhoto(b64, language);
           setPhotoResult(analysis);
-          setEditedFoods(analysis.foods.map(f => ({
+          const foodsList = Array.isArray(analysis?.foods) ? analysis.foods : [];
+          setEditedFoods(foodsList.map(f => ({
             ...f,
             originalGrams: f.grams, originalCal: f.calories, originalProt: f.protein,
             originalCarbs: f.carbs, originalFat: f.fat, originalSugar: f.sugar,
@@ -265,11 +282,26 @@ export default function ScanModal() {
     checkAiLimit('photo', async () => {
       setLoading(true);
       try {
-        const photo = await cameraRef.current.takePictureAsync({ base64: true, quality: 0.1, exif: false });
+        const photo = await cameraRef.current.takePictureAsync({ base64: true, quality: 0.5, exif: false });
+        let b64 = photo.base64 || null;
+        if (!b64 && photo.uri) {
+          try {
+            b64 = await FileSystem.readAsStringAsync(photo.uri, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+          } catch (readErr) {
+            console.warn('[Scan] Could not read base64 from photo uri:', readErr);
+          }
+        }
+        if (!b64) {
+          throw new Error(t('scan.imageReadFailed', 'No se pudo procesar la foto tomada.'));
+        }
+
         setCapturedUri(photo.uri);
-        const result = await analyzeFoodPhoto(photo.base64, language);
+        const result = await analyzeFoodPhoto(b64, language);
         setPhotoResult(result);
-        setEditedFoods(result.foods.map(f => ({
+        const foodsList = Array.isArray(result?.foods) ? result.foods : [];
+        setEditedFoods(foodsList.map(f => ({
           ...f,
           originalGrams: f.grams, originalCal: f.calories, originalProt: f.protein,
           originalCarbs: f.carbs, originalFat: f.fat, originalSugar: f.sugar,

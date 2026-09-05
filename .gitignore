@@ -34,6 +34,7 @@ keystore.properties
 staged_files.txt
 schema.json
 scratch/
+.bundle/
 *.jar
 classes.jar
 *.bak

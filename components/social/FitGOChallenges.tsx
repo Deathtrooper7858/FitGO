@@ -34,10 +34,16 @@ const s = StyleSheet.create({
 export default function FitGOChallenges() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const { profile } = useAuthStore();
-  const { language, premiumColor } = useSettingsStore();
-  const socialStore = useSocialStore();
-  const nutritionStore = useNutritionStore();
+  const profile = useAuthStore(s => s.profile);
+  const language = useSettingsStore(s => s.language);
+  const premiumColor = useSettingsStore(s => s.premiumColor);
+  const challenges = useSocialStore(s => s.challenges);
+  const friends = useSocialStore(s => s.friends);
+  const createChallenge = useSocialStore(s => s.createChallenge);
+  const fetchChallengeParticipants = useSocialStore(s => s.fetchChallengeParticipants);
+  const completeChallengeAndAwardPoints = useSocialStore(s => s.completeChallengeAndAwardPoints);
+  const surrenderChallenge = useSocialStore(s => s.surrenderChallenge);
+  const dailySteps = useNutritionStore(s => s.dailySteps);
 
   const [aiLoading, setAiLoading] = useState(false);
   const [aiRecommendation, setAiRecommendation] = useState<string | null>(null);
@@ -115,7 +121,7 @@ const generateAIChallenge = async () => {
     // Always include at least the creator
     if (!participants.includes(profile.id)) participants.unshift(profile.id);
 
-    await socialStore.createChallenge(challenge, participants);
+    await createChallenge(challenge, participants);
     setIsCreatingChallenge(false);
     setAiChallengeParticipantModal(false);
     setAiChallengeSelectedFriends([]);
@@ -125,14 +131,11 @@ const generateAIChallenge = async () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
   };
 
-  
-  
-
   const openChallengeDetails = async (challenge: any) => {
     setSelectedChallenge(challenge);
     setIsLoadingParticipants(true);
     try {
-      const parts = await socialStore.fetchChallengeParticipants(challenge.id);
+      const parts = await fetchChallengeParticipants(challenge.id);
       setSelectedChallengeParticipants(parts);
     } catch (e) {
       console.warn(e);
@@ -141,7 +144,7 @@ const generateAIChallenge = async () => {
     }
   };
 
-  const acceptedFriends = socialStore.friends.filter(f => f.status === 'accepted');
+  const acceptedFriends = friends.filter((f: any) => f.status === 'accepted');
 
   return (
     <View style={ s.tabContent }>
@@ -318,7 +321,7 @@ const generateAIChallenge = async () => {
                 )}
               </TouchableOpacity>
               
-              {acceptedFriends.map(friend => {
+              {acceptedFriends.map((friend: any) => {
                 const fid = friend.friend_profile?.id || '';
                 const isSelected = challengeForm.selectedFriendIds.includes(fid);
                 return (
@@ -398,15 +401,15 @@ const generateAIChallenge = async () => {
         </TouchableOpacity>
 
         {isAccordionOpen && (
-          socialStore.challenges.length === 0 ? (
+          challenges.length === 0 ? (
             <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10, marginBottom: 20 }}>{t('social.challenges.noActiveChallenges', 'No hay retos activos.')}</Text>
           ) : (
-            socialStore.challenges.map(challenge => {
+            challenges.map((challenge: any) => {
               const todayStr = getLocalDateString(new Date());
               let currentProgress = 0;
               
               if (challenge.type === 'steps') {
-                currentProgress = nutritionStore.dailySteps?.[todayStr] || 0;
+                currentProgress = dailySteps?.[todayStr] || 0;
               } else if (challenge.type === 'calories') {
                 currentProgress = 0; // Mock fallback for calories
               }
@@ -483,7 +486,7 @@ const generateAIChallenge = async () => {
                             }}
                             onPress={() => {
                               if (profile?.id) {
-                                socialStore.completeChallengeAndAwardPoints(challenge.id, profile.id);
+                                completeChallengeAndAwardPoints(challenge.id, profile.id);
                               }
                             }}
                             disabled={!isFullyCompleted && challenge.type !== 'physical'}
@@ -571,7 +574,7 @@ const generateAIChallenge = async () => {
                 </View>
               </TouchableOpacity>
 
-              {socialStore.friends.filter(f => f.status === 'accepted').map(friend => {
+              {friends.filter((f: any) => f.status === 'accepted').map((friend: any) => {
                 const fid = friend.friend_profile?.id || '';
                 const isSelected = aiChallengeSelectedFriends.includes(fid);
                 return (
@@ -754,7 +757,7 @@ const generateAIChallenge = async () => {
                 <TouchableOpacity
                   style={{ flex: 1, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: '#EF4444' + '20' }}
                   onPress={() => {
-                    socialStore.surrenderChallenge(selectedChallenge.id, profile?.id || '');
+                    surrenderChallenge(selectedChallenge.id, profile?.id || '');
                     setSelectedChallenge(null);
                   }}
                 >
@@ -763,7 +766,7 @@ const generateAIChallenge = async () => {
                 <TouchableOpacity
                   style={{ flex: 1, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.success }}
                   onPress={() => {
-                    socialStore.completeChallengeAndAwardPoints(selectedChallenge.id, profile?.id || '');
+                    completeChallengeAndAwardPoints(selectedChallenge.id, profile?.id || '');
                     setSelectedChallenge(null);
                   }}
                 >
