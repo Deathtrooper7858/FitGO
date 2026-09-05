@@ -61,11 +61,11 @@ async function fetchGroq(payload: any): Promise<any> {
     let modelsArray = [payload.model];
     
     if (payload.model === CHAT_MODEL) {
-      modelsArray = [CHAT_MODEL, FAST_MODEL, 'qwen/qwen3.6-27b'];
+      modelsArray = [CHAT_MODEL, FAST_MODEL];
     } else if (payload.model === FAST_MODEL) {
-      modelsArray = [FAST_MODEL, CHAT_MODEL, 'qwen/qwen3.6-27b'];
-    } else if (payload.model === VISION_MODEL) {
-      modelsArray = [VISION_MODEL, 'qwen-3.6-27b', 'qwen-3.8-27b', 'meta-llama/llama-4-scout-17b-16e-instruct'];
+      modelsArray = [FAST_MODEL, CHAT_MODEL];
+    } else if (payload.model === VISION_MODEL || (typeof payload.model === 'string' && payload.model.includes('qwen'))) {
+      modelsArray = ['qwen/qwen3.6-27b', 'qwen-3.6-27b', 'qwen/qwen3.8-27b', 'qwen-3.8-27b'];
     }
 
     const attemptPayload: Record<string, any> = { ...payload, models: modelsArray, model: undefined };

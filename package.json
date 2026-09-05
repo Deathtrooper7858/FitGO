@@ -1,6 +1,6 @@
 {
   "name": "fitgo",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "main": "index.ts",
   "scripts": {
     "start": "react-native start",
@@ -33,7 +33,7 @@
     "build:preview": "npx eas-cli build --profile preview --platform android",
     "build:prod": "npx eas-cli build --profile production --platform android",
     "build:prod:all": "npx eas-cli build --profile production --platform all",
-    "android:prod:bundle": "powershell -Command \"$env:ANDROID_HOME='C:/Users/wrait/AppData/Local/Android/Sdk'; $env:ANDROID_SDK_ROOT='C:/Users/wrait/AppData/Local/Android/Sdk'; $env:APP_VARIANT='production'; $env:SENTRY_DISABLE_AUTO_UPLOAD='true'; cd android; .\\gradlew.bat app:bundleProductionRelease\"",
+    "android:prod:bundle": "powershell -Command \"$env:ANDROID_HOME='C:/Users/wrait/AppData/Local/Android/Sdk'; $env:ANDROID_SDK_ROOT='C:/Users/wrait/AppData/Local/Android/Sdk'; $env:APP_VARIANT='production'; $env:SENTRY_DISABLE_AUTO_UPLOAD='true'; $env:NODE_OPTIONS='--max-old-space-size=4096 --expose-gc'; cd android; .\\gradlew.bat app:bundleProductionRelease\"",
     "android:prod:apk": "powershell -Command \"$env:ANDROID_HOME='C:/Users/wrait/AppData/Local/Android/Sdk'; $env:ANDROID_SDK_ROOT='C:/Users/wrait/AppData/Local/Android/Sdk'; $env:APP_VARIANT='production'; $env:SENTRY_DISABLE_AUTO_UPLOAD='true'; $env:NODE_OPTIONS='--max-old-space-size=4096 --expose-gc'; cd android; .\\gradlew.bat app:assembleProductionRelease\"",
     "prepare": "node -e \"try { require('husky')() } catch (e) {}\""
   },
