@@ -813,7 +813,19 @@
       "silver": "Chrome Silver",
       "defaultSubtitle": "The default color"
     },
-    "inviteFriends": "Invite Friends"
+    "inviteFriends": "Invite Friends",
+    "inviteSubtitle": "Which device does your friend have?",
+    "statusAvailable": "Available",
+    "statusComingSoon": "Coming Soon",
+    "playStoreLink": "Direct Google Play link:",
+    "shareInvite": "Share Invitation",
+    "openInPlayStore": "Open in Google Play",
+    "inviteLinkCopied": "Android link copied to clipboard!",
+    "iosComingSoonTitle": "FitGO for iOS is coming soon!",
+    "inActiveDevelopment": "🚀 In final stages of development",
+    "iosComingSoonMessage": "We are finalizing the details to make the iPhone and iPad experience outstanding. It will be available directly on the App Store very soon.",
+    "shareAndroidInstead": "Does your friend use Android? View link",
+    "inviteAndroidMessage": "Hey! I invite you to join FitGO to achieve your fitness and nutrition goals. 💪🔥\n\nDownload the app on Google Play Store:\n{{url}}"
   },
   "recipes": {
     "title": "Recipes",
@@ -848,7 +860,32 @@
       "suggest1": "Give me a light dinner idea 🥗",
       "suggest2": "What snacks are good for weight loss? 🍎",
       "suggest3": "How much protein should I eat daily? 🍗",
-      "suggest4": "Analyze my current diet 📊"
+      "suggest4": "Analyze my current diet 📊",
+      "subtitle": "Your AI nutritional assistant",
+      "heroGreeting": "I am your Nutrition Coach. I'm here to help you make better diet choices and reach your goals.",
+      "heroQuestion": "What would you like to do today?",
+      "quickActions": {
+        "plan_meal": {
+          "title": "Plan a meal",
+          "subtitle": "Recipes and options tailored to your goals.",
+          "prompt": "Can you plan a balanced, high-protein meal adjusted to my daily requirements?"
+        },
+        "choose_snack": {
+          "title": "Choose a snack",
+          "subtitle": "Healthy, filling options.",
+          "prompt": "What quick, healthy, and filling snacks do you recommend between meals?"
+        },
+        "calc_protein": {
+          "title": "Calculate my protein",
+          "subtitle": "How much do you need based on your goal?",
+          "prompt": "How much protein should I eat per day based on my weight and goal, and how should I distribute it across meals? 🥩"
+        },
+        "analyze_diet": {
+          "title": "Analyze my diet",
+          "subtitle": "Review your progress and get recommendations.",
+          "prompt": "Analyze what I've consumed today based on my logs and give me practical tips to improve my diet 📊"
+        }
+      }
     },
     "trainer": {
       "label": "Personal Trainer",
@@ -856,7 +893,32 @@
       "suggest1": "Give me a 20 min home workout 🏠",
       "suggest2": "How to improve my squat form? 🏋️",
       "suggest3": "Workout plan for muscle gain 💪",
-      "suggest4": "What stretches to do after running? 🏃"
+      "suggest4": "What stretches to do after running? 🏃",
+      "subtitle": "Your personal AI trainer",
+      "heroGreeting": "I am your Workout Coach. I'm here to design your routines, improve your technique, and maximize your results.",
+      "heroQuestion": "What do you want to train today?",
+      "quickActions": {
+        "routine": {
+          "title": "Create today's routine",
+          "subtitle": "Design your session based on your time and equipment.",
+          "prompt": "Design an effective workout routine for today based on my level, available time, and goal 💪"
+        },
+        "warmup": {
+          "title": "Express warmup",
+          "subtitle": "Get activated in 5-10 minutes without injuries.",
+          "prompt": "Give me an 8-minute dynamic warmup and joint mobility routine before working out 🔥"
+        },
+        "technique": {
+          "title": "Correct my technique",
+          "subtitle": "Posture, range of motion, and common mistakes.",
+          "prompt": "What are the posture cues and most common mistakes in squat, bench press, and deadlift?"
+        },
+        "adapt": {
+          "title": "Adapt for discomfort",
+          "subtitle": "Safe variations if you feel pain or fatigue.",
+          "prompt": "What alternative exercises can I do if I feel discomfort in my knees or shoulders?"
+        }
+      }
     },
     "doctor": {
       "label": "Wellness Coach",
@@ -864,7 +926,32 @@
       "suggest1": "What should I do if I feel dizzy after working out? 😵‍💫",
       "suggest2": "Are there any interactions with my medications? 💊",
       "suggest3": "How can I improve my sleep quality? 🛌",
-      "suggest4": "What are the signs of dehydration? 💧"
+      "suggest4": "What are the signs of dehydration? 💧",
+      "subtitle": "Your AI health & recovery advisor",
+      "heroGreeting": "I am your Wellness Coach. I'm here to support your muscle recovery, sleep, daily habits, and holistic health.",
+      "heroQuestion": "How are you feeling today?",
+      "quickActions": {
+        "sleep": {
+          "title": "Improve my sleep",
+          "subtitle": "Guidelines for deep, restorative sleep.",
+          "prompt": "How can I optimize my sleep hygiene to wake up with more energy and speed up recovery? 🛌"
+        },
+        "fatigue": {
+          "title": "Combat fatigue",
+          "subtitle": "Sustained energy and less tiredness.",
+          "prompt": "Why do I feel low energy or fatigued during the day and what simple changes can I apply? ⚡"
+        },
+        "supplements": {
+          "title": "Recommended supplements",
+          "subtitle": "Scientific evidence and how to take them.",
+          "prompt": "Which supplements have the best scientific evidence for my goal and how should I take them? 💊"
+        },
+        "recovery": {
+          "title": "Active recovery",
+          "subtitle": "Soreness relief and active rest.",
+          "prompt": "What are the best active recovery strategies to ease muscle soreness and stiffness? 🧘"
+        }
+      }
     },
     "camera": "Camera",
     "gallery": "Gallery",
@@ -875,7 +962,39 @@
     "pickImageSub": "Where do you want to upload the photo from?",
     "suggestionsTitle": "Suggestions to start",
     "taglineBadge": "Personalized AI • Groq",
-    "confirmDeleteSession": "Are you sure you want to delete this chat?"
+    "confirmDeleteSession": "Are you sure you want to delete this chat?",
+    "dashboard": {
+      "hello": "Hello",
+      "quickActionsTitle": "Quick actions",
+      "seeLess": "See less",
+      "seeAll": "See all",
+      "yourDaySoFar": "Your day so far",
+      "viewWorkouts": "View workouts",
+      "viewHealth": "View health",
+      "viewNutrition": "View full nutrition",
+      "metrics": {
+        "protein": "Protein",
+        "calories": "Calories",
+        "water": "Water",
+        "meals": "Meals",
+        "routines": "Workouts",
+        "today": "today",
+        "burned": "Burned",
+        "steps": "Steps",
+        "streak": "Streak",
+        "days": "days",
+        "sleep": "Sleep",
+        "status": "Status",
+        "optimal": "Optimal"
+      }
+    },
+    "actionChipsTitle": "What would you like to do?",
+    "thinking": "Thinking response...",
+    "onlineActive": "Online · Last updated just now",
+    "consultasCount": "{{count}}/{{total}} queries",
+    "unlimitedAI": "Unlimited AI",
+    "inputPlaceholderNew": "Ask me anything...",
+    "disclaimer": "FitGO AI can make mistakes. Always verify important health information."
   },
   "onboarding": {
     "goalTitle": "What's your main goal?",
@@ -1402,7 +1521,7 @@
   },
   "reminders": {
     "stayOnTrack": "Stay on Track",
-    "subtitle": "Set alerts so you never miss a meal, hydration, or workout.",
+    "subtitle": "Set reminders for meals, hydration & workouts.",
     "permissionInfo": "Allow notifications in system settings.",
     "breakfast": "Breakfast",
     "lunch": "Lunch",
@@ -1463,7 +1582,36 @@
       "messagesBody": "💬 You have new messages on FitGO Social!",
       "vitamine": "Vitamins",
       "vitamineBody": "Remember to take your vitamins and supplements!"
-    }
+    },
+    "categoryDesc": {
+      "meal": "Stay fueled and energized.",
+      "water": "Keep your body hydrated.",
+      "workout": "Build your goals, one workout at a time.",
+      "general": "Daily reminders for a better you.",
+      "social": "Stay connected and keep the momentum."
+    },
+    "addReminder": "Add reminder",
+    "newReminder": "New Reminder",
+    "editReminder": "Edit Reminder",
+    "deleteReminder": "Delete Reminder",
+    "deleteConfirm": "Are you sure you want to delete this reminder?",
+    "save": "Save Reminder",
+    "cancel": "Cancel",
+    "title": "Title",
+    "titlePlaceholder": "e.g., Morning Creatine, Protein Shake...",
+    "notes": "Message / Description (optional)",
+    "notesPlaceholder": "Custom reminder message...",
+    "time": "Time",
+    "repeat": "Repeat Days",
+    "allDays": "Every day",
+    "weekdays": "Weekdays",
+    "weekends": "Weekends",
+    "quickSuggestions": "Quick Suggestions",
+    "testSent": "Test notification sent!",
+    "testSentDesc": "Check your notification tray to confirm.",
+    "permissionGranted": "Notifications active",
+    "permissionDenied": "Allow notifications in system settings.",
+    "more": "More"
   },
   "paywall": {
     "title": "Unlock FitGO Pro",
@@ -1479,6 +1627,17 @@
     "pro": "PRO",
     "featuresTitle": "What's included in Pro?",
     "vsTitle": "Free vs Pro",
+    "featuresBadge": "PRO BENEFITS & ADVANTAGES",
+    "sectionHeading": "Everything included with Pro",
+    "sectionSubheading": "Intelligent tools designed to accelerate your transformation",
+    "tabBenefits": "Pro Benefits",
+    "tabCompare": "Free vs Pro",
+    "compareCalloutTitle": "Want to see the exact difference?",
+    "compareCalloutSub": "Review the full Free vs Pro side-by-side comparison",
+    "viewCompareBtn": "Compare →",
+    "benefitsCalloutTitle": "View detailed benefit cards",
+    "benefitsCalloutSub": "Explore all 9 exclusive Pro features in detail",
+    "viewBenefitsBtn": "Benefits →",
     "premiumFeature": "Premium Feature",
     "premiumRequired": "This feature is exclusive to Premium users. Upgrade your plan to use voice dictation and AI estimation!",
     "features": {
@@ -1600,7 +1759,56 @@
     "feature5": "Weekly AI analysis",
     "feature6": "No ads and no limits",
     "specialOffer": "SPECIAL OFFER",
-    "perMonth": " / mo"
+    "perMonth": " / mo",
+    "transformations": {
+      "sectionTitle": "Real Success Stories",
+      "sectionSub": "Verified results from members who transformed their lives with FitGO",
+      "before": "BEFORE",
+      "after": "AFTER",
+      "case1": {
+        "tag": "Case 1 · Mateo",
+        "name": "Mateo C., age 24",
+        "duration": "6 months with FitGO Pro",
+        "statWeight": "-26 kg (-57 lbs)",
+        "statFat": "-23% body fat",
+        "quote": "With the AI Coach and daily macro-optimized meal plans, I stopped guessing. The physical and confidence transformation was unbelievable."
+      },
+      "case2": {
+        "tag": "Case 2 · Valeria",
+        "name": "Valeria M., age 23",
+        "duration": "5 months with FitGO Pro",
+        "statWeight": "-27 kg (-59 lbs)",
+        "statWaist": "-22 cm waist",
+        "quote": "I tried extreme diets for years. FitGO showed me how to eat balanced meals without starving, and the food scanner simplified everything."
+      }
+    },
+    "reviews": {
+      "sectionTitle": "Loved by our Community",
+      "ratingScore": "4.9 / 5.0",
+      "ratingTotal": "Over 12,400 5-star ratings",
+      "successRate": "94% reach their goal within 90 days",
+      "verifiedUser": "Verified Pro Member",
+      "item1": {
+        "name": "Andres G.",
+        "time": "Pro Member for 7 months",
+        "comment": "Best investment for my health. The AI nutrition coach saves me hundreds compared to private clinics, and plans fit my daily grind."
+      },
+      "item2": {
+        "name": "Camila D.",
+        "time": "Pro Member for 4 months",
+        "comment": "The food scanner and voice logging are pure magic. Logging meals takes 10 seconds and my consistency hit an all-time high."
+      },
+      "item3": {
+        "name": "Diego L.",
+        "time": "Pro Member for 9 months",
+        "comment": "Went from being confused about nutrition to building clean muscle mass. Leagues and streaks keep you motivated every day."
+      },
+      "item4": {
+        "name": "Laura S.",
+        "time": "Pro Member for 3 months",
+        "comment": "Zero ads and complete video guides for every movement. Worth every single cent, best fitness app out there."
+      }
+    }
   },
   "muscleDirectory": {
     "chest": "Chest",

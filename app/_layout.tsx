@@ -116,16 +116,19 @@ function NavigationGuard() {
 }
 
 function RootLayout() {
-  const { isLoading } = useAuthStore();
+  const { isLoading, session } = useAuthStore();
   const { language, theme } = useSettingsStore();
   const colors = useTheme();
   const lastButtonStyleRef = useRef<string | null>(null);
   const lastColorRef = useRef<string | null>(null);
   const isPro = useIsPro();
+  const segments = useSegments();
 
   useAdMob(); // Initialize AdMob
-  // Mostrar anuncios intersticiales periódicamente solo a usuarios Free
-  useInterstitialAd(!isPro);
+  // Mostrar anuncios intersticiales periódicamente solo a usuarios Free con sesión activa fuera de auth/onboarding y no en dev
+  const allSegs = segments as string[];
+  const isAuthOrOnboarding = allSegs[0] === '(auth)' || allSegs[0] === 'auth' || allSegs[0] === 'onboarding' || allSegs.length === 0;
+  useInterstitialAd(!__DEV__ && !isPro && !!session && !isAuthOrOnboarding);
 
   useEffect(() => {
     if (!isLoading) {
@@ -157,8 +160,6 @@ function RootLayout() {
       unsubscribeSync();
     };
   }, []);
-
-  const segments = useSegments();
 
   // ── Android navigation styling: themed solid bar to match the app perfectly ──
   useEffect(() => {
@@ -213,6 +214,19 @@ function RootLayout() {
             useSettingsStore.getState().setPremiumColor(null);
           }
           previousUserId = newUserId;
+
+          // Immediately sync language and premium color from account metadata if available
+          const accountLang = newSession.user.user_metadata?.language;
+          if (accountLang && ['en', 'es', 'fr', 'pt', 'it', 'de', 'ru'].includes(accountLang)) {
+            useSettingsStore.getState().setLanguage(accountLang);
+            if (i18n.isInitialized && i18n.language !== accountLang) {
+              i18n.changeLanguage(accountLang);
+            }
+          }
+          const accountColor = newSession.user.user_metadata?.premium_color;
+          if (accountColor) {
+            useSettingsStore.getState().setPremiumColor(accountColor);
+          }
 
           if (isInitialLoading) {
             try {

@@ -6,8 +6,6 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ActivityIndicator,
   Animated as RNAnimated,
@@ -366,10 +364,7 @@ export default function RegisterScreen() {
   const titleSuffix = t('auth.createAccountTitleSuffix', 'account');
 
   return (
-    <KeyboardAvoidingView
-      style={s.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <View style={s.container}>
       <AmbientBackground />
 
       <ScrollView
@@ -636,7 +631,7 @@ export default function RegisterScreen() {
         onConfirm={() => setAlertVisible(false)}
         confirmText="OK"
       />
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

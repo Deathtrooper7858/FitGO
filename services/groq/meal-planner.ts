@@ -87,7 +87,7 @@ CRITICAL FORMAT RULES:
 - Every single day ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun") MUST contain a complete array of meal objects.
 - NEVER use ellipsis (...) or placeholder syntax like [...] in any property or array.
 
-JSON Schema format:
+JSON Schema format (must include all 7 days: Mon, Tue, Wed, Thu, Fri, Sat, Sun):
 {
   "warning": "Disclaimer in ${targetLang}",
   "Mon": [
@@ -96,42 +96,12 @@ JSON Schema format:
     { "meal": "dinner", "name": "Meal name and portion in ${targetLang}", "calories": 600, "protein": 45, "carbs": 70, "fat": 18 },
     { "meal": "snack", "name": "Snack name and portion in ${targetLang}", "calories": 200, "protein": 20, "carbs": 25, "fat": 8 }
   ],
-  "Tue": [
-    { "meal": "breakfast", "name": "Meal name and portion in ${targetLang}", "calories": 500, "protein": 35, "carbs": 55, "fat": 15 },
-    { "meal": "lunch", "name": "Meal name and portion in ${targetLang}", "calories": 700, "protein": 50, "carbs": 80, "fat": 20 },
-    { "meal": "dinner", "name": "Meal name and portion in ${targetLang}", "calories": 600, "protein": 45, "carbs": 70, "fat": 18 },
-    { "meal": "snack", "name": "Snack name and portion in ${targetLang}", "calories": 200, "protein": 20, "carbs": 25, "fat": 8 }
-  ],
-  "Wed": [
-    { "meal": "breakfast", "name": "Meal name and portion in ${targetLang}", "calories": 500, "protein": 35, "carbs": 55, "fat": 15 },
-    { "meal": "lunch", "name": "Meal name and portion in ${targetLang}", "calories": 700, "protein": 50, "carbs": 80, "fat": 20 },
-    { "meal": "dinner", "name": "Meal name and portion in ${targetLang}", "calories": 600, "protein": 45, "carbs": 70, "fat": 18 },
-    { "meal": "snack", "name": "Snack name and portion in ${targetLang}", "calories": 200, "protein": 20, "carbs": 25, "fat": 8 }
-  ],
-  "Thu": [
-    { "meal": "breakfast", "name": "Meal name and portion in ${targetLang}", "calories": 500, "protein": 35, "carbs": 55, "fat": 15 },
-    { "meal": "lunch", "name": "Meal name and portion in ${targetLang}", "calories": 700, "protein": 50, "carbs": 80, "fat": 20 },
-    { "meal": "dinner", "name": "Meal name and portion in ${targetLang}", "calories": 600, "protein": 45, "carbs": 70, "fat": 18 },
-    { "meal": "snack", "name": "Snack name and portion in ${targetLang}", "calories": 200, "protein": 20, "carbs": 25, "fat": 8 }
-  ],
-  "Fri": [
-    { "meal": "breakfast", "name": "Meal name and portion in ${targetLang}", "calories": 500, "protein": 35, "carbs": 55, "fat": 15 },
-    { "meal": "lunch", "name": "Meal name and portion in ${targetLang}", "calories": 700, "protein": 50, "carbs": 80, "fat": 20 },
-    { "meal": "dinner", "name": "Meal name and portion in ${targetLang}", "calories": 600, "protein": 45, "carbs": 70, "fat": 18 },
-    { "meal": "snack", "name": "Snack name and portion in ${targetLang}", "calories": 200, "protein": 20, "carbs": 25, "fat": 8 }
-  ],
-  "Sat": [
-    { "meal": "breakfast", "name": "Meal name and portion in ${targetLang}", "calories": 500, "protein": 35, "carbs": 55, "fat": 15 },
-    { "meal": "lunch", "name": "Meal name and portion in ${targetLang}", "calories": 700, "protein": 50, "carbs": 80, "fat": 20 },
-    { "meal": "dinner", "name": "Meal name and portion in ${targetLang}", "calories": 600, "protein": 45, "carbs": 70, "fat": 18 },
-    { "meal": "snack", "name": "Snack name and portion in ${targetLang}", "calories": 200, "protein": 20, "carbs": 25, "fat": 8 }
-  ],
-  "Sun": [
-    { "meal": "breakfast", "name": "Meal name and portion in ${targetLang}", "calories": 500, "protein": 35, "carbs": 55, "fat": 15 },
-    { "meal": "lunch", "name": "Meal name and portion in ${targetLang}", "calories": 700, "protein": 50, "carbs": 80, "fat": 20 },
-    { "meal": "dinner", "name": "Meal name and portion in ${targetLang}", "calories": 600, "protein": 45, "carbs": 70, "fat": 18 },
-    { "meal": "snack", "name": "Snack name and portion in ${targetLang}", "calories": 200, "protein": 20, "carbs": 25, "fat": 8 }
-  ]
+  "Tue": [ ...same 3-4 meal objects... ],
+  "Wed": [ ...same 3-4 meal objects... ],
+  "Thu": [ ...same 3-4 meal objects... ],
+  "Fri": [ ...same 3-4 meal objects... ],
+  "Sat": [ ...same 3-4 meal objects... ],
+  "Sun": [ ...same 3-4 meal objects... ]
 }`;
 
   const data = await fetchGroq({

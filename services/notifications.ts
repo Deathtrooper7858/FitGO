@@ -157,6 +157,31 @@ export async function requestNotificationPermissions() {
   }
 }
 
+export async function checkNotificationPermissions(): Promise<boolean> {
+  const notif = getNotifications();
+  if (notif._isMock) return false;
+  try {
+    const { status } = await notif.getPermissionsAsync();
+    return status === 'granted';
+  } catch {
+    return false;
+  }
+}
+
+export function getReminderChannelId(type?: string): string {
+  switch (type) {
+    case 'meal':
+    case 'water':
+      return CHANNELS.nutrition.id;
+    case 'workout':
+      return CHANNELS.fitness.id;
+    case 'social':
+      return CHANNELS.social.id;
+    default:
+      return CHANNELS.reminders.id;
+  }
+}
+
 export async function scheduleReminder(reminder: Reminder): Promise<string | undefined> {
   if (!reminder.enabled) return undefined;
   const notif = getNotifications();
@@ -164,11 +189,9 @@ export async function scheduleReminder(reminder: Reminder): Promise<string | und
 
   try {
     const [hour, minute] = reminder.time.split(':').map(Number);
-    const channelId = (reminder.type === 'meal' || reminder.type === 'water')
-      ? CHANNELS.nutrition.id
-      : CHANNELS.reminders.id;
+    const channelId = getReminderChannelId(reminder.type);
 
-    // If no specific days or all days are selected, trigger daily.
+    // If no specific days or all 7 days are selected, trigger daily.
     if (!reminder.days || reminder.days.length === 0 || reminder.days.length === 7) {
       const id = await notif.scheduleNotificationAsync({
         content: {
@@ -182,6 +205,7 @@ export async function scheduleReminder(reminder: Reminder): Promise<string | und
           type: 'daily',
           hour,
           minute,
+          channelId,
         },
       });
       return id;
@@ -190,7 +214,8 @@ export async function scheduleReminder(reminder: Reminder): Promise<string | und
     // Otherwise, schedule weekly triggers for each specific day
     const ids: string[] = [];
     for (const day of reminder.days) {
-      const expoWeekday = day + 1; // 0 (Sunday) -> 1, 6 (Saturday) -> 7
+      // 0 (Sunday) -> 1, 6 (Saturday) -> 7 for expo-notifications
+      const expoWeekday = day + 1;
       const id = await notif.scheduleNotificationAsync({
         content: {
           title: reminder.title,
@@ -204,6 +229,7 @@ export async function scheduleReminder(reminder: Reminder): Promise<string | und
           weekday: expoWeekday,
           hour,
           minute,
+          channelId,
         },
       });
       if (id) {
@@ -217,7 +243,7 @@ export async function scheduleReminder(reminder: Reminder): Promise<string | und
   }
 }
 
-export async function cancelReminder(notificationId: string) {
+export async function cancelReminder(notificationId?: string | null) {
   if (notificationId) {
     const notif = getNotifications();
     if (notif._isMock) return;
@@ -242,6 +268,30 @@ export async function cancelAllReminders() {
     await notif.cancelAllScheduledNotificationsAsync();
   } catch (e) {
     console.error('[Notifications] Cancel all error:', e);
+  }
+}
+
+export async function testReminderNotification(reminder: Reminder) {
+  const notif = getNotifications();
+  if (notif._isMock) {
+    console.warn('[Notifications] Testing not available in mock mode');
+    return;
+  }
+
+  try {
+    const channelId = getReminderChannelId(reminder.type);
+    await notif.scheduleNotificationAsync({
+      content: {
+        title: `🔔 ${reminder.title}`,
+        body: reminder.body,
+        sound: true,
+        channelId,
+        color: '#7C5CFC',
+      },
+      trigger: null,
+    });
+  } catch (e) {
+    console.error('[Notifications] Test reminder notification error:', e);
   }
 }
 

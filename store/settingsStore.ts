@@ -1,8 +1,11 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../services/supabase';
+import i18n from '../i18n';
 import { ThemeMode, AppLanguage, MassUnit, VolumeUnit, LengthUnit, EnergyUnit, TempUnit, Reminder } from './types';
 import { useRecipesStore } from './recipesStore';
+import { useAuthStore } from './authStore';
 
 interface SettingsState {
   theme: ThemeMode;
@@ -23,6 +26,10 @@ interface SettingsState {
   setEnergyUnit: (unit: EnergyUnit) => void;
   setTempUnit: (unit: TempUnit) => void;
   setReminders: (reminders: Reminder[]) => void;
+  addReminder: (reminder: Reminder) => void;
+  updateReminder: (id: string, updates: Partial<Reminder>) => void;
+  deleteReminder: (id: string) => void;
+  resetDefaultReminders: () => void;
 }
 
 const DEFAULT_REMINDERS: Reminder[] = [
@@ -65,11 +72,28 @@ export const useSettingsStore = create<SettingsState>()(
       reminders: DEFAULT_REMINDERS,
       premiumColor: null,
       setTheme: (theme) => set({ theme }),
-      setPremiumColor: (premiumColor) => set({ premiumColor }),
+      setPremiumColor: (premiumColor) => {
+        set({ premiumColor });
+        // Background sync to DB — profile is updated by callers (fetchProfile, UI handlers)
+        const profile = useAuthStore.getState().profile;
+        if (profile?.id) {
+          supabase.auth.updateUser({ data: { premium_color: premiumColor } }).catch(() => {});
+          Promise.resolve(supabase.from('users').update({ premium_color: premiumColor }).eq('id', profile.id)).catch(() => {});
+        }
+      },
       setLanguage: (language) => {
         // Clear cached search recipes so they regenerate in the new language
         useRecipesStore.getState().setRecipes([]);
         set({ language });
+        if (i18n.isInitialized && i18n.language !== language) {
+          i18n.changeLanguage(language);
+        }
+        // Background sync to DB — profile is updated by callers (fetchProfile, UI handlers)
+        const profile = useAuthStore.getState().profile;
+        if (profile?.id) {
+          supabase.auth.updateUser({ data: { language } }).catch(() => {});
+          Promise.resolve(supabase.from('users').update({ language }).eq('id', profile.id)).catch(() => {});
+        }
       },
       setMassUnit: (massUnit) => set({ massUnit }),
       setVolumeUnit: (volumeUnit) => set({ volumeUnit }),
@@ -77,6 +101,20 @@ export const useSettingsStore = create<SettingsState>()(
       setEnergyUnit: (energyUnit) => set({ energyUnit }),
       setTempUnit: (tempUnit) => set({ tempUnit }),
       setReminders: (reminders) => set({ reminders }),
+      addReminder: (reminder) =>
+        set((state) => ({ reminders: [...state.reminders, reminder] })),
+      updateReminder: (id, updates) =>
+        set((state) => ({
+          reminders: state.reminders.map((r) =>
+            r.id === id ? { ...r, ...updates } : r
+          ),
+        })),
+      deleteReminder: (id) =>
+        set((state) => ({
+          reminders: state.reminders.filter((r) => r.id !== id),
+        })),
+      resetDefaultReminders: () =>
+        set({ reminders: DEFAULT_REMINDERS }),
     }),
     {
       name: 'ff-settings',

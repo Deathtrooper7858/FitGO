@@ -14,6 +14,7 @@ import { useTheme } from '../../../hooks/useTheme';
 import { getLocalDateString } from '../../../utils/date';
 import { requestNotificationPermissions } from '../../../services/notifications';
 import { convertEnergy } from '../../../utils/units';
+import { PaywallManager } from '../../../utils/paywallManager';
 import { CustomAlert, AlertType } from '../../../components/CustomAlert';
 import { GlassCard } from '../../../components/GlassCard';
 import { GlobalBackground } from '../../../components/GlobalBackground';
@@ -37,7 +38,7 @@ const EXERCISE_CALORIES: Record<string, number> = { none: 0, '1-2': 150, '3-4': 
 const ACTIVITY_TO_EXERCISE: Record<string, string> = { sedentary: 'none', light: '1-2', moderate: '3-4', active: '5-6', very_active: 'daily' };
 const MEAL_COLORS: Record<string, string> = { breakfast: '#7C5CFC', lunch: '#3B82F6', dinner: '#10B981', snack: '#F59E0B' };
 
-let hasShownTrialPromoSession = false;
+let hasCheckedPaywallSession = false;
 
 export default function TrackerScreen() {
   const { t } = useTranslation();
@@ -84,16 +85,29 @@ export default function TrackerScreen() {
   const pendingRequestsCount = useMemo(() => !profile?.id ? 0 : friends.filter(f => f.status === 'pending' && f.user_id_2 === profile.id).length, [friends, profile?.id]);
   const socialNotificationCount = totalUnreadCount + pendingRequestsCount;
 
-  const [showTrialPromoAlert, setShowTrialPromoAlert] = useState(false);
-
   useEffect(() => {
-    if (!isPro && !hasShownTrialPromoSession) {
-      const timer = setTimeout(() => {
-        setShowTrialPromoAlert(true);
-        hasShownTrialPromoSession = true;
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
+    if (isPro || hasCheckedPaywallSession) return;
+    hasCheckedPaywallSession = true;
+
+    let isMounted = true;
+    (async () => {
+      try {
+        const shouldShow = await PaywallManager.shouldShowPaywall(isPro);
+        if (shouldShow && isMounted) {
+          setTimeout(() => {
+            if (isMounted) {
+              router.push({ pathname: '/modals/paywall', params: { source: 'app_open' } });
+            }
+          }, 800);
+        }
+      } catch (err) {
+        console.warn('[Tracker] Error checking paywall display:', err);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
   }, [isPro]);
 
   const allMeals = useMemo(() => {
@@ -456,21 +470,6 @@ export default function TrackerScreen() {
           </View>
         </View>
       </SafeAreaView>
-
-      {/* Alerta de inicio para activar prueba de 3 días */}
-      <CustomAlert
-        visible={showTrialPromoAlert}
-        type="confirm"
-        title="🎁 ¡FitGO Pro Gratis!"
-        message="¿Quieres probar todas las funciones premium gratis durante 3 días? Sin tarjeta de crédito y sin renovación automática."
-        confirmText="Comenzar Prueba Gratis"
-        cancelText="Luego"
-        onConfirm={() => {
-          setShowTrialPromoAlert(false);
-          router.push('/modals/paywall');
-        }}
-        onCancel={() => setShowTrialPromoAlert(false)}
-      />
     </View>
   );
 }

@@ -52,6 +52,7 @@ import { BadgeSelectionModal } from '../../../components/profile/BadgeSelectionM
 import { SexSelectionModal } from '../../../components/profile/SexSelectionModal';
 import { VitrinaTrofeos } from '../../../components/profile/VitrinaTrofeos';
 import { CustomToast } from '../../../components/profile/CustomToast';
+import { InviteFriendsModal } from '../../../components/profile/InviteFriendsModal';
 const WeightChart = React.lazy(() => import('../../../components/profile/WeightChart').then(m => ({ default: m.WeightChart })));
 
 
@@ -82,6 +83,7 @@ export default function ProfileScreen() {
   const [badgeModalVisible, setBadgeModalVisible] = useState(false);
   const [photoModalVisible, setPhotoModalVisible] = useState(false);
   const [sexModalVisible, setSexModalVisible] = useState(false);
+  const [inviteModalVisible, setInviteModalVisible] = useState(false);
   const [toastMsg, setToastMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [alert, setAlert] = useState<any>({ visible: false, type: 'info' as AlertType, title: '', message: '', onConfirm: () => {} });
   const showAlert = (type: AlertType, title: string, message: string, onConfirm?: () => void, onCancel?: () => void, confirmText?: string, cancelText?: string, actions?: any[]) =>
@@ -546,9 +548,17 @@ export default function ProfileScreen() {
   const handleVerifySubscription = async () => { const p = await usePurchaseStore.getState().verifyProStatus(); if (p) setToastMsg({ text: t('profile.verifySuccess', 'Suscripción verificada correctamente'), type: 'success' }); else showAlert('info', t('profile.notPremiumTitle', 'Sin Suscripción Activa'), t('profile.notPremiumDesc', 'No hemos encontrado una suscripción Pro asociada a tu cuenta.'), () => router.push('/modals/paywall'), () => {}, t('profile.upgradeNow', 'Mejorar ahora'), t('common.cancel')); };
   const handleCopyID = async () => { if (!profile?.id) return; try { await Clipboard.setStringAsync(profile.id); setToastMsg({ text: t('profile.idCopied'), type: 'success' }); } catch { await Share.share({ message: profile.id }); } };
   const handleDeleteAccount = () => showAlert('confirm', t('profile.deleteAccount', 'Eliminar Cuenta'), t('profile.deleteAccountConfirm', '¿Estás seguro?'), async () => { try { const { error } = await supabase.rpc('delete_user'); if (error) throw error; useNutritionStore.getState().reset(); useCoachStore.getState().resetAll(); useBodyStore.getState().reset(); useRecipesStore.getState().reset(); useProgressStore.getState().reset(); useSocialStore.getState().reset(); usePlannerStore.getState().clearPlans(); usePurchaseStore.setState({ isPro: false, customerInfo: null }); await supabase.auth.signOut(); } catch { setTimeout(() => showAlert('error', t('common.error'), t('profile.deleteAccountError', 'No se pudo eliminar la cuenta.'), () => {}, undefined, t('common.ok'))); } }, () => {}, t('common.delete'), t('common.cancel'));
-  const handleInviteFriends = async () => { try { await Share.share({ message: t('profile.inviteMessage', '¡Únete a FitGO!'), title: 'FitGO' }); } catch {} };
+  const handleInviteFriends = () => setInviteModalVisible(true);
   const handleLogout = () => showAlert('confirm', t('profile.signOut'), t('profile.signOutConfirm'), async () => { useNutritionStore.getState().reset(); useCoachStore.getState().resetAll(); useBodyStore.getState().reset(); useRecipesStore.getState().reset(); useSocialStore.getState().reset(); usePlannerStore.getState().clearPlans(); await supabase.auth.signOut(); }, () => {}, t('profile.signOut'), t('common.cancel'));
-  const handleLanguageSelect = async (lang: string) => { setLanguage(lang as any); setLangModalVisible(false); if (profile?.id) await supabase.auth.updateUser({ data: { language: lang } }); };
+  const handleLanguageSelect = async (lang: string) => {
+    setLanguage(lang as any);
+    setLangModalVisible(false);
+    if (profile?.id) {
+      setProfile({ ...profile, language: lang as any });
+      await supabase.auth.updateUser({ data: { language: lang } }).catch(() => {});
+      Promise.resolve(supabase.from('users').update({ language: lang }).eq('id', profile.id)).catch(() => {});
+    }
+  };
 
   const { isAdminRole, safePremiumColor, isPremiumCustom } = useMemo(() => {
     const isAdmin = profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin';
@@ -585,6 +595,7 @@ export default function ProfileScreen() {
         <BadgeSelectionModal visible={badgeModalVisible} onClose={() => setBadgeModalVisible(false)} onSelect={(id) => updateProfileField('selectedBadge', id)} availableBadges={availableBadges} selectedBadge={currentBadgeId} />
         <PhotoSourceModal visible={photoModalVisible} onSelectCamera={handleSelectCamera} onSelectGallery={handleSelectGallery} onClose={() => setPhotoModalVisible(false)} />
         <SexSelectionModal visible={sexModalVisible} onClose={() => setSexModalVisible(false)} onSelect={(val) => updateProfileField('sex', val)} selectedValue={profile?.sex} premiumColor={premiumColor} />
+        <InviteFriendsModal visible={inviteModalVisible} onClose={() => setInviteModalVisible(false)} onToast={(msg, type) => setToastMsg({ text: msg, type })} />
 
         <ScrollView nestedScrollEnabled style={{ flex: 1, backgroundColor: colors.background }} showsVerticalScrollIndicator={false}>
           <ProfileHeader profile={profile} currentBadge={currentBadge} safePremiumColor={safePremiumColor} isPremiumCustom={isPremiumCustom} onAvatarPress={() => setPhotoModalVisible(true)} onNamePress={() => openEdit('name', t('profile.editName'), t('profile.enterName'))} onBadgePress={() => setBadgeModalVisible(true)} />

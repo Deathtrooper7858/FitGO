@@ -59,7 +59,7 @@
     "close": "Chiudi",
     "default": "Predefinito",
     "hide": "Nascondi",
-    "free": "GRATIS"
+    "free": "GRATUITO"
   },
   "tabs": {
     "dashboard": "Dashboard",
@@ -116,7 +116,7 @@
     "female": "Donna",
     "tapToChange": "Tocca per cambiare ›",
     "calories": "Calorie",
-    "bmi": "IMC",
+    "bmi": "BMI",
     "light": "Leggermente Attivo",
     "moderate": "Moderatamente Attivo",
     "active": "Molto Attivo",
@@ -281,7 +281,19 @@
       "silver": "Argento Cromato",
       "defaultSubtitle": "Il colore predefinito"
     },
-    "inviteFriends": "Invita Amici"
+    "inviteFriends": "Invita Amici",
+    "inviteSubtitle": "Che dispositivo possiede il tuo amico?",
+    "statusAvailable": "Disponibile",
+    "statusComingSoon": "Molto presto",
+    "playStoreLink": "Link diretto Google Play:",
+    "shareInvite": "Condividi Invito",
+    "openInPlayStore": "Apri su Google Play",
+    "inviteLinkCopied": "Link Android copiato negli appunti!",
+    "iosComingSoonTitle": "FitGO per iOS sarà disponibile molto presto!",
+    "inActiveDevelopment": "🚀 In fase finale di sviluppo",
+    "iosComingSoonMessage": "Stiamo rifinendo gli ultimi dettagli per un'esperienza spettacolare su iPhone e iPad. Presto sarà disponibile per il download su App Store.",
+    "shareAndroidInstead": "Il tuo amico ha Android? Vedi il link",
+    "inviteAndroidMessage": "Ciao! Ti invito a unirti a FitGO per raggiungere i tuoi obiettivi di fitness e nutrizione. 💪🔥\n\nScarica l'app su Google Play Store:\n{{url}}"
   },
   "coach": {
     "title": "Allenatore Fitz",
@@ -296,7 +308,32 @@
       "suggest1": "Dammi un'idea per una cena leggera 🥗",
       "suggest2": "Quali snack sono buoni per perdere peso? 🍎",
       "suggest3": "Quante proteine dovrei mangiare al giorno? 🍗",
-      "suggest4": "Analizza la mia dieta attuale 📊"
+      "suggest4": "Analizza la mia dieta attuale 📊",
+      "subtitle": "Il tuo assistente nutrizionale IA",
+      "heroGreeting": "Sono il tuo Coach di Alimentazione. Sono qui per aiutarti a mangiare meglio e raggiungere i tuoi obiettivi.",
+      "heroQuestion": "Cosa vorresti fare oggi?",
+      "quickActions": {
+        "plan_meal": {
+          "title": "Pianifica un pasto",
+          "subtitle": "Ricette e opzioni su misura per i tuoi obiettivi.",
+          "prompt": "Puoi pianificare un pasto bilanciato e ricco di proteine adatto ai miei fabbisogni giornalieri?"
+        },
+        "choose_snack": {
+          "title": "Scegliere uno spuntino",
+          "subtitle": "Opzioni sane e sazianti.",
+          "prompt": "Quali spuntini sani, veloci e sazianti mi consigli tra i pasti?"
+        },
+        "calc_protein": {
+          "title": "Calcola le mie proteine",
+          "subtitle": "Di quante ne hai bisogno in base al tuo obiettivo?",
+          "prompt": "Quante proteine dovrei assumere al giorno in base a peso e obiettivo, e come suddividerle nei pasti? 🥩"
+        },
+        "analyze_diet": {
+          "title": "Analizza la mia dieta",
+          "subtitle": "Controlla i tuoi progressi e ricevi consigli.",
+          "prompt": "Analizza quello che ho registrato oggi e dammi consigli pratici per migliorare la mia dieta 📊"
+        }
+      }
     },
     "trainer": {
       "label": "Personal Trainer",
@@ -304,7 +341,32 @@
       "suggest1": "Dammi un allenamento da casa di 20 min 🏠",
       "suggest2": "Come migliorare la mia tecnica di squat? 🏋️",
       "suggest3": "Piano di allenamento per guadagno muscolare 💪",
-      "suggest4": "Quali stretching fare dopo la corsa? 🏃"
+      "suggest4": "Quali stretching fare dopo la corsa? 🏃",
+      "subtitle": "Il tuo personal trainer IA",
+      "heroGreeting": "Sono il tuo Coach di Allenamento. Sono qui per creare le tue schede, perfezionare la tecnica e massimizzare i risultati.",
+      "heroQuestion": "Cosa vuoi allenare oggi?",
+      "quickActions": {
+        "routine": {
+          "title": "Crea scheda di oggi",
+          "subtitle": "Crea la tua sessione in base a tempo e attrezzi.",
+          "prompt": "Crea una scheda di allenamento efficace per oggi in base al mio livello, tempo a disposizione e obiettivo 💪"
+        },
+        "warmup": {
+          "title": "Riscaldamento express",
+          "subtitle": "Attivati in 5-10 minuti senza infortuni.",
+          "prompt": "Dammi un riscaldamento dinamico e mobilità articolare di 8 minuti prima di allenarmi 🔥"
+        },
+        "technique": {
+          "title": "Correggi la mia tecnica",
+          "subtitle": "Postura, escursione ed errori comuni.",
+          "prompt": "Quali sono i punti chiave posturali e gli errori più comuni in squat, panca piana e stacco da terra?"
+        },
+        "adapt": {
+          "title": "Adatta per fastidi",
+          "subtitle": "Varianti sicure in caso di dolore o affaticamento.",
+          "prompt": "Quali esercizi alternativi posso fare se sento fastidio alle ginocchia o alle spalle?"
+        }
+      }
     },
     "doctor": {
       "label": "Coach del Benessere",
@@ -312,7 +374,32 @@
       "suggest1": "Cosa fare se mi sento stordito dopo l’allenamento? 😵‍💫",
       "suggest2": "Ci sono interazioni con i miei farmaci? 💊",
       "suggest3": "Come migliorare la qualità del sonno? 🛋️",
-      "suggest4": "Quali sono i segni della disidratazione? 💧"
+      "suggest4": "Quali sono i segni della disidratazione? 💧",
+      "subtitle": "Il tuo consulente IA per salute e recupero",
+      "heroGreeting": "Sono il tuo Coach del Benessere. Sono qui per supportare il tuo recupero muscolare, sonno, abitudini e salute.",
+      "heroQuestion": "Come ti senti oggi?",
+      "quickActions": {
+        "sleep": {
+          "title": "Migliorare il riposo",
+          "subtitle": "Consigli per un sonno profondo e rigenerante.",
+          "prompt": "Come posso ottimizzare l'igiene del sonno per svegliarmi più carico ed accelerare il recupero? 🛌"
+        },
+        "fatigue": {
+          "title": "Combattere la stanchezza",
+          "subtitle": "Energia costante e meno stanchezza.",
+          "prompt": "Perché mi sento stanco durante il giorno e quali semplici modifiche posso apportare? ⚡"
+        },
+        "supplements": {
+          "title": "Integratori consigliati",
+          "subtitle": "Evidenze scientifiche e dosaggi.",
+          "prompt": "Quali integratori hanno maggiori prove scientifiche per il mio obiettivo e come assumerli? 💊"
+        },
+        "recovery": {
+          "title": "Recupero attivo",
+          "subtitle": "Sollievo dai dolori muscolari e riposo attivo.",
+          "prompt": "Quali sono le migliori strategie di recupero attivo per alleviare i dolori muscolari post-allenamento? 🧘"
+        }
+      }
     },
     "camera": "Fotocamera",
     "gallery": "Galleria",
@@ -323,7 +410,39 @@
     "pickImageSub": "Da dove vuoi caricare la foto?",
     "suggestionsTitle": "Suggerimenti per iniziare",
     "taglineBadge": "IA personalizzata • Groq",
-    "confirmDeleteSession": "Sei sicuro di voler eliminare questa chat?"
+    "confirmDeleteSession": "Sei sicuro di voler eliminare questa chat?",
+    "dashboard": {
+      "hello": "Ciao",
+      "quickActionsTitle": "Azioni rapide",
+      "seeLess": "Vedi meno",
+      "seeAll": "Vedi tutte",
+      "yourDaySoFar": "La tua giornata finora",
+      "viewWorkouts": "Vedi allenamenti",
+      "viewHealth": "Vedi salute",
+      "viewNutrition": "Vedi nutrizione completa",
+      "metrics": {
+        "protein": "Proteine",
+        "calories": "Calorie",
+        "water": "Acqua",
+        "meals": "Pasti",
+        "routines": "Schede",
+        "today": "oggi",
+        "burned": "Bruciate",
+        "steps": "Passi",
+        "streak": "Serie",
+        "days": "giorni",
+        "sleep": "Sonno",
+        "status": "Stato",
+        "optimal": "Ottimale"
+      }
+    },
+    "actionChipsTitle": "Cosa vuoi fare?",
+    "thinking": "Sto elaborando la risposta...",
+    "onlineActive": "Online · Aggiornato adesso",
+    "consultasCount": "{{count}}/{{total}} richieste",
+    "unlimitedAI": "IA Illimitata",
+    "inputPlaceholderNew": "Chiedimi qualsiasi cosa...",
+    "disclaimer": "L'IA di FitGO può commettere errori. Verifica sempre le informazioni mediche importanti."
   },
   "about": {
     "title": "Su FitGO",
@@ -416,7 +535,7 @@
     "stretching": "Stretching",
     "gymnastics": "Ginnastica",
     "baseball": "Baseball",
-    "surfing": "Surf"
+    "surfing": "Navigare"
   },
   "welcome": {
     "motto": "Fit-Go: La tua migliore versione",
@@ -426,7 +545,7 @@
     "heroSubtitle": "Nutrizione intelligente, allenamenti e un coach IA che ti accompagna.",
     "feature1Title": "Nutrizione Intelligente",
     "feature1Desc": "Scansiona, registra e scopri cosa mangi.",
-    "feature2Title": "Coach con IA",
+    "feature2Title": "Allenatore con IA",
     "feature2Desc": "Consigli personalizzati in base ai tuoi obiettivi.",
     "feature3Title": "Piani Personalizzati",
     "feature3Desc": "Pasti e allenamenti su misura per te.",
@@ -507,7 +626,7 @@
     "andWord": "e l'",
     "privacyPolicy": "Informativa sulla Privacy",
     "alreadyHaveAccount": "Hai già un account?",
-    "trustFree": "100% Gratis",
+    "trustFree": "100% gratuito",
     "trustNoCard": "Nessuna carta\nrichiesta",
     "trustSafe": "I tuoi dati al sicuro",
     "trustPrivacy": "Rispettiamo la tua\nprivacy",
@@ -953,7 +1072,7 @@
       "mango": "Maniglia",
       "pineapple": "Ananas",
       "pear": "Pera",
-      "kiwi": "Kiwi",
+      "kiwi": "kiwi",
       "lettuce": "Lattuga",
       "cucumber": "Cetriolo",
       "bell_pepper": "Peperone",
@@ -1384,7 +1503,7 @@
       "vitaminsBody": "Ricordati di prendere le vitamine e gli integratori!",
       "sleep": "Sonno",
       "sleepBody": "Riposa bene per recuperare!",
-      "log": "Registro",
+      "log": "Registrazione",
       "logBody": "Registra i pasti di oggi su FitGo!",
       "league": "Lega",
       "leagueBody": "La battaglia della lega non si ferma! Controlla la tua posizione.",
@@ -1402,7 +1521,36 @@
       "messagesBody": "💬 Hai nuovi messaggi su FitGO Social!",
       "vitamine": "Vitamine",
       "vitamineBody": "Ricordati di prendere le vitamine e gli integratori!"
-    }
+    },
+    "categoryDesc": {
+      "meal": "Mantieniti carico di energia e ben nutrito.",
+      "water": "Mantieni il tuo corpo costantemente idratato.",
+      "workout": "Costruisci i tuoi obiettivi, un allenamento alla volta.",
+      "general": "Promemoria quotidiani per dare sempre il massimo.",
+      "social": "Rimani connesso e non perdere il ritmo."
+    },
+    "addReminder": "Aggiungi promemoria",
+    "newReminder": "Nuovo Promemoria",
+    "editReminder": "Modifica Promemoria",
+    "deleteReminder": "Elimina Promemoria",
+    "deleteConfirm": "Sei sicuro di voler eliminare questo promemoria?",
+    "save": "Salva promemoria",
+    "cancel": "Annulla",
+    "title": "Titolo",
+    "titlePlaceholder": "es., Creatina, Frullato Proteico...",
+    "notes": "Messaggio / Descrizione (opzionale)",
+    "notesPlaceholder": "Messaggio del promemoria...",
+    "time": "Ora",
+    "repeat": "Ripeti Giorni",
+    "allDays": "Tutti i giorni",
+    "weekdays": "Lunedì a Venerdì",
+    "weekends": "Fine settimana",
+    "quickSuggestions": "Suggerimenti Rapidi",
+    "testSent": "Notifica di prova inviata!",
+    "testSentDesc": "Controlla la barra delle notifiche per confermare.",
+    "permissionGranted": "Notifiche attive",
+    "permissionDenied": "Abilita le notifiche nelle impostazioni di sistema.",
+    "more": "Altro"
   },
   "scan": {
     "title": "Scansiona Cibo",
@@ -1492,7 +1640,7 @@
       "coachBadge": "∞ ILLIMITATO",
       "plannerTitle": "Pianificatore Nutrizionale IA",
       "plannerDesc": "Genera menu settimanali personalizzati in base ai tuoi macro",
-      "plannerBadge": "IA",
+      "plannerBadge": "AI",
       "scannerTitle": "Ricerca e Scanner Alimenti",
       "scannerDesc": "Sblocca la ricerca nel database e la scansione dei codici a barre",
       "scannerBadge": "FACILE",
@@ -1559,14 +1707,14 @@
     "mostPopular": "PIÙ POPOLARE",
     "launchOffer": "OFFERTA LANCIO",
     "accessTotal": "Accesso Pro Totale",
-    "free": "Gratis",
+    "free": "Gratuito",
     "pro": "PRO",
     "featuresTitle": "Cosa include Pro?",
-    "vsTitle": "Gratis vs Pro",
+    "vsTitle": "Gratuito contro Pro",
     "premiumFeature": "Funzione Premium",
     "premiumRequired": "Questa funzione è esclusiva per gli utenti Premium.",
     "rows": {
-      "coach": "Coach IA",
+      "coach": "Allenatore dell'IA",
       "coachFree": "3-5 richieste / giorno",
       "coachPro": "Illimitato",
       "scanner": "Scanner e Ricerca",
@@ -1600,6 +1748,66 @@
       "secureNote": "Pagamento sicuro gestito da Google Play / App Store",
       "cta": "Conferma Abbonamento",
       "cancel": "No, continua gratis"
+    },
+    "featuresBadge": "VANTAGGI & BENEFICI PRO",
+    "sectionHeading": "Tutto quello che ottieni con Pro",
+    "sectionSubheading": "Strumenti intelligenti progettati per trasformare i tuoi risultati",
+    "tabBenefits": "Benefici Pro",
+    "tabCompare": "Gratis vs Pro",
+    "compareCalloutTitle": "Vuoi vedere l'esatta differenza?",
+    "compareCalloutSub": "Controlla il confronto completo Gratis vs Pro",
+    "viewCompareBtn": "Confronta →",
+    "benefitsCalloutTitle": "Vedi schede dettagliate dei benefici",
+    "benefitsCalloutSub": "Scopri a fondo le 9 funzionalità esclusive Pro",
+    "viewBenefitsBtn": "Benefici →",
+    "transformations": {
+      "sectionTitle": "Storie di Successo Reali",
+      "sectionSub": "Risultati verificati di utenti che hanno trasformato la loro vita con FitGO",
+      "before": "PRIMA",
+      "after": "DOPO",
+      "case1": {
+        "tag": "Caso 1 · Matteo",
+        "name": "Matteo C., 24 anni",
+        "duration": "6 mesi con FitGO Pro",
+        "statWeight": "-26 kg",
+        "statFat": "-23% grasso corporeo",
+        "quote": "Con il Coach IA e i pasti adatti ai miei macronutrienti giornalieri, ho smesso di improvvisare. La trasformazione fisica e mentale è stata incredibile."
+      },
+      "case2": {
+        "tag": "Caso 2 · Valeria",
+        "name": "Valeria M., 23 anni",
+        "duration": "5 mesi con FitGO Pro",
+        "statWeight": "-27 kg",
+        "statWaist": "-22 cm girovita",
+        "quote": "Ho provato diete drastiche per anni. FitGO mi ha insegnato a mangiare bilanciato senza fame e lo scanner ha reso tutto semplice."
+      }
+    },
+    "reviews": {
+      "sectionTitle": "Cosa dice la nostra community",
+      "ratingScore": "4.9 / 5.0",
+      "ratingTotal": "Oltre 12.400 recensioni a 5 stelle",
+      "successRate": "Il 94% raggiunge il proprio obiettivo nei primi 90 giorni",
+      "verifiedUser": "Utente Pro Verificato",
+      "item1": {
+        "name": "Andrea G.",
+        "time": "Membro Pro da 7 mesi",
+        "comment": "Il miglior investimento per la mia salute. Il coach nutrizionale IA mi fa risparmiare centinaia di euro e i piani si adattano alla mia routine."
+      },
+      "item2": {
+        "name": "Camilla D.",
+        "time": "Membro Pro da 4 mesi",
+        "comment": "Lo scanner per alimenti e la registrazione vocale sono favolosi. Registro i pasti in pochi secondi e la mia costanza è alle stelle."
+      },
+      "item3": {
+        "name": "Diego L.",
+        "time": "Membro Pro da 9 mesi",
+        "comment": "Da non sapere cosa mangiare a sviluppare massa muscolare magra. Le leghe e le serie spingono a non saltare un singolo giorno."
+      },
+      "item4": {
+        "name": "Laura S.",
+        "time": "Membro Pro da 3 mesi",
+        "comment": "Senza pubblicità e con videoguide complete per ogni esercizio. Vale ogni centesimo, di gran lunga la migliore app fitness."
+      }
     }
   },
   "muscleDirectory": {
@@ -2813,301 +3021,301 @@
     "weighted hyperextension (on stability ball)": "iperestensione con carico (su palla di stabilità)",
     "frog crunch": "scricchiolio della rana",
     "dumbbell lying hammer press": "Pressa con martello con manubri sdraiata",
-    "dumbbell one arm kickback": "retroceso con un brazo con mancuernas",
-    "chest and front of shoulder stretch": "estiramiento del pecho y la parte delantera del hombro",
-    "dumbbell standing front raise above head": "elevación frontal con mancuernas de pie por encima de la cabeza",
-    "ankle circles": "círculos en los tobillos",
-    "roller hip lat stretch": "estiramiento lateral de cadera con rodillo",
-    "cable incline bench row": "fila de banco inclinado con cable",
-    "lever bent over row": "palanca inclinada sobre la fila",
-    "barbell standing wide military press": "press militar con barra de pie",
-    "barbell sitted alternate leg raise (female)": "sentado con barra elevación de pierna alterna (mujer)",
-    "ez barbell seated curls": "Curl sentado con barra ez",
-    "assisted parallel close grip pull-up": "dominadas paralelas asistidas con agarre cerrado",
-    "dumbbells seated triceps extension": "extensión de tríceps sentado con mancuernas",
-    "hanging pike": "lucio colgante",
-    "weighted standing hand squeeze": "apretón de manos de pie con peso",
-    "dumbbell biceps curl": "Curl de bíceps con mancuernas",
-    "cable straight arm pulldown (with rope)": "Jalón con brazo recto con cable (con cuerda)",
-    "lever narrow grip seated row": "palanca de agarre estrecho fila sentada",
-    "box jump down with one leg stabilization": "salto de caja hacia abajo con estabilización de una pierna",
-    "dumbbell seated kickback": "Contragolpe sentado con mancuernas",
-    "dumbbell clean": "limpieza con mancuernas",
-    "elbow-to-knee": "codo a rodilla",
-    "lever seated reverse fly": "marcha atrás con palanca asentada",
-    "resistance band seated straight back row": "banda de resistencia sentada en la última fila",
-    "weighted russian twist v. 2": "giro ruso ponderado v. 2",
-    "world greatest stretch": "mayor tramo del mundo",
-    "lever incline chest press": "Press de pecho inclinado con palanca",
-    "back pec stretch": "estiramiento de pectorales de espalda",
-    "cable curl": "enrollamiento del cable",
-    "exercise ball supine triceps extension": "pelota de ejercicio extensión de tríceps en decúbito supino",
-    "twisted leg raise": "elevación de pierna torcida",
-    "cable side bend crunch (bosu ball)": "Crunch con flexión lateral del cable (bola bosu)",
-    "clap push up": "aplaudir flexionar hacia arriba",
-    "dumbbell hammer curl": "curl martillo con mancuernas",
-    "rear pull-up": "dominada trasera",
-    "dumbbell one arm zottman preacher curl": "curl predicador zottman con un brazo con mancuernas",
-    "barbell lateral lunge": "Estocada lateral con barra",
-    "push-up medicine ball": "balón medicinal para flexiones",
-    "lever standing calf raise": "elevación de pantorrilla de pie con palanca",
-    "kettlebell alternating hang clean": "pesas rusas alternadas colgar limpio",
-    "dumbbell rear delt row_shoulder": "remo delt trasero con mancuernas",
-    "cable reverse wrist curl": "curl de muñeca inverso con cable",
-    "cable standing crunch (with rope attachment)": "crujido de cable de pie (con accesorio de cuerda)",
-    "kettlebell advanced windmill": "molino de viento avanzado con pesas rusas",
-    "standing hamstring and calf stretch with strap": "Estiramiento de isquiotibiales y pantorrillas de pie con correa",
-    "ez bar french press on exercise ball": "Press francés con barra ez sobre pelota de ejercicio",
-    "single leg platform slide": "tobogán de plataforma de una sola pierna",
-    "lever one arm lateral wide pulldown": "palanca con un brazo hacia abajo lateralmente amplio",
-    "cable standing one leg calf raise": "elevación de pantorrilla con una pierna de pie con cable",
-    "cable pulldown": "descenso del cable",
-    "london bridge": "puente de londres",
-    "ez bar reverse grip bent over row": "Agarre inverso con barra ez inclinado sobre la fila",
-    "band single leg calf raise": "elevación de pantorrilla con una sola pierna con banda",
-    "band one arm twisting seated row": "banda con giro de un brazo en remo sentado",
-    "dumbbell pullover on exercise ball": "jersey con mancuernas sobre pelota de ejercicios",
-    "quarter sit-up": "cuarto de abdominales",
-    "all fours squad stretch": "estiramiento del equipo a cuatro patas",
-    "lever seated reverse fly (parallel grip)": "marcha atrás con palanca asentada (agarre paralelo)",
-    "dumbbell decline one arm hammer press": "Press de martillo con un brazo en descenso con mancuernas",
-    "jump squat v. 2": "sentadilla con salto v. 2",
-    "cable rear drive": "tracción trasera por cable",
-    "barbell skier": "esquiador con barra",
-    "dumbbell over bench one arm wrist curl": "curl de muñeca con mancuerna sobre banco con un brazo",
-    "dumbbell incline bench press": "press de banca inclinado con mancuernas",
-    "cable rope seated row": "cable cuerda fila sentada",
-    "smith behind neck press": "smith detrás de la prensa del cuello",
-    "farmers walk": "caminata de agricultores",
-    "cable squat row (with rope attachment)": "remo en cuclillas con cable (con accesorio de cuerda)",
-    "cable straight back seated row": "fila de asientos con respaldo recto",
-    "lever decline chest press": "press de pecho con palanca inclinada",
-    "lever lateral raise": "elevación lateral de la palanca",
-    "inchworm v. 2": "gusano pulgada v. 2",
-    "kneeling plank tap shoulder (male)": "tabla de rodillas golpea el hombro (masculino)",
-    "handstand push-up": "flexión de manos",
-    "sled closer hack squat": "sentadilla hack más cerca del trineo",
-    "dumbbell rear delt raise": "elevación delt delt trasero con mancuernas",
-    "medicine ball chest push single response": "Empuje de pecho con balón medicinal respuesta única",
-    "rocking frog stretch": "estiramiento de rana mecedora",
-    "dumbbell one arm shoulder press v. 2": "Press de hombros con un brazo con mancuernas v. 2",
-    "dumbbell step-up split squat": "sentadilla dividida con mancuernas",
-    "standing behind neck press": "prensa de pie detrás del cuello",
-    "biceps narrow pull-ups": "dominadas estrechas de bíceps",
-    "hands clasped circular toe touch (male)": "manos entrelazadas toque circular del dedo del pie (masculino)",
-    "l-pull-up": "dominadas en l",
-    "smith leg press": "prensa de piernas smith",
-    "dumbbell reverse grip row (female)": "remo con agarre inverso con mancuernas (femenino)",
-    "dumbbell reverse bench press": "press de banca inverso con mancuernas",
-    "dumbbell cross body hammer curl v. 2": "Curl martillo con cuerpo cruzado y mancuernas v. 2",
-    "dumbbell lying pronation": "pronación acostada con mancuernas",
-    "cable kneeling triceps extension": "extensión de tríceps arrodillado con cable",
-    "dumbbell decline one arm fly": "descenso con mancuernas con un brazo",
-    "straddle planche": "plancha a horcajadas",
-    "cable hammer curl (with rope)": "enrollamiento de martillo de cable (con cuerda)",
-    "swimmer kicks v. 2 (male)": "patadas de nadador v. 2 (masculino)",
-    "smith machine bicep curl": "Curl de bíceps con máquina Smith",
-    "dumbbell one leg fly on exercise ball": "vuelo con una pierna con mancuernas sobre una pelota de ejercicio",
-    "cable lying fly": "mosca tendido cable",
-    "dumbbell reverse wrist curl": "Curl de muñeca inverso con mancuernas",
-    "dumbbell one arm pullover on exercise ball": "Jersey con mancuernas de un brazo sobre una pelota de ejercicio",
-    "incline reverse grip push-up": "flexión inclinada con agarre inverso",
-    "quads": "cuádriceps",
-    "kettlebell figure 8": "pesa rusa figura 8",
-    "dumbbell high curl": "curl alto con mancuernas",
-    "cross body crunch": "abdominales cruzados",
-    "cable standing rear delt row (with rope)": "remo de deltoides trasero de pie con cable (con cuerda)",
-    "russian twist": "giro ruso",
-    "ez barbell anti gravity press": "Press antigravedad con barra ez",
-    "backward jump": "salto hacia atrás",
-    "kettlebell thruster": "propulsor de pesas rusas",
-    "barbell rack pull": "tirón del estante con barra",
-    "resistance band seated shoulder press": "Press de hombros sentado con banda de resistencia",
-    "triceps press": "prensa de tríceps",
-    "dumbbell one arm bench fly": "vuelo en banco con un brazo y mancuernas",
-    "arms overhead full sit-up (male)": "abdominales completos con brazos por encima de la cabeza (masculino)",
-    "impossible dips": "caídas imposibles",
-    "dumbbell lying one arm rear lateral raise": "mancuerna tumbada con un brazo en elevación lateral trasera",
-    "dumbbell press on exercise ball": "press con mancuernas sobre una pelota de ejercicios",
-    "lever seated calf press": "press de pantorrillas sentado con palanca",
-    "dumbbell alternate side press": "Press lateral alterno con mancuernas",
-    "low glute bridge on floor": "puente bajo de glúteos en el suelo",
-    "macro style weighted one hand pull up": "estilo macro ponderado con una mano hacia arriba",
-    "inverted style smith seated shoulder press": "Press de hombros sentado Smith estilo invertido",
-    "cable low seated row controlled": "cable fila baja sentada controlada",
-    "wall style dumbbell pullover hip extension on exercise ball": "Extensión de cadera con jersey con mancuernas estilo pared sobre pelota de ejercicios",
-    "cable kneeling crunch - gentle variation": "Crujido con cable arrodillado - variación suave",
-    "band alternating v-up with simple": "banda alternando v-up con simple",
-    "ez barbell close grip preacher curl - precision variation": "Curl predicador con agarre cerrado y barra ez - variación de precisión",
-    "hanging pike with intense": "lucio colgante con intenso",
-    "side cable high row (kneeling)": "fila alta con cable lateral (de rodillas)",
-    "blunt cable standing crunch": "Crujido de cable contundente",
-    "barbell lying triceps extension double": "extensión de tríceps tumbado con barra doble",
-    "fierce weighted straight bar dip": "Inmersión feroz con barra recta ponderada",
-    "slow leg pull in flat bench": "tirón lento de piernas en banco plano",
-    "cable twisting pull with intensified": "tirón de torsión del cable con intensificación",
-    "suspended abdominal fallout - inclined variation": "caída abdominal suspendida - variación inclinada",
-    "inclined style pelvic tilt into bridge": "Inclinación pélvica de estilo inclinado hacia el puente",
-    "dumbbell incline one arm press on exercise ball modified": "inclinado con mancuernas press con un brazo sobre pelota de ejercicio modificada",
-    "cable kneeling rear delt row (with rope) (male) expanded": "remo de deltoides trasero arrodillado con cable (con cuerda) (macho) expandido",
-    "rotated dumbbell pronate-grip triceps extension": "Extensión de tríceps con agarre pronado y rotación con mancuernas",
-    "sled 45 degrees one leg press pointed": "trineo 45 grados prensa con una pierna puntiaguda",
-    "stretched full planche push-up": "flexión de plancha completa estirada",
-    "calf push stretch with hands against wall elite": "estiramiento de pantorrilla con manos contra la pared élite",
-    "clock push-up extreme": "flexiones de reloj extremas",
-    "lever military press with strength": "press militar de palanca con fuerza",
-    "half knee bends (male) with blunt": "dobla media rodilla (masculino) con contundente",
-    "dynamic style band side triceps extension": "Extensión de tríceps lateral con banda estilo dinámico",
-    "exercise ball seated triceps stretch wide": "pelota de ejercicios estiramiento de tríceps sentado ancho",
-    "band underhand pulldown with classic": "pulldown de banda por debajo con clásico",
-    "chest stretch with exercise ball partial": "estiramiento de pecho con pelota de ejercicios parcial",
-    "weighted lunge with swing twisted": "estocada ponderada con swing torcido",
-    "controlled band straight back stiff leg deadlift": "Peso muerto con pierna rígida y espalda recta con banda controlada",
-    "gentle style dumbbell one leg fly on exercise ball": "mancuerna de estilo suave con una pierna sobre una pelota de ejercicio",
-    "intense kettlebell two arm row": "intenso remo de dos brazos con pesa rusa",
-    "contracted kettlebell extended range one arm press on floor": "Press con un brazo de rango extendido con pesa rusa contraído en el suelo",
-    "triple style sled one leg calf press on leg press": "Prensa de pantorrilla con una pierna estilo trineo triple en prensa de piernas",
-    "resistance band leg extension declined": "extensión de pierna con banda de resistencia rechazada",
-    "dumbbell iron cross - improved variation": "cruz de hierro con mancuernas - variación mejorada",
-    "quick feet v. 2 with bent": "pies rápidos v. 2 con doblado",
-    "barbell wide reverse grip bench press horizontal": "Press de banca con agarre inverso ancho y barra horizontal",
-    "sissy squat isolation": "aislamiento en cuclillas mariquita",
-    "chair leg extended stretch with modified": "pierna de silla extendida estirada con modificado",
-    "cable concentration curl tempo": "concentración de cable tempo de curl",
-    "intense barbell straight leg deadlift": "Peso muerto intenso con barra y pierna recta",
-    "precision style lever bent-over row with v-bar": "Remo inclinado con palanca estilo precisión con barra en V",
-    "high style scapula push-up": "push-up de escápula de estilo alto",
-    "barbell reverse preacher curl inclined": "curl predicador inverso con barra inclinado",
-    "lever reverse grip preacher curl with precision": "palanca de agarre inverso predicador curl con precisión",
-    "narrow style band jack knife sit-up": "Abdominales estilo navaja con banda estrecha",
-    "forward lunge (male) with bench": "estocada hacia adelante (masculino) con banco",
-    "alternating bear crawl": "rastreo de oso alterno",
-    "single style cable standing crunch (with rope attachment)": "Crujiente de cable de estilo único (con accesorio de cuerda)",
-    "rough band push sit-up": "abdominales con empuje de banda áspera",
-    "fast style resistance band seated hip abduction": "Abducción de cadera sentado con banda de resistencia de estilo rápido",
-    "pure chin-up": "pura dominada",
-    "light lever standing chest press": "Press de pecho de pie con palanca ligera",
-    "resistance band seated shoulder press with declined": "Press de hombros sentado con banda de resistencia y declinado",
-    "barbell prone incline curl with intensive": "Curl inclinado boca abajo con barra con intensivo",
-    "barbell standing reverse grip curl resistance": "resistencia al curl con agarre inverso con barra",
-    "exercise ball hip flexor stretch pointed": "pelota de ejercicio estiramiento del flexor de la cadera puntiagudo",
-    "rough band hip lift": "levantamiento de cadera con banda rugosa",
-    "flexible assisted prone hamstring": "isquiotibiales flexibles en prono asistido",
-    "incline push-up (on box) - active variation": "Flexión inclinada (en caja) - variación activa",
-    "barbell bent arm pullover - powerful variation": "Jersey con barra y brazo doblado - variación potente",
-    "core barbell upright row v. 2": "remo vertical con barra central v. 2",
-    "dumbbell step up single leg balance with bicep curl - chair variation": "aumento con mancuernas equilibrio sobre una sola pierna con curl de bíceps - variación en silla",
-    "band one arm standing low row - lateral variation": "banda un brazo de pie fila baja - variación lateral",
-    "endurance style one arm dip": "inmersión con un brazo estilo resistencia",
-    "cable side bend smooth": "Curva lateral del cable suave",
-    "dumbbell decline shrug - rigid variation": "Encogimiento de hombros con mancuernas - variación rígida",
-    "pulse style walk elliptical cross trainer": "Bicicleta elíptica estilo pulso para caminar",
-    "balance cable incline fly": "cable de equilibrio vuelo inclinado",
-    "cocoons with mega": "capullos con mega",
-    "cable incline bench row - elite variation": "remo en banco inclinado con cable - variación élite",
-    "flexible cable triceps pushdown (v-bar)": "Flexión de tríceps con cable flexible (barra en V)",
-    "advanced dumbbell stiff leg deadlift": "Peso muerto avanzado con piernas rígidas y mancuernas",
-    "hold style dumbbell alternating seated bicep curl on exercise ball": "mantenga el estilo con mancuernas alternando curl de bíceps sentado sobre una pelota de ejercicio",
-    "active style cable pushdown": "Empuje de cable estilo activo",
-    "stability style band kneeling one arm pulldown": "banda estilo estabilidad arrodillado con un brazo pulldown",
-    "rounded twisted leg raise (female)": "elevación de pierna redondeada y torcida (mujer)",
-    "wide-grip chest dip on high parallel bars - low variation": "fondos de pecho con agarre ancho en barras paralelas altas - variación baja",
-    "cable one arm incline press with rigid": "Prensa inclinada de un brazo con cable con rígido",
-    "exercise ball alternating arm ups with fast": "pelota de ejercicio alternando brazos arriba con rápido",
-    "hanging pike weak": "lucio colgante débil",
-    "one arm against wall compressed": "un brazo contra la pared comprimido",
-    "ez barbell decline close grip face press - mini variation": "Press facial con agarre cerrado y descenso con barra ez - mini variación",
-    "weighted one hand pull up fast": "con una mano pesada, levántela rápidamente",
-    "incline push up depth jump with complex": "Salto en profundidad con flexión inclinada y complejo",
-    "pointed cable palm rotational row": "fila rotacional de palma de cable puntiagudo",
-    "intermediate style dumbbell preacher curl over exercise ball": "Curl predicador con mancuernas de estilo intermedio sobre pelota de ejercicios",
-    "iron cross stretch - deep variation": "Estiramiento de cruz de hierro - variación profunda",
-    "all fours squad stretch - elevated variation": "estiramiento del escuadrón a cuatro patas - variación elevada",
-    "isolation assisted seated pectoralis major stretch with stability ball": "Estiramiento del pectoral mayor sentado asistido por aislamiento con balón de estabilidad",
-    "one leg squat - expanded variation": "Sentadilla con una pierna - variación ampliada",
-    "targeted style smith close-grip bench press": "Press de banca con agarre cerrado estilo Smith dirigido",
-    "dumbbell one arm prone hammer curl - macro variation": "Curl de martillo boca abajo con un brazo con mancuernas - variación macro",
-    "push-up (wall) with static": "flexiones (pared) con estática",
-    "fierce style forward lunge (male)": "Estocada hacia adelante con estilo feroz (masculino)",
-    "chin-up diagonal": "dominadas diagonales",
-    "cable judo flip with static": "cable judo flip con estática",
-    "dumbbell over bench one arm wrist curl - strength variation": "curl de muñeca con un brazo y mancuerna sobre banco - variación de fuerza",
-    "lying leg-hip raise - contracted variation": "Elevación de pierna y cadera acostado - variación contraída",
-    "prone medicine ball close grip push up": "balón medicinal boca abajo, agarre cerrado, flexión hacia arriba",
-    "triceps dip (between benches) - extreme variation": "fondos de tríceps (entre bancos) - variación extrema",
-    "micro style barbell speed squat": "Sentadilla rápida estilo micro con barra",
-    "rough cable decline fly": "mosca de descenso de cable rugoso",
-    "stability lever narrow grip seated row": "palanca de estabilidad agarre estrecho fila sentada",
-    "twisted side-to-side chin": "mentón torcido de lado a lado",
-    "prone dumbbell upright shoulder external rotation": "rotación externa del hombro erguido con mancuernas boca abajo",
-    "controlled wrist rollerer": "rodillo de muñeca controlado",
-    "barbell incline bench press seated": "press de banca inclinado con barra sentado",
-    "barbell sitted alternate leg raise (female) with intermediate": "sentado con barra elevación de piernas alterna (femenino) con intermedio",
-    "push-up to side plank - athletic variation": "flexión de brazos hacia la plancha lateral - variación atlética",
-    "dumbbell seated one leg calf raise - hammer grip deep": "Elevación de pantorrilla con una pierna sentado con mancuernas - agarre de martillo profundo",
-    "gentle style cable pulldown (pro lat bar)": "Jalón con cable de estilo suave (barra pro lat)",
-    "inverted style inverse leg curl (on pull-up cable machine)": "Curl de piernas inverso estilo invertido (en máquina de dominadas con cable)",
-    "barbell high bar squat core": "sentadilla con barra alta con barra",
-    "sharp style dumbbell sumo pull through": "Sumo con mancuernas de estilo afilado se logra",
-    "rough cable standing one arm triceps extension": "extensión de tríceps con un brazo de pie con cable rugoso",
-    "assisted standing chin-up with focused": "dominadas de pie asistidas con concentración",
-    "single smith shoulder press": "press de hombros single smith",
-    "complete style ez bar lying close grip triceps extension behind head": "barra ez de estilo completo, extensión de tríceps con agarre cerrado detrás de la cabeza",
-    "smith one arm row linear": "smith fila de un brazo lineal",
-    "assisted pull-up inclined": "dominada asistida inclinada",
-    "cable seated row with reverse": "remo sentado con cable con reversa",
-    "dumbbell hammer curl with traditional": "Curl de martillo con mancuernas con tradicional",
-    "smith machine incline tricep extension - straight variation": "Extensión de tríceps inclinada con máquina Smith - variación recta",
-    "push-up on lower arms - resistance variation": "flexión de brazos en los antebrazos - variación de la resistencia",
-    "sled 45в° leg wide press - blunt variation": "Press de piernas en trineo a 45° - variación contundente",
-    "dumbbell lunge with firm": "Estocada con mancuernas con firmeza",
-    "improved sphinx": "esfinge mejorada",
-    "band seated twist pure": "banda asentada con giro puro",
-    "walk elliptical cross trainer - expanded variation": "Bicicleta elíptica para caminar - variación ampliada",
-    "smith bent over row with declined": "Smith se inclinó sobre la fila con rechazo",
-    "dumbbell incline one arm press on exercise ball with extended": "inclinación con mancuernas, presión con un brazo sobre la pelota de ejercicios con extensión",
-    "athletic style battling ropes": "cuerdas de lucha de estilo atlético",
-    "dumbbell reverse grip row (female) hold": "Remo con agarre inverso con mancuernas (femenino)",
-    "lever narrow grip seated row - strength variation": "remo sentado con palanca de agarre estrecho - variación de fuerza",
-    "traditional barbell romanian deadlift": "Peso muerto rumano tradicional con barra",
-    "exercise ball one leg prone lower body rotation fierce": "pelota de ejercicios una pierna propensa a la rotación de la parte inferior del cuerpo feroz",
-    "kettlebell arnold press - beginner variation": "Press Arnold con pesas rusas - variación para principiantes",
-    "fluid dumbbell step-up lunge": "estocada fluida con mancuernas",
-    "quads complex": "complejo de quads",
-    "lever assisted chin-up with twisted": "dominadas asistidas por palanca con giro",
-    "push up on bosu ball with improved": "Empuje hacia arriba en la pelota bosu con mejora",
-    "dynamic style barbell lying back of the head tricep extension": "Extensión de tríceps con barra estilo dinámico recostada detrás de la cabeza",
-    "deep smith machine reverse decline close grip bench press": "Press de banca con agarre cerrado y descenso inverso en máquina Deep Smith",
-    "hanging straight leg raise with elevated": "Elevación de pierna recta colgando con elevación",
-    "upright smith incline bench press": "press de banca inclinado vertical smith",
-    "extended style inverted row": "fila invertida de estilo extendido",
-    "dumbbell one arm fly on exercise ball improved": "Mancuerna con un brazo sobre pelota de ejercicio mejorada",
-    "hanging straight twisting leg hip raise with compound": "elevación de cadera con pierna recta y torcida colgando con compuesto",
-    "fast band straight leg deadlift": "Peso muerto con pierna recta y banda rápida",
-    "cable lateral pulldown (with rope attachment) core": "núcleo de tracción lateral del cable (con sujeción de cuerda)",
-    "dumbbell around pullover - intensive variation": "mancuerna alrededor del jersey - variación intensiva",
-    "sit-up with arms on chest with mini": "abdominales con los brazos sobre el pecho con mini",
-    "squared reverse grip machine lat pulldown": "Jalón lateral con máquina de agarre inverso cuadrado",
-    "targeted style single leg calf raise (on a dumbbell)": "Elevación de pantorrilla con una sola pierna con estilo dirigido (con mancuernas)",
-    "chest and front of shoulder stretch micro": "micro elástico en el pecho y la parte delantera del hombro",
-    "kettlebell seated press with high": "Press sentado con pesas rusas con altura",
-    "barbell squat (on knees) with pure": "sentadilla con barra (de rodillas) con pura",
-    "tough cable one arm lateral raise": "cable resistente elevación lateral con un brazo",
-    "kipping muscle up with triple": "levantando músculos con triple",
-    "intermediate style kneeling plank tap shoulder (male)": "Tablón de rodillas de estilo intermedio golpeando el hombro (masculino)",
-    "intensified style kettlebell extended range one arm press on floor": "Press con un brazo en el suelo con pesas rusas de rango extendido estilo intensificado",
-    "supine style band alternating v-up": "banda estilo supino alternando v-up",
-    "assisted standing triceps extension (with towel) with horizontal": "extensión de tríceps de pie asistida (con toalla) con horizontal",
-    "wall style dumbbell one arm french press on exercise ball": "Press francés con un brazo con mancuernas estilo pared sobre pelota de ejercicios",
-    "side-to-side chin with reverse": "mentón de lado a lado con reverso",
-    "macro style close-grip push-up": "Flexiones estilo macro con agarre cerrado",
-    "gentle prone twist on stability ball": "giro suave en decúbito prono sobre la pelota de estabilidad",
-    "cable rope incline tricep extension - reverse variation": "Extensión de tríceps inclinada con cuerda y cable - variación inversa",
-    "cable squat row (with rope attachment) heavy": "remo en cuclillas con cable (con sujeción de cuerda) pesado",
-    "band vertical pallof press - seated variation": "press pallof vertical con banda - variación sentado",
-    "barbell reverse wrist curl - prone variation": "Curl de muñeca inverso con barra - variación boca abajo",
-    "firm style hanging oblique knee raise": "Elevación de rodilla oblicua colgante estilo firme",
-    "horizontal dumbbell standing alternate overhead press": "Press de hombros alterno de pie con mancuernas horizontales",
+    "dumbbell one arm kickback": "Contraccolpo con un manubrio su un braccio",
+    "chest and front of shoulder stretch": "allungamento del petto e delle spalle anteriori",
+    "dumbbell standing front raise above head": "Sollevamento frontale con manubri sopra la testa in piedi",
+    "ankle circles": "cerchi sulle caviglie",
+    "roller hip lat stretch": "allungamento laterale dell'anca con rullo",
+    "cable incline bench row": "fila di panche inclinate per cavi",
+    "lever bent over row": "leva inclinata sulla fila",
+    "barbell standing wide military press": "Military press con bilanciere in piedi",
+    "barbell sitted alternate leg raise (female)": "sollevamento alternato delle gambe con bilanciere da seduti (donna)",
+    "ez barbell seated curls": "Curl con barra ez seduto",
+    "assisted parallel close grip pull-up": "trazioni parallele assistite con presa stretta",
+    "dumbbells seated triceps extension": "estensione dei tricipiti da seduti con manubri",
+    "hanging pike": "luccio appeso",
+    "weighted standing hand squeeze": "stretta di mano in piedi con peso",
+    "dumbbell biceps curl": "Curl bicipiti con manubri",
+    "cable straight arm pulldown (with rope)": "Pulldown con braccio dritto al cavo (con corda)",
+    "lever narrow grip seated row": "fila seduta con leva a impugnatura stretta",
+    "box jump down with one leg stabilization": "Box Jump verso il basso con stabilizzazione della gamba singola",
+    "dumbbell seated kickback": "Kickback con manubri da seduti",
+    "dumbbell clean": "pulizia con manubri",
+    "elbow-to-knee": "gomito al ginocchio",
+    "lever seated reverse fly": "retromarcia con leva posizionata",
+    "resistance band seated straight back row": "fascia di resistenza seduta nell'ultima fila",
+    "weighted russian twist v. 2": "twist russo ponderato v. 2",
+    "world greatest stretch": "tratto più grande del mondo",
+    "lever incline chest press": "Pressa per petto con leva di inclinazione",
+    "back pec stretch": "allungamento pettorale posteriore",
+    "cable curl": "avvolgimento del cavo",
+    "exercise ball supine triceps extension": "Palla per esercizi per l'estensione dei tricipiti in posizione supina",
+    "twisted leg raise": "sollevamento della gamba ruotata",
+    "cable side bend crunch (bosu ball)": "Crunch con piega laterale del cavo (palla Bosu)",
+    "clap push up": "batti le mani flettiti",
+    "dumbbell hammer curl": "Curl con martello e manubri",
+    "rear pull-up": "pull-up posteriore",
+    "dumbbell one arm zottman preacher curl": "Curl del predicatore Zottman con un braccio con manubri",
+    "barbell lateral lunge": "Affondi laterali con bilanciere",
+    "push-up medicine ball": "palla medica per flessioni",
+    "lever standing calf raise": "sollevamento del polpaccio in piedi con leva",
+    "kettlebell alternating hang clean": "kettlebell alternati Hang Clean",
+    "dumbbell rear delt row_shoulder": "fila dei deltoidi posteriori con manubri",
+    "cable reverse wrist curl": "arricciatura del polso inversa al cavo",
+    "cable standing crunch (with rope attachment)": "cigolio del cavo in piedi (con fissaggio a fune)",
+    "kettlebell advanced windmill": "mulino a vento avanzato con kettlebell",
+    "standing hamstring and calf stretch with strap": "Allungamento dei tendini del ginocchio e dei polpacci in piedi con cinghia",
+    "ez bar french press on exercise ball": "French press con barra ez sulla palla ginnica",
+    "single leg platform slide": "scivolo con piattaforma a gamba singola",
+    "lever one arm lateral wide pulldown": "leva con un braccio rivolto verso il basso lateralmente largo",
+    "cable standing one leg calf raise": "Sollevamento polpaccio con una gamba sola in piedi al cavo",
+    "cable pulldown": "discesa del cavo",
+    "london bridge": "ponte di londra",
+    "ez bar reverse grip bent over row": "Rema piegato Impugnatura inversa della barra ez",
+    "band single leg calf raise": "sollevamento polpaccio a gamba singola fasciato",
+    "band one arm twisting seated row": "fascia con una torsione del braccio nella fila seduta",
+    "dumbbell pullover on exercise ball": "Maglione con manubri su palla da ginnastica",
+    "quarter sit-up": "stanza addominale",
+    "all fours squad stretch": "allungamento della squadra a quattro zampe",
+    "lever seated reverse fly (parallel grip)": "retromarcia con leva seduta (impugnatura parallela)",
+    "dumbbell decline one arm hammer press": "Pressa con martello a un braccio in discesa con manubri",
+    "jump squat v. 2": "squat con salto v. 2",
+    "cable rear drive": "trascinamento del cavo posteriore",
+    "barbell skier": "sciatore con barra",
+    "dumbbell over bench one arm wrist curl": "Curl per polsi con manubri su panca a un braccio",
+    "dumbbell incline bench press": "Distensione su panca inclinata con manubri",
+    "cable rope seated row": "fila di seduta con fune",
+    "smith behind neck press": "Smith dietro la pressa per il collo",
+    "farmers walk": "i contadini camminano",
+    "cable squat row (with rope attachment)": "rematore per squat al cavo (con attacco per corda)",
+    "cable straight back seated row": "fila di sedili con schienale dritto",
+    "lever decline chest press": "pressa per petto con leva inclinata",
+    "lever lateral raise": "sollevamento con leva laterale",
+    "inchworm v. 2": "verme pollici v. 2",
+    "kneeling plank tap shoulder (male)": "il kneeboard colpisce la spalla (maschio)",
+    "handstand push-up": "flessioni con le mani",
+    "sled closer hack squat": "hack squat più vicino alla slitta",
+    "dumbbell rear delt raise": "Sollevamento dei deltoidi posteriori con manubri",
+    "medicine ball chest push single response": "Spinta al petto con palla medica, risposta unica",
+    "rocking frog stretch": "allungamento della rana a dondolo",
+    "dumbbell one arm shoulder press v. 2": "Pressa per spalle con manubri a un braccio v. 2",
+    "dumbbell step-up split squat": "squat diviso con manubri",
+    "standing behind neck press": "pressa in piedi dietro il collo",
+    "biceps narrow pull-ups": "trazioni strette per bicipiti",
+    "hands clasped circular toe touch (male)": "mani intrecciate, punta circolare, tocco (maschio)",
+    "l-pull-up": "pull-up in l",
+    "smith leg press": "pressa per gambe Smith",
+    "dumbbell reverse grip row (female)": "Rematura con presa inversa con manubri (donne)",
+    "dumbbell reverse bench press": "panca inversa con manubri",
+    "dumbbell cross body hammer curl v. 2": "Hammer curl con cross body e manubri v. 2",
+    "dumbbell lying pronation": "pronazione sdraiata con manubri",
+    "cable kneeling triceps extension": "Estensione tricipiti al cavo in ginocchio",
+    "dumbbell decline one arm fly": "Dip con manubri su un braccio",
+    "straddle planche": "tavola a cavalcioni",
+    "cable hammer curl (with rope)": "avvolgimento con martello del cavo (con fune)",
+    "swimmer kicks v. 2 (male)": "calci del nuotatore v. 2 (maschile)",
+    "smith machine bicep curl": "Curl bicipiti della Smith Machine",
+    "dumbbell one leg fly on exercise ball": "Volo con manubri su una gamba su una palla da ginnastica",
+    "cable lying fly": "mosca posacavi",
+    "dumbbell reverse wrist curl": "Curl da polso con manubri inverso",
+    "dumbbell one arm pullover on exercise ball": "Pullover con manubri a un braccio su una palla ginnica",
+    "incline reverse grip push-up": "Flessioni inclinate con presa inversa",
+    "quads": "quadricipiti",
+    "kettlebell figure 8": "figura 8 con kettlebell",
+    "dumbbell high curl": "Curl alto con manubri",
+    "cross body crunch": "addominali incrociati",
+    "cable standing rear delt row (with rope)": "cavo in piedi fila delta posteriore (con corda)",
+    "russian twist": "svolta russa",
+    "ez barbell anti gravity press": "Pressa antigravità con ez Bar",
+    "backward jump": "salto indietro",
+    "kettlebell thruster": "Propulsore con kettlebell",
+    "barbell rack pull": "tirare la rastrelliera con bilanciere",
+    "resistance band seated shoulder press": "Pressa per spalle da seduto con fascia di resistenza",
+    "triceps press": "premere i tricipiti",
+    "dumbbell one arm bench fly": "volo su panca con un braccio e manubri",
+    "arms overhead full sit-up (male)": "addominali completi con le braccia sopra la testa (uomo)",
+    "impossible dips": "cadute impossibili",
+    "dumbbell lying one arm rear lateral raise": "manubrio sdraiato con un braccio in sollevamento laterale posteriore",
+    "dumbbell press on exercise ball": "pressione con manubri su una palla da ginnastica",
+    "lever seated calf press": "pressa per polpacci seduti a leva",
+    "dumbbell alternate side press": "Press laterale alternata con manubri",
+    "low glute bridge on floor": "ponte basso dei glutei sul pavimento",
+    "macro style weighted one hand pull up": "stile macro ponderato con una mano alzata",
+    "inverted style smith seated shoulder press": "Pressa per spalle seduta Smith invertita",
+    "cable low seated row controlled": "cavo della fila bassa seduto controllato",
+    "wall style dumbbell pullover hip extension on exercise ball": "Estensione dell'anca con pullover con manubri stile muro su palla ginnica",
+    "cable kneeling crunch - gentle variation": "Crunch al cavo in ginocchio – Variazione delicata",
+    "band alternating v-up with simple": "banda alternata v-up con semplice",
+    "ez barbell close grip preacher curl - precision variation": "Preacher Curl a presa stretta con barra ez - variazione di precisione",
+    "hanging pike with intense": "luccio sospeso con intenso",
+    "side cable high row (kneeling)": "cavo laterale fila alta (inginocchiato)",
+    "blunt cable standing crunch": "Schiacciamento del cavo smussato",
+    "barbell lying triceps extension double": "Estensione per tricipiti sdraiati a doppia barra",
+    "fierce weighted straight bar dip": "Dip feroce con barra dritta appesantita",
+    "slow leg pull in flat bench": "trazioni lente delle gambe su panca piana",
+    "cable twisting pull with intensified": "tiro del cavo attorcigliato con intensificazione",
+    "suspended abdominal fallout - inclined variation": "caduta addominale sospesa - variazione di inclinazione",
+    "inclined style pelvic tilt into bridge": "Inclinazione pelvica stile ponte",
+    "dumbbell incline one arm press on exercise ball modified": "manubri inclinati, premi un braccio sulla palla ginnica modificata",
+    "cable kneeling rear delt row (with rope) (male) expanded": "Fila del delta posteriore in ginocchio con cavo (con corda) (maschio) Espanso",
+    "rotated dumbbell pronate-grip triceps extension": "Estensione dei tricipiti con presa prona e rotazione dei manubri",
+    "sled 45 degrees one leg press pointed": "pressa a slitta a 45 gradi con una gamba appuntita",
+    "stretched full planche push-up": "arricciatura completa della plancia allungata",
+    "calf push stretch with hands against wall elite": "allungamento dei polpacci con le mani contro il muro elite",
+    "clock push-up extreme": "flessioni estreme dell'orologio",
+    "lever military press with strength": "pressa a leva militare con forza",
+    "half knee bends (male) with blunt": "piegare mezzo ginocchio (maschio) con forza",
+    "dynamic style band side triceps extension": "Estensione laterale dei tricipiti con banda stile dinamico",
+    "exercise ball seated triceps stretch wide": "palla per esercizi elasticizzati per tricipiti con seduta ampia",
+    "band underhand pulldown with classic": "pulldown della fascia in basso con il classico",
+    "chest stretch with exercise ball partial": "allungamento parziale del torace con palla da esercizio",
+    "weighted lunge with swing twisted": "affondo con carico con oscillazione storta",
+    "controlled band straight back stiff leg deadlift": "Stacco da terra con gamba rigida e schiena dritta con fascia controllata",
+    "gentle style dumbbell one leg fly on exercise ball": "manubri stile delicato con una gamba su una palla da ginnastica",
+    "intense kettlebell two arm row": "rematore intenso con kettlebell a due braccia",
+    "contracted kettlebell extended range one arm press on floor": "Press con kettlebell a raggio esteso con un braccio contratto sul pavimento",
+    "triple style sled one leg calf press on leg press": "Pressa per polpacci a gamba singola Pressa per gambe a tripla slitta",
+    "resistance band leg extension declined": "Estensione della gamba con fascia di resistenza respinta",
+    "dumbbell iron cross - improved variation": "croce di ferro con manubri - variazione migliorata",
+    "quick feet v. 2 with bent": "piedi veloci v. 2 con piegato",
+    "barbell wide reverse grip bench press horizontal": "Pressa su panca orizzontale con barra orizzontale con impugnatura larga e inversa",
+    "sissy squat isolation": "isolamento dello squat sissy",
+    "chair leg extended stretch with modified": "gamba della sedia estesa allungata con",
+    "cable concentration curl tempo": "modificato concentrazione del tempo dell'arricciatura del cavo",
+    "intense barbell straight leg deadlift": "Stacco intenso con bilanciere e gamba tesa",
+    "precision style lever bent-over row with v-bar": "Leva stile V-Bar di precisione piegata sulla fila",
+    "high style scapula push-up": "Push-up sulle scapole ad alto stile",
+    "barbell reverse preacher curl inclined": "inclinato bilanciere inverso predicatore curl",
+    "lever reverse grip preacher curl with precision": "Leva per arricciatura del predicatore con impugnatura inversa con precisione",
+    "narrow style band jack knife sit-up": "Crunch a banda stretta stile rasoio",
+    "forward lunge (male) with bench": "affondo in avanti (maschile) con panca",
+    "alternating bear crawl": "scansione dell'orso alternativa",
+    "single style cable standing crunch (with rope attachment)": "Custodia per cavi dallo stile unico (con attacco per corda)",
+    "rough band push sit-up": "Crunch push con banda ruvida",
+    "fast style resistance band seated hip abduction": "Abduzione dell'anca da seduti con fascia di resistenza Quick Style",
+    "pure chin-up": "dominio puro",
+    "light lever standing chest press": "Pressa per pettorali in piedi con leva leggera",
+    "resistance band seated shoulder press with declined": "Pressa e declino delle spalle seduti con fascia di resistenza",
+    "barbell prone incline curl with intensive": "Curl con bilanciere inclinato con intensivo",
+    "barbell standing reverse grip curl resistance": "Resistenza all'arricciatura con presa inversa del bilanciere",
+    "exercise ball hip flexor stretch pointed": "Palla per esercizi elasticizzati per flessori dell'anca appuntita",
+    "rough band hip lift": "sollevamento dell'anca con fascia ruvida",
+    "flexible assisted prone hamstring": "muscoli posteriori della coscia flessibili in posizione prona assistita",
+    "incline push-up (on box) - active variation": "Push-up inclinato (boxed) - variazione attiva",
+    "barbell bent arm pullover - powerful variation": "Pullover con bilanciere e braccio piegato - variazione potente",
+    "core barbell upright row v. 2": "fila verticale con barra centrale v. 2",
+    "dumbbell step up single leg balance with bicep curl - chair variation": "Sollevamento con manubri per l'equilibrio su una gamba singola con curl per bicipiti - Variazione sulla sedia",
+    "band one arm standing low row - lateral variation": "fascia un braccio in piedi fila bassa - variazione laterale",
+    "endurance style one arm dip": "stile di resistenza dip con un braccio",
+    "cable side bend smooth": "Piegatura laterale del cavo morbido",
+    "dumbbell decline shrug - rigid variation": "Scrollata di spalle con manubri – Variazione rigida",
+    "pulse style walk elliptical cross trainer": "Bicicletta da passeggio ellittica stile Pulse",
+    "balance cable incline fly": "cavo di bilanciamento del volo inclinato",
+    "cocoons with mega": "bozzoli con mega",
+    "cable incline bench row - elite variation": "Rematore su panca inclinata con cavo – Variazione Elite",
+    "flexible cable triceps pushdown (v-bar)": "Curl per tricipiti con cavo flessibile (V-Bar)",
+    "advanced dumbbell stiff leg deadlift": "Stacco da terra avanzato con manubri a gamba rigida",
+    "hold style dumbbell alternating seated bicep curl on exercise ball": "mantenere lo stile con manubri alternando i curl per i bicipiti seduti su una palla da ginnastica",
+    "active style cable pushdown": "Spinta cavo stile attivo",
+    "stability style band kneeling one arm pulldown": "stabilità in ginocchio con stile a fascia con pulldown su un braccio",
+    "rounded twisted leg raise (female)": "sollevamento della gamba arrotondata e storta (donna)",
+    "wide-grip chest dip on high parallel bars - low variation": "Dip al petto con presa ampia su parallele alte - variazione bassa",
+    "cable one arm incline press with rigid": "Pressa inclinata a braccio singolo con cavo rigido",
+    "exercise ball alternating arm ups with fast": "palla per esercizi alternando le braccia in alto con",
+    "hanging pike weak": "veloce luccio penzolante debole",
+    "one arm against wall compressed": "un braccio premuto contro il muro",
+    "ez barbell decline close grip face press - mini variation": "Close Grip Face Press e abbassamento della barra EZ - Mini variazione",
+    "weighted one hand pull up fast": "con mano pesante, sollevalo rapidamente",
+    "incline push up depth jump with complex": "Salto di profondità con flessione inclinata e complessa",
+    "pointed cable palm rotational row": "fila rotazionale del palmo del cavo appuntito",
+    "intermediate style dumbbell preacher curl over exercise ball": "Curl da predicatore con manubri stile intermedio su palla ginnica",
+    "iron cross stretch - deep variation": "Stretching della Croce di Ferro – Variazione Profonda",
+    "all fours squad stretch - elevated variation": "Allungamento della squadra a quattro zampe - variazione elevata",
+    "isolation assisted seated pectoralis major stretch with stability ball": "Isolamento con palla di stabilità Stretching maggiore assistito del pettorale seduto",
+    "one leg squat - expanded variation": "Squat su una gamba - variazione estesa",
+    "targeted style smith close-grip bench press": "Distensione su panca mirata Smith con presa stretta",
+    "dumbbell one arm prone hammer curl - macro variation": "Curl con martello inclinato con manubri su un braccio - Variazione macro",
+    "push-up (wall) with static": "flessioni (muro) con",
+    "fierce style forward lunge (male)": "statico Affondo in avanti con stile feroce (maschio)",
+    "chin-up diagonal": "trazioni diagonali",
+    "cable judo flip with static": "Cavo flip da judo con",
+    "dumbbell over bench one arm wrist curl - strength variation": "statico Curl per polsi con manubri su un braccio su panca - variazione di forza",
+    "lying leg-hip raise - contracted variation": "Sollevamento della gamba e del bacino da sdraiati - Variazione contratta",
+    "prone medicine ball close grip push up": "palla medica rivolta verso il basso, presa stretta, spinta verso l'alto",
+    "triceps dip (between benches) - extreme variation": "dip per tricipiti (tra le panche) - variazione estrema",
+    "micro style barbell speed squat": "Micro squat veloce con bilanciere",
+    "rough cable decline fly": "cavo ruvido drop fly",
+    "stability lever narrow grip seated row": "fila di sedili con impugnatura stretta e leva di stabilità",
+    "twisted side-to-side chin": "mento girato da un lato all'altro",
+    "prone dumbbell upright shoulder external rotation": "Rotazione esterna della spalla in posizione eretta con manubri proni",
+    "controlled wrist rollerer": "rullo da polso controllato",
+    "barbell incline bench press seated": "Distensione su panca inclinata con bilanciere da seduti",
+    "barbell sitted alternate leg raise (female) with intermediate": "bilanciere da seduti alternando sollevamento delle gambe (femminile) con",
+    "push-up to side plank - athletic variation": "intermedi push-up con plank laterale - variazione atletica",
+    "dumbbell seated one leg calf raise - hammer grip deep": "Sollevamento del polpaccio su una gamba con manubri seduti – Presa profonda del martello",
+    "gentle style cable pulldown (pro lat bar)": "Pulldown ai cavi stile delicato (Pro Lat Bar)",
+    "inverted style inverse leg curl (on pull-up cable machine)": "Leg curl inverso stile invertito (sulla macchina per trazioni ai cavi)",
+    "barbell high bar squat core": "squat con bilanciere",
+    "sharp style dumbbell sumo pull through": "Si ottiene il sumo con manubri in stile Sharp",
+    "rough cable standing one arm triceps extension": "Cavo ruvido in piedi Estensione per tricipiti con un braccio",
+    "assisted standing chin-up with focused": "trazioni in piedi assistite con concentrazione",
+    "single smith shoulder press": "pressa per spalle Single Smith",
+    "complete style ez bar lying close grip triceps extension behind head": "barra ez stile completo, estensione dei tricipiti con presa stretta dietro la testa",
+    "smith one arm row linear": "riga di Smith di un braccio lineare",
+    "assisted pull-up inclined": "Pull-up assistito dall'inclinazione",
+    "cable seated row with reverse": "fila seduta con cavo con retromarcia",
+    "dumbbell hammer curl with traditional": "Curl con martello e manubri con tecnica tradizionale",
+    "smith machine incline tricep extension - straight variation": "Estensione del tricipite inclinata della Smith Machine – Variazione dritta",
+    "push-up on lower arms - resistance variation": "flessioni sugli avambracci - variazione di resistenza",
+    "sled 45в° leg wide press - blunt variation": "Pressa per gambe a slitta a 45° - variazione forte",
+    "dumbbell lunge with firm": "Affondo fermo con manubri",
+    "improved sphinx": "sfinge migliorata",
+    "band seated twist pure": "fascia seduta con pura torsione",
+    "walk elliptical cross trainer - expanded variation": "Bicicletta da passeggio ellittica - variazione ampliata",
+    "smith bent over row with declined": "Smith si sporse oltre la fila in segno di rifiuto",
+    "dumbbell incline one arm press on exercise ball with extended": "Inclinazione con manubri, pressione con un braccio sulla palla ginnica con estensione",
+    "athletic style battling ropes": "corde da wrestling in stile atletico",
+    "dumbbell reverse grip row (female) hold": "Rematura con presa inversa con manubri (donne)",
+    "lever narrow grip seated row - strength variation": "Fila seduta con leva a presa stretta - variazione di forza",
+    "traditional barbell romanian deadlift": "Stacco da terra tradizionale rumeno con bilanciere",
+    "exercise ball one leg prone lower body rotation fierce": "palla per esercizi, una gamba incline a una forte rotazione della parte inferiore del corpo",
+    "kettlebell arnold press - beginner variation": "Arnold Press con Kettlebell – Variazione per principianti",
+    "fluid dumbbell step-up lunge": "affondo fluido con manubri",
+    "quads complex": "complesso quadruplo",
+    "lever assisted chin-up with twisted": "trazioni assistite da leva con torsione",
+    "push up on bosu ball with improved": "Push up sulla palla bosu con miglioramento",
+    "dynamic style barbell lying back of the head tricep extension": "Sdraiato dietro la testa Estensione dei tricipiti con bilanciere in stile dinamico",
+    "deep smith machine reverse decline close grip bench press": "Distensione su panca con presa stretta e declinazione inversa sulla Deep Smith Machine",
+    "hanging straight leg raise with elevated": "Sollevamento della gamba dritta in sospensione con sollevamento",
+    "upright smith incline bench press": "Distensione su panca inclinata verticale Smith",
+    "extended style inverted row": "riga invertita stile esteso",
+    "dumbbell one arm fly on exercise ball improved": "Manubri a un braccio migliorati sulla palla ginnica",
+    "hanging straight twisting leg hip raise with compound": "sollevare l'anca con la gamba dritta e storta con il composto",
+    "fast band straight leg deadlift": "Stacco da terra con gamba tesa con fascia rapida",
+    "cable lateral pulldown (with rope attachment) core": "nucleo di trazione lato cavo (con fissaggio a fune)",
+    "dumbbell around pullover - intensive variation": "manubrio attorno al maglione - variazione intensiva",
+    "sit-up with arms on chest with mini": "addominali con braccia sul petto con mini",
+    "squared reverse grip machine lat pulldown": "Lat Pulldown con la macchina a presa inversa quadrata",
+    "targeted style single leg calf raise (on a dumbbell)": "Sollevamento polpacci a gamba singola in stile mirato (con manubri)",
+    "chest and front of shoulder stretch micro": "microelastico sul petto e sulle spalle davanti",
+    "kettlebell seated press with high": "Press con kettlebell da seduti in altezza",
+    "barbell squat (on knees) with pure": "squat con bilanciere (inginocchiato) con",
+    "tough cable one arm lateral raise": "puro Sollevatore laterale a cavo per carichi pesanti con un braccio",
+    "kipping muscle up with triple": "sollevare i muscoli con il triplo",
+    "intermediate style kneeling plank tap shoulder (male)": "Plank del ginocchio stile intermedio con protuberanza sulla spalla (uomo)",
+    "intensified style kettlebell extended range one arm press on floor": "Stile Stepped a Range Esteso Kettlebell One-Arm Floor Press",
+    "supine style band alternating v-up": "fascia supina alternata a V in su",
+    "assisted standing triceps extension (with towel) with horizontal": "estensione tricipite assistita in piedi (con asciugamano) con orizzontale",
+    "wall style dumbbell one arm french press on exercise ball": "French Press a un braccio con manubri a muro su palla ginnica",
+    "side-to-side chin with reverse": "mento da lato a lato con rovescio",
+    "macro style close-grip push-up": "Flessioni in stile macro con presa stretta",
+    "gentle prone twist on stability ball": "rotolamento incline delicato sulla palla stabilizzante",
+    "cable rope incline tricep extension - reverse variation": "Estensione tricipiti con inclinazione su corda e cavo – Variazione inversa",
+    "cable squat row (with rope attachment) heavy": "Rematore di squat al cavo pesante (con presa alla corda)",
+    "band vertical pallof press - seated variation": "pressa pallof verticale con variazione fascia - seduta",
+    "barbell reverse wrist curl - prone variation": "Curl inverso del polso con bilanciere - Variazione prona",
+    "firm style hanging oblique knee raise": "Sollevamento obliquo del ginocchio sospeso in stile deciso",
+    "horizontal dumbbell standing alternate overhead press": "Pressa per spalle alternata in piedi con manubri orizzontali",
     "Press de Banca": "Bench Press",
     "Aperturas con Mancuernas": "Dumbbell Flyes",
     "Flexiones": "Push-ups",
@@ -3138,7 +3346,7 @@
     "Elevación de Piernas": "Leg Raises",
     "Rueda Abdominal": "Ab Wheel Rollout",
     "Russian Twists": "Russian Twists",
-    "isololation assisted seated pectoralis major stretch with stability ball": "Estiramiento del pectoral mayor sentado asistido por aislamiento con balón de estabilidad",
+    "isololation assisted seated pectoralis major stretch with stability ball": "Isolamento con palla di stabilità Stretching maggiore assistito del pettorale seduto",
     "Aperturas com Mancuernas": "Dumbbell Flyes",
     "Remo com Barra": "Barbell Row"
   },
@@ -3265,7 +3473,7 @@
       "titlePlaceholder": "es. Settimana di ferro",
       "description": "Descrizione",
       "descPlaceholder": "Descrizione della sfida...",
-      "type": "Tipo",
+      "type": "Digitare",
       "steps": "Passi",
       "calories": "Calorie",
       "physical": "Fisico",
@@ -3329,7 +3537,7 @@
     "headers": {
       "socialSubtitle": "Connettiti con la tua community",
       "compSubtitle": "Gareggia e sali nel ranking",
-      "socialTab": "Social",
+      "socialTab": "Sociale",
       "compTab": "Competitivo"
     },
     "posts": "Pubblicazioni",
@@ -3346,7 +3554,7 @@
     "challenges.createNewChallenge": "Crea nuova sfida",
     "challenges.challengeTitle": "Titolo della sfida",
     "challenges.description": "Descrizione",
-    "challenges.type": "Tipo",
+    "challenges.type": "Digitare",
     "challenges.days": "Giorni",
     "challenges.customGoal": "Obiettivo personalizzato",
     "challenges.customGoalPlaceholder": "Es. Fare 100 flessioni in totale, completare 5 km...",
@@ -3388,168 +3596,168 @@
     "title": "I tuoi successi",
     "badges": {
       "super_admin": {
-        "label": "Super Admin",
-        "description": "Acceso total al sistema y herramientas de administración."
+        "label": "Super amministratore",
+        "description": "Accesso completo al sistema e agli strumenti di amministrazione."
       },
       "admin": {
-        "label": "Administrador",
-        "description": "Control de moderación de contenido y soporte."
+        "label": "Amministratore",
+        "description": "Controllo e supporto della moderazione dei contenuti."
       },
       "pro": {
-        "label": "Miembro Pro",
-        "description": "Suscripción activa en FitGO Premium."
+        "label": "Membro Pro",
+        "description": "Abbonamento attivo a FitGO Premium."
       },
       "beast_mode": {
-        "label": "Beast Mode",
-        "description": "Otorgado por completar entrenamientos intensos y consistencia."
+        "label": "Modalità Bestia",
+        "description": "Premiato per aver completato allenamenti intensi e costanza."
       },
       "verified": {
-        "label": "Verificado",
-        "description": "Usuario con cuenta verificada en FitGO."
+        "label": "Verificato",
+        "description": "Utente con un account FitGO verificato."
       },
       "early_adopter": {
-        "label": "Pionero",
-        "description": "Parte de los primeros usuarios de la plataforma."
+        "label": "Pioniere",
+        "description": "Parte dei primi utenti della piattaforma."
       },
       "fitness_enthusiast": {
-        "label": "Entusiasta Fitness",
-        "description": "Registra entrenamientos regulares y dedicación."
+        "label": "Appassionato di fitness",
+        "description": "Registra formazione e dedizione regolari."
       },
       "water_champion": {
-        "label": "Aquamán",
-        "description": "Desbloqueado por lograr una hidratación perfecta (>2L)."
+        "label": "Acquaman",
+        "description": "Si sblocca raggiungendo un'idratazione perfetta (>2L)."
       },
       "sleep_legend": {
-        "label": "Leyenda del Sueño",
-        "description": "Desbloqueado por dormir más de 8 horas de forma óptima."
+        "label": "La leggenda dei sogni",
+        "description": "Sbloccato dormendo più di 8 ore in modo ottimale."
       },
       "protein_boss": {
-        "label": "Jefe de la Proteína",
-        "description": "Desbloqueado por alcanzar tu meta proteica diaria."
+        "label": "Il capo delle proteine ​​",
+        "description": "Sbloccato per raggiungere il tuo obiettivo proteico giornaliero."
       },
       "streak_master": {
-        "label": "Mes de Hierro",
-        "description": "Desbloqueado por mantener una racha de 30 días."
+        "label": "Mese del ferro",
+        "description": "Sbloccato mantenendo una serie di 30 giorni."
       },
       "step_hero": {
-        "label": "Héroe del Paso",
-        "description": "Desbloqueado por superar los 15,000 pasos en un día."
+        "label": "Eroe del passo",
+        "description": "Sbloccato per aver superato i 15.000 passi in un giorno."
       },
       "weight_master": {
-        "label": "Señor de la Meta",
-        "description": "Desbloqueado por estar a menos de 1kg de tu peso objetivo."
+        "label": "Signore della meta",
+        "description": "Sbloccato se ti trovi entro 1 kg dal tuo peso obiettivo."
       },
       "social_star": {
-        "label": "Estrella Social",
-        "description": "Desbloqueado por publicar activamente en la comunidad."
+        "label": "Stella sociale",
+        "description": "Sbloccato pubblicando attivamente nella community."
       },
       "macro_expert": {
-        "label": "Experto en Macros",
-        "description": "Desbloqueado por tener un día de macros perfectos."
+        "label": "Esperto di macro",
+        "description": "Sbloccato avendo una giornata di macro perfette."
       },
       "workout_warrior": {
-        "label": "Guerrero de Acero",
-        "description": "Desbloqueado por realizar un entrenamiento de más de 60 minutos."
+        "label": "Guerriero d'Acciaio",
+        "description": "Sbloccato per aver completato un allenamento di durata superiore a 60 minuti."
       },
       "body_sculptor": {
-        "label": "Escultor Corporal",
-        "description": "Desbloqueado por registrar tus medidas corporales."
+        "label": "Scultore del corpo",
+        "description": "Sbloccato registrando le misurazioni del tuo corpo."
       },
       "photo_pioneer": {
-        "label": "Modelo de Cambio",
-        "description": "Desbloqueado por subir tu primera foto de progreso."
+        "label": "Cambia modello",
+        "description": "Sbloccato caricando la tua prima foto di progresso."
       },
       "century_club": {
-        "label": "Club 100",
-        "description": "Otorgado por alcanzar una racha de 100 días."
+        "label": "100Club",
+        "description": "Assegnato per aver raggiunto una serie di 100 giorni."
       },
       "year_of_fitness": {
-        "label": "Año de Hierro",
-        "description": "Otorgado por una racha perfecta de 365 días."
+        "label": "Anno del Ferro",
+        "description": "Assegnato per una serie perfetta di 365 giorni."
       },
       "half_marathoner": {
-        "label": "Medio Maratón",
-        "description": "Desbloqueado por registrar más de 25,000 pasos en un día."
+        "label": "Mezza Maratona",
+        "description": "Sbloccato per aver registrato più di 25.000 passi in un giorno."
       },
       "weight_transformer": {
-        "label": "Transformador",
-        "description": "Desbloqueado por un cambio de peso significativo (10kg)."
+        "label": "Trasformatore",
+        "description": "Sbloccato da un cambiamento di peso significativo (10 kg)."
       },
       "hydration_god": {
-        "label": "Dios del Océano",
-        "description": "Desbloqueado por registrar 3 litros de agua en un día."
+        "label": "Dio dell'Oceano",
+        "description": "Sbloccato per raccogliere 3 litri di acqua in un giorno."
       },
       "friend_magnet": {
-        "label": "Imán de Amigos",
-        "description": "Desbloqueado por tener 5 o más amigos en FitGO."
+        "label": "Magnete degli amici",
+        "description": "Sbloccato avendo 5 o più amici su FitGO."
       },
       "community_pillar": {
-        "label": "Pilar Comunitario",
-        "description": "Desbloqueado por hacer 10 publicaciones en la comunidad."
+        "label": "Pilastro comunitario",
+        "description": "Sbloccato per aver pubblicato 10 post nella community."
       },
       "workout_machine": {
-        "label": "Máquina",
-        "description": "Desbloqueado por entrenar más de 2 horas en un solo día."
+        "label": "Macchina",
+        "description": "Sbloccato per allenarsi per più di 2 ore in un solo giorno."
       },
       "sleep_god": {
-        "label": "Dios del Sueño",
-        "description": "Desbloqueado por dormir más de 9 horas."
+        "label": "Dio del sogno",
+        "description": "Sbloccato dormendo per più di 9 ore."
       },
       "early_bird": {
-        "label": "Madrugador",
-        "description": "Desayunaste antes de las 9 AM."
+        "label": "Mattiniero",
+        "description": "Hai fatto colazione prima delle 9:00."
       },
       "diet_expert": {
-        "label": "Experto en Dietas",
-        "description": "30 días seguidos registrando comidas."
+        "label": "Esperto di dieta",
+        "description": "30 giorni consecutivi di registrazione dei pasti."
       },
       "night_owl": {
-        "label": "Ave Nocturna",
-        "description": "Registraste actividad entre las 2 y 4 AM."
+        "label": "Uccello notturno",
+        "description": "Hai registrato l'attività tra le 2 e le 4 del mattino."
       },
       "zen_master": {
         "label": "Maestro Zen",
-        "description": "10 horas de Yoga registradas."
+        "description": "10 ore di Yoga registrate."
       },
       "iron_lungs": {
-        "label": "Pulmones de Acero",
-        "description": "Registraste una sesión de natación intensa."
+        "label": "Polmoni d'acciaio",
+        "description": "Hai registrato un'intensa sessione di nuoto."
       },
       "mountain_king": {
-        "label": "Rey de la Montaña",
-        "description": "50,000 pasos en una semana."
+        "label": "Re della Montagna",
+        "description": "50.000 passi in una settimana."
       },
       "spartan": {
-        "label": "Espartano",
-        "description": "300 días de racha perfecta."
+        "label": "Spartano",
+        "description": "300 giorni di serie perfetta."
       },
       "data_scientist": {
-        "label": "Científico de Datos",
-        "description": "Exportaste tus datos a Excel."
+        "label": "Scienziato dei dati",
+        "description": "Hai esportato i tuoi dati in Excel."
       },
       "ghost": {
         "label": "Fantasma",
-        "description": "5 días activo sin publicar nada social."
+        "description": "5 giorni attivi senza postare nulla sui social."
       },
       "carnivore": {
-        "label": "Depredador",
-        "description": "Más de 250g de proteína en un día."
+        "label": "Predatore",
+        "description": "Più di 250 g di proteine ​​in un giorno."
       },
       "zen_streaker": {
-        "label": "Yoga Semanal",
-        "description": "3 sesiones de yoga en una semana."
+        "label": "Yoga settimanale",
+        "description": "3 sessioni di yoga in una settimana."
       },
       "speed_demon": {
-        "label": "Velocidad Flash",
-        "description": "Registro express de comida."
+        "label": "Velocità del flash",
+        "description": "Registrazione rapida degli alimenti."
       },
       "love_reactor": {
-        "label": "Repartidor de Amor",
-        "description": "Diste tu primer like."
+        "label": "Distributore d'amore",
+        "description": "Hai dato il tuo primo mi piace."
       },
       "legend_commenter": {
-        "label": "Rompe Hielos",
-        "description": "Dejaste tu primer comentario."
+        "label": "Rompighiaccio",
+        "description": "Hai lasciato il tuo primo commento."
       },
       "owner": {
         "label": "Proprietario Assoluto",
@@ -3582,484 +3790,484 @@
     "badgesTitle": "Badge",
     "items": {
       "welcome": {
-        "title": "¡Bienvenido!",
-        "description": "Te has unido a la comunidad FitGO."
+        "title": "Benvenuto!",
+        "description": "Ti sei unito alla comunità FitGO."
       },
       "premium_club": {
-        "title": "Miembro Pro",
-        "description": "Eres parte del club exclusivo de FitGO."
+        "title": "Membro Pro",
+        "description": "Fai parte dell'esclusivo club FitGO."
       },
       "dark_mode_lover": {
-        "title": "Amante de las Sombras",
-        "description": "Activaste el Modo Oscuro."
+        "title": "Amante dell'ombra",
+        "description": "Hai attivato la modalità oscura."
       },
       "profile_complete": {
-        "title": "Perfeccionista",
-        "description": "Completaste todos los campos de tu perfil."
+        "title": "Perfezionista",
+        "description": "Hai completato tutti i campi del tuo profilo."
       },
       "streak_3": {
-        "title": "Imparable",
-        "description": "Has mantenido una racha de 3 días."
+        "title": "Inarrestabile",
+        "description": "Hai mantenuto una serie di 3 giorni."
       },
       "streak_7": {
-        "title": "Semana Perfecta",
-        "description": "Has mantenido una racha de 7 días."
+        "title": "Settimana perfetta",
+        "description": "Hai mantenuto una serie di 7 giorni."
       },
       "streak_30": {
-        "title": "Mes de Hierro",
-        "description": "Has mantenido una racha de 30 días."
+        "title": "Mese del ferro",
+        "description": "Hai mantenuto una serie di 30 giorni."
       },
       "streak_100": {
-        "title": "Centurión",
-        "description": "Has mantenido una racha de 100 días."
+        "title": "Centurione",
+        "description": "Hai mantenuto una serie di 100 giorni."
       },
       "streak_365": {
-        "title": "Año de Hierro",
-        "description": "Has mantenido una racha de 365 días."
+        "title": "Anno del Ferro",
+        "description": "Hai mantenuto una serie di 365 giorni."
       },
       "streak_500": {
-        "title": "Titán de la Disciplina",
-        "description": "Has mantenido una racha de 500 días."
+        "title": "Titano della Disciplina",
+        "description": "Hai mantenuto una serie di 500 giorni."
       },
       "streak_1000": {
-        "title": "Dios del Olimpo",
-        "description": "Has mantenido una racha de 1000 días."
+        "title": "Dio dell'Olimpo",
+        "description": "Hai mantenuto una serie di 1000 giorni."
       },
       "first_log": {
-        "title": "Primer Paso",
-        "description": "Registraste tu primera comida hoy."
+        "title": "Primo passo",
+        "description": "Hai registrato il tuo primo pasto oggi."
       },
       "early_bird": {
-        "title": "Madrugador",
-        "description": "Registraste tu desayuno antes de las 9 AM."
+        "title": "Mattiniero",
+        "description": "Hai registrato la tua colazione prima delle 9:00."
       },
       "protein_goal": {
-        "title": "Proteína Pura",
-        "description": "Alcanzaste tu meta de proteína hoy."
+        "title": "Proteine ​​pure",
+        "description": "Hai raggiunto il tuo obiettivo proteico oggi."
       },
       "healthy_eater": {
-        "title": "Comedor Saludable",
-        "description": "Cumpliste tu meta calórica con un margen del 10%."
+        "title": "Mangiatore sano",
+        "description": "Hai raggiunto il tuo obiettivo calorico entro il 10%."
       },
       "perfect_macros": {
-        "title": "Macros Perfectas",
-        "description": "Cumpliste tus metas calóricas y macros con margen del 10%."
+        "title": "Macro perfette",
+        "description": "Hai raggiunto i tuoi obiettivi calorici e macro con un margine del 10%."
       },
       "water_habit": {
-        "title": "Hidratado",
-        "description": "Has registrado agua hoy."
+        "title": "Idratato",
+        "description": "Hai registrato l'acqua oggi."
       },
       "water_champion": {
-        "title": "Super Hidratado",
-        "description": "Registraste más de 2000 ml de agua en un día."
+        "title": "Super idratato",
+        "description": "Hai bevuto più di 2000 ml di acqua in un giorno."
       },
       "water_god": {
-        "title": "Dios del Océano",
-        "description": "Registraste 3000 ml (3L) de agua en un día."
+        "title": "Dio dell'Oceano",
+        "description": "Hai registrato 3000 ml (3 litri) di acqua in un giorno."
       },
       "water_ocean": {
-        "title": "Océano Interno",
-        "description": "Registraste más de 4000ml (4L) de agua en un día."
+        "title": "Oceano Interno",
+        "description": "Hai accumulato più di 4000 ml (4 litri) di acqua in un giorno."
       },
       "diet_expert": {
-        "title": "Experto en Dietas",
-        "description": "Has registrado comidas durante 30 días seguidos."
+        "title": "Esperto di dieta",
+        "description": "Hai registrato i pasti per 30 giorni consecutivi."
       },
       "hydration_streak_7": {
-        "title": "Río Constante",
-        "description": "Alcanzaste tu meta de agua 7 días seguidos."
+        "title": "Fiume costante",
+        "description": "Hai raggiunto il tuo obiettivo idrico per 7 giorni consecutivi."
       },
       "nutrition_scholar": {
-        "title": "Erudito Nutricional",
-        "description": "Descubriste y registraste alimentos exóticos o nuevos."
+        "title": "Studioso di nutrizione",
+        "description": "Hai scoperto e registrato cibi esotici o nuovi."
       },
       "carnival_eater": {
-        "title": "Día de Trampa",
-        "description": "Consumiste más de 3500 calorías en un día."
+        "title": "Il giorno dei trucchi",
+        "description": "Hai consumato più di 3.500 calorie in un giorno."
       },
       "vegan_day": {
-        "title": "Todo Verde",
-        "description": "Registraste puras comidas plant-based en un día."
+        "title": "Tutto verde",
+        "description": "Hai registrato pasti puri a base vegetale in un giorno."
       },
       "protein_pancake": {
-        "title": "Chef Fitness",
-        "description": "Registraste Pancakes de Proteína para desayunar."
+        "title": "Cuoco del fitness",
+        "description": "Hai registrato i Pancake Proteici per colazione."
       },
       "late_snack": {
-        "title": "Antojo de Medianoche",
-        "description": "Registraste un snack después de las 11 PM."
+        "title": "Voglia di mezzanotte",
+        "description": "Hai registrato uno spuntino dopo le 23:00."
       },
       "perfect_week_macros": {
-        "title": "Precisión Quirúrgica",
-        "description": "Lograste Macros perfectos durante 7 días seguidos."
+        "title": "Precisione chirurgica",
+        "description": "Hai ottenuto Macro perfetti per 7 giorni consecutivi."
       },
       "carnivore": {
-        "title": "Depredador Alfa",
-        "description": "Consumiste más de 250g de proteína en un día."
+        "title": "Predatore alfa",
+        "description": "Hai consumato più di 250 g di proteine ​​in un giorno."
       },
       "sweet_tooth": {
-        "title": "Antojo Dulce",
-        "description": "Registraste un postre pero aún cumpliste tus macros."
+        "title": "Dolce voglia",
+        "description": "Hai registrato un dessert ma hai comunque soddisfatto i tuoi macro."
       },
       "coffee_addict": {
-        "title": "Sangre de Cafeína",
-        "description": "Registraste más de 3 cafés en un solo día."
+        "title": "Caffeina Sangue",
+        "description": "Hai registrato più di 3 caffè in un solo giorno."
       },
       "fasting_monk": {
-        "title": "Monje del Ayuno",
-        "description": "Pasaste 16 horas sin registrar comidas."
+        "title": "Monaco digiuno",
+        "description": "Sei rimasta 16 ore senza registrare i pasti."
       },
       "chef_kiss": {
-        "title": "Beso del Chef",
-        "description": "Creaste tu primera receta personalizada en la app."
+        "title": "Il bacio dello chef",
+        "description": "Hai creato la tua prima ricetta personalizzata nell'app."
       },
       "goal_reached": {
-        "title": "En la Meta",
-        "description": "Estás a menos de 1kg de tu peso objetivo."
+        "title": "Alla meta",
+        "description": "Sei a meno di 1 kg dal tuo peso obiettivo."
       },
       "weight_loss_1": {
-        "title": "Primeros Resultados",
-        "description": "Has perdido tus primeros 2kg."
+        "title": "Primi risultati",
+        "description": "Hai perso i tuoi primi 2 kg."
       },
       "muscle_gain_1": {
-        "title": "Creciendo",
-        "description": "Has ganado tus primeros 2kg de músculo."
+        "title": "In crescita",
+        "description": "Hai guadagnato i tuoi primi 2 kg di muscoli."
       },
       "weight_loss_10": {
-        "title": "Transformación Total",
-        "description": "Has perdido 10kg desde que iniciaste."
+        "title": "Trasformazione totale",
+        "description": "Hai perso 10 kg da quando hai iniziato."
       },
       "muscle_gain_10": {
-        "title": "Titán",
-        "description": "Has ganado 10kg de masa desde que iniciaste."
+        "title": "Titano",
+        "description": "Hai guadagnato 10 kg di massa da quando hai iniziato."
       },
       "body_sculptor": {
-        "title": "Escultor Corporal",
-        "description": "Registraste tus medidas corporales."
+        "title": "Scultore del corpo",
+        "description": "Hai registrato le misurazioni del tuo corpo."
       },
       "photo_pioneer": {
-        "title": "Modelo de Cambio",
-        "description": "Subiste tu primera foto de progreso."
+        "title": "Cambia modello",
+        "description": "Hai caricato la tua prima foto dei progressi."
       },
       "step_master": {
-        "title": "Caminante",
-        "description": "Has superado los 10,000 pasos en un día."
+        "title": "Camminatore",
+        "description": "Hai superato i 10.000 passi in un giorno."
       },
       "step_marathon": {
-        "title": "Maratonista Urbano",
-        "description": "Superaste los 15,000 pasos en un solo día."
+        "title": "Maratona urbana",
+        "description": "Hai superato i 15.000 passi in un solo giorno."
       },
       "step_half_marathon": {
-        "title": "Medio Maratón",
-        "description": "Superaste los 25,000 pasos en un día."
+        "title": "Mezza Maratona",
+        "description": "Hai superato i 25.000 passi in un giorno."
       },
       "workout_warrior": {
-        "title": "Guerrero de Acero",
-        "description": "Entrenaste más de 60 minutos."
+        "title": "Guerriero d'Acciaio",
+        "description": "Ti sei allenato per più di 60 minuti."
       },
       "workout_machine": {
-        "title": "Máquina Imparable",
-        "description": "Entrenaste más de 120 minutos."
+        "title": "Macchina inarrestabile",
+        "description": "Ti sei allenato per più di 120 minuti."
       },
       "sleep_master": {
-        "title": "Gran Descanso",
-        "description": "Dormiste más de 7 horas."
+        "title": "Ottimo riposo",
+        "description": "Hai dormito più di 7 ore."
       },
       "sleep_champion": {
-        "title": "Bello Durmiente",
-        "description": "Dormiste más de 8 horas."
+        "title": "La Bella Addormentata",
+        "description": "Hai dormito più di 8 ore."
       },
       "sleep_god": {
-        "title": "Hibernación",
-        "description": "Dormiste más de 9 horas en una noche."
+        "title": "Ibernazione",
+        "description": "Hai dormito più di 9 ore in una notte."
       },
       "social_star": {
-        "title": "Estrella Social",
-        "description": "Has publicado contenido en la comunidad."
+        "title": "Stella sociale",
+        "description": "Hai pubblicato contenuti nella community."
       },
       "social_influence": {
-        "title": "Líder de Opinión",
-        "description": "Tienes más de 2 publicaciones."
+        "title": "Leader d'opinione",
+        "description": "Hai più di 2 pubblicazioni."
       },
       "friend_magnet": {
-        "title": "Imán de Amigos",
-        "description": "Tienes 5 o más amigos en FitGO."
+        "title": "Magnete degli amici",
+        "description": "Hai 5 o più amici su FitGO."
       },
       "community_pillar": {
-        "title": "Pilar Comunitario",
-        "description": "Has realizado 10 publicaciones."
+        "title": "Pilastro comunitario",
+        "description": "Hai realizzato 10 pubblicazioni."
       },
       "beta_tester": {
-        "title": "Pionero",
-        "description": "Participaste en la fase beta de FitGO."
+        "title": "Pioniere",
+        "description": "Hai partecipato alla fase beta di FitGO."
       },
       "developer_god": {
-        "title": "Arquitecto del Sistema",
-        "description": "Eres uno de los creadores de FitGO."
+        "title": "Architetto di sistema",
+        "description": "Sei uno dei creatori di FitGO."
       },
       "bug_hunter": {
-        "title": "Cazador de Bugs",
-        "description": "Encontraste y reportaste un error crítico."
+        "title": "Cacciatore di insetti",
+        "description": "Hai trovato e segnalato un bug critico."
       },
       "night_owl": {
-        "title": "Ave Nocturna",
-        "description": "Registraste una comida o entrenamiento entre las 2 AM y las 4 AM."
+        "title": "Uccello notturno",
+        "description": "Hai registrato un pasto o un allenamento tra le 2:00 e le 4:00."
       },
       "easter_egg_hunter": {
-        "title": "Cazador de Secretos",
-        "description": "Encontraste un menú oculto en la aplicación."
+        "title": "Cacciatore segreto",
+        "description": "Hai trovato un menu nascosto nell'app."
       },
       "ghost_mode": {
-        "title": "Modo Fantasma",
-        "description": "Usaste la app 5 días seguidos sin publicar nada en la sección social."
+        "title": "Modalità fantasma",
+        "description": "Hai utilizzato l'app per 5 giorni consecutivi senza pubblicare nulla nella sezione social."
       },
       "matrix_glitch": {
-        "title": "Fallo en la Matrix",
-        "description": "Quemaste exactamente 999 calorías en un entrenamiento."
+        "title": "Glitch in Matrix",
+        "description": "Hai bruciato esattamente 999 calorie in un allenamento."
       },
       "time_traveler": {
-        "title": "Viajero en el Tiempo",
-        "description": "Añadiste un registro con fecha de ayer."
+        "title": "Viaggiatore nel tempo",
+        "description": "Hai aggiunto un record datato ieri."
       },
       "heavy_lifter": {
-        "title": "Fuerza Bruta",
-        "description": "Levantaste más de 200kg en peso muerto."
+        "title": "Forza bruta",
+        "description": "Hai eseguito lo stacco con più di 200 kg."
       },
       "flash_speed": {
-        "title": "Velocidad de la Luz",
-        "description": "Corriste 5km en menos de 20 minutos."
+        "title": "Velocità della luce",
+        "description": "Hai corso 5 km in meno di 20 minuti."
       },
       "zen_mode": {
         "title": "Maestro Zen",
-        "description": "Registraste 10 horas de Yoga en total."
+        "description": "Hai registrato 10 ore di Yoga in totale."
       },
       "iron_lungs": {
-        "title": "Pulmones de Acero",
-        "description": "Registraste una sesión de natación intensa."
+        "title": "Polmoni d'acciaio",
+        "description": "Hai registrato un'intensa sessione di nuoto."
       },
       "mountain_climber": {
         "title": "Alpinista",
-        "description": "Superaste los 50,000 pasos en una semana."
+        "description": "Hai superato i 50.000 passi in una settimana."
       },
       "viral_post": {
-        "title": "Fenómeno Viral",
-        "description": "Tu publicación alcanzó 50 likes."
+        "title": "Fenomeno virale",
+        "description": "Il tuo post ha raggiunto i 50 Mi piace."
       },
       "first_comment": {
-        "title": "Rompiendo el Hielo",
-        "description": "Dejaste tu primer comentario en el post de otra persona."
+        "title": "Rompere il ghiaccio",
+        "description": "Hai lasciato il tuo primo commento sul post di qualcun altro."
       },
       "helper": {
-        "title": "Buen Samaritano",
-        "description": "Recibiste una medalla de \"Gracias\" de otro usuario."
+        "title": "Buon Samaritano",
+        "description": "Hai ricevuto una medaglia di ringraziamento da un altro utente."
       },
       "profile_stalker": {
         "title": "Curioso",
-        "description": "Visitaste 10 perfiles distintos en un día."
+        "description": "Hai visitato 10 profili diversi in un giorno."
       },
       "fitgo_veteran": {
-        "title": "Leyenda Viva",
-        "description": "Has usado la aplicación durante más de 2 años continuos."
+        "title": "Leggenda vivente",
+        "description": "Hai utilizzato l'app per più di 2 anni consecutivi."
       },
       "data_nerd": {
-        "title": "Científico de Datos",
-        "description": "Exportaste tu historial de progresos a Excel."
+        "title": "Scienziato dei dati",
+        "description": "Hai esportato la cronologia dei progressi in Excel."
       },
       "fast_logger": {
-        "title": "Velocidad Flash",
-        "description": "Registraste una comida en tiempo récord."
+        "title": "Velocità del flash",
+        "description": "Hai registrato un pasto in tempi record."
       },
       "first_like": {
-        "title": "Repartiendo Amor",
-        "description": "Diste tu primer \"Me Gusta\" a otro usuario."
+        "title": "Diffondere l'amore",
+        "description": "Hai dato il tuo primo \"Mi piace\" a un altro utente."
       },
       "like_bomber": {
-        "title": "Ametralladora de Likes",
-        "description": "Has dado más de 100 \"Me Gusta\"."
+        "title": "Mi piace Mitragliatrice",
+        "description": "Hai dato più di 100 Mi piace."
       },
       "squad_creator": {
-        "title": "Fundador",
-        "description": "Creaste o administras tu propia Liga."
+        "title": "Fondatore",
+        "description": "Crea o gestisci la tua lega."
       },
       "squad_champion": {
-        "title": "Campeón de la Liga",
-        "description": "Quedaste en primer lugar del ranking semanal."
+        "title": "Campione della Lega",
+        "description": "Sei arrivato al primo posto nella classifica settimanale."
       },
       "trend_setter": {
-        "title": "Influencer Fitness",
-        "description": "10 personas guardaron tu publicación."
+        "title": "Influencer del fitness",
+        "description": "10 persone hanno salvato il tuo post."
       },
       "chatty": {
-        "title": "Conversador",
-        "description": "Enviaste 50 mensajes en el chat de tu Liga."
+        "title": "Loquace",
+        "description": "Hai inviato 50 messaggi nella chat della tua Lega."
       },
       "early_lifter": {
-        "title": "El Club de las 5 AM",
-        "description": "Entrenaste antes de que salga el sol."
+        "title": "Il Club delle 5 del mattino",
+        "description": "Ti sei allenato prima che sorgesse il sole."
       },
       "leg_day_survivor": {
-        "title": "Sobreviviente",
-        "description": "Completaste una rutina brutal de Día de Pierna."
+        "title": "Sopravvissuto",
+        "description": "Hai completato una brutale routine per il Giorno delle Gambe."
       },
       "cardio_bunny": {
-        "title": "Motor Inagotable",
-        "description": "Hiciste más de 60 minutos de cardio puro."
+        "title": "Motore inesauribile",
+        "description": "Hai fatto più di 60 minuti di puro cardio."
       },
       "rest_day_respect": {
-        "title": "Mente y Cuerpo",
-        "description": "Registraste oficialmente un día de descanso."
+        "title": "Mente e corpo",
+        "description": "Hai ufficialmente registrato un giorno di riposo."
       },
       "yoga_streak": {
-        "title": "Paz Interior",
-        "description": "Hiciste Yoga 3 días en una misma semana."
+        "title": "Pace interiore",
+        "description": "Hai fatto Yoga 3 giorni nella stessa settimana."
       },
       "100k_steps_week": {
-        "title": "Caminante Blanco",
-        "description": "Lograste 100,000 pasos en una sola semana."
+        "title": "Camminatore bianco",
+        "description": "Hai raggiunto 100.000 passi in una sola settimana."
       },
       "waist_shredder": {
-        "title": "Cintura de Avispa",
-        "description": "Redujiste al menos 5cm de cintura."
+        "title": "Vita di vespa",
+        "description": "Ti sei ridotto di almeno 5 cm dalla vita."
       },
       "biceps_pump": {
-        "title": "Las Armas",
-        "description": "Tus brazos crecieron en tus registros."
+        "title": "Le Armi",
+        "description": "Le tue braccia sono cresciute nei tuoi dischi."
       },
       "scale_fearless": {
-        "title": "Sin Miedo",
-        "description": "Registraste tu peso corporal 10 días seguidos."
+        "title": "Senza paura",
+        "description": "Hai registrato il tuo peso corporeo per 10 giorni consecutivi."
       },
       "first_compliment": {
-        "title": "Admiración",
-        "description": "Alguien comentó positivamente en tu foto de progreso."
+        "title": "Ammirazione",
+        "description": "Qualcuno ha commentato positivamente la tua foto dei progressi."
       },
       "bmi_normal": {
-        "title": "En Rango",
-        "description": "Tu IMC entró en el rango saludable."
+        "title": "Nell'intervallo",
+        "description": "Il tuo indice di massa corporea è entrato nell'intervallo sano."
       },
       "body_fat_15": {
-        "title": "Atleta Definido",
-        "description": "Registraste un porcentaje de grasa menor a 15%."
+        "title": "Atleta definito",
+        "description": "Hai registrato una percentuale di grasso inferiore al 15%."
       },
       "spartan_300": {
-        "title": "Espartano 300",
-        "description": "Lograste 300 días de racha perfecta sin fallar un solo registro."
+        "title": "Spartano 300",
+        "description": "Hai raggiunto 300 giorni di serie perfetta senza perdere un solo record."
       },
       "kryptonian": {
         "title": "Kryptoniano",
-        "description": "Levantaste volúmenes de peso de nivel sobrehumano en una sesión."
+        "description": "Hai sollevato volumi di peso sovrumani in una sessione."
       },
       "goggins_mode": {
-        "title": "Modo Goggins",
-        "description": "Corriste un ultramaratón o lograste 50,000 pasos en un solo día."
+        "title": "Modalità Goggins",
+        "description": "Hai corso un'ultramaratona o hai raggiunto 50.000 passi in un solo giorno."
       },
       "body_alchemist": {
-        "title": "Alquimista Corporal",
-        "description": "Bajaste del 10% de grasa corporal y mantuviste tu masa muscular."
+        "title": "Alchimista del Corpo",
+        "description": "Sei sceso sotto il 10% di grasso corporeo e hai mantenuto la massa muscolare."
       },
       "mr_olympia": {
-        "title": "Mr. Olympia",
-        "description": "Registraste 1,000 entrenamientos de fuerza totales en FitGO."
+        "title": "Signor Olimpia",
+        "description": "Hai registrato 1.000 allenamenti di forza totali in FitGO."
       },
       "the_one_percent": {
-        "title": "El 1%",
-        "description": "Alcanzaste el Top 1 del ranking global."
+        "title": "1%",
+        "description": "Hai raggiunto la Top 1 nella classifica globale."
       },
       "iron_monk": {
-        "title": "Monje de Hierro",
-        "description": "Entrenaste 365 días del año, sin tomar ni un solo día inactivo."
+        "title": "Monaco di ferro",
+        "description": "Ti allenavi 365 giorni all'anno, senza prenderti un solo giorno libero."
       },
       "immortal": {
-        "title": "Inmortal",
-        "description": "No fallaste tus macros durante 100 días consecutivos."
+        "title": "Immortale",
+        "description": "Non hai fallito i tuoi macro per 100 giorni consecutivi."
       },
       "perfect_machine": {
-        "title": "Máquina Perfecta",
-        "description": "Lograste 100/100 en sueño, nutrición y actividad en un mismo día."
+        "title": "Macchina perfetta",
+        "description": "Hai raggiunto 100/100 nel sonno, nell'alimentazione e nell'attività nello stesso giorno."
       },
       "triceratops": {
-        "title": "Triceratops",
-        "description": "Dominaste los 3 grandes (Sentadilla, Banca, Peso Muerto) con élite."
+        "title": "Triceratopo",
+        "description": "Hai padroneggiato i Big 3 (Squat, Panca, Stacco) con Elite."
       },
       "supernova": {
         "title": "Supernova",
-        "description": "Alcanzaste un impacto astronómico en la comunidad (100K Likes)."
+        "description": "Hai ottenuto un impatto astronomico sulla community (100.000 Mi piace)."
       },
       "god_of_war": {
-        "title": "Dios de la Guerra",
-        "description": "Ganaste 5 Ligas Diamante de manera consecutiva."
+        "title": "Dio della guerra",
+        "description": "Hai vinto 5 leghe diamante di fila."
       },
       "holy_grail": {
-        "title": "El Santo Grial",
-        "description": "Alcanzaste tu peso, medidas y grasa objetivo con exactitud matemática."
+        "title": "Il Santo Graal",
+        "description": "Hai raggiunto il tuo obiettivo di peso, misurazioni e grasso con precisione matematica."
       },
       "five_meals": {
-        "title": "Cinco Comidas",
-        "description": "Registraste 5 comidas en un solo día."
+        "title": "Cinque pasti",
+        "description": "Hai registrato 5 pasti in un solo giorno."
       },
       "balanced_day": {
-        "title": "Día Equilibrado",
-        "description": "Registraste desayuno, almuerzo, cena y snack en el mismo día."
+        "title": "Giornata equilibrata",
+        "description": "Hai registrato la colazione, il pranzo, la cena e lo spuntino nello stesso giorno."
       },
       "smoothie_lover": {
-        "title": "Rey del Smoothie",
-        "description": "Registraste un batido proteico para desayunar."
+        "title": "Il re dei frullati",
+        "description": "Hai registrato un frullato proteico per colazione."
       },
       "three_workouts_week": {
-        "title": "Semana Activa",
-        "description": "Entrenaste 3 días en una misma semana."
+        "title": "Settimana attiva",
+        "description": "Ti sei allenato 3 giorni nella stessa settimana."
       },
       "bike_rider": {
-        "title": "Ciclista Urbano",
-        "description": "Registraste una sesión de ciclismo."
+        "title": "Ciclista urbano",
+        "description": "Hai registrato una sessione di ciclismo."
       },
       "ten_workouts": {
-        "title": "Veterano del Gym",
-        "description": "Completaste 10 entrenamientos en total."
+        "title": "Veterano della palestra",
+        "description": "Hai completato 10 allenamenti in totale."
       },
       "fifty_workouts": {
-        "title": "Atleta Consagrado",
-        "description": "Completaste 50 entrenamientos en total."
+        "title": "Atleta affermata",
+        "description": "Completati 50 allenamenti in totale."
       },
       "weight_loss_5": {
-        "title": "Medio Camino",
-        "description": "Has perdido 5kg desde que iniciaste."
+        "title": "A metà",
+        "description": "Hai perso 5 kg da quando hai iniziato."
       },
       "muscle_gain_5": {
-        "title": "Ganador Neto",
-        "description": "Ganaste 5kg de masa desde que iniciaste."
+        "title": "Vincitore netto",
+        "description": "Hai guadagnato 5 kg di massa da quando hai iniziato."
       },
       "five_measurements": {
-        "title": "Historial Rico",
-        "description": "Registraste 5 o más medidas corporales históricas."
+        "title": "Ricca storia",
+        "description": "Hai registrato 5 o più misurazioni corporee storiche."
       },
       "language_switcher": {
-        "title": "Políglota",
-        "description": "Cambiaste el idioma de la app."
+        "title": "Poliglotta",
+        "description": "Hai cambiato la lingua dell'app."
       },
       "night_mode": {
-        "title": "Modo Oscuro",
-        "description": "Activaste el modo oscuro."
+        "title": "Modalità oscura",
+        "description": "Hai attivato la modalità oscura."
       },
       "first_week_user": {
-        "title": "Primera Semana",
-        "description": "Usaste la app durante 7 días seguidos."
+        "title": "Prima settimana",
+        "description": "Hai utilizzato l'app per 7 giorni consecutivi."
       },
       "sleep_week": {
-        "title": "Semana de Ensueño",
-        "description": "Dormiste más de 7 horas durante 7 días seguidos."
+        "title": "Settimana dei sogni",
+        "description": "Hai dormito più di 7 ore per 7 giorni consecutivi."
       },
       "power_nap": {
-        "title": "Siesta Estratégica",
-        "description": "Registraste menos de 6h de sueño pero aún entrenaste."
+        "title": "Pisolino strategico",
+        "description": "Hai registrato meno di 6 ore di sonno ma ti sei comunque allenato."
       },
       "first_friend": {
-        "title": "Primer Amigo",
-        "description": "Agregaste a tu primer amigo en FitGO."
+        "title": "Primo amico",
+        "description": "Hai aggiunto il tuo primo amico su FitGO."
       },
       "three_friends": {
-        "title": "Equipo de Élite",
-        "description": "Tienes 3 o más amigos en FitGO."
+        "title": "Squadra d'élite",
+        "description": "Hai 3 o più amici su FitGO."
       },
       "friend_maker": {
         "title": "Connector",
@@ -4106,7 +4314,7 @@
         "description": "You performed a weekly analysis 3 times."
       },
       "planner_pro": {
-        "title": "Planner Pro",
+        "title": "Pianificatore Pro",
         "description": "You generated a nutritional plan."
       },
       "ai_enthusiast": {
@@ -4126,7 +4334,7 @@
         "description": "You logged every day of the month."
       },
       "super_admin": {
-        "title": "Super Admin",
+        "title": "Super amministratore",
         "description": "You are a FitGO super administrator."
       },
       "system_builder": {
@@ -4360,11 +4568,11 @@
     "squads.podiumTitle": "Podio delle leghe",
     "squads.podiumSub": "I migliori squad di FitGO Competitive",
     "tab": {
-      "info": "INFO"
+      "info": "INFORMAZIONI"
     },
     "ranks": "Classifiche",
     "ranksList": "Classifiche Individuali",
-    "rankLabel": "Rango {{label}}"
+    "rankLabel": "Intervallo {{label}}"
   },
   "calendar": {
     "myStreaks": "Le Mie Serie",
@@ -4444,7 +4652,7 @@
       "description": "Sbloccato pubblicando attivamente."
     },
     "super_admin": {
-      "label": "Super Admin",
+      "label": "Super amministratore",
       "description": "Accesso completo al sistema."
     },
     "admin": {
@@ -4456,7 +4664,7 @@
       "description": "Abbonamento FitGO Premium attivo."
     },
     "beast_mode": {
-      "label": "Beast Mode",
+      "label": "Modalità Bestia",
       "description": "Assegnato per allenamenti intensi e costanza."
     },
     "fitness_enthusiast": {
@@ -4599,7 +4807,7 @@
     "textDay": "testo/giorno",
     "watchAd": "Guarda un breve video",
     "watchAdDesc": "Guadagna +1 credito IA ⚡ gratuito",
-    "free": "GRATIS",
+    "free": "GRATUITO",
     "goPro": "Diventa Pro · IA Illimitata",
     "price": "Solo 11.800 COP/mese · Annulla quando vuoi",
     "videoLimit": "Limite video raggiunto",

@@ -720,7 +720,7 @@ export default function AddActivityModal() {
         message={t('paywall.premiumRequired', 'Esta función es exclusiva para usuarios Premium. ¡Actualiza tu plan para usar el dictado por voz y la estimación con IA!')}
         confirmText={t('paywall.upgrade', 'Ver Planes')}
         cancelText={t('common.close', 'Cerrar')}
-        onConfirm={() => { setPremiumAlert(false); router.push('/paywall' as any); }}
+        onConfirm={() => { setPremiumAlert(false); router.push('/modals/paywall'); }}
         onCancel={() => setPremiumAlert(false)}
       />
       {/* Header */}

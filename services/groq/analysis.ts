@@ -61,7 +61,7 @@ IMPORTANT: All text MUST be in ${targetLang}.`;
   const data = await fetchGroq({
     model: FAST_MODEL,
     messages: [{ role: 'user', content: prompt }],
-    max_tokens: 2500,
+    max_tokens: 1800,
     temperature: 0.7,
   });
 
@@ -99,7 +99,7 @@ Return ONLY a JSON object with this structure:
       "fiber": 3, 
       "sodium": 300, 
       "iron": 1.2, 
-      "calcium": 150,
+      "calcium": 150, 
       "saturatedFat": 2, 
       "transFat": 0 
     }
@@ -111,7 +111,7 @@ Important: Group multiple units (e.g. "2 eggs") into one entry. DO NOT split mix
     const data = await fetchGroq({
       model: FAST_MODEL,
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 2000,
+      max_tokens: 800,
       temperature: 0.1,
     });
 

@@ -19,6 +19,8 @@ import {
 import { useTheme } from '../hooks/useTheme';
 import { calculateTDEE, calculateMacros } from '../services/foodDatabase';
 import { supabase } from '../services/supabase';
+import { getLocalDateString } from '../utils/date';
+import { PaywallManager } from '../utils/paywallManager';
 import { CustomAlert, AlertType } from '../components/CustomAlert';
 import {
   GoalStep, StatsStep, ActivityStep, LifestyleStep,
@@ -274,6 +276,23 @@ export default function OnboardingScreen() {
       setLengthUnit(isFt ? 'ft' : 'cm');
 
       setProfile(profileData);
+
+      try {
+        await useBodyStore.getState().addMeasurement({
+          id: `bm-${Date.now()}`,
+          date: getLocalDateString(),
+          weight: wKg,
+        });
+      } catch (measErr) {
+        console.warn('[Onboarding] Initial measurement save warning:', measErr);
+      }
+
+      try {
+        await PaywallManager.markAsNewUser();
+      } catch (pwErr) {
+        console.warn('[Onboarding] Error setting paywall flag:', pwErr);
+      }
+
       router.replace('/(tabs)/tracker');
     } catch (err) {
       console.error('[Onboarding] Error:', err);

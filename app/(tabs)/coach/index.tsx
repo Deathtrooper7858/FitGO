@@ -22,7 +22,7 @@ export default function CoachIndex() {
   const { t } = useTranslation();
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <GlobalBackground />
       <SafeAreaView edges={['top']} style={{ backgroundColor: 'transparent' }}>
         <View style={s.toggleWrap}>
@@ -31,8 +31,8 @@ export default function CoachIndex() {
               style={[
                 s.toggleBtn, 
                 activeCoach === 'nutritionist' && { 
-                  backgroundColor: colors.primary + '15',
-                  borderColor: colors.primary + '40',
+                  backgroundColor: colors.primary + '18',
+                  borderColor: colors.primary + '50',
                 }
               ]}
               onPress={() => setActiveCoach('nutritionist')}
@@ -45,7 +45,7 @@ export default function CoachIndex() {
                   ? { color: colors.primary, fontWeight: '800' } 
                   : { color: colors.textSecondary }
               ]}>
-                {t('tabs.nutritionist', 'Nutritionist')}
+                {t('tabs.nutritionist', 'Alimentación')}
               </Text>
             </TouchableOpacity>
             
@@ -53,8 +53,8 @@ export default function CoachIndex() {
               style={[
                 s.toggleBtn, 
                 activeCoach === 'trainer' && { 
-                  backgroundColor: colors.primary + '15',
-                  borderColor: colors.primary + '40',
+                  backgroundColor: colors.primary + '18',
+                  borderColor: colors.primary + '50',
                 }
               ]}
               onPress={() => setActiveCoach('trainer')}
@@ -67,7 +67,7 @@ export default function CoachIndex() {
                   ? { color: colors.primary, fontWeight: '800' } 
                   : { color: colors.textSecondary }
               ]}>
-                {t('tabs.trainer', 'Trainer')}
+                {t('tabs.trainer', 'Entrenamiento')}
               </Text>
             </TouchableOpacity>
 
@@ -75,8 +75,8 @@ export default function CoachIndex() {
               style={[
                 s.toggleBtn, 
                 activeCoach === 'doctor' && { 
-                  backgroundColor: colors.primary + '15',
-                  borderColor: colors.primary + '40',
+                  backgroundColor: colors.primary + '18',
+                  borderColor: colors.primary + '50',
                 }
               ]}
               onPress={() => setActiveCoach('doctor')}
@@ -89,40 +89,40 @@ export default function CoachIndex() {
                   ? { color: colors.primary, fontWeight: '800' } 
                   : { color: colors.textSecondary }
               ]}>
-                {t('tabs.doctor', 'Doctor')}
+                {t('tabs.doctor', 'Bienestar')}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
       </SafeAreaView>
       <View style={{ flex: 1 }}>
-        <CoachScreen coachType={activeCoach} />
+        <CoachScreen key={activeCoach} coachType={activeCoach} />
       </View>
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  toggleWrap: { paddingHorizontal: 16, paddingVertical: 12 },
+  toggleWrap: { paddingHorizontal: 16, paddingTop: 6, paddingBottom: 10 },
   toggleContainer: { 
     flexDirection: 'row', 
     borderRadius: 24, 
-    padding: 4, 
+    padding: 3, 
     borderWidth: 1.5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.08,
     shadowRadius: 10,
     elevation: 2,
   },
   toggleBtn: { 
     flex: 1, 
-    paddingVertical: 10, 
+    paddingVertical: 9, 
     flexDirection: 'row',
     alignItems: 'center', 
     justifyContent: 'center',
     borderRadius: 20, 
-    borderWidth: 1.5,
+    borderWidth: 1.2,
     borderColor: 'transparent',
   },
   toggleText: { fontSize: 13, fontWeight: '700' }

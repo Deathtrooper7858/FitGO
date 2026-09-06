@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
+import { MessageSquarePlus, MessageSquare, Trash2, X, Clock } from 'lucide-react-native';
 import { useTheme } from '../hooks/useTheme';
 import { useCoachStore } from '../store';
 import { Spacing, Radius } from '../constants';
@@ -68,62 +69,89 @@ export default function CoachHistoryModal({ visible, onClose, coachType }: Histo
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={s.overlay}>
         <Pressable style={s.backdrop} onPress={onClose} />
         <View style={[s.content, { backgroundColor: colors.surface }]}>
+          {/* Header */}
           <View style={[s.header, { borderBottomColor: colors.border }]}>
-            <Text style={[s.title, { color: colors.textPrimary }]}>{t('coach.history', 'History')}</Text>
-            <TouchableOpacity onPress={onClose}>
-              <Text style={[s.closeText, { color: colors.primary }]}>{t('common.done')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Clock size={18} color={colors.primary} />
+              <Text style={[s.title, { color: colors.textPrimary }]}>{t('coach.history', 'Historial de chats')}</Text>
+            </View>
+            <TouchableOpacity onPress={onClose} hitSlop={10} style={s.closeBtn}>
+              <X size={20} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
+          {/* New Chat Button */}
           <TouchableOpacity 
-            style={[s.newBtn, { backgroundColor: colors.primary + '15', borderColor: colors.primary }]}
+            style={[s.newBtn, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
             onPress={handleNewChat}
+            activeOpacity={0.8}
           >
-            <Text style={[s.newBtnText, { color: colors.primary }]}>+ {t('coach.newChat', 'New Chat')}</Text>
+            <MessageSquarePlus size={18} color={colors.primary} style={{ marginRight: 8 }} />
+            <Text style={[s.newBtnText, { color: colors.primary }]}>{t('coach.newChat', 'Iniciar nuevo chat')}</Text>
           </TouchableOpacity>
 
+          {/* Sessions List */}
           <FlashList
             data={sessions}
             // @ts-ignore
-            estimatedItemSize={50}
+            estimatedItemSize={60}
             keyExtractor={item => item.id}
             contentContainerStyle={s.list}
-            renderItem={({ item }) => (
-              <View style={[s.itemRow, { borderBottomColor: colors.border }]}>
-                <TouchableOpacity 
-                  style={s.itemMain}
-                  onPress={() => handleSelect(item.id)}
-                >
-                  <Text 
-                    style={[
-                      s.itemTitle, 
-                      { color: colors.textPrimary },
-                      currentId === item.id && { color: colors.primary, fontWeight: '700' }
-                    ]}
-                    numberOfLines={1}
+            renderItem={({ item }) => {
+              const isSelected = currentId === item.id;
+              return (
+                <View style={[s.itemRow, { borderBottomColor: colors.border }, isSelected && { backgroundColor: colors.primary + '10', borderRadius: Radius.md }]}>
+                  <TouchableOpacity 
+                    style={s.itemMain}
+                    onPress={() => handleSelect(item.id)}
+                    activeOpacity={0.7}
                   >
-                    {item.title}
-                  </Text>
-                  <Text style={[s.itemDate, { color: colors.textMuted }]}>
-                    {new Date(item.created_at).toLocaleDateString()}
-                  </Text>
-                </TouchableOpacity>
+                    <View style={s.itemContentWrap}>
+                      <View style={[s.iconBox, { backgroundColor: isSelected ? colors.primary + '25' : colors.background }]}>
+                        <MessageSquare size={16} color={isSelected ? colors.primary : colors.textSecondary} />
+                      </View>
+                      <View style={{ flex: 1, paddingRight: 6 }}>
+                        <Text 
+                          style={[
+                            s.itemTitle, 
+                            { color: colors.textPrimary },
+                            isSelected && { color: colors.primary, fontWeight: '800' }
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {item.title}
+                        </Text>
+                        <Text style={[s.itemDate, { color: colors.textMuted }]}>
+                          {new Date(item.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
 
-                <TouchableOpacity 
-                  onPress={() => handleDelete(item.id)}
-                  style={s.deleteBtn}
-                >
-                  <Text style={s.deleteIcon}>🗑️</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+                  <TouchableOpacity 
+                    onPress={() => handleDelete(item.id)}
+                    style={s.deleteBtn}
+                    hitSlop={8}
+                    activeOpacity={0.7}
+                  >
+                    <Trash2 size={16} color="#EF4444" />
+                  </TouchableOpacity>
+                </View>
+              );
+            }}
             ListEmptyComponent={
               <View style={s.empty}>
-                <Text style={{ color: colors.textMuted }}>{t('coach.noHistory', 'No history yet')}</Text>
+                <Clock size={36} color={colors.textMuted} style={{ marginBottom: 10, opacity: 0.6 }} />
+                <Text style={{ color: colors.textMuted, fontSize: 14, fontWeight: '600' }}>
+                  {t('coach.noHistory', 'Aún no tienes conversaciones')}
+                </Text>
+                <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 4, opacity: 0.8 }}>
+                  Tus preguntas y consejos de los coaches aparecerán aquí.
+                </Text>
               </View>
             }
           />
@@ -133,10 +161,10 @@ export default function CoachHistoryModal({ visible, onClose, coachType }: Histo
       <CustomAlert
         visible={alert.visible}
         type="confirm"
-        title={t('common.confirm')}
-        message={t('coach.confirmDeleteSession', 'Are you sure you want to delete this chat?')}
-        confirmText={t('common.delete')}
-        cancelText={t('common.cancel')}
+        title={t('common.confirm', 'Confirmar')}
+        message={t('coach.confirmDeleteSession', '¿Estás seguro de que quieres eliminar este chat?')}
+        confirmText={t('common.delete', 'Eliminar')}
+        cancelText={t('common.cancel', 'Cancelar')}
         onConfirm={confirmDelete}
         onCancel={() => setAlert({ visible: false, targetId: null })}
       />
@@ -146,25 +174,27 @@ export default function CoachHistoryModal({ visible, onClose, coachType }: Histo
 
 const s = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end' },
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
-  content: { height: '70%', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingBottom: 40 },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.65)' },
+  content: { height: '72%', borderTopLeftRadius: 26, borderTopRightRadius: 26, paddingBottom: 36 },
   header: { 
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', 
-    padding: Spacing.base, borderBottomWidth: 1 
+    padding: Spacing.base, borderBottomWidth: 1.2 
   },
-  title: { fontSize: 18, fontWeight: '700' },
-  closeText: { fontWeight: '600', fontSize: 16 },
+  title: { fontSize: 17, fontWeight: '800' },
+  closeBtn: { padding: 4 },
   newBtn: { 
-    margin: Spacing.base, padding: 14, borderRadius: Radius.md, 
-    borderWidth: 1, borderStyle: 'dashed', alignItems: 'center' 
+    margin: Spacing.base, padding: 13, borderRadius: Radius.lg, 
+    borderWidth: 1.2, alignItems: 'center', justifyContent: 'center',
+    flexDirection: 'row',
   },
-  newBtnText: { fontWeight: '700', fontSize: 15 },
-  list: { paddingHorizontal: Spacing.base },
-  itemRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1 },
+  newBtnText: { fontWeight: '800', fontSize: 14 },
+  list: { paddingHorizontal: Spacing.base, paddingBottom: 20 },
+  itemRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 6, borderBottomWidth: 1 },
   itemMain: { flex: 1 },
-  itemTitle: { fontSize: 16, marginBottom: 4 },
-  itemDate: { fontSize: 12 },
-  deleteBtn: { padding: 8 },
-  deleteIcon: { fontSize: 18 },
-  empty: { padding: 40, alignItems: 'center' }
+  itemContentWrap: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  iconBox: { width: 34, height: 34, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  itemTitle: { fontSize: 14, fontWeight: '600', marginBottom: 2 },
+  itemDate: { fontSize: 11 },
+  deleteBtn: { padding: 8, borderRadius: 8 },
+  empty: { paddingVertical: 60, alignItems: 'center', paddingHorizontal: 20 }
 });

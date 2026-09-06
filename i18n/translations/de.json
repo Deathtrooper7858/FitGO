@@ -281,7 +281,19 @@
     "inviteFriends": "Freunde Einladen",
     "badges": {
       "owner": "Eigentümer"
-    }
+    },
+    "inviteSubtitle": "Welches Gerät nutzt deine Freundin / dein Freund?",
+    "statusAvailable": "Verfügbar",
+    "statusComingSoon": "Sehr bald",
+    "playStoreLink": "Direkter Google Play-Link:",
+    "shareInvite": "Einladung teilen",
+    "openInPlayStore": "Im Google Play Store öffnen",
+    "inviteLinkCopied": "Android-Link in die Zwischenablage kopiert!",
+    "iosComingSoonTitle": "FitGO für iOS kommt sehr bald!",
+    "inActiveDevelopment": "🚀 In der finalen Entwicklungsphase",
+    "iosComingSoonMessage": "Wir geben den letzten Schliff, damit das Erlebnis auf iPhone und iPad absolut überzeugend wird. Schon bald steht der Download im App Store bereit.",
+    "shareAndroidInstead": "Nutzt dein Freund Android? Link ansehen",
+    "inviteAndroidMessage": "Hi! Ich lade dich zu FitGO ein, um deine Fitness- und Ernährungsziele zu erreichen. 💪🔥\n\nHol dir die App im Google Play Store:\n{{url}}"
   },
   "coach": {
     "title": "Fitz-Trainer",
@@ -296,7 +308,32 @@
       "suggest1": "Gib mir eine Idee für ein leichtes Abendessen 🥗",
       "suggest2": "Welche Snacks sind gut zum Abnehmen? 🍎",
       "suggest3": "Wie viel Protein sollte ich täglich essen? 🍗",
-      "suggest4": "Analysiere meine aktuelle Ernährung 📊"
+      "suggest4": "Analysiere meine aktuelle Ernährung 📊",
+      "subtitle": "Dein KI-Ernährungsassistent",
+      "heroGreeting": "Ich bin dein Ernährungsberater. Ich helfe dir, bessere Mahlzeiten zu wählen und deine Ziele zu erreichen.",
+      "heroQuestion": "Was möchtest du heute tun?",
+      "quickActions": {
+        "plan_meal": {
+          "title": "Mahlzeit planen",
+          "subtitle": "Rezepte und Ideen passend zu deinen Zielen.",
+          "prompt": "Kannst du mir eine ausgewogene, proteinreiche Mahlzeit abgestimmt auf meine Tagesziele zusammenstellen?"
+        },
+        "choose_snack": {
+          "title": "Snack auswählen",
+          "subtitle": "Gesunde Optionen, die satt machen.",
+          "prompt": "Welche schnellen, gesunden und sättigenden Snacks empfiehlst du für zwischendurch?"
+        },
+        "calc_protein": {
+          "title": "Proteine berechnen",
+          "subtitle": "Wie viel brauchst du für dein Ziel?",
+          "prompt": "Wie viel Protein sollte ich pro Tag basierend auf Gewicht und Ziel essen und wie auf die Mahlzeiten verteilen? 🥩"
+        },
+        "analyze_diet": {
+          "title": "Meine Ernährung analysieren",
+          "subtitle": "Überprüfe deine Fortschritte und erhalte Tipps.",
+          "prompt": "Analysiere meine heutigen Einträge und gib mir praktische Tipps zur Verbesserung meiner Ernährung 📊"
+        }
+      }
     },
     "trainer": {
       "label": "Personal Trainer",
@@ -304,7 +341,32 @@
       "suggest1": "Gib mir ein 20-minütiges Heimtraining 🏠",
       "suggest2": "Wie verbessere ich meine Kniebeugen-Technik? 🏋️",
       "suggest3": "Trainingsplan für Muskelaufbau 💪",
-      "suggest4": "Welche Dehnübungen nach dem Laufen? 🏃"
+      "suggest4": "Welche Dehnübungen nach dem Laufen? 🏃",
+      "subtitle": "Dein persönlicher KI-Trainer",
+      "heroGreeting": "Ich bin dein Trainingscoach. Ich erstelle deine Trainingspläne, verbessere deine Technik und maximiere deine Ergebnisse.",
+      "heroQuestion": "Was möchtest du heute trainieren?",
+      "quickActions": {
+        "routine": {
+          "title": "Heutigen Plan erstellen",
+          "subtitle": "Passe dein Training an Zeit und Equipment an.",
+          "prompt": "Erstelle einen effektiven Trainingsplan für heute basierend auf meinem Level, meiner Zeit und meinem Ziel 💪"
+        },
+        "warmup": {
+          "title": "Express-Aufwärmen",
+          "subtitle": "In 5-10 Minuten verletzungsfrei aufwärmen.",
+          "prompt": "Gib mir ein 8-minütiges dynamisches Warm-up mit Gelenkmobilität vor dem Training 🔥"
+        },
+        "technique": {
+          "title": "Technik korrigieren",
+          "subtitle": "Haltung, Bewegungsradius & häufige Fehler.",
+          "prompt": "Was sind die wichtigsten Haltungshinweise und häufigsten Fehler bei Kniebeugen, Bankdrücken und Kreuzheben?"
+        },
+        "adapt": {
+          "title": "Bei Beschwerden anpassen",
+          "subtitle": "Sichere Varianten bei Schmerz oder Erschöpfung.",
+          "prompt": "Welche alternativen Übungen kann ich machen, wenn ich Knieschmerzen oder Schulterprobleme habe?"
+        }
+      }
     },
     "doctor": {
       "label": "Wellness-Coach",
@@ -312,7 +374,32 @@
       "suggest1": "Was tun bei Schwindel nach dem Training? 😵‍💫",
       "suggest2": "Gibt es Wechselwirkungen mit meinen Medikamenten? 💊",
       "suggest3": "Wie kann ich meinen Schlaf verbessern? 🛋️",
-      "suggest4": "Was sind Anzeichen einer Dehydration? 💧"
+      "suggest4": "Was sind Anzeichen einer Dehydration? 💧",
+      "subtitle": "Dein KI-Berater für Gesundheit & Erholung",
+      "heroGreeting": "Ich bin dein Wellness-Coach. Ich unterstütze deine Muskelregeneration, deinen Schlaf, deine Gewohnheiten und Gesundheit.",
+      "heroQuestion": "Wie fühlst du dich heute?",
+      "quickActions": {
+        "sleep": {
+          "title": "Schlaf verbessern",
+          "subtitle": "Tipps für tiefen, erholsamen Schlaf.",
+          "prompt": "Wie kann ich meine Schlafhygiene optimieren, um mit mehr Energie aufzuwachen und die Erholung zu fördern? 🛌"
+        },
+        "fatigue": {
+          "title": "Müdigkeit bekämpfen",
+          "subtitle": "Anhaltende Energie und weniger Erschöpfung.",
+          "prompt": "Warum fühle ich mich tagsüber schlapp und welche einfachen Anpassungen helfen dagegen? ⚡"
+        },
+        "supplements": {
+          "title": "Empfohlene Nahrungsergänzung",
+          "subtitle": "Wissenschaftliche Belege und Einnahme.",
+          "prompt": "Welche Supplements haben die stärkste wissenschaftliche Evidenz für mein Ziel und wie nehme ich sie ein? 💊"
+        },
+        "recovery": {
+          "title": "Aktive Regeneration",
+          "subtitle": "Muskelkater lindern und aktive Pause.",
+          "prompt": "Was sind die besten Strategien zur aktiven Regeneration bei Muskelkater und Verspannungen? 🧘"
+        }
+      }
     },
     "camera": "Kamera",
     "gallery": "Galerie",
@@ -323,7 +410,39 @@
     "pickImageSub": "Woher möchten Sie das Foto hochladen?",
     "suggestionsTitle": "Vorschläge für den Start",
     "taglineBadge": "Personalisierte KI • Groq",
-    "confirmDeleteSession": "Sind Sie sicher, dass Sie diesen Chat löschen möchten?"
+    "confirmDeleteSession": "Sind Sie sicher, dass Sie diesen Chat löschen möchten?",
+    "dashboard": {
+      "hello": "Hallo",
+      "quickActionsTitle": "Schnellaktionen",
+      "seeLess": "Weniger",
+      "seeAll": "Alle ansehen",
+      "yourDaySoFar": "Dein Tag bisher",
+      "viewWorkouts": "Workouts ansehen",
+      "viewHealth": "Gesundheit ansehen",
+      "viewNutrition": "Vollständige Ernährung",
+      "metrics": {
+        "protein": "Protein",
+        "calories": "Kalorien",
+        "water": "Wasser",
+        "meals": "Mahlzeiten",
+        "routines": "Einheiten",
+        "today": "heute",
+        "burned": "Verbrannt",
+        "steps": "Schritte",
+        "streak": "Serie",
+        "days": "Tage",
+        "sleep": "Schlaf",
+        "status": "Status",
+        "optimal": "Optimal"
+      }
+    },
+    "actionChipsTitle": "Was möchtest du tun?",
+    "thinking": "Antwort wird generiert...",
+    "onlineActive": "Online · Gerade aktualisiert",
+    "consultasCount": "{{count}}/{{total}} Anfragen",
+    "unlimitedAI": "Unbegrenzte KI",
+    "inputPlaceholderNew": "Frag mich etwas...",
+    "disclaimer": "FitGO KI kann Fehler machen. Überprüfe wichtige Gesundheitsdaten stets mit Fachpersonal."
   },
   "about": {
     "title": "Über FitGO",
@@ -1402,7 +1521,36 @@
       "messagesBody": "💬 Sie haben neue Nachrichten auf FitGO Social!",
       "vitamins": "Vitamine",
       "vitaminsBody": "Denken Sie daran, Ihre Vitamine und Nahrungsergänzungsmittel einzunehmen!"
-    }
+    },
+    "categoryDesc": {
+      "meal": "Bleib energiegeladen und bestens versorgt.",
+      "water": "Halte deinen Körper immer optimal hydriert.",
+      "workout": "Erreiche deine Ziele, Training für Training.",
+      "general": "Tägliche Erinnerungen für deine Bestform.",
+      "social": "Bleib verbunden und halte deinen Rhythmus."
+    },
+    "addReminder": "Erinnerung hinzufügen",
+    "newReminder": "Neue Erinnerung",
+    "editReminder": "Erinnerung bearbeiten",
+    "deleteReminder": "Erinnerung löschen",
+    "deleteConfirm": "Möchtest du diese Erinnerung wirklich löschen?",
+    "save": "Erinnerung speichern",
+    "cancel": "Abbrechen",
+    "title": "Titel",
+    "titlePlaceholder": "z. B. Kreatin, Protein-Shake...",
+    "notes": "Nachricht / Notiz (optional)",
+    "notesPlaceholder": "Nachricht der Erinnerung...",
+    "time": "Uhrzeit",
+    "repeat": "Tage wiederholen",
+    "allDays": "Jeden Tag",
+    "weekdays": "Montag bis Freitag",
+    "weekends": "Wochenende",
+    "quickSuggestions": "Schnellvorschläge",
+    "testSent": "Test-Benachrichtigung gesendet!",
+    "testSentDesc": "Überprüfe deine Benachrichtigungsleiste zur Bestätigung.",
+    "permissionGranted": "Benachrichtigungen aktiv",
+    "permissionDenied": "Erlaube Benachrichtigungen in den Systemeinstellungen.",
+    "more": "Mehr"
   },
   "scan": {
     "title": "Essen scannen",
@@ -1600,6 +1748,66 @@
       "secureNote": "Sichere Zahlung über Google Play / App Store",
       "cta": "Abonnement bestätigen",
       "cancel": "Nein, kostenlos fortfahren"
+    },
+    "featuresBadge": "PRO-VORTEILE & PLUSPUNKTE",
+    "sectionHeading": "Alles, was du mit Pro erhältst",
+    "sectionSubheading": "Intelligente Werkzeuge zur Transformation deiner Ergebnisse",
+    "tabBenefits": "Pro-Vorteile",
+    "tabCompare": "Kostenlos vs. Pro",
+    "compareCalloutTitle": "Möchtest du den genauen Unterschied sehen?",
+    "compareCalloutSub": "Schau dir den vollständigen Vergleich Kostenlos vs. Pro an",
+    "viewCompareBtn": "Vergleichen →",
+    "benefitsCalloutTitle": "Detaillierte Vorteilskarten ansehen",
+    "benefitsCalloutSub": "Entdecke alle 9 exklusiven Pro-Funktionen im Detail",
+    "viewBenefitsBtn": "Vorteile →",
+    "transformations": {
+      "sectionTitle": "Echte Erfolgsgeschichten",
+      "sectionSub": "Verifizierte Ergebnisse von Nutzern, die ihr Leben mit FitGO verändert haben",
+      "before": "VORHER",
+      "after": "NACHHER",
+      "case1": {
+        "tag": "Fall 1 · Mateo",
+        "name": "Mateo C., 24 Jahre",
+        "duration": "6 Monate mit FitGO Pro",
+        "statWeight": "-26 kg",
+        "statFat": "-23% Körperfett",
+        "quote": "Mit dem KI-Coach und den auf meine Makros abgestimmten Plänen habe ich aufgehört zu raten. Die körperliche und mentale Veränderung war enorm."
+      },
+      "case2": {
+        "tag": "Fall 2 · Valeria",
+        "name": "Valeria M., 23 Jahre",
+        "duration": "5 Monate mit FitGO Pro",
+        "statWeight": "-27 kg",
+        "statWaist": "-22 cm Taillenumfang",
+        "quote": "Ich habe jahrelang Crash-Diäten gemacht. FitGO hat mir beigebracht, satt und ausgewogen zu essen, und der Scanner macht alles kinderleicht."
+      }
+    },
+    "reviews": {
+      "sectionTitle": "Was unsere Community sagt",
+      "ratingScore": "4.9 / 5.0",
+      "ratingTotal": "Über 12.400 5-Sterne-Bewertungen",
+      "successRate": "94% erreichen ihr Ziel in den ersten 90 Tagen",
+      "verifiedUser": "Verifizierter Pro-Nutzer",
+      "item1": {
+        "name": "Andreas G.",
+        "time": "Pro-Mitglied seit 7 Monaten",
+        "comment": "Die beste Investition in meine Gesundheit. Der KI-Ernährungscoach spart bares Geld und passt sich perfekt meinem Alltag an."
+      },
+      "item2": {
+        "name": "Camilla D.",
+        "time": "Pro-Mitglied seit 4 Monaten",
+        "comment": "Lebensmittel-Scanner und Spracheingabe funktionieren magisch. Mahlzeiten sind in Sekunden getrackt und meine Disziplin ist gestiegen."
+      },
+      "item3": {
+        "name": "Diego L.",
+        "time": "Pro-Mitglied seit 9 Monaten",
+        "comment": "Vom Ahnungslosen zum soliden Muskelaufbau. Die Ligen und Streaks motivieren enorm, keinen Tag ausfallen zu lassen."
+      },
+      "item4": {
+        "name": "Laura S.",
+        "time": "Pro-Mitglied seit 3 Monaten",
+        "comment": "Keine Werbung und vollständige Videoanleitungen zu allen Übungen. Jeden Cent wert, mit Abstand die beste Fitness-App."
+      }
     }
   },
   "muscleDirectory": {

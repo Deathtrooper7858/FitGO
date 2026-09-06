@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../services/supabase';
+import { calculateTDEE, calculateMacros } from '../services/foodDatabase';
 import i18n from '../i18n';
 import { reportError } from '../utils/errorReporter';
 import { BodyMeasurement } from './types';
@@ -13,6 +14,7 @@ interface BodyState {
   isLoading: boolean;
   fetchMeasurements: (userId: string) => Promise<void>;
   addMeasurement: (measurement: BodyMeasurement) => Promise<void>;
+  syncProfileWeight: (weight: number, date?: string) => Promise<void>;
   deleteMeasurement: (id: string) => Promise<void>;
   updateMeasurement: (id: string, updates: Partial<BodyMeasurement>) => Promise<void>;
   latest: () => BodyMeasurement | null;
@@ -63,22 +65,33 @@ export const useBodyStore = create<BodyState>()(
       },
 
       addMeasurement: async (measurement: BodyMeasurement) => {
-        const { profile } = useAuthStore.getState();
+        const { profile, setProfile } = useAuthStore.getState();
         if (!profile?.id) return;
 
         try {
+          const existing = get().measurements.find(m => m.date === measurement.date);
+          const mergedWeight = measurement.weight !== undefined ? measurement.weight : existing?.weight;
+          const mergedBodyFat = measurement.bodyFat !== undefined ? measurement.bodyFat : existing?.bodyFat;
+          const mergedChest = measurement.chest !== undefined ? measurement.chest : existing?.chest;
+          const mergedWaist = measurement.waist !== undefined ? measurement.waist : existing?.waist;
+          const mergedHips = measurement.hips !== undefined ? measurement.hips : existing?.hips;
+          const mergedArms = measurement.arms !== undefined ? measurement.arms : existing?.arms;
+          const mergedLegs = measurement.legs !== undefined ? measurement.legs : existing?.legs;
+          const mergedNeck = measurement.neck !== undefined ? measurement.neck : existing?.neck;
+          const mergedNotes = measurement.notes !== undefined ? measurement.notes : existing?.notes;
+
           const payload = {
             user_id: profile.id,
             measured_at: measurement.date,
-            weight: measurement.weight,
-            body_fat_pct: measurement.bodyFat,
-            chest_cm: measurement.chest,
-            waist_cm: measurement.waist,
-            hip_cm: measurement.hips,
-            arms_cm: measurement.arms,
-            legs_cm: measurement.legs,
-            neck_cm: measurement.neck,
-            notes: measurement.notes,
+            weight: mergedWeight,
+            body_fat_pct: mergedBodyFat,
+            chest_cm: mergedChest,
+            waist_cm: mergedWaist,
+            hip_cm: mergedHips,
+            arms_cm: mergedArms,
+            legs_cm: mergedLegs,
+            neck_cm: mergedNeck,
+            notes: mergedNotes,
           };
 
           const { data, error } = await supabase
@@ -110,6 +123,41 @@ export const useBodyStore = create<BodyState>()(
             };
           });
 
+          // Synchronize with user profile, recalculate TDEE & macros if weight changed and is latest
+          if (newM.weight !== undefined && profile) {
+            const currentLatest = get().measurements[0];
+            const isLatest = !currentLatest || newM.date >= currentLatest.date;
+            if (isLatest) {
+              const { tdee } = calculateTDEE({
+                weight: newM.weight,
+                height: profile.height,
+                age: profile.age,
+                sex: profile.sex,
+                activityLevel: profile.activityLevel,
+                lifestyleLevel: profile.lifestyle,
+              });
+              const { targetCalories, protein, carbs, fat } = calculateMacros(tdee, profile.goal);
+              const updatedProfile = {
+                ...profile,
+                weight: newM.weight,
+                startingWeight: profile.startingWeight || newM.weight,
+                tdee,
+                targetCalories,
+                macros: { protein, carbs, fat },
+              };
+              setProfile(updatedProfile);
+
+              await supabase.from('users').update({
+                weight: newM.weight,
+                starting_weight: profile.startingWeight || newM.weight,
+                tdee,
+                target_calories: targetCalories,
+                macros: { protein, carbs, fat },
+                updated_at: new Date().toISOString(),
+              }).eq('id', profile.id);
+            }
+          }
+
           useToastStore.getState().addNotification({
             title: i18n.t('body.measurementsUpdated', { defaultValue: 'Medidas Actualizadas' }),
             description: i18n.t('body.measurementsUpdatedDesc', { defaultValue: 'Tus medidas corporales se han guardado con éxito.' }),
@@ -121,6 +169,15 @@ export const useBodyStore = create<BodyState>()(
         } catch (error) {
           reportError(error, { module: 'BodyStore', action: 'addMeasurement' });
         }
+      },
+
+      syncProfileWeight: async (weight: number, date?: string) => {
+        const targetDate = date || new Date().toLocaleDateString('en-CA');
+        await get().addMeasurement({
+          id: `bm-${Date.now()}`,
+          date: targetDate,
+          weight,
+        });
       },
 
       deleteMeasurement: async (id: string) => {

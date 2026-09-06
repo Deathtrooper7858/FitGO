@@ -6,8 +6,6 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ActivityIndicator,
   Animated as RNAnimated,
@@ -57,12 +55,14 @@ function AmbientBackground() {
         end={{ x: 1, y: 1 }}
         locations={[0, 0.5, 1]}
         style={StyleSheet.absoluteFill}
+        pointerEvents="none"
       />
       <Svg
         height="100%"
         width="100%"
         viewBox="0 0 400 850"
         style={StyleSheet.absoluteFill}
+        pointerEvents="none"
       >
         <Defs>
           <SvgLinearGradient id="loginWave1" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -164,7 +164,7 @@ function FloatingView({
   });
 
   return (
-    <RNAnimated.View style={[style, { transform: [{ translateY }] }]}>
+    <RNAnimated.View pointerEvents="none" style={[style, { transform: [{ translateY }] }]}>
       {children}
     </RNAnimated.View>
   );
@@ -198,6 +198,7 @@ function GoogleIcon({ size = 20 }: { size?: number }) {
 export default function LoginScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  console.log('[DEBUG] Login render, insets:', JSON.stringify(insets));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -215,8 +216,8 @@ export default function LoginScreen() {
     type: 'error',
   });
 
-  const [emailFocused, setEmailFocused] = useState(false);
-  const [passwordFocused, setPasswordFocused] = useState(false);
+  const emailInputRef = useRef<TextInput>(null);
+  const passwordInputRef = useRef<TextInput>(null);
 
   const rawScheme = Constants.expoConfig?.scheme || 'fitgo';
   const activeScheme = Array.isArray(rawScheme) ? rawScheme[0] : rawScheme;
@@ -329,10 +330,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={s.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <View style={s.container}>
       <AmbientBackground />
 
       <ScrollView
@@ -390,29 +388,28 @@ export default function LoginScreen() {
           {/* Email Address */}
           <View style={s.field}>
             <Text style={s.fieldLabel}>{t('auth.email', 'Email Address')}</Text>
-            <View
-              style={[
-                s.inputContainer,
-                emailFocused && s.inputContainerFocused,
-              ]}
-            >
-              <FloatingView delay={100} distance={2.5} duration={2600} style={s.inputIconWrap}>
-                <Mail size={19} color={emailFocused ? '#C084FC' : '#A78BFA'} />
-              </FloatingView>
+            <View style={s.inputContainer}>
+              <View pointerEvents="none" style={s.inputIconWrap}>
+                <Mail size={19} color="#C084FC" />
+              </View>
               <TextInput
+                ref={emailInputRef}
                 style={s.input}
                 value={email}
                 onChangeText={setEmail}
-                onFocus={() => setEmailFocused(true)}
-                onBlur={() => setEmailFocused(false)}
                 placeholder="you@example.com"
                 placeholderTextColor="#64748B"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                autoComplete="email"
+                autoCorrect={false}
+                selectionColor="#C084FC"
+                cursorColor="#C084FC"
+                returnKeyType="next"
+                blurOnSubmit={false}
+                onSubmitEditing={() => passwordInputRef.current?.focus()}
               />
               {isEmailValid && (
-                <View style={s.validIconWrap}>
+                <View style={s.validIconWrap} pointerEvents="none">
                   <CheckCircle2 size={18} color="#10B981" />
                 </View>
               )}
@@ -422,25 +419,22 @@ export default function LoginScreen() {
           {/* Password */}
           <View style={s.field}>
             <Text style={s.fieldLabel}>{t('auth.password', 'Password')}</Text>
-            <View
-              style={[
-                s.inputContainer,
-                passwordFocused && s.inputContainerFocused,
-              ]}
-            >
-              <FloatingView delay={300} distance={2.5} duration={2800} style={s.inputIconWrap}>
-                <Lock size={19} color={passwordFocused ? '#C084FC' : '#A78BFA'} />
-              </FloatingView>
+            <View style={s.inputContainer}>
+              <View pointerEvents="none" style={s.inputIconWrap}>
+                <Lock size={19} color="#C084FC" />
+              </View>
               <TextInput
+                ref={passwordInputRef}
                 style={s.input}
                 value={password}
                 onChangeText={setPassword}
-                onFocus={() => setPasswordFocused(true)}
-                onBlur={() => setPasswordFocused(false)}
                 placeholder="••••••••••••"
                 placeholderTextColor="#64748B"
                 secureTextEntry={!showPassword}
-                autoComplete="password"
+                selectionColor="#C084FC"
+                cursorColor="#C084FC"
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
               />
               <Pressable
                 onPress={() => setShowPassword(!showPassword)}
@@ -570,7 +564,7 @@ export default function LoginScreen() {
         onConfirm={() => setAlertVisible(false)}
         confirmText="OK"
       />
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

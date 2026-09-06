@@ -3,7 +3,7 @@ import { Session } from '@supabase/supabase-js';
 import { supabase } from '../services/supabase';
 import { SecureStorage } from '../utils/storage';
 import { useSettingsStore } from './settingsStore';
-import { UserProfile } from './types';
+import { UserProfile, AppLanguage } from './types';
 
 interface AuthState {
   session:     Session | null;
@@ -90,6 +90,19 @@ export const useAuthStore = create<AuthState>()(
         const cached = await loadCachedProfile();
         if (cached) {
           set({ profile: cached });
+          const now = new Date();
+          const isCachedPro = !!(
+            cached.isPro ||
+            ['owner', 'super_admin', 'admin', 'pro_user'].includes(cached.role ?? '') ||
+            (cached.trialExpiresAt && new Date(cached.trialExpiresAt) > now) ||
+            (cached.proExpiresAt && new Date(cached.proExpiresAt) > now)
+          );
+          if (cached.premiumColor && isCachedPro) {
+            useSettingsStore.getState().setPremiumColor(cached.premiumColor);
+          }
+          if (cached.language) {
+            useSettingsStore.getState().setLanguage(cached.language);
+          }
         }
         return cached;
       },
@@ -114,13 +127,49 @@ export const useAuthStore = create<AuthState>()(
               .single();
 
             if (data && !error) {
-              const fetchedNameColor = (data.is_pro && !data.name_color) ? '#EAB308' : data.name_color;
-              // Only restore premium color if the user is still pro. If they lost pro status,
-              // clear the color so it resets correctly.
-              const fetchedPremiumColor = (data.is_pro && data.premium_color) ? data.premium_color : null;
-              
-              // Always sync premiumColor from DB — even when null — to clear stale local state
-              useSettingsStore.getState().setPremiumColor(fetchedPremiumColor);
+              const now = new Date();
+              const isProUser = !!(
+                data.is_pro ||
+                ['owner', 'super_admin', 'admin', 'pro_user'].includes(data.role ?? '') ||
+                (data.trial_expires_at && new Date(data.trial_expires_at) > now) ||
+                (data.pro_expires_at && new Date(data.pro_expires_at) > now)
+              );
+
+              const fetchedNameColor = (isProUser && !data.name_color) ? '#EAB308' : data.name_color;
+
+              // Restore premium color: DB > session user_metadata > locally chosen color
+              const currentSession = get().session;
+              const metaColor = currentSession?.user?.user_metadata?.premium_color;
+              const localColor = useSettingsStore.getState().premiumColor;
+
+              let effectivePremiumColor: string | null = null;
+              if (isProUser) {
+                effectivePremiumColor = data.premium_color || metaColor || localColor || null;
+                useSettingsStore.getState().setPremiumColor(effectivePremiumColor);
+
+                // Backfill DB or metadata if one was missing
+                if (effectivePremiumColor) {
+                  if (!data.premium_color) {
+                    Promise.resolve(supabase.from('users').update({ premium_color: effectivePremiumColor }).eq('id', userId)).catch(() => {});
+                  }
+                  if (metaColor !== effectivePremiumColor) {
+                    supabase.auth.updateUser({ data: { premium_color: effectivePremiumColor } }).catch(() => {});
+                  }
+                }
+              } else {
+                // User is verified not pro
+                useSettingsStore.getState().setPremiumColor(null);
+              }
+
+              // Restore language: account user_metadata > local setting
+              const metaLang = currentSession?.user?.user_metadata?.language;
+              const localLang = useSettingsStore.getState().language;
+              const effectiveLang = (metaLang || localLang || 'en') as AppLanguage;
+              useSettingsStore.getState().setLanguage(effectiveLang);
+
+              if (!metaLang && localLang) {
+                supabase.auth.updateUser({ data: { language: localLang } }).catch(() => {});
+              }
               
               const freshProfile: UserProfile = {
                   id:             data.id,
@@ -128,7 +177,8 @@ export const useAuthStore = create<AuthState>()(
                   name:           data.name,
                   avatarUrl:      data.avatar_url,
                   nameColor:      fetchedNameColor || undefined,
-                  premiumColor:   fetchedPremiumColor || undefined,
+                  premiumColor:   isProUser ? (effectivePremiumColor || undefined) : undefined,
+                  language:       effectiveLang,
                   sex:            data.sex,
                   age:            data.age,
                   weight:         data.weight,
@@ -142,10 +192,12 @@ export const useAuthStore = create<AuthState>()(
                   macros:         data.macros,
                   availableFoods: data.available_foods,
                   preferences:    data.preferences,
-                  isPro:          data.is_pro,
+                  isPro:          isProUser,
                   role:           data.role || 'user',
                   trialUsedAt:    data.trial_used_at,
                   trialExpiresAt: data.trial_expires_at,
+                  proExpiresAt:   data.pro_expires_at,
+                  proWillRenew:   data.pro_will_renew,
                   onboardingDone: data.onboarding_done,
                   lifestyle:      data.lifestyle,
                   extraSnacks:    data.extra_snacks,

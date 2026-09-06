@@ -813,7 +813,19 @@
       "silver": "Plata Cromo",
       "defaultSubtitle": "El color por defecto"
     },
-    "inviteFriends": "Invitar Amigos"
+    "inviteFriends": "Invitar Amigos",
+    "inviteSubtitle": "¿Qué dispositivo tiene tu amigo?",
+    "statusAvailable": "Disponible",
+    "statusComingSoon": "Muy pronto",
+    "playStoreLink": "Enlace directo de Google Play:",
+    "shareInvite": "Compartir Invitación",
+    "openInPlayStore": "Abrir en Google Play",
+    "inviteLinkCopied": "¡Enlace de Android copiado al portapapeles!",
+    "iosComingSoonTitle": "¡FitGO para iOS llegará muy pronto!",
+    "inActiveDevelopment": "🚀 En fase final de desarrollo",
+    "iosComingSoonMessage": "Estamos ultimando los detalles para que la experiencia en iPhone y iPad sea espectacular. Muy pronto estará disponible para descargar directamente en la App Store.",
+    "shareAndroidInstead": "¿Tu amigo tiene Android? Ver enlace",
+    "inviteAndroidMessage": "¡Hola! Te invito a unirte a FitGO para alcanzar tus metas fitness y de nutrición. 💪🔥\n\nDescarga la app en Google Play Store:\n{{url}}"
   },
   "recipes": {
     "title": "Recetas",
@@ -848,7 +860,32 @@
       "suggest1": "Dame una idea de cena ligera 🥗",
       "suggest2": "¿Qué snacks son buenos para perder peso? 🍎",
       "suggest3": "¿Cuánta proteína debo comer al día? 🍗",
-      "suggest4": "Analiza mi dieta actual 📊"
+      "suggest4": "Analiza mi dieta actual 📊",
+      "subtitle": "Tu asistente nutricional IA",
+      "heroGreeting": "Soy tu Coach de Alimentación. Estoy aquí para ayudarte a tomar mejores decisiones con tu dieta y alcanzar tus metas.",
+      "heroQuestion": "¿Qué quieres hacer hoy?",
+      "quickActions": {
+        "plan_meal": {
+          "title": "Planear una comida",
+          "subtitle": "Recetas y opciones según tus objetivos.",
+          "prompt": "¿Puedes planear una comida balanceada y alta en proteína ajustada a mis requerimientos diarios?"
+        },
+        "choose_snack": {
+          "title": "Elegir un snack",
+          "subtitle": "Opciones saludables y que te llenan.",
+          "prompt": "¿Qué snacks saludables, rápidos y saciantes me recomiendas para comer entre comidas?"
+        },
+        "calc_protein": {
+          "title": "Calcular mi proteína",
+          "subtitle": "¿Cuánta necesitas según tu objetivo?",
+          "prompt": "¿Cuánta proteína debo comer al día según mi peso y objetivo, y cómo distribuirla en mis comidas? 🥩"
+        },
+        "analyze_diet": {
+          "title": "Analizar mi dieta",
+          "subtitle": "Revisa tu progreso y recibe recomendaciones.",
+          "prompt": "Analiza lo que llevo consumido hoy según mis registros y dame sugerencias prácticas para mejorar mi dieta 📊"
+        }
+      }
     },
     "trainer": {
       "label": "Coach de Entrenamiento",
@@ -856,7 +893,32 @@
       "suggest1": "Dame una rutina de 20 min en casa 🏠",
       "suggest2": "¿Cómo mejorar mi sentadilla? 🏋️",
       "suggest3": "Plan de entrenamiento para ganar músculo 💪",
-      "suggest4": "¿Qué estiramientos hacer después de correr? 🏃"
+      "suggest4": "¿Qué estiramientos hacer después de correr? 🏃",
+      "subtitle": "Tu entrenador personal IA",
+      "heroGreeting": "Soy tu Coach de Entrenamiento. Estoy aquí para diseñar tus rutinas, mejorar tu técnica y maximizar tus resultados.",
+      "heroQuestion": "¿Qué quieres entrenar hoy?",
+      "quickActions": {
+        "routine": {
+          "title": "Crear rutina de hoy",
+          "subtitle": "Diseña tu sesión según tu tiempo y equipo.",
+          "prompt": "Diseña una rutina efectiva de entrenamiento para hoy basada en mi nivel, tiempo disponible y objetivo 💪"
+        },
+        "warmup": {
+          "title": "Calentamiento exprés",
+          "subtitle": "Actívate en 5-10 minutos sin lesiones.",
+          "prompt": "Dame una rutina de calentamiento dinámico y movilidad articular de 8 minutos antes de entrenar 🔥"
+        },
+        "technique": {
+          "title": "Corregir mi técnica",
+          "subtitle": "Postura, rango y errores comunes.",
+          "prompt": "¿Cuáles son las claves posturales y errores más comunes en sentadilla, press de banca y peso muerto?"
+        },
+        "adapt": {
+          "title": "Adaptar por molestia",
+          "subtitle": "Variantes seguras si sientes dolor o fatiga.",
+          "prompt": "¿Qué ejercicios alternativos puedo hacer si siento molestias en las rodillas o en los hombros?"
+        }
+      }
     },
     "doctor": {
       "label": "Coach de Bienestar",
@@ -864,7 +926,32 @@
       "suggest1": "¿Qué debo hacer si me siento mareado tras entrenar? 😵‍💫",
       "suggest2": "¿Hay interacciones con mis medicamentos? 💊",
       "suggest3": "¿Cómo puedo mejorar mi calidad de sueño? 🛌",
-      "suggest4": "¿Cuáles son los signos de deshidratación? 💧"
+      "suggest4": "¿Cuáles son los signos de deshidratación? 💧",
+      "subtitle": "Tu asesor de salud y recuperación IA",
+      "heroGreeting": "Soy tu Coach de Bienestar. Estoy aquí para cuidar tu recuperación muscular, sueño, hábitos y salud integral.",
+      "heroQuestion": "¿Cómo te sientes hoy?",
+      "quickActions": {
+        "sleep": {
+          "title": "Mejorar mi descanso",
+          "subtitle": "Pautas para dormir profundo y regenerar.",
+          "prompt": "¿Cómo puedo optimizar mi higiene de sueño para despertar con más energía y acelerar mi recuperación? 🛌"
+        },
+        "fatigue": {
+          "title": "Combatir la fatiga",
+          "subtitle": "Energía sostenida y menos cansancio.",
+          "prompt": "¿Por qué me siento con baja energía o fatiga durante el día y qué cambios simples puedo aplicar? ⚡"
+        },
+        "supplements": {
+          "title": "Suplementos recomendados",
+          "subtitle": "Evidencia científica y cómo tomarlos.",
+          "prompt": "¿Qué suplementos tienen mayor evidencia científica para mi objetivo y cómo debería tomarlos? 💊"
+        },
+        "recovery": {
+          "title": "Recuperación activa",
+          "subtitle": "Alivio de agujetas y descanso activo.",
+          "prompt": "¿Cuáles son las mejores estrategias de recuperación activa para aliviar el dolor muscular y las agujetas? 🧘"
+        }
+      }
     },
     "camera": "Cámara",
     "gallery": "Galería",
@@ -875,7 +962,39 @@
     "pickImageSub": "¿Desde dónde quieres subir la foto?",
     "suggestionsTitle": "Sugerencias para empezar",
     "taglineBadge": "IA Personalizada • Groq",
-    "confirmDeleteSession": "¿Estás seguro de que quieres eliminar este chat?"
+    "confirmDeleteSession": "¿Estás seguro de que quieres eliminar este chat?",
+    "dashboard": {
+      "hello": "¡Hola",
+      "quickActionsTitle": "Acciones rápidas",
+      "seeLess": "Ver menos",
+      "seeAll": "Ver todas",
+      "yourDaySoFar": "Tu día hasta ahora",
+      "viewWorkouts": "Ver entrenamientos",
+      "viewHealth": "Ver salud",
+      "viewNutrition": "Ver nutrición completa",
+      "metrics": {
+        "protein": "Proteína",
+        "calories": "Calorías",
+        "water": "Agua",
+        "meals": "Comidas",
+        "routines": "Rutinas",
+        "today": "hoy",
+        "burned": "Quemadas",
+        "steps": "Pasos",
+        "streak": "Racha",
+        "days": "días",
+        "sleep": "Sueño",
+        "status": "Estado",
+        "optimal": "Óptimo"
+      }
+    },
+    "actionChipsTitle": "¿Qué quieres hacer?",
+    "thinking": "Pensando respuesta...",
+    "onlineActive": "En línea · Última actualización ahora",
+    "consultasCount": "{{count}}/{{total}} consultas",
+    "unlimitedAI": "IA Ilimitada",
+    "inputPlaceholderNew": "Pregúntame algo...",
+    "disclaimer": "FitGO IA puede cometer errores. Verifica siempre la información de salud importante."
   },
   "onboarding": {
     "goalTitle": "¿Cuál es tu objetivo?",
@@ -1401,8 +1520,8 @@
     "invalidAmount": "Por favor ingresa una cantidad válida de gramos."
   },
   "reminders": {
-    "stayOnTrack": "Mantente en el camino",
-    "subtitle": "Configura alertas para no olvidar comidas, hidratación ni entrenamientos.",
+    "stayOnTrack": "Mantente en el Camino",
+    "subtitle": "Configura recordatorios para comidas, hidratación y entrenamientos.",
     "permissionInfo": "Permite las notificaciones en los ajustes del sistema.",
     "breakfast": "Desayuno",
     "lunch": "Almuerzo",
@@ -1463,7 +1582,36 @@
       "messagesBody": "💬 ¡Tienes nuevos mensajes en FitGO Social!",
       "vitamine": "Vitaminas",
       "vitamineBody": "¡Recuerda tomar tus vitaminas y suplementos!"
-    }
+    },
+    "categoryDesc": {
+      "meal": "Mantente con energía y bien nutrido.",
+      "water": "Mantén tu cuerpo siempre hidratado.",
+      "workout": "Construye tus metas, un entrenamiento a la vez.",
+      "general": "Recordatorios diarios para dar tu mejor versión.",
+      "social": "Mantente conectado y no pierdas el ritmo."
+    },
+    "addReminder": "Añadir recordatorio",
+    "newReminder": "Nuevo Recordatorio",
+    "editReminder": "Editar Recordatorio",
+    "deleteReminder": "Eliminar Recordatorio",
+    "deleteConfirm": "¿Estás seguro de que deseas eliminar este recordatorio?",
+    "save": "Guardar recordatorio",
+    "cancel": "Cancelar",
+    "title": "Título",
+    "titlePlaceholder": "ej., Creatina, Batido de Proteína...",
+    "notes": "Mensaje / Descripción (opcional)",
+    "notesPlaceholder": "Mensaje del recordatorio...",
+    "time": "Hora",
+    "repeat": "Repetir Días",
+    "allDays": "Todos los días",
+    "weekdays": "Lunes a Viernes",
+    "weekends": "Fines de semana",
+    "quickSuggestions": "Sugerencias Rápidas",
+    "testSent": "¡Notificación de prueba enviada!",
+    "testSentDesc": "Revisa tu barra de notificaciones para confirmar.",
+    "permissionGranted": "Notificaciones activas",
+    "permissionDenied": "Permite las notificaciones en los ajustes del sistema.",
+    "more": "Más"
   },
   "paywall": {
     "title": "Desbloquea FitGO Pro",
@@ -1479,6 +1627,17 @@
     "pro": "PRO",
     "featuresTitle": "¿Qué incluye Pro?",
     "vsTitle": "Gratis vs Pro",
+    "featuresBadge": "VENTAJAS & BENEFICIOS PRO",
+    "sectionHeading": "Todo lo que obtienes con Pro",
+    "sectionSubheading": "Herramientas inteligentes diseñadas para transformar tus resultados",
+    "tabBenefits": "Beneficios Pro",
+    "tabCompare": "Free vs Pro",
+    "compareCalloutTitle": "¿Quieres ver la diferencia exacta?",
+    "compareCalloutSub": "Revisa la comparativa completa Gratis vs Pro",
+    "viewCompareBtn": "Comparar →",
+    "benefitsCalloutTitle": "Ver tarjetas detalladas de beneficios",
+    "benefitsCalloutSub": "Conoce a fondo las 9 funciones exclusivas Pro",
+    "viewBenefitsBtn": "Beneficios →",
     "premiumFeature": "Función Premium",
     "premiumRequired": "Esta función es exclusiva para usuarios Premium. ¡Actualiza tu plan para usar el dictado por voz y la estimación con IA!",
     "features": {
@@ -1600,7 +1759,56 @@
     "feature5": "Análisis semanal con IA",
     "feature6": "Sin anuncios y sin límites",
     "specialOffer": "OFERTA ESPECIAL",
-    "perMonth": " / mes"
+    "perMonth": " / mes",
+    "transformations": {
+      "sectionTitle": "Casos de Éxito Reales",
+      "sectionSub": "Resultados verificados de usuarios que transformaron su vida con FitGO",
+      "before": "ANTES",
+      "after": "DESPUÉS",
+      "case1": {
+        "tag": "Caso 1 · Mateo",
+        "name": "Mateo C., 24 años",
+        "duration": "6 meses con FitGO Pro",
+        "statWeight": "-26 kg",
+        "statFat": "-23% grasa corporal",
+        "quote": "Con el Coach IA y los menús adaptados a mis macros diarios, dejé de improvisar. El cambio físico y de confianza fue increíble."
+      },
+      "case2": {
+        "tag": "Caso 2 · Valeria",
+        "name": "Valeria M., 23 años",
+        "duration": "5 meses con FitGO Pro",
+        "statWeight": "-27 kg",
+        "statWaist": "-22 cm cintura",
+        "quote": "Probé dietas extremas por años. FitGO me enseñó a comer balanceado sin pasar hambre y el escáner me simplificó todo."
+      }
+    },
+    "reviews": {
+      "sectionTitle": "Lo que dice nuestra comunidad",
+      "ratingScore": "4.9 / 5.0",
+      "ratingTotal": "Más de 12,400 valoraciones de 5 estrellas",
+      "successRate": "94% logra su objetivo en los primeros 90 días",
+      "verifiedUser": "Usuario Pro Verificado",
+      "item1": {
+        "name": "Andrés G.",
+        "time": "Miembro Pro hace 7 meses",
+        "comment": "La mejor inversión para mi salud. El coach nutricional IA me ahorra cientos de dólares y los planes se adaptan a mi rutina."
+      },
+      "item2": {
+        "name": "Camila D.",
+        "time": "Miembro Pro hace 4 meses",
+        "comment": "El escáner de alimentos y el registro por voz son mágicos. Registro mis comidas en segundos y mi constancia se disparó."
+      },
+      "item3": {
+        "name": "Diego L.",
+        "time": "Miembro Pro hace 9 meses",
+        "comment": "Pasé de no saber qué comer a ganar masa muscular magra. Las ligas y rachas motivan a no saltarse un solo día."
+      },
+      "item4": {
+        "name": "Laura S.",
+        "time": "Miembro Pro hace 3 meses",
+        "comment": "Sin anuncios y con la guía completa de ejercicios en video. Vale cada centavo, la mejor app fitness de lejos."
+      }
+    }
   },
   "muscleDirectory": {
     "chest": "Pecho",

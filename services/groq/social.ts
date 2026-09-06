@@ -1,8 +1,27 @@
 import { getLang, fetchGroq, FAST_MODEL, CHAT_MODEL } from './core';
 
+// Helper to compact meal plans into concise text, saving thousands of tokens
+function formatMealPlanSummary(mealPlans: Record<string, any[]>): string {
+  try {
+    const lines = Object.entries(mealPlans)
+      .map(([day, meals]) => {
+        const mealList = (Array.isArray(meals) ? meals : [])
+          .map((m: any) => m?.name || m?.title || '')
+          .filter(Boolean)
+          .join(', ');
+        return mealList ? `${day}: ${mealList}` : '';
+      })
+      .filter(Boolean);
+    return lines.length > 0 ? lines.join('\n') : JSON.stringify(mealPlans);
+  } catch {
+    return JSON.stringify(mealPlans);
+  }
+}
+
 // ─── Generate Shopping List ───────────────────────────────────────────────────
 export async function generateShoppingListJSON(mealPlans: Record<string, any[]>, language: string = 'en'): Promise<{category: string; items: {name: string; quantity: string; price: number}[]}[]> {
   const targetLang = getLang(language);
+  const planSummary = formatMealPlanSummary(mealPlans);
   
   const prompt = `Based on the following weekly meal plan, create a detailed and categorized shopping list of all ingredients needed for the ENTIRE week.
 Return ONLY a valid JSON object matching this EXACT structure (no markdown, no explanation):
@@ -25,7 +44,7 @@ Rules:
 - NEVER include duplicates.
 
 Meal Plan:
-${JSON.stringify(mealPlans)}`;
+${planSummary}`;
 
   try {
     const data = await fetchGroq({
@@ -53,6 +72,7 @@ ${JSON.stringify(mealPlans)}`;
 
 export async function generateShoppingList(mealPlans: Record<string, any[]>, language: string = 'en'): Promise<string> {
   const targetLang = getLang(language);
+  const planSummary = formatMealPlanSummary(mealPlans);
   
   const prompt = `Based on the following weekly meal plan, create a comprehensive and beautiful shopping list.
 Group the items by category (e.g., Produce, Meat, Dairy, Pantry).
@@ -63,14 +83,14 @@ Use beautiful inline CSS with colors like #7C5CFC (primary), clean fonts (sans-s
 Make sure all text, categories, and items are translated to ${targetLang}.
 
 Meal Plan Data:
-${JSON.stringify(mealPlans)}
+${planSummary}
 
 Return ONLY the raw HTML string, nothing else. No markdown formatting.`;
 
   const data = await fetchGroq({
     model: FAST_MODEL,
     messages: [{ role: 'user', content: prompt }],
-    max_tokens: 2000,
+    max_tokens: 1400,
     temperature: 0.5,
   });
 

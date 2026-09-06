@@ -23,6 +23,7 @@ supabase/.temp/
 *.p8
 *.p12
 *.key
+*.pem
 *.mobileprovision
 google-services.json
 GoogleService-Info.plist
@@ -34,6 +35,10 @@ keystore.properties
 staged_files.txt
 schema.json
 scratch/
+scratch_*.ps1
+window_dump.xml
+emulator_*.png
+physical_*.png
 .bundle/
 *.jar
 classes.jar

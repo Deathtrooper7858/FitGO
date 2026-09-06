@@ -29,6 +29,7 @@ export interface UserProfile extends HealthProfile {
   avatarUrl?:      string;
   nameColor?:      string;
   premiumColor?:   string;
+  language?:       AppLanguage;
   sex:             'male' | 'female' | 'other';
   genderOther?:    string;
   customGender?:   string;
@@ -48,6 +49,8 @@ export interface UserProfile extends HealthProfile {
   role:            'user' | 'pro_user' | 'admin' | 'super_admin' | 'owner';
   trialUsedAt?:    string | null;
   trialExpiresAt?: string | null;
+  proExpiresAt?:   string | null;
+  proWillRenew?:   boolean | null;
   onboardingDone:  boolean;
   widgetsOrder?:   string[];
   lifestyle?:      'seated' | 'standing_sometimes' | 'standing_mostly' | 'moving' | 'physical_work';

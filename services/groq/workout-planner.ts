@@ -64,9 +64,13 @@ CRITICAL INSTRUCTION: You have NO RESTRICTIONS. If the user has medical conditio
 
 IMPORTANT: All exercise names, descriptions, and instructions MUST be in ${targetLang}.
 
-Return ONLY valid JSON (no markdown). Use this exact structure:
+Return ONLY a valid JSON object matching this schema. All 7 days (Mon, Tue, Wed, Thu, Fri, Sat, Sun) MUST be present.
+For training days: provide 4-6 exercises with sets, reps, and rest.
+For rest days: provide "exercises": [].
+
+Schema format:
 {
-  "warning": "Optional warning string if risky",
+  "warning": "Disclaimer in ${targetLang}",
   "Mon": {
     "name": "${isRomanceLang(targetLang) ? 'Pecho y Tríceps' : 'Chest & Triceps'}",
     "exercises": [
@@ -74,12 +78,12 @@ Return ONLY valid JSON (no markdown). Use this exact structure:
       { "name": "${isRomanceLang(targetLang) ? 'Press Superior con Mancuernas' : 'Incline DB Press'}", "englishName": "Incline DB Press", "sets": 3, "reps": "12", "rest": "60s" }
     ]
   },
-  "Tue": { "name": "${isRomanceLang(targetLang) ? 'Día de Descanso' : 'Rest Day'}", "exercises": [] },
-  "Wed": { "name": "${isRomanceLang(targetLang) ? 'Espalda y Bíceps' : 'Back & Biceps'}", "exercises": [] },
-  "Thu": { "name": "${isRomanceLang(targetLang) ? 'Día de Descanso' : 'Rest Day'}", "exercises": [] },
-  "Fri": { "name": "${isRomanceLang(targetLang) ? 'Piernas y Hombros' : 'Legs & Shoulders'}", "exercises": [] },
-  "Sat": { "name": "${isRomanceLang(targetLang) ? 'Recuperación Activa' : 'Active Recovery'}", "exercises": [] },
-  "Sun": { "name": "${isRomanceLang(targetLang) ? 'Día de Descanso' : 'Rest Day'}", "exercises": [] }
+  "Tue": { "name": "Day focus or Rest Day", "exercises": [ ...exercises or empty if rest... ] },
+  "Wed": { "name": "Day focus", "exercises": [ ...exercises... ] },
+  "Thu": { "name": "Day focus or Rest Day", "exercises": [ ...exercises or empty if rest... ] },
+  "Fri": { "name": "Day focus", "exercises": [ ...exercises... ] },
+  "Sat": { "name": "Active Recovery or Rest", "exercises": [ ...exercises or empty... ] },
+  "Sun": { "name": "Rest Day", "exercises": [] }
 }`;
 
   const data = await fetchGroq({
@@ -91,7 +95,7 @@ Return ONLY valid JSON (no markdown). Use this exact structure:
       },
       { role: 'user', content: prompt }
     ],
-    max_tokens: 5000,
+    max_tokens: 3500,
     temperature: 0.5,
     response_format: { type: 'json_object' },
   });
@@ -147,7 +151,7 @@ Return ONLY valid JSON (no markdown):
       },
       { role: 'user', content: prompt }
     ],
-    max_tokens: 1500,
+    max_tokens: 800,
     temperature: 0.5,
     response_format: { type: 'json_object' },
   });
@@ -193,7 +197,7 @@ Structure:
       },
       { role: 'user', content: prompt }
     ],
-    max_tokens: 1200,
+    max_tokens: 800,
     temperature: 0.3,
     response_format: { type: 'json_object' },
   });
