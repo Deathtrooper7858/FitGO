@@ -9,6 +9,7 @@ web-build/
 .vscode/
 OpenSwarm/
 supabase/.temp/
+certif/
 
 # Environment files
 .env
