@@ -133,11 +133,11 @@ export default async function RootLayout({
       <body className="bg-background text-text-primary antialiased" suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
           {children}
+          <CookieBanner />
+          <ScrollToTop />
+          <MobileStickyCTA />
+          <RegisterSW />
         </NextIntlClientProvider>
-        <CookieBanner />
-        <ScrollToTop />
-        <MobileStickyCTA />
-        <RegisterSW />
       </body>
     </html>
   );
