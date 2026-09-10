@@ -6,18 +6,19 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Search, Trophy, Users, Plus, Check, X, MessageSquare, Heart, Share2, Send, Trash2, Camera, Pencil, Filter, Mic, StopCircle } from 'lucide-react-native';
+import { Search, Trophy, Users, Plus, Check, X, MessageSquare, Heart, Share2, Send, Trash2, Camera, Pencil, Filter, Mic, StopCircle, ChevronRight, Flame, Sparkles, Globe, User } from 'lucide-react-native';
 import * as LucideIcons from 'lucide-react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { useAudioRecorder, RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync } from 'expo-audio';
-import { getNameStyle } from '../../utils/styles';
+import { getNameStyle, getSafeColor, isValidPremiumColor } from '../../utils/styles';
 import { useTheme } from '../../hooks/useTheme';
-import { Radius, Spacing } from '../../constants';
+import { Radius, Shadow } from '../../constants';
 import { GlassCard } from '../../components/GlassCard';
 import { useSocialStore, useAuthStore, useSettingsStore, usePurchaseStore } from '../../store';
+import { useLeagueStore } from '../../store/leagueStore';
 import { ImageViewerModal } from '../../components/ImageViewerModal';
 import { CustomAlert } from '../../components/CustomAlert';
 import { AvatarViewerModal } from '../../components/AvatarViewerModal';
@@ -166,6 +167,7 @@ export default function FitGOSocial({
   const { premiumColor } = useSettingsStore();
   const { isPro } = usePurchaseStore();
   const socialStore = useSocialStore();
+  const myStreak = useLeagueStore(s => s.myStreak);
   const [friendsTab, setFriendsTab] = useState<'list' | 'requests' | 'search'>(initialFriendsTab);
   const [deleteFriendAlert, setDeleteFriendAlert] = useState<{ friendId: string; friendName: string } | null>(null);
   
@@ -624,177 +626,353 @@ export default function FitGOSocial({
     const userRankInfo = socialStore.globalRanking.find(u => u.id === profile?.id);
     const userRankIndex = socialStore.globalRanking.findIndex(u => u.id === profile?.id);
     const myPosts = socialStore.posts.filter(p => p.user_id === profile?.id);
+    const unlockedAchievements = achievements.filter((a: any) => a.unlocked);
+    const achPct = achievements.length > 0 ? Math.round((unlockedAchievements.length / achievements.length) * 100) : 0;
+    const effectiveStreak = Math.max(myStreak || 0, (userRankInfo as any)?.streak || (userRankInfo as any)?.current_streak || 0);
 
     return (
       <View style={s.tabContent}>
-        <GlassCard style={{ marginBottom: 16, padding: 20 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-            {profile?.avatarUrl ? (
-              <Image cachePolicy="memory-disk" source={{ uri: profile.avatarUrl }} style={{ width: 64, height: 64, borderRadius: 32 }} />
-            ) : (
-              <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 64, height: 64, borderRadius: 32 }]}>
-                <Text style={[s.avatarInitials, { fontSize: 24 }]}>{profile?.name?.[0]}</Text>
-              </View>
-            )}
-            <View style={{ flex: 1 }}>
-              <Text style={[{ fontSize: 20, fontWeight: 'bold' }, getNameStyle(profile?.nameColor, profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>{profile?.name}</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                <View style={[s.chip, { backgroundColor: currentBadge.colors[0] + '20', flexDirection: 'row', alignItems: 'center', gap: 4 }]}>
-                  <Text style={{ fontSize: 12 }}>{currentBadge.icon}</Text>
-                  <Text style={{ color: currentBadge.colors[0], fontSize: 12, fontWeight: '700' }}>{String(t(`achievements.badges.${currentBadgeId}.label`, currentBadge.label))}</Text>
+        {/* ─── Hero Profile Card ────────────────────────── */}
+        <GlassCard style={{ marginBottom: 16, padding: 0, overflow: 'hidden' }}>
+          <LinearGradient
+            colors={[colors.primary + '18', colors.surfaceAlt + '40', 'transparent']}
+            style={{ padding: 18 }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+              {/* Avatar with Glow Ring */}
+              <TouchableOpacity
+                onPress={() => {
+                  if (profile?.avatarUrl) {
+                    setAvatarViewerData({ url: profile.avatarUrl, name: profile.name });
+                  }
+                }}
+                activeOpacity={0.85}
+                style={{
+                  padding: 3,
+                  borderRadius: 40,
+                  borderWidth: 2,
+                  borderColor: ((isPro || profile?.isPro) && isValidPremiumColor(premiumColor) ? getSafeColor(premiumColor) : colors.primary) + '80',
+                  shadowColor: colors.primary,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 5,
+                }}
+              >
+                {profile?.avatarUrl ? (
+                  <Image
+                    cachePolicy="memory-disk"
+                    source={{ uri: profile.avatarUrl }}
+                    style={{ width: 68, height: 68, borderRadius: 34 }}
+                  />
+                ) : (
+                  <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 68, height: 68, borderRadius: 34 }]}>
+                    <Text style={[s.avatarInitials, { fontSize: 26 }]}>{profile?.name?.[0]}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              {/* User Info & Badge */}
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text
+                    style={[
+                      { fontSize: 21, fontWeight: '900', letterSpacing: -0.4, flex: 1 },
+                      getNameStyle(profile?.nameColor, profile?.id, profile?.id, profile?.nameColor, premiumColor),
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {profile?.name}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => router.push('/(tabs)/profile' as any)}
+                    style={{ paddingHorizontal: 10, paddingVertical: 4, backgroundColor: colors.surfaceAlt, borderRadius: Radius.full }}
+                  >
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textSecondary }}>
+                      {t('common.edit', 'Perfil')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
+                  <View style={[s.chip, { backgroundColor: currentBadge.colors[0] + '22', borderColor: currentBadge.colors[0] + '40', borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 3 }]}>
+                    <Text style={{ fontSize: 12 }}>{currentBadge.icon}</Text>
+                    <Text style={{ color: currentBadge.colors[0], fontSize: 12, fontWeight: '800' }}>
+                      {String(t(`achievements.badges.${currentBadgeId}.label`, currentBadge.label))}
+                    </Text>
+                  </View>
+                  {isPro && (
+                    <View style={[s.chip, { backgroundColor: '#8B5CF622', borderColor: '#8B5CF650', borderWidth: 1, paddingHorizontal: 8, paddingVertical: 3 }]}>
+                      <Text style={{ color: '#8B5CF6', fontSize: 11, fontWeight: '900' }}>PRO</Text>
+                    </View>
+                  )}
                 </View>
               </View>
             </View>
-          </View>
-          
-          <View style={{ flexDirection: 'row', marginTop: 20, paddingTop: 20, borderTopWidth: 1, borderTopColor: colors.border + '30', justifyContent: 'space-around' }}>
-            <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => setActiveTab('friends')}>
-              <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: 'bold' }}>{acceptedFriends.length}</Text>
-              <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{t('social.you.friends', 'Friends')}</Text>
-            </TouchableOpacity>
-            <View style={{ width: 1, backgroundColor: colors.border + '30' }} />
-            <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => setActiveTab('ranking')}>
-              <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: 'bold' }}>#{userRankIndex >= 0 ? userRankIndex + 1 : '-'}</Text>
-              <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{t('social.you.ranking')}</Text>
-            </TouchableOpacity>
-            <View style={{ width: 1, backgroundColor: colors.border + '30' }} />
-            <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => setActiveTab('ranking')}>
-              <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: 'bold' }}>{Math.round(userRankInfo?.points || 0)}</Text>
-              <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{t('social.you.points')}</Text>
-            </TouchableOpacity>
-          </View>
-        </GlassCard>
 
-        {(() => {
-          const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
-          const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
-          const isPremiumCustom = (isPro || profile?.isPro) && isValidHex;
-          const accentColor = isPremiumCustom ? safePremiumColor : colors.primary;
-          return (
-            <>
-              {profile?.pinnedAchievements && profile.pinnedAchievements.length > 0 && (
-                <View
-                  style={
-                    isPremiumCustom && premiumColor
-                      ? {
-                          marginBottom: Spacing.md,
-                          borderRadius: 20,
-                          shadowColor: premiumColor,
-                          shadowOffset: { width: 0, height: 0 },
-                          shadowOpacity: 0.6,
-                          shadowRadius: 12,
-                        }
-                      : { marginBottom: Spacing.md }
-                  }
-                >
-                  <View
-                    style={{
-                      borderRadius: 20,
-                      overflow: 'hidden',
-                      borderWidth: isPremiumCustom ? 1.5 : 1,
-                      borderColor: isPremiumCustom ? safePremiumColor + '80' : colors.border,
-                    }}
-                  >
-                    {isPremiumCustom && premiumColor ? (
-                      <LinearGradient
-                        colors={[safePremiumColor + '25', safePremiumColor + '10', 'transparent'] as [string, string, string]}
-                        style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                      />
-                    ) : (
-                      <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface, borderRadius: 20 }]} />
-                    )}
-                    {isPremiumCustom && premiumColor && (
-                      <LinearGradient
-                        colors={[safePremiumColor + 'DD', safePremiumColor + '00'] as [string, string]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2 }}
-                      />
-                    )}
-                    <View style={{ padding: Spacing.md }}>
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
-                        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>{t('social.you.trophyShowcase', '🏆 Trophy Showcase')}</Text>
-                        <TouchableOpacity onPress={() => router.push('/modals/achievements' as any)}>
-                          <Text style={{ fontSize: 13, fontWeight: '700', color: accentColor }}>{t('common.edit', 'Editar')}</Text>
-                        </TouchableOpacity>
-                      </View>
-                      <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
-                        {profile.pinnedAchievements.map(id => {
-                          const ach = achievements.find((a: any) => a.id === id);
-                          if (!ach) return null;
-                          const isHolo = ach.tier === 'oro' || ach.tier === 'diamante';
-                          const tierColor = ach.tier === 'diamante' ? '#38BDF8' : 
-                                            ach.tier === 'oro' ? '#FBBF24' : 
-                                            ach.tier === 'plata' ? '#9CA3AF' : '#D97706';
-                          return (
-                            <View key={id} style={{
-                              flex: 1, backgroundColor: isPremiumCustom ? (safePremiumColor + '12') : (isHolo ? tierColor + '10' : 'transparent'), padding: Spacing.sm, borderRadius: 16, alignItems: 'center',
-                              borderWidth: 1, borderColor: isHolo ? tierColor + '50' : (isPremiumCustom ? safePremiumColor + '30' : 'transparent')
-                            }}>
-                              <LinearGradient
-                                colors={(isHolo ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5'] : ['transparent', 'transparent']) as [string, string, ...string[]]}
-                                style={{ width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: isHolo ? 'transparent' : colors.surfaceAlt, marginBottom: 8 }}
-                              >
-                                {ach.iconType === 'lucide' && ach.lucideIcon ? (
-                                  // @ts-ignore
-                                  React.createElement((LucideIcons as any)[ach.lucideIcon] || LucideIcons.Star, {
-                                    size: 24,
-                                    color: isHolo ? '#FFF' : tierColor,
-                                    strokeWidth: 2.5
-                                  })
-                                ) : (
-                                  <Text style={{ fontSize: 24 }}>{ach.icon}</Text>
-                                )}
-                              </LinearGradient>
-                              <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' }} numberOfLines={1}>{ach.title}</Text>
-                              <Text style={{ fontSize: 9, color: tierColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>
-                                {String(t(`achievements.tiers.${ach.tier === 'bronce' ? 'bronze' : ach.tier === 'plata' ? 'silver' : ach.tier === 'oro' ? 'gold' : ach.tier === 'diamante' ? 'diamond' : ach.tier}`, ach.tier))}
-                              </Text>
-                            </View>
-                          );
-                        })}
-                      </View>
-                    </View>
-                  </View>
-                </View>
-              )}
+            {/* 4 Interactive Stats Strip */}
+            <View style={{ flexDirection: 'row', marginTop: 18, paddingTop: 14, borderTopWidth: 1, borderTopColor: colors.border + '30', justifyContent: 'space-between' }}>
+              <TouchableOpacity
+                style={{ flex: 1, alignItems: 'center' }}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setActiveTab('friends');
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={{ color: colors.textPrimary, fontSize: 17, fontWeight: '900' }}>
+                  {acceptedFriends.length}
+                </Text>
+                <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '600', marginTop: 1 }}>
+                  {t('social.you.friends', 'Amigos')}
+                </Text>
+              </TouchableOpacity>
+
+              <View style={{ width: 1, height: 26, backgroundColor: colors.border + '30', alignSelf: 'center' }} />
 
               <TouchableOpacity
-                onPress={() => router.push('/modals/achievements' as any)}
+                style={{ flex: 1, alignItems: 'center' }}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  if (onNavigateToCompetitive) onNavigateToCompetitive();
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={{ color: colors.textPrimary, fontSize: 17, fontWeight: '900' }}>
+                  #{userRankIndex >= 0 ? userRankIndex + 1 : '-'}
+                </Text>
+                <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '600', marginTop: 1 }}>
+                  {t('social.you.ranking', 'Ranking')}
+                </Text>
+              </TouchableOpacity>
+
+              <View style={{ width: 1, height: 26, backgroundColor: colors.border + '30', alignSelf: 'center' }} />
+
+              <TouchableOpacity
+                style={{ flex: 1, alignItems: 'center' }}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  if (onNavigateToCompetitive) onNavigateToCompetitive();
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={{ color: colors.primary, fontSize: 17, fontWeight: '900' }}>
+                  {Math.round(userRankInfo?.points || 0)}
+                </Text>
+                <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '600', marginTop: 1 }}>
+                  {t('social.you.points', 'Puntos')}
+                </Text>
+              </TouchableOpacity>
+
+              <View style={{ width: 1, height: 26, backgroundColor: colors.border + '30', alignSelf: 'center' }} />
+
+              <View style={{ flex: 1, alignItems: 'center' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                  <Flame size={14} color="#F97316" fill="#F97316" />
+                  <Text style={{ color: '#F97316', fontSize: 17, fontWeight: '900' }}>
+                    {effectiveStreak}d
+                  </Text>
+                </View>
+                <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '600', marginTop: 1 }}>
+                  {t('calendar.streak', 'Racha')}
+                </Text>
+              </View>
+            </View>
+          </LinearGradient>
+        </GlassCard>
+
+        {/* ─── Gamified Achievements Progress Banner ──────────────── */}
+        <TouchableOpacity
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push('/modals/achievements' as any);
+          }}
+          activeOpacity={0.85}
+          style={{ marginBottom: 18 }}
+        >
+          <GlassCard style={{ padding: 14, borderWidth: 1, borderColor: '#F59E0B40' }}>
+            <LinearGradient
+              colors={['#F59E0B16', 'transparent']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={StyleSheet.absoluteFill}
+            />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <View
                 style={{
-                  flexDirection: 'row',
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  backgroundColor: '#F59E0B25',
                   alignItems: 'center',
-                  gap: 10,
-                  backgroundColor: '#F59E0B18',
-                  borderWidth: 1.5,
-                  borderColor: '#F59E0B40',
-                  borderRadius: 16,
-                  paddingHorizontal: 18,
-                  paddingVertical: 14,
-                  marginBottom: 20,
-                  marginTop: 8,
+                  justifyContent: 'center',
+                  borderWidth: 1,
+                  borderColor: '#F59E0B50',
                 }}
               >
                 <Trophy size={22} color="#F59E0B" />
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: '#F59E0B', fontWeight: '800', fontSize: 15 }}>{t('social.you.achievements')}</Text>
-                  <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 1 }}>{t('social.you.viewAllAchievements')}</Text>
-                </View>
-                <View style={{ backgroundColor: '#F59E0B', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 }}>
-                  <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>
-                    {achievements.filter((a: any) => a.unlocked).length}/{achievements.length}
+              </View>
+
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 15 }}>
+                    {t('social.you.achievements', 'Logros FitGO')}
+                  </Text>
+                  <Text style={{ color: '#F59E0B', fontWeight: '800', fontSize: 12 }}>
+                    {achPct}%
                   </Text>
                 </View>
-              </TouchableOpacity>
-            </>
-          );
-        })()}
 
-        <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>{t('social.you.yourPosts')}</Text>
+                {/* Progress bar */}
+                <View style={{ height: 6, backgroundColor: colors.surfaceAlt, borderRadius: 3, marginTop: 6, overflow: 'hidden' }}>
+                  <LinearGradient
+                    colors={['#F59E0B', '#F97316']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={{ width: `${Math.min(100, Math.max(achPct, 4))}%`, height: '100%', borderRadius: 3 }}
+                  />
+                </View>
+
+                <Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 4 }}>
+                  {t('social.you.viewAllAchievements', 'Toca para ver todos tus trofeos y medallas')}
+                </Text>
+              </View>
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <View style={{ backgroundColor: '#F59E0B', borderRadius: 12, paddingHorizontal: 9, paddingVertical: 4 }}>
+                  <Text style={{ color: '#fff', fontWeight: '900', fontSize: 13 }}>
+                    {unlockedAchievements.length}/{achievements.length}
+                  </Text>
+                </View>
+                <ChevronRight size={18} color={colors.textSecondary} />
+              </View>
+            </View>
+          </GlassCard>
+        </TouchableOpacity>
+
+        {/* ─── Trophy Showcase (Pinned) ────────────────── */}
+        {profile?.pinnedAchievements && profile.pinnedAchievements.length > 0 && (
+          <View style={{ marginBottom: 18 }}>
+            <GlassCard style={{ padding: 14 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Sparkles size={16} color={colors.primary} />
+                  <Text style={{ fontSize: 15, fontWeight: '800', color: colors.textPrimary }}>
+                    {t('social.you.trophyShowcase', 'Vitrina de Trofeos')}
+                  </Text>
+                </View>
+                <TouchableOpacity onPress={() => router.push('/modals/achievements' as any)}>
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary }}>
+                    {t('common.edit', 'Editar')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                {profile.pinnedAchievements.map((id: string) => {
+                  const ach = achievements.find((a: any) => a.id === id);
+                  if (!ach) return null;
+                  const isHolo = ach.tier === 'oro' || ach.tier === 'diamante';
+                  const tierColor = ach.tier === 'diamante' ? '#38BDF8' :
+                                    ach.tier === 'oro' ? '#FBBF24' :
+                                    ach.tier === 'plata' ? '#9CA3AF' : '#D97706';
+                  return (
+                    <View
+                      key={id}
+                      style={{
+                        flex: 1,
+                        backgroundColor: colors.surfaceAlt + '60',
+                        padding: 10,
+                        borderRadius: 16,
+                        alignItems: 'center',
+                        borderWidth: 1,
+                        borderColor: isHolo ? tierColor + '60' : colors.border + '40',
+                      }}
+                    >
+                      <LinearGradient
+                        colors={(isHolo ? [tierColor, tierColor === '#FBBF24' ? '#EA580C' : '#4F46E5'] : ['transparent', 'transparent']) as [string, string, ...string[]]}
+                        style={{ width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', backgroundColor: isHolo ? 'transparent' : colors.surfaceAlt, marginBottom: 8 }}
+                      >
+                        {ach.iconType === 'lucide' && ach.lucideIcon ? (
+                          // @ts-ignore
+                          React.createElement((LucideIcons as any)[ach.lucideIcon] || LucideIcons.Star, {
+                            size: 22,
+                            color: isHolo ? '#FFF' : tierColor,
+                            strokeWidth: 2.5,
+                          })
+                        ) : (
+                          <Text style={{ fontSize: 22 }}>{ach.icon}</Text>
+                        )}
+                      </LinearGradient>
+                      <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' }} numberOfLines={1}>
+                        {ach.title}
+                      </Text>
+                      <Text style={{ fontSize: 9, color: tierColor, fontWeight: '800', textTransform: 'uppercase', marginTop: 2 }}>
+                        {String(t(`achievements.tiers.${ach.tier === 'bronce' ? 'bronze' : ach.tier === 'plata' ? 'silver' : ach.tier === 'oro' ? 'gold' : ach.tier === 'diamante' ? 'diamond' : ach.tier}`, ach.tier))}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </GlassCard>
+          </View>
+        )}
+
+        {/* ─── Tus Publicaciones ────────────────────────── */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, paddingHorizontal: 4 }}>
+          <Text style={[s.sectionTitle, { color: colors.textPrimary, fontSize: 18 }]}>
+            {t('social.you.yourPosts', 'Tus Publicaciones')}
+          </Text>
+          {myPosts.length > 0 && (
+            <View style={{ backgroundColor: colors.surfaceAlt, paddingHorizontal: 10, paddingVertical: 3, borderRadius: Radius.full }}>
+              <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '700' }}>
+                {myPosts.length}
+              </Text>
+            </View>
+          )}
+        </View>
+
         {myPosts.length === 0 ? (
-          <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10 }}>{t('social.you.noPosts')}</Text>
+          <GlassCard style={{ padding: 24, alignItems: 'center', marginBottom: 20 }}>
+            <View
+              style={{
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                backgroundColor: colors.primary + '18',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 12,
+              }}
+            >
+              <Camera size={26} color={colors.primary} />
+            </View>
+            <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: '800', textAlign: 'center' }}>
+              {t('social.you.noPosts', 'Aún no has publicado nada')}
+            </Text>
+            <Text style={{ color: colors.textSecondary, fontSize: 13, textAlign: 'center', marginTop: 4, lineHeight: 18, maxWidth: 280 }}>
+              {t('social.you.noPostsDesc', 'Comparte tu comida de hoy, tu entrenamiento o un nuevo récord con la comunidad.')}
+            </Text>
+            <TouchableOpacity
+              style={{
+                marginTop: 16,
+                paddingHorizontal: 18,
+                paddingVertical: 10,
+                borderRadius: Radius.full,
+                overflow: 'hidden',
+                backgroundColor: colors.primary,
+              }}
+              onPress={() => {
+                Haptics.selectionAsync();
+                setActiveTab('feed');
+              }}
+              activeOpacity={0.85}
+            >
+              <Text style={{ color: '#fff', fontSize: 13, fontWeight: '800' }}>
+                ✍️ {t('social.you.createFirstPost', 'Crear una publicación')}
+              </Text>
+            </TouchableOpacity>
+          </GlassCard>
         ) : (
           myPosts.map(post => (
             <GlassCard key={post.id} style={{ marginBottom: 16, padding: 0, overflow: 'hidden' }}>
@@ -804,27 +982,37 @@ export default function FitGOSocial({
                     {post.user_profile?.avatar_url ? (
                       <Image cachePolicy="memory-disk" source={{ uri: post.user_profile.avatar_url }} style={s.avatarSmall} />
                     ) : (
-                      <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
+                      <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 34, height: 34, borderRadius: 17 }]}>
                         <Text style={[s.avatarInitials, { fontSize: 14 }]}>{post.user_profile?.name?.[0]}</Text>
                       </View>
                     )}
                     <View>
-                      <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id, profile?.id, profile?.nameColor, premiumColor)]}>{post.user_profile?.name}</Text>
-                      <Text style={{ color: colors.textMuted, fontSize: 11 }}>
-                        {new Date(post.created_at).toLocaleDateString()} {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id, profile?.id, profile?.nameColor, premiumColor)]}>
+                        {post.user_profile?.name}
+                      </Text>
+                      <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 1 }}>
+                        {new Date(post.created_at).toLocaleDateString()} · {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </Text>
                     </View>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => socialStore.deletePost(post.id)}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      socialStore.deletePost(post.id);
+                    }}
+                    style={{ padding: 6 }}
+                  >
                     <Trash2 size={16} color={colors.error} />
                   </TouchableOpacity>
                 </View>
-                <Text style={[s.postContent, { color: colors.textPrimary }]}>{parsePostContent(post.content).cleanContent}</Text>
+                <Text style={[s.postContent, { color: colors.textPrimary, lineHeight: 22, marginTop: 4 }]}>
+                  {parsePostContent(post.content).cleanContent}
+                </Text>
                 {post.image_url && (
                   post.image_url.toLowerCase().includes('.mp4') || post.image_url.toLowerCase().includes('.mov') || post.image_url.includes('posts/17') || post.image_url.includes('video') ? (
                     <VideoPlayerView videoUrl={post.image_url} style={s.postImage} />
                   ) : (
-                    <TouchableOpacity onPress={() => setViewingImage(post.image_url!)} activeOpacity={0.8}>
+                    <TouchableOpacity onPress={() => setViewingImage(post.image_url!)} activeOpacity={0.85}>
                       <Image cachePolicy="memory-disk" source={{ uri: post.image_url }} style={s.postImage} contentFit="cover" />
                     </TouchableOpacity>
                   )
@@ -833,17 +1021,17 @@ export default function FitGOSocial({
                   <PostAudioPlayer audioUrl={post.audio_url} colors={colors} />
                 )}
               </View>
-              <View style={[s.postFooter, { borderTopColor: colors.border + '33' }]}>
+              <View style={[s.postFooter, { borderTopColor: colors.border + '25', paddingVertical: 10 }]}>
                 <View style={s.postAction}>
                   <Heart size={18} color={post.is_liked ? colors.error : colors.textSecondary} fill={post.is_liked ? colors.error : 'transparent'} />
-                  <Text style={{ color: post.is_liked ? colors.error : colors.textSecondary, fontSize: 12, marginLeft: 4 }}>
-                    {post.likes_count > 0 ? post.likes_count : ''} {t('social.feed.like')}
+                  <Text style={{ color: post.is_liked ? colors.error : colors.textSecondary, fontSize: 13, marginLeft: 6, fontWeight: '700' }}>
+                    {post.likes_count > 0 ? post.likes_count : ''} {t('social.feed.like', 'Me gusta')}
                   </Text>
                 </View>
                 <View style={s.postAction}>
                   <MessageSquare size={18} color={colors.textSecondary} />
-                  <Text style={{ color: colors.textSecondary, fontSize: 12, marginLeft: 4 }}>
-                    {post.comments_count > 0 ? post.comments_count : ''} {t('social.feed.comment')}
+                  <Text style={{ color: colors.textSecondary, fontSize: 13, marginLeft: 6, fontWeight: '700' }}>
+                    {post.comments_count > 0 ? post.comments_count : ''} {t('social.feed.comment', 'Comentarios')}
                   </Text>
                 </View>
               </View>
@@ -951,9 +1139,8 @@ export default function FitGOSocial({
   ), [newPostContent, selectedImage, selectedVideo, selectedAudio, isPosting, isRecording, recordingElapsed, profile?.avatarUrl, profile?.name, colors, handleCreatePost, handleStartRecording, handleStopRecording, formatRecordingTime, t]);
 
   const feedHeader = useMemo(() => {
-    const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
-    const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
-    const isPremiumCustom = (isPro || profile?.isPro) && isValidHex;
+    const safePremiumColor = getSafeColor(premiumColor, colors.primary);
+    const isPremiumCustom = !!((isPro || profile?.isPro) && isValidPremiumColor(premiumColor));
     const accentColor = isPremiumCustom ? safePremiumColor : colors.primary;
 
     // Count active filters (excluding defaults)
@@ -1378,58 +1565,133 @@ export default function FitGOSocial({
     return (
       <View style={s.tabContent}>
         {/* Sub-tabs for Friends Section */}
-        <View style={{ flexDirection: 'row', backgroundColor: colors.surfaceAlt, borderRadius: 12, padding: 4, marginBottom: 20 }}>
+        <View style={{ flexDirection: 'row', backgroundColor: colors.surfaceAlt, borderRadius: Radius.full, padding: 4, marginBottom: 18, borderWidth: 1, borderColor: colors.border + '30' }}>
           <TouchableOpacity 
-            style={{ flex: 1, paddingVertical: 8, alignItems: 'center', backgroundColor: friendsTab === 'list' ? colors.primary : 'transparent', borderRadius: 8 }}
-            onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setFriendsTab('list'); }}
+            style={{
+              flex: 1,
+              paddingVertical: 9,
+              alignItems: 'center',
+              backgroundColor: friendsTab === 'list' ? colors.primary : 'transparent',
+              borderRadius: Radius.full,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              gap: 6,
+              ...(friendsTab === 'list' ? Shadow.sm : {}),
+            }}
+            onPress={() => {
+              Haptics.selectionAsync();
+              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+              setFriendsTab('list');
+            }}
+            activeOpacity={0.85}
           >
-            <Text style={{ color: friendsTab === 'list' ? '#fff' : colors.textSecondary, fontWeight: '600' }}>{t('social.friends.myFriends', 'My Friends')}</Text>
+            <Text style={{ color: friendsTab === 'list' ? '#fff' : colors.textSecondary, fontWeight: '800', fontSize: 13 }}>
+              {t('social.friends.myFriends', 'Mis Amigos')}
+            </Text>
+            {acceptedFriends.length > 0 && (
+              <View style={{ backgroundColor: friendsTab === 'list' ? 'rgba(255,255,255,0.25)' : colors.surface, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 10 }}>
+                <Text style={{ color: friendsTab === 'list' ? '#fff' : colors.textSecondary, fontSize: 10, fontWeight: '800' }}>
+                  {acceptedFriends.length}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
+
           <TouchableOpacity 
-            style={{ flex: 1, paddingVertical: 8, alignItems: 'center', backgroundColor: friendsTab === 'search' ? colors.primary : 'transparent', borderRadius: 8 }}
-            onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setFriendsTab('search'); }}
+            style={{
+              flex: 1,
+              paddingVertical: 9,
+              alignItems: 'center',
+              backgroundColor: friendsTab === 'search' ? colors.primary : 'transparent',
+              borderRadius: Radius.full,
+              ...(friendsTab === 'search' ? Shadow.sm : {}),
+            }}
+            onPress={() => {
+              Haptics.selectionAsync();
+              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+              setFriendsTab('search');
+            }}
+            activeOpacity={0.85}
           >
-            <Text style={{ color: friendsTab === 'search' ? '#fff' : colors.textSecondary, fontWeight: '600' }}>{t('social.friends.search', 'Search')}</Text>
+            <Text style={{ color: friendsTab === 'search' ? '#fff' : colors.textSecondary, fontWeight: '800', fontSize: 13 }}>
+              {t('social.friends.search', 'Buscar')}
+            </Text>
           </TouchableOpacity>
+
           <TouchableOpacity 
-            style={{ flex: 1, paddingVertical: 8, alignItems: 'center', backgroundColor: friendsTab === 'requests' ? colors.primary : 'transparent', borderRadius: 8, flexDirection: 'row', justifyContent: 'center', gap: 6 }}
-            onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setFriendsTab('requests'); }}
+            style={{
+              flex: 1,
+              paddingVertical: 9,
+              alignItems: 'center',
+              backgroundColor: friendsTab === 'requests' ? colors.primary : 'transparent',
+              borderRadius: Radius.full,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              gap: 6,
+              ...(friendsTab === 'requests' ? Shadow.sm : {}),
+            }}
+            onPress={() => {
+              Haptics.selectionAsync();
+              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+              setFriendsTab('requests');
+            }}
+            activeOpacity={0.85}
           >
-            <Text style={{ color: friendsTab === 'requests' ? '#fff' : colors.textSecondary, fontWeight: '600' }}>{t('social.friends.requests', 'Requests')}</Text>
+            <Text style={{ color: friendsTab === 'requests' ? '#fff' : colors.textSecondary, fontWeight: '800', fontSize: 13 }}>
+              {t('social.friends.requests', 'Solicitudes')}
+            </Text>
             {receivedRequests.length > 0 && (
-              <View style={{ backgroundColor: friendsTab === 'requests' ? '#fff' : colors.error, width: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ color: friendsTab === 'requests' ? colors.primary : '#fff', fontSize: 10, fontWeight: 'bold' }}>{receivedRequests.length}</Text>
+              <View style={{ backgroundColor: friendsTab === 'requests' ? '#fff' : colors.error, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 10, minWidth: 18, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ color: friendsTab === 'requests' ? colors.primary : '#fff', fontSize: 10, fontWeight: '900' }}>
+                  {receivedRequests.length}
+                </Text>
               </View>
             )}
           </TouchableOpacity>
         </View>
 
+        {/* ─── Search Tab ────────────────────── */}
         {friendsTab === 'search' && (
-          <GlassCard accentColor={colors.primary} style={{ marginBottom: 20 }}>
-            <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>{t('social.friends.addFriends')}</Text>
-            <View style={[s.searchBar, { backgroundColor: colors.surfaceAlt }]}>
-              <Search size={20} color={colors.textSecondary} />
+          <GlassCard accentColor={colors.primary} style={{ marginBottom: 20, padding: 16 }}>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 12 }]}>
+              {t('social.friends.addFriends', 'Buscar personas')}
+            </Text>
+            <View style={[s.searchBar, { backgroundColor: colors.surfaceAlt, borderWidth: 1, borderColor: colors.border + '30' }]}>
+              <Search size={18} color={colors.textSecondary} />
               <TextInput
                 style={[s.searchInput, { color: colors.textPrimary }]}
-                placeholder={t('social.friends.searchPlaceholder')}
+                placeholder={t('social.friends.searchPlaceholder', 'Buscar por nombre o correo...')}
                 placeholderTextColor={colors.textMuted}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 onSubmitEditing={handleSearch}
+                returnKeyType="search"
               />
-              <TouchableOpacity onPress={handleSearch}>
-                <Text style={{ color: colors.primary, fontWeight: '700' }}>{t('social.friends.searchBtn')}</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  handleSearch();
+                }}
+                style={{ paddingHorizontal: 12, paddingVertical: 6, backgroundColor: colors.primary, borderRadius: Radius.full }}
+              >
+                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12 }}>
+                  {t('social.friends.searchBtn', 'Buscar')}
+                </Text>
               </TouchableOpacity>
             </View>
 
-            {isSearching && <ActivityIndicator color={colors.primary} style={{ marginVertical: 10 }} />}
+            {isSearching && <ActivityIndicator color={colors.primary} style={{ marginVertical: 16 }} />}
             
             {searchResults.length === 0 && !isSearching && searchQuery.length > 0 && (
-              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10 }}>{t('social.friends.noResults', 'No results found.')}</Text>
+              <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+                <Text style={{ color: colors.textMuted, fontSize: 14 }}>
+                  {t('social.friends.noResults', 'No se encontraron usuarios.')}
+                </Text>
+              </View>
             )}
 
             {searchResults.map(user => (
-              <View key={user.id} style={[s.userRow, { borderBottomColor: colors.border + '33' }]}>
+              <View key={user.id} style={[s.userRow, { borderBottomColor: colors.border + '25' }]}>
                 <TouchableOpacity style={s.userInfo} onPress={() => handleUserPress(user)}>
                   {user.avatar_url ? (
                     <Image cachePolicy="memory-disk" source={{ uri: user.avatar_url }} style={s.avatar} />
@@ -1438,55 +1700,78 @@ export default function FitGOSocial({
                       <Text style={s.avatarInitials}>{user.name?.[0]}</Text>
                     </View>
                   )}
-                  <View>
-                    <Text style={[s.userName, getNameStyle(user.name_color, user.id, profile?.id, profile?.nameColor, premiumColor)]} numberOfLines={1}>{user.name}</Text>
-                    <Text style={{ color: colors.textMuted, fontSize: 12 }}>{user.email}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[s.userName, getNameStyle(user.name_color, user.id, profile?.id, profile?.nameColor, premiumColor)]} numberOfLines={1}>
+                      {user.name}
+                    </Text>
+                    <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 1 }} numberOfLines={1}>
+                      {user.email}
+                    </Text>
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={[s.actionBtn, { backgroundColor: colors.primary }]}
-                  onPress={() => handleAddFriend(user.id)}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    handleAddFriend(user.id);
+                  }}
+                  activeOpacity={0.85}
                 >
-                  <Plus size={16} color="#fff" />
-                  <Text style={s.actionBtnText}>{t('social.friends.sendRequest')}</Text>
+                  <Plus size={15} color="#fff" />
+                  <Text style={s.actionBtnText}>{t('social.friends.sendRequest', 'Agregar')}</Text>
                 </TouchableOpacity>
               </View>
             ))}
           </GlassCard>
         )}
 
+        {/* ─── Requests Tab ──────────────────── */}
         {friendsTab === 'requests' && (
           <View>
-            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>{t('social.friends.receivedRequests', 'Received Requests')}</Text>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 4, marginBottom: 12 }]}>
+              {t('social.friends.receivedRequests', 'Solicitudes Recibidas')}
+            </Text>
             {receivedRequests.length === 0 ? (
-              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10, marginBottom: 20 }}>{t('social.friends.noReceived', 'No received requests.')}</Text>
+              <GlassCard style={{ padding: 20, alignItems: 'center', marginBottom: 20 }}>
+                <Text style={{ color: colors.textMuted, fontSize: 14 }}>
+                  {t('social.friends.noReceived', 'No tienes solicitudes pendientes.')}
+                </Text>
+              </GlassCard>
             ) : (
               <View style={{ marginBottom: 20 }}>
                 {receivedRequests.map(req => (
-                  <GlassCard key={req.id} style={{ marginBottom: 8, padding: 12 }}>
+                  <GlassCard key={req.id} style={{ marginBottom: 10, padding: 14 }}>
                     <View style={s.userRow}>
                       <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(req.friend_profile)}>
                         {req.friend_profile?.avatar_url ? (
                           <Image cachePolicy="memory-disk" source={{ uri: req.friend_profile.avatar_url }} style={s.avatarSmall} />
                         ) : (
-                          <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
-                            <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
+                          <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 36, height: 36, borderRadius: 18 }]}>
+                            <Text style={[s.avatarInitials, { fontSize: 15 }]}>{req.friend_profile?.name?.[0]}</Text>
                           </View>
                         )}
-                        <Text style={[s.userName, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>{req.friend_profile?.name}</Text>
+                        <Text style={[s.userName, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
+                          {req.friend_profile?.name}
+                        </Text>
                       </TouchableOpacity>
                       <View style={{ flexDirection: 'row', gap: 8 }}>
                         <TouchableOpacity 
                           style={[s.iconBtn, { backgroundColor: colors.success }]}
-                          onPress={() => socialStore.acceptFriend(req.id)}
+                          onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                            socialStore.acceptFriend(req.id);
+                          }}
                         >
-                          <Check size={18} color="#fff" />
+                          <Check size={18} color="#fff" strokeWidth={2.5} />
                         </TouchableOpacity>
                         <TouchableOpacity 
-                          style={[s.iconBtn, { backgroundColor: colors.error }]}
-                          onPress={() => socialStore.rejectFriend(req.id)}
+                          style={[s.iconBtn, { backgroundColor: colors.error + '25' }]}
+                          onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            socialStore.rejectFriend(req.id);
+                          }}
                         >
-                          <X size={18} color="#fff" />
+                          <X size={18} color={colors.error} strokeWidth={2.5} />
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -1495,30 +1780,48 @@ export default function FitGOSocial({
               </View>
             )}
 
-            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12, marginTop: 10 }]}>{t('social.friends.sentRequests', 'Sent Requests')}</Text>
+            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 4, marginBottom: 12, marginTop: 4 }]}>
+              {t('social.friends.sentRequests', 'Solicitudes Enviadas')}
+            </Text>
             {sentRequests.length === 0 ? (
-              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10, marginBottom: 20 }}>{t('social.friends.noSent', 'No sent requests.')}</Text>
+              <GlassCard style={{ padding: 20, alignItems: 'center', marginBottom: 20 }}>
+                <Text style={{ color: colors.textMuted, fontSize: 14 }}>
+                  {t('social.friends.noSent', 'No hay solicitudes enviadas.')}
+                </Text>
+              </GlassCard>
             ) : (
               <View style={{ marginBottom: 20 }}>
                 {sentRequests.map(req => (
-                  <GlassCard key={req.id} style={{ marginBottom: 8, padding: 12, opacity: 0.8 }}>
+                  <GlassCard key={req.id} style={{ marginBottom: 10, padding: 14, opacity: 0.85 }}>
                     <View style={s.userRow}>
                       <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(req.friend_profile)}>
                         {req.friend_profile?.avatar_url ? (
                           <Image cachePolicy="memory-disk" source={{ uri: req.friend_profile.avatar_url }} style={s.avatarSmall} />
                         ) : (
-                          <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
-                            <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
+                          <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 36, height: 36, borderRadius: 18 }]}>
+                            <Text style={[s.avatarInitials, { fontSize: 15 }]}>{req.friend_profile?.name?.[0]}</Text>
                           </View>
                         )}
-                        <Text style={[s.userName, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>{req.friend_profile?.name}</Text>
+                        <Text style={[s.userName, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
+                          {req.friend_profile?.name}
+                        </Text>
                       </TouchableOpacity>
-                      <View style={{ backgroundColor: colors.surfaceAlt, paddingHorizontal: 10, paddingVertical: 4, borderRadius: Radius.full }}>
-                        <Text style={{ color: colors.textMuted, fontSize: 11 }}>{t('social.friends.pending', 'Pending')}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <View style={{ backgroundColor: colors.surfaceAlt, paddingHorizontal: 10, paddingVertical: 4, borderRadius: Radius.full }}>
+                          <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '700' }}>
+                            {t('social.friends.pending', 'Pendiente')}
+                          </Text>
+                        </View>
+                        <TouchableOpacity
+                          onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            socialStore.rejectFriend(req.id);
+                          }}
+                          style={{ padding: 6 }}
+                        >
+                          <Trash2 size={16} color={colors.textMuted} />
+                        </TouchableOpacity>
                       </View>
-                      <TouchableOpacity onPress={() => socialStore.rejectFriend(req.id)} style={{ marginLeft: 12 }}>
-                        <Trash2 size={16} color={colors.textMuted} />
-                      </TouchableOpacity>
                     </View>
                   </GlassCard>
                 ))}
@@ -1527,36 +1830,84 @@ export default function FitGOSocial({
           </View>
         )}
 
+        {/* ─── Friends List Tab ──────────────── */}
         {friendsTab === 'list' && (
           <View>
-            <Text style={[s.sectionTitle, { color: colors.textPrimary, marginLeft: 8, marginBottom: 12 }]}>{t('social.friends.myFriends', 'My Friends')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, paddingHorizontal: 4 }}>
+              <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>
+                {t('social.friends.myFriends', 'Mis Amigos')}
+              </Text>
+              <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '600' }}>
+                {acceptedFriends.length} {acceptedFriends.length === 1 ? 'amigo' : 'amigos'}
+              </Text>
+            </View>
+
             {acceptedFriends.length === 0 ? (
-              <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10 }}>{t('social.friends.noFriends', 'You have no friends yet.')}</Text>
+              <GlassCard style={{ padding: 26, alignItems: 'center', marginTop: 8 }}>
+                <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primary + '18', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+                  <Users size={30} color={colors.primary} />
+                </View>
+                <Text style={{ color: colors.textPrimary, fontSize: 17, fontWeight: '800', textAlign: 'center' }}>
+                  {t('social.friends.noFriends', 'Aún no tienes amigos agregados')}
+                </Text>
+                <Text style={{ color: colors.textSecondary, fontSize: 13, textAlign: 'center', marginTop: 4, lineHeight: 18, maxWidth: 280 }}>
+                  {t('social.friends.noFriendsDesc', 'Busca a tus compañeros de entrenamiento para ver sus logros, retarlos y chatear.')}
+                </Text>
+                <TouchableOpacity
+                  style={{
+                    marginTop: 18,
+                    paddingHorizontal: 20,
+                    paddingVertical: 10,
+                    borderRadius: Radius.full,
+                    backgroundColor: colors.primary,
+                  }}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    setFriendsTab('search');
+                  }}
+                  activeOpacity={0.85}
+                >
+                  <Text style={{ color: '#fff', fontSize: 13, fontWeight: '800' }}>
+                    🔍 {t('social.friends.findFriends', 'Buscar amigos')}
+                  </Text>
+                </TouchableOpacity>
+              </GlassCard>
             ) : (
               acceptedFriends.map(friend => (
-                <GlassCard key={friend.id} style={{ marginBottom: 8, padding: 12 }}>
+                <GlassCard key={friend.id} style={{ marginBottom: 10, padding: 12 }}>
                   <View style={s.userRow}>
                     <TouchableOpacity style={s.userInfo} onPress={() => setInspectingUser(friend.friend_profile)}>
                       {friend.friend_profile?.avatar_url ? (
                         <Image cachePolicy="memory-disk" source={{ uri: friend.friend_profile.avatar_url }} style={s.avatarSmall} />
                       ) : (
-                        <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 32, height: 32 }]}>
-                          <Text style={[s.avatarInitials, { fontSize: 14 }]}>{friend.friend_profile?.name?.[0]}</Text>
+                        <View style={[s.avatarPlaceholder, { backgroundColor: colors.primary, width: 38, height: 38, borderRadius: 19 }]}>
+                          <Text style={[s.avatarInitials, { fontSize: 16 }]}>{friend.friend_profile?.name?.[0]}</Text>
                         </View>
                       )}
-                      <Text style={[s.userName, getNameStyle(friend.friend_profile?.name_color, friend.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>{friend.friend_profile?.name}</Text>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[s.userName, getNameStyle(friend.friend_profile?.name_color, friend.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
+                          {friend.friend_profile?.name}
+                        </Text>
+                        <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 1 }}>
+                          {friend.friend_profile?.email ? friend.friend_profile.email.split('@')[0] : 'FitGO Member'}
+                        </Text>
+                      </View>
                     </TouchableOpacity>
+
                     <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
                       <TouchableOpacity 
                         style={s.iconBtn}
-                        onPress={() => router.push({
-                          pathname: '/modals/chat',
-                          params: { 
-                            friendId: friend.friend_profile?.id, 
-                            friendName: friend.friend_profile?.name, 
-                            friendAvatar: friend.friend_profile?.avatar_url || ''
-                          }
-                        } as any)}
+                        onPress={() => {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          router.push({
+                            pathname: '/modals/chat',
+                            params: { 
+                              friendId: friend.friend_profile?.id, 
+                              friendName: friend.friend_profile?.name, 
+                              friendAvatar: friend.friend_profile?.avatar_url || ''
+                            }
+                          } as any);
+                        }}
                       >
                         {socialStore.unreadCounts[friend.friend_profile?.id || ''] > 0 ? (
                           <LinearGradient
@@ -1565,18 +1916,24 @@ export default function FitGOSocial({
                             end={{ x: 1, y: 1 }}
                             style={s.gradientIconBtn}
                           >
-                            <MessageSquare size={18} color="#fff" />
+                            <MessageSquare size={17} color="#fff" />
                             <View style={s.badge}>
                               <Text style={s.badgeText}>{socialStore.unreadCounts[friend.friend_profile?.id || '']}</Text>
                             </View>
                           </LinearGradient>
                         ) : (
-                          <MessageSquare size={18} color={colors.primary} />
+                          <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' }}>
+                            <MessageSquare size={17} color={colors.primary} />
+                          </View>
                         )}
                       </TouchableOpacity>
+
                       <TouchableOpacity
-                        style={[s.iconBtn, { backgroundColor: colors.error + '20' }]}
-                        onPress={() => setDeleteFriendAlert({ friendId: friend.id, friendName: friend.friend_profile?.name || 'este usuario' })}
+                        style={[s.iconBtn, { backgroundColor: colors.error + '18' }]}
+                        onPress={() => {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          setDeleteFriendAlert({ friendId: friend.id, friendName: friend.friend_profile?.name || 'este usuario' });
+                        }}
                       >
                         <Trash2 size={16} color={colors.error} />
                       </TouchableOpacity>
@@ -1602,8 +1959,17 @@ export default function FitGOSocial({
   return (
     <View style={[s.container, { backgroundColor: 'transparent' }]}>
 
-      <View style={s.tabsWrapper}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 4 }}>
+      <View style={{ paddingHorizontal: 18, marginBottom: 12 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            backgroundColor: colors.surfaceAlt,
+            borderRadius: Radius.full,
+            padding: 4,
+            borderWidth: 1,
+            borderColor: colors.border + '35',
+          }}
+        >
           {(['you', 'feed', 'friends'] as TabType[]).map((tab) => {
             const isActive = activeTab === tab;
             let badgeCount = 0;
@@ -1612,44 +1978,62 @@ export default function FitGOSocial({
               const pendingRequests = socialStore.friends.filter(f => f.status === 'pending' && f.user_id_2 === profile?.id).length;
               badgeCount = totalUnreadMessages + pendingRequests;
             }
+            const label = tab === 'you' ? t('social.tabs.you', 'Tú') : tab === 'feed' ? t('social.tabs.feed', 'Comunidad') : t('social.tabs.friends', 'Amigos');
+            const Icon = tab === 'you' ? User : tab === 'feed' ? Globe : Users;
             return (
-              <TouchableOpacity 
-                key={tab} 
-                style={{ borderRadius: 100, overflow: 'hidden', marginRight: 10 }}
+              <TouchableOpacity
+                key={tab}
+                style={{
+                  flex: 1,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  paddingVertical: 9,
+                  borderRadius: Radius.full,
+                  overflow: 'hidden',
+                  ...(isActive ? Shadow.sm : {}),
+                }}
                 onPress={() => {
+                  Haptics.selectionAsync();
                   LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                   setActiveTab(tab);
                 }}
+                activeOpacity={0.85}
               >
-                <LinearGradient
-                  colors={isActive ? [colors.primary, colors.secondary || '#A855F7'] : ['transparent', 'transparent']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={[
-                    s.tab, 
-                    { backgroundColor: isActive ? 'transparent' : colors.surfaceAlt }
-                  ]}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Text style={[
-                      s.tabText, 
-                      { color: isActive ? '#fff' : colors.textSecondary },
-                    ]}>
-                      {t('social.tabs.' + tab)}
+                {isActive && (
+                  <LinearGradient
+                    colors={[colors.primary, colors.secondary || '#8B5CF6']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                )}
+                <Icon size={15} color={isActive ? '#fff' : colors.textSecondary} strokeWidth={2.2} />
+                <Text style={{ fontSize: 13, fontWeight: '800', color: isActive ? '#fff' : colors.textSecondary }}>
+                  {label}
+                </Text>
+                {badgeCount > 0 && (
+                  <View
+                    style={{
+                      backgroundColor: isActive ? '#fff' : colors.error,
+                      paddingHorizontal: 6,
+                      paddingVertical: 1,
+                      borderRadius: 10,
+                      minWidth: 18,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Text style={{ color: isActive ? colors.primary : '#fff', fontSize: 10, fontWeight: '900' }}>
+                      {badgeCount}
                     </Text>
-                    {badgeCount > 0 && (
-                      <View style={{ backgroundColor: isActive ? '#fff' : colors.error, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10, minWidth: 20, alignItems: 'center', justifyContent: 'center' }}>
-                        <Text style={{ color: isActive ? colors.primary : '#fff', fontSize: 10, fontWeight: 'bold' }}>
-                          {badgeCount}
-                        </Text>
-                      </View>
-                    )}
                   </View>
-                </LinearGradient>
+                )}
               </TouchableOpacity>
             );
           })}
-        </ScrollView>
+        </View>
       </View>
 
       <GestureDetector gesture={swipeGesture}>
@@ -1756,7 +2140,7 @@ export default function FitGOSocial({
                       }}
                     >
                       <Users size={16} color={colors.textPrimary} />
-                      <Text style={{ color: colors.textPrimary, fontWeight: '700', fontSize: 14 }}>Ver Perfil Completo</Text>
+                      <Text style={{ color: colors.textPrimary, fontWeight: '700', fontSize: 14 }}>{t('social.viewFullProfile', 'Ver Perfil Completo')}</Text>
                     </TouchableOpacity>
 
                     {/* Friend action */}
@@ -1764,19 +2148,19 @@ export default function FitGOSocial({
                       <View style={{ gap: 8 }}>
                         <View style={{ height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.success + '20', flexDirection: 'row', gap: 8 }}>
                           <Check size={16} color={colors.success} />
-                          <Text style={{ color: colors.success, fontWeight: '700', fontSize: 14 }}>Son Amigos</Text>
+                          <Text style={{ color: colors.success, fontWeight: '700', fontSize: 14 }}>{t('social.friends.alreadyFriends', 'Son Amigos')}</Text>
                         </View>
                         <TouchableOpacity
                           style={{ height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.error + '15', borderWidth: 1, borderColor: colors.error + '40', flexDirection: 'row', gap: 8 }}
                           onPress={() => setDeleteFriendAlert({ friendId: friendStatus.id, friendName: inspectingUser?.name || 'este usuario' })}
                         >
                           <Trash2 size={16} color={colors.error} />
-                          <Text style={{ color: colors.error, fontWeight: '700', fontSize: 14 }}>Eliminar Amigo</Text>
+                          <Text style={{ color: colors.error, fontWeight: '700', fontSize: 14 }}>{t('social.friends.removeFriend', 'Eliminar Amigo')}</Text>
                         </TouchableOpacity>
                       </View>
                     ) : friendStatus?.status === 'pending' ? (
                       <View style={{ height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceAlt, flexDirection: 'row', gap: 8 }}>
-                        <Text style={{ color: colors.textMuted, fontWeight: '700', fontSize: 14 }}>Solicitud Pendiente</Text>
+                        <Text style={{ color: colors.textMuted, fontWeight: '700', fontSize: 14 }}>{t('social.friends.pendingRequest', 'Solicitud Pendiente')}</Text>
                       </View>
                     ) : (
                       <TouchableOpacity
@@ -1795,7 +2179,7 @@ export default function FitGOSocial({
                           style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                         >
                           <Plus size={18} color="#fff" />
-                          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Añadir Amigo</Text>
+                          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>{t('social.friends.addFriend', 'Añadir Amigo')}</Text>
                         </LinearGradient>
                       </TouchableOpacity>
                     )}

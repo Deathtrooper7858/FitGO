@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Timer, Play, Square, Flame } from 'lucide-react-native';
 import { GlassCard } from '../GlassCard';
@@ -56,18 +57,20 @@ export function FastingWidget({ colors, t }: FastingWidgetProps) {
     setProtocol(p, FASTING_PRESETS[p]);
   };
 
+  const primaryGradient = colors.gradientPrimary || [colors.primary, colors.primaryDark || colors.primary];
+
   return (
-    <GlassCard noPadding showStripe accentColor="#8B5CF6">
+    <GlassCard noPadding showStripe accentColor={colors.primary}>
       <View style={[s.card, { borderWidth: 0 }]}>
         <View style={s.cardHeader}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Timer size={20} color="#8B5CF6" />
+            <Timer size={20} color={colors.primary} />
             <Text style={[s.cardTitle, { color: colors.textPrimary }]}>
               {t('tracker.intermittentFasting', 'Ayuno Intermitente')}
             </Text>
           </View>
           <View style={[s.badge, { backgroundColor: isFasting ? '#10B98120' : colors.surfaceAlt }]}>
-            <Text style={[s.badgeText, { color: isFasting ? '#10B981' : colors.textMuted }]}>
+            <Text style={[s.badgeText, { color: isFasting ? '#10B981' : (protocol ? colors.primary : colors.textMuted) }]}>
               {isFasting ? t('tracker.fastingActive', 'En Ayuno') : protocol}
             </Text>
           </View>
@@ -79,40 +82,50 @@ export function FastingWidget({ colors, t }: FastingWidgetProps) {
               {t('tracker.chooseProtocol', 'Elige tu protocolo de ayuno:')}
             </Text>
             <View style={s.presetRow}>
-              {(['14:10', '16:8', '18:6', '20:4'] as FastingProtocol[]).map((p) => (
-                <TouchableOpacity
-                  key={p}
-                  style={[
-                    s.presetBtn,
-                    {
-                      backgroundColor: protocol === p ? '#8B5CF622' : colors.surfaceAlt,
-                      borderColor: protocol === p ? '#8B5CF6' : 'transparent',
-                    },
-                  ]}
-                  onPress={() => handleSelectProtocol(p)}
-                  activeOpacity={0.7}
-                >
-                  <Text
+              {(['14:10', '16:8', '18:6', '20:4'] as FastingProtocol[]).map((p) => {
+                const isSelected = protocol === p;
+                return (
+                  <TouchableOpacity
+                    key={p}
                     style={[
-                      s.presetText,
-                      { color: protocol === p ? '#8B5CF6' : colors.textSecondary, fontWeight: protocol === p ? '800' : '600' },
+                      s.presetBtn,
+                      {
+                        backgroundColor: isSelected ? colors.primary + '22' : colors.surfaceAlt,
+                        borderColor: isSelected ? colors.primary : 'transparent',
+                      },
                     ]}
+                    onPress={() => handleSelectProtocol(p)}
+                    activeOpacity={0.7}
                   >
-                    {p}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text
+                      style={[
+                        s.presetText,
+                        { color: isSelected ? colors.primary : colors.textSecondary, fontWeight: isSelected ? '800' : '600' },
+                      ]}
+                    >
+                      {p}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
 
             <TouchableOpacity
-              style={[s.mainActionBtn, { backgroundColor: '#8B5CF6' }]}
               onPress={handleToggleFast}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
+              style={[s.actionBtnWrap, { shadowColor: colors.primary }]}
             >
-              <Play size={18} color="#fff" fill="#fff" />
-              <Text style={s.mainActionBtnText}>
-                {t('tracker.startFast', 'Comenzar Ayuno')} ({targetHours}h)
-              </Text>
+              <LinearGradient
+                colors={primaryGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={s.mainActionBtn}
+              >
+                <Play size={18} color="#fff" fill="#fff" />
+                <Text style={s.mainActionBtnText}>
+                  {t('tracker.startFast', 'Comenzar Ayuno')} ({targetHours}h)
+                </Text>
+              </LinearGradient>
             </TouchableOpacity>
           </>
         ) : (
@@ -127,7 +140,7 @@ export function FastingWidget({ colors, t }: FastingWidgetProps) {
                 </Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
-                <Text style={{ fontSize: 22, fontWeight: '900', color: progress >= 1 ? '#10B981' : '#8B5CF6' }}>
+                <Text style={{ fontSize: 22, fontWeight: '900', color: progress >= 1 ? '#10B981' : colors.primary }}>
                   {progressPct}%
                 </Text>
                 {progress >= 1 && (
@@ -143,12 +156,14 @@ export function FastingWidget({ colors, t }: FastingWidgetProps) {
 
             {/* Progress bar */}
             <View style={[s.progressTrack, { backgroundColor: colors.surfaceAlt }]}>
-              <View
+              <LinearGradient
+                colors={progress >= 1 ? ['#10B981', '#059669'] : primaryGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
                 style={[
                   s.progressBar,
                   {
                     width: `${progressPct}%`,
-                    backgroundColor: progress >= 1 ? '#10B981' : '#8B5CF6',
                   },
                 ]}
               />
@@ -156,7 +171,7 @@ export function FastingWidget({ colors, t }: FastingWidgetProps) {
 
             <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
               <TouchableOpacity
-                style={[s.cancelBtn, { borderColor: colors.border }]}
+                style={[s.cancelBtn, { borderColor: colors.border, backgroundColor: colors.surfaceAlt + '55' }]}
                 onPress={() => {
                   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
                   cancelFast();
@@ -169,14 +184,21 @@ export function FastingWidget({ colors, t }: FastingWidgetProps) {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[s.mainActionBtn, { flex: 2, backgroundColor: progress >= 1 ? '#10B981' : '#EF4444' }]}
+                style={[s.actionBtnWrap, { flex: 2 }]}
                 onPress={handleToggleFast}
-                activeOpacity={0.8}
+                activeOpacity={0.85}
               >
-                <Square size={16} color="#fff" fill="#fff" />
-                <Text style={s.mainActionBtnText}>
-                  {t('tracker.endFast', 'Terminar Ayuno')}
-                </Text>
+                <LinearGradient
+                  colors={progress >= 1 ? ['#10B981', '#059669'] : ['#EF4444', '#DC2626']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={s.mainActionBtn}
+                >
+                  <Square size={16} color="#fff" fill="#fff" />
+                  <Text style={s.mainActionBtnText}>
+                    {t('tracker.endFast', 'Terminar Ayuno')}
+                  </Text>
+                </LinearGradient>
               </TouchableOpacity>
             </View>
           </View>
@@ -203,12 +225,19 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   presetText: { fontSize: 13 },
+  actionBtnWrap: {
+    borderRadius: Radius.full,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
   mainActionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    borderRadius: Radius.full,
     paddingVertical: 13,
   },
   mainActionBtnText: { color: '#fff', fontSize: 14, fontWeight: '800' },

@@ -162,13 +162,13 @@ export default function HealthProfileModal() {
       {/* ── Save Footer ── */}
       <View style={[s.footer, { borderTopColor: colors.border + '44' }]}>
         <TouchableOpacity
-          style={s.saveBtn}
+          style={[s.saveBtn, { shadowColor: colors.primary }]}
           onPress={handleSave}
           disabled={saving}
           activeOpacity={0.85}
         >
           <LinearGradient
-            colors={saveSuccess ? ['#10B981', '#059669'] : ['#7C5CFC', '#4338CA']}
+            colors={saveSuccess ? ['#10B981', '#059669'] : ((colors.gradientPrimary as [string, string]) || [colors.primary, colors.primaryDark || '#4338CA'])}
             style={s.saveGrad}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
           >

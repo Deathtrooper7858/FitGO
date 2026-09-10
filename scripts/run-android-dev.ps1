@@ -24,7 +24,7 @@ if (-not $hasDevice) {
     Pop-Location
 
     if ($compileExit -eq 0) {
-        Write-Host "`n[✓] APK compilado exitosamente en android/app/build/outputs/apk/development/debug/app-development-debug.apk" -ForegroundColor Green
+        Write-Host "`n[OK] APK compilado exitosamente en android/app/build/outputs/apk/development/debug/app-development-debug.apk" -ForegroundColor Green
         Write-Host "Conecta tu dispositivo y vuelve a ejecutar 'npm run android:dev:run' para instalarlo y lanzarlo automaticamente.`n" -ForegroundColor Cyan
     } else {
         Write-Error "ERROR: Fallo la compilacion de Gradle."
@@ -73,7 +73,7 @@ if ($gradleExit -ne 0) {
             Write-Error "ERROR: No se pudo instalar el APK. Verifica que el dispositivo este desbloqueado y con depuracion activa."
             exit 1
         }
-        Write-Host "[✓] APK de desarrollo instalado con exito." -ForegroundColor Green
+        Write-Host "[OK] APK de desarrollo instalado con exito." -ForegroundColor Green
     } else {
         Write-Error "ERROR: La compilacion no genero el APK."
         exit 1

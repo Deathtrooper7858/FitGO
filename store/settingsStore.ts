@@ -61,7 +61,7 @@ const DEFAULT_REMINDERS: Reminder[] = [
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       theme: 'dark',
       language: 'en',
       massUnit: 'kg',
@@ -73,6 +73,7 @@ export const useSettingsStore = create<SettingsState>()(
       premiumColor: null,
       setTheme: (theme) => set({ theme }),
       setPremiumColor: (premiumColor) => {
+        if (get().premiumColor === premiumColor) return;
         set({ premiumColor });
         // Background sync to DB — profile is updated by callers (fetchProfile, UI handlers)
         const profile = useAuthStore.getState().profile;
@@ -82,6 +83,7 @@ export const useSettingsStore = create<SettingsState>()(
         }
       },
       setLanguage: (language) => {
+        if (get().language === language) return;
         // Clear cached search recipes so they regenerate in the new language
         useRecipesStore.getState().setRecipes([]);
         set({ language });

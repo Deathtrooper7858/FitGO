@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, Modal, TextInput, KeyboardAvoidingView,
-  Platform, TouchableOpacity,
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+  Pressable,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { User, Scale, Ruler, Calendar, Check, Lock, X } from 'lucide-react-native';
+import { User, Scale, Ruler, Calendar, Check, Lock, X, Crown } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../hooks/useTheme';
 
 const PREMIUM_NAME_COLORS = [
@@ -39,16 +48,24 @@ interface EditModalProps {
 }
 
 export function EditModal({
-  visible, field, title, placeholder, keyboardType, initialValue,
-  onSave, onClose, massUnit, lengthUnit, isPro, initialNameColor,
-  role, premiumColor,
+  visible,
+  field,
+  title,
+  placeholder,
+  keyboardType,
+  initialValue,
+  onSave,
+  onClose,
+  massUnit,
+  lengthUnit,
+  isPro,
+  initialNameColor,
+  role,
+  premiumColor,
 }: EditModalProps) {
   const { t } = useTranslation();
   const colors = useTheme();
-  const safeColor = premiumColor === 'admin_glow' ? '#00F0FF' : premiumColor;
-  const accentGradient: [string, string] = (safeColor && safeColor.startsWith('#'))
-    ? [safeColor, safeColor + 'AA']
-    : colors.gradientPrimary as [string, string];
+
   const [value, setValue] = useState(initialValue ?? '');
   const [selectedColor, setSelectedColor] = useState(initialNameColor ?? '');
   const [isFocused, setIsFocused] = useState(false);
@@ -60,200 +77,434 @@ export function EditModal({
     }
   }, [visible, initialValue, initialNameColor]);
 
+  // Metadatos temáticos según el campo
   let FieldIcon = User;
   let suffix = '';
-  if (field === 'weight') { FieldIcon = Scale; suffix = massUnit; }
-  else if (field === 'height') { FieldIcon = Ruler; suffix = lengthUnit; }
-  else if (field === 'age') { FieldIcon = Calendar; }
-  else if (field === 'name') { FieldIcon = User; }
+  let fieldGradient: [string, string] = ['#7C5CFC', '#4F46E5'];
+  let fieldAccent = '#7C5CFC';
+
+  if (field === 'weight') {
+    FieldIcon = Scale;
+    suffix = massUnit;
+    fieldGradient = ['#10B981', '#059669'];
+    fieldAccent = '#10B981';
+  } else if (field === 'height') {
+    FieldIcon = Ruler;
+    suffix = lengthUnit;
+    fieldGradient = ['#3B82F6', '#1D4ED8'];
+    fieldAccent = '#3B82F6';
+  } else if (field === 'age') {
+    FieldIcon = Calendar;
+    fieldGradient = ['#F59E0B', '#D97706'];
+    fieldAccent = '#F59E0B';
+  } else if (field === 'name') {
+    FieldIcon = User;
+    fieldGradient = ['#7C5CFC', '#4F46E5'];
+    fieldAccent = '#7C5CFC';
+  }
 
   const allColors = [...PREMIUM_NAME_COLORS];
   if (role === 'admin' || role === 'owner' || role === 'super_admin') {
     allColors.push({ id: 'admin_glow', hex: 'admin_glow', name: 'Diamante Admin' });
   }
 
+  const handleSave = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onSave(value, selectedColor);
+    onClose();
+  };
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        style={[styles.overlay, { backgroundColor: 'rgba(15, 23, 42, 0.5)' }]}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <View style={[styles.box, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          {/* Header */}
-          <View style={styles.headerContainer}>
-            <LinearGradient colors={accentGradient} style={styles.topIconGrad}>
-              <FieldIcon size={22} color="#fff" />
-            </LinearGradient>
-            <View style={styles.headerTextContainer}>
-              <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
-              <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                {field === 'name' ? t('profile.editNameSubtitle', 'Actualiza tu nombre de perfil') :
-                 field === 'weight' ? t('profile.editWeightSubtitle', 'Registra tu peso actual') :
-                 field === 'height' ? t('profile.editHeightSubtitle', 'Establece tu estatura actual') :
-                 field === 'age' ? t('profile.editAgeSubtitle', 'Configura tu edad actual') : ''}
-              </Text>
-            </View>
-          </View>
-
-          {/* Input */}
-          <View style={[
-            styles.inputContainer,
-            {
-              backgroundColor: colors.surfaceAlt,
-              borderColor: isFocused ? (safeColor || colors.primary) : colors.border,
-            }
-          ]}>
-            <FieldIcon size={20} color={isFocused ? (safeColor || colors.primary) : colors.textMuted} style={styles.inputIcon} />
-            <TextInput
-              style={[styles.input, { color: colors.textPrimary }]}
-              value={value}
-              onChangeText={setValue}
-              placeholder={placeholder}
-              placeholderTextColor={colors.textMuted}
-              keyboardType={keyboardType ?? 'default'}
-              autoFocus
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
+      <Pressable style={styles.overlay} onPress={onClose}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.keyboardWrap}
+        >
+          <Pressable
+            style={[
+              styles.box,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border + '60',
+              },
+            ]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            {/* Ambient Glow */}
+            <LinearGradient
+              colors={[fieldAccent + '20', 'transparent']}
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
             />
-            {!!value && value.length > 0 && (
-              <TouchableOpacity onPress={() => setValue('')} style={styles.clearBtn}>
-                <X size={16} color={colors.textMuted} />
-              </TouchableOpacity>
-            )}
-            {suffix !== '' && (
-              <Text style={[styles.suffix, { color: isFocused ? (safeColor || colors.primary) : colors.textSecondary }]}>
-                {suffix.toUpperCase()}
-              </Text>
-            )}
-          </View>
 
-          {/* Name color picker */}
-          {field === 'name' && (
-            <View style={{ marginBottom: 20 }}>
-              <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '600', marginBottom: 12 }}>
-                {t('profile.nameColorPro', 'Color del Nombre (Pro)')}
-              </Text>
-              <ScrollView
-                ref={(ref) => {
-                  if (ref) {
-                    // We can scroll to the position of the selected color
-                    // Each item is 44px + 12px gap.
-                    // The default option (selectedColor === '') is at index 0.
-                    let idx = 0;
-                    if (selectedColor !== '') {
-                      const foundIdx = allColors.findIndex(c => c.hex === selectedColor);
-                      if (foundIdx !== -1) {
-                        idx = foundIdx + 1; // +1 to account for the default option
-                      }
-                    }
-                    // Approx offset calculation: idx * (itemWidth + gap)
-                    // itemWidth = 44, gap = 12
-                    const offset = Math.max(0, idx * 56 - 40); // Subtracting a bit so it centers/shows context
-                    setTimeout(() => {
-                      ref.scrollTo({ x: offset, animated: true });
-                    }, 50);
-                  }
-                }}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 12 }}
+            {/* Header */}
+            <View style={styles.headerContainer}>
+              <View style={styles.headerLeft}>
+                <LinearGradient colors={fieldGradient} style={styles.topIconGrad}>
+                  <FieldIcon size={20} color="#fff" />
+                </LinearGradient>
+                <View style={styles.headerTextContainer}>
+                  <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
+                  <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+                    {field === 'name'
+                      ? t('profile.editNameSubtitle', 'Actualiza tu nombre de perfil público')
+                      : field === 'weight'
+                      ? t('profile.editWeightSubtitle', 'Registra tu peso corporal actual')
+                      : field === 'height'
+                      ? t('profile.editHeightSubtitle', 'Establece tu estatura actual')
+                      : field === 'age'
+                      ? t('profile.editAgeSubtitle', 'Configura tu edad actual')
+                      : ''}
+                  </Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                onPress={onClose}
+                style={[styles.closeBtn, { backgroundColor: colors.surfaceAlt }]}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  style={{
-                    width: 44, height: 44, borderRadius: 22,
-                    backgroundColor: colors.textPrimary,
-                    justifyContent: 'center', alignItems: 'center',
-                    borderWidth: 3,
-                    borderColor: selectedColor === '' ? colors.primary : 'transparent',
-                  }}
-                  onPress={() => setSelectedColor('')}
-                >
-                  {selectedColor === '' && <Check size={20} color={colors.surface} strokeWidth={3} />}
-                </TouchableOpacity>
-                {allColors.map(c => {
-                  const isSel = selectedColor === c.hex;
-                  const isAdminGlow = c.hex === 'admin_glow';
-                  return (
-                    <TouchableOpacity
-                      key={c.id}
-                      activeOpacity={0.8}
-                      style={{
-                        width: 44, height: 44, borderRadius: 22,
-                        backgroundColor: isAdminGlow ? 'transparent' : c.hex,
-                        justifyContent: 'center', alignItems: 'center',
-                        borderWidth: 3,
-                        borderColor: isSel ? colors.textPrimary : 'transparent',
-                        opacity: isPro || isAdminGlow ? 1 : 0.5,
-                        overflow: 'hidden'
-                      }}
-                      onPress={() => {
-                        if (isPro || isAdminGlow) {
-                          setSelectedColor(c.hex);
-                        } else {
-                          onClose();
-                          setTimeout(() => router.push('/modals/paywall'), 300);
-                        }
-                      }}
-                    >
-                      {isAdminGlow && (
-                        <LinearGradient
-                          colors={['#00F0FF', '#7C5CFC']}
-                          style={StyleSheet.absoluteFill}
-                        />
-                      )}
-                      {isSel && <Check size={20} color="#fff" strokeWidth={3} style={{ zIndex: 10 }} />}
-                      {!isPro && !isSel && !isAdminGlow && <Lock size={16} color="#fff" />}
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
+                <X size={16} color={colors.textSecondary} />
+              </TouchableOpacity>
             </View>
-          )}
 
-          {/* Actions */}
-          <View style={styles.row}>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={[styles.cancelBtn, { borderColor: colors.border, backgroundColor: colors.surfaceAlt + '30' }]}
-              onPress={onClose}
+            {/* Input Container */}
+            <View
+              style={[
+                styles.inputContainer,
+                {
+                  backgroundColor: colors.surfaceAlt + '60',
+                  borderColor: isFocused ? fieldAccent : colors.border + '45',
+                  borderWidth: isFocused ? 2 : 1.5,
+                },
+              ]}
             >
-              <Text style={[styles.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={styles.saveBtn}
-              onPress={() => { onSave(value, selectedColor); onClose(); }}
-            >
-              <LinearGradient colors={accentGradient} style={styles.saveGrad}>
-                <Check size={18} color="#fff" strokeWidth={2.5} style={{ marginRight: 6 }} />
-                <Text style={styles.saveText}>{t('common.save')}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </KeyboardAvoidingView>
+              <FieldIcon
+                size={19}
+                color={isFocused ? fieldAccent : colors.textMuted}
+                style={styles.inputIcon}
+              />
+              <TextInput
+                style={[styles.input, { color: colors.textPrimary }]}
+                value={value}
+                onChangeText={setValue}
+                placeholder={placeholder}
+                placeholderTextColor={colors.textMuted}
+                keyboardType={keyboardType ?? 'default'}
+                autoFocus
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+              />
+
+              {!!value && value.length > 0 && (
+                <TouchableOpacity onPress={() => setValue('')} style={styles.clearBtn}>
+                  <X size={15} color={colors.textMuted} />
+                </TouchableOpacity>
+              )}
+
+              {/* Chip de unidad integrado */}
+              {suffix !== '' && (
+                <View
+                  style={[
+                    styles.suffixBadge,
+                    {
+                      backgroundColor: isFocused ? fieldAccent + '20' : colors.surfaceAlt,
+                      borderColor: isFocused ? fieldAccent + '50' : colors.border + '40',
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.suffixText,
+                      { color: isFocused ? fieldAccent : colors.textSecondary },
+                    ]}
+                  >
+                    {suffix.toUpperCase()}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Selector de color de nombre (Pro) */}
+            {field === 'name' && (
+              <View style={styles.nameColorWrap}>
+                <View style={styles.nameColorHeader}>
+                  <Crown size={14} color="#FFB800" />
+                  <Text style={[styles.nameColorLabel, { color: colors.textSecondary }]}>
+                    {t('profile.nameColorPro', 'Color del Nombre (Pro)')}
+                  </Text>
+                </View>
+
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.colorsScroll}
+                >
+                  {/* Opción por defecto */}
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={[
+                      styles.colorSwatchBtn,
+                      {
+                        backgroundColor: colors.textPrimary,
+                        borderColor: selectedColor === '' ? fieldAccent : 'transparent',
+                        borderWidth: selectedColor === '' ? 2.5 : 1,
+                      },
+                    ]}
+                    onPress={() => {
+                      Haptics.selectionAsync();
+                      setSelectedColor('');
+                    }}
+                  >
+                    {selectedColor === '' && (
+                      <Check size={18} color={colors.surface} strokeWidth={3} />
+                    )}
+                  </TouchableOpacity>
+
+                  {/* Colores Pro */}
+                  {allColors.map((c) => {
+                    const isSel = selectedColor === c.hex;
+                    const isAdminGlow = c.hex === 'admin_glow';
+                    const hasAccess = isPro || isAdminGlow;
+
+                    return (
+                      <TouchableOpacity
+                        key={c.id}
+                        activeOpacity={0.8}
+                        style={[
+                          styles.colorSwatchBtn,
+                          {
+                            backgroundColor: isAdminGlow ? 'transparent' : c.hex,
+                            borderColor: isSel ? '#FFF' : 'transparent',
+                            borderWidth: isSel ? 2.5 : 1,
+                            opacity: hasAccess ? 1 : 0.65,
+                          },
+                        ]}
+                        onPress={() => {
+                          Haptics.selectionAsync();
+                          if (hasAccess) {
+                            setSelectedColor(c.hex);
+                          } else {
+                            onClose();
+                            setTimeout(() => router.push('/modals/paywall'), 300);
+                          }
+                        }}
+                      >
+                        {isAdminGlow && (
+                          <LinearGradient
+                            colors={['#00F0FF', '#7C5CFC']}
+                            style={StyleSheet.absoluteFill}
+                          />
+                        )}
+                        {isSel ? (
+                          <Check size={18} color="#FFF" strokeWidth={3} />
+                        ) : !hasAccess ? (
+                          <Lock size={13} color="#FFF" />
+                        ) : null}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            )}
+
+            {/* Botones de acción */}
+            <View style={styles.actionRow}>
+              <TouchableOpacity
+                activeOpacity={0.75}
+                style={[
+                  styles.cancelBtn,
+                  {
+                    borderColor: colors.border + '50',
+                    backgroundColor: colors.surfaceAlt + '40',
+                  },
+                ]}
+                onPress={onClose}
+              >
+                <Text style={[styles.cancelText, { color: colors.textSecondary }]}>
+                  {t('common.cancel', 'Cancelar')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.85}
+                style={styles.saveBtn}
+                onPress={handleSave}
+              >
+                <LinearGradient colors={fieldGradient} style={styles.saveGrad}>
+                  <Check size={16} color="#FFF" strokeWidth={2.5} style={{ marginRight: 6 }} />
+                  <Text style={styles.saveText}>{t('common.save', 'Guardar')}</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Pressable>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, justifyContent: 'center', padding: 20 },
-  box: { borderRadius: 24, padding: 24, borderWidth: 1, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 8 },
-  headerContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, gap: 12 },
-  topIconGrad: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  headerTextContainer: { flex: 1 },
-  title: { fontSize: 18, fontWeight: '800', letterSpacing: -0.3 },
-  subtitle: { fontSize: 12, marginTop: 2, opacity: 0.8 },
-  inputContainer: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, borderWidth: 1.5, paddingHorizontal: 16, height: 54, marginBottom: 20 },
-  inputIcon: { marginRight: 10 },
-  input: { flex: 1, fontSize: 16, fontWeight: '600', paddingVertical: 10, height: '100%' },
-  clearBtn: { padding: 6, justifyContent: 'center', alignItems: 'center', marginRight: 4 },
-  suffix: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5, marginLeft: 4 },
-  row: { flexDirection: 'row', gap: 12 },
-  cancelBtn: { flex: 1, borderRadius: 16, borderWidth: 1, height: 48, alignItems: 'center', justifyContent: 'center' },
-  cancelText: { fontSize: 15, fontWeight: '700' },
-  saveBtn: { flex: 1, borderRadius: 16, overflow: 'hidden', height: 48 },
-  saveGrad: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  saveText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.68)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  keyboardWrap: {
+    width: '100%',
+    maxWidth: 400,
+  },
+  box: {
+    borderRadius: 24,
+    padding: 20,
+    borderWidth: 1.5,
+    overflow: 'hidden',
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  topIconGrad: {
+    width: 40,
+    height: 40,
+    borderRadius: 13,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '900',
+    letterSpacing: -0.3,
+  },
+  subtitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  closeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Input
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    height: 52,
+    marginBottom: 16,
+  },
+  inputIcon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '700',
+    height: '100%',
+    paddingVertical: 0,
+  },
+  clearBtn: {
+    padding: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 6,
+  },
+  suffixBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  suffixText: {
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+
+  // Name color picker
+  nameColorWrap: {
+    marginBottom: 16,
+  },
+  nameColorHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginBottom: 10,
+  },
+  nameColorLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  colorsScroll: {
+    gap: 10,
+    paddingVertical: 2,
+  },
+  colorSwatchBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+
+  // Acciones
+  actionRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  cancelBtn: {
+    flex: 1,
+    borderRadius: 14,
+    borderWidth: 1,
+    height: 46,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  saveBtn: {
+    flex: 1,
+    borderRadius: 14,
+    overflow: 'hidden',
+    height: 46,
+  },
+  saveGrad: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '800',
+  },
 });

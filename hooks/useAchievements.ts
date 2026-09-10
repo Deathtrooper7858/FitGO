@@ -412,7 +412,18 @@ export function useAchievements() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [achievements]); // deliberately excluding profile to avoid infinite sync loops
 
-  return { achievements, unlockedCount };
+  const { unlockedPoints, totalPoints } = useMemo(() => {
+    let uPts = 0;
+    let tPts = 0;
+    achievements.forEach(a => {
+      const pts = TIER_POINTS[a.tier] || 10;
+      tPts += pts;
+      if (a.unlocked) uPts += pts;
+    });
+    return { unlockedPoints: uPts, totalPoints: tPts };
+  }, [achievements]);
+
+  return { achievements, unlockedCount, unlockedPoints, totalPoints };
 }
 
 export function useTranslatedBadge(badgeId: string | undefined) {

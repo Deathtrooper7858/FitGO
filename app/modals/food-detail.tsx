@@ -482,7 +482,7 @@ export default function FoodDetailModal() {
           <Text style={[s.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={s.addBtn} onPress={handleSave} activeOpacity={0.85} disabled={isSaving || isRecalculating}>
-          <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.addGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+          <LinearGradient colors={(colors.gradientPrimary as [string, string]) || [colors.primary, colors.primaryDark || '#4338CA']} style={s.addGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
             {isSaving ? (
               <ActivityIndicator color="#fff" size="small" />
             ) : (

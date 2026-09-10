@@ -29,8 +29,8 @@ export function FitzDailyTip({ streakDays }: { streakDays: number }) {
     const fetchTip = async () => {
       try {
         const today = new Date().toISOString().split('T')[0];
-        // Include userId in key so different accounts never share the same cached tip
-        const storageKey = `${STORAGE_KEY}-${profile.id}`;
+        // Include userId and language in key so switching language refreshes tip
+        const storageKey = `${STORAGE_KEY}-${profile.id}-${language}`;
         const stored = await AsyncStorage.getItem(storageKey);
         if (stored) {
           const parsed = JSON.parse(stored);
@@ -45,11 +45,11 @@ export function FitzDailyTip({ streakDays }: { streakDays: number }) {
         const newTip = await generateDailyTip(profile || {}, workouts, streakDays, language);
         setTip(newTip);
         
-        // Cache it per user
+        // Cache it per user and language
         await AsyncStorage.setItem(storageKey, JSON.stringify({ date: today, tip: newTip }));
       } catch (err) {
         console.warn('Error fetching Fitz daily tip:', err);
-        setTip(t('dashboard.defaultTip', '¡A darle con todo hoy! 🔥'));
+        setTip(String(t('dashboard.defaultTip', '¡A darle con todo hoy! 🔥')));
       } finally {
         setLoading(false);
       }
@@ -72,7 +72,7 @@ export function FitzDailyTip({ streakDays }: { streakDays: number }) {
         <View style={{ flex: 1 }}>
           {loading ? (
             <Animated.Text entering={FadeIn} style={[styles.text, { color: colors.textMuted, fontStyle: 'italic' }]}>
-              Fitz está analizando tu día...
+              {String(t('dashboard.fitzAnalyzing', 'Fitz está analizando tu día...'))}
             </Animated.Text>
           ) : (
             <Animated.Text entering={FadeIn.duration(400)} style={[styles.text, { color: colors.textSecondary }]} numberOfLines={2}>

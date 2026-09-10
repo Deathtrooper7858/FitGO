@@ -19,8 +19,8 @@ describe('useAICreditsStore', () => {
 
     const result = useAICreditsStore.getState().consumeCredit();
     expect(result).toBe(true);
-    // After consumption from daily reset (freeAICreditsPerDay(3) - 1 = 2)
-    expect(useAICreditsStore.getState().creditsLeft).toBe(2);
+    // After consumption from daily reset (freeAICreditsPerDay(5) - 1 = 4)
+    expect(useAICreditsStore.getState().creditsLeft).toBe(4);
     expect(useAICreditsStore.getState().totalAdsWatched).toBe(0);
   });
 

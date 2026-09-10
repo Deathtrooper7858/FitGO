@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Droplets, Plus, ShoppingCart } from 'lucide-react-native';
+import { Droplets, Plus, ShoppingCart, Sparkles, ChevronRight, Utensils } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { useTheme } from '../../hooks/useTheme';
@@ -32,40 +33,148 @@ interface MealPlanViewProps {
 }
 
 function MealPlanView({
-  meals, activeDay, loading, isProActually, isPremiumCustom, safePremiumColor,
-  isActiveToday, consumedMacros, plannedMacros, waterToday, totalCal, targetCalories,
-  analysis, analyzing, onWeeklyAnalysis, onAddWater, onSwapMeal, onConsumeMeal
+  meals,
+  activeDay,
+  loading,
+  isProActually,
+  safePremiumColor,
+  isActiveToday,
+  consumedMacros,
+  plannedMacros,
+  waterToday,
+  totalCal,
+  targetCalories,
+  analysis,
+  analyzing,
+  onWeeklyAnalysis,
+  onAddWater,
+  onSwapMeal,
+  onConsumeMeal,
 }: MealPlanViewProps) {
   const { t } = useTranslation();
   const colors = useTheme();
 
+  const safeTarget = Math.max(targetCalories || 2000, 1);
+  const caloriePct = Math.min(Math.round((totalCal / safeTarget) * 100), 100);
+  const remainingCals = Math.max(safeTarget - totalCal, 0);
+
+  const handleAddWaterPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onAddWater();
+  };
+
   return (
     <>
-      <View style={{ marginBottom: 16 }}>
+      <View style={{ marginBottom: 14 }}>
         <WeekAnalysis analysis={analysis} analyzing={analyzing} onAnalyze={onWeeklyAnalysis} />
       </View>
 
       {meals.length > 0 && (
         <View style={mv.summaryContainer}>
-          <View style={[mv.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <View style={mv.summaryLeft}>
-              <Text style={[mv.summaryVal, { color: colors.textPrimary }]}>{totalCal}</Text>
-              <Text style={[mv.summaryLbl, { color: colors.textMuted }]}>{t('planner.planned')} (kcal)</Text>
+          {/* Main Calorie Dashboard Card */}
+          <View style={[mv.heroCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={mv.heroHeader}>
+              <View>
+                <Text style={[mv.heroOverline, { color: colors.textMuted }]}>
+                  {t('planner.dailyBudget', 'RESUMEN NUTRICIONAL')}
+                </Text>
+                <View style={mv.calRow}>
+                  <Text style={[mv.heroTotal, { color: colors.textPrimary }]}>{totalCal}</Text>
+                  <Text style={[mv.heroTarget, { color: colors.textSecondary }]}>/ {safeTarget} kcal</Text>
+                </View>
+              </View>
+
+              <View style={[mv.remainingBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '33' }]}>
+                <Text style={[mv.remainingValue, { color: colors.primary }]}>{remainingCals}</Text>
+                <Text style={[mv.remainingLabel, { color: colors.primary }]}>{t('tracker.remaining', 'restantes')}</Text>
+              </View>
             </View>
-            <View style={[mv.summaryDivider, { backgroundColor: colors.border + '50' }]} />
-            <View style={mv.summaryRight}>
-              <Text style={[mv.summaryVal, { color: colors.primary }]}>{Math.max(targetCalories - totalCal, 0)}</Text>
-              <Text style={[mv.summaryLbl, { color: colors.textMuted }]}>{t('tracker.remaining')}</Text>
+
+            {/* Calorie Progress Bar */}
+            <View style={[mv.barTrack, { backgroundColor: colors.surfaceAlt }]}>
+              <View
+                style={[
+                  mv.barFill,
+                  {
+                    width: `${caloriePct}%`,
+                    backgroundColor: colors.primary,
+                  },
+                ]}
+              />
             </View>
+
+            {/* Macro Breakdown Row */}
+            <View style={mv.macroGrid}>
+              {/* Protein */}
+              <View style={[mv.macroCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.protein + '25' }]}>
+                <View style={mv.macroCardHeader}>
+                  <Text style={[mv.macroPillLetter, { color: colors.protein }]}>P</Text>
+                  <Text style={[mv.macroCardLabel, { color: colors.textMuted }]}>{t('common.protein', 'Proteína')}</Text>
+                </View>
+                <Text style={[mv.macroCardValue, { color: colors.textPrimary }]}>
+                  {isActiveToday ? `${consumedMacros.p}/` : ''}{plannedMacros.p}g
+                </Text>
+              </View>
+
+              {/* Carbs */}
+              <View style={[mv.macroCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.carbs + '25' }]}>
+                <View style={mv.macroCardHeader}>
+                  <Text style={[mv.macroPillLetter, { color: colors.carbs }]}>C</Text>
+                  <Text style={[mv.macroCardLabel, { color: colors.textMuted }]}>{t('common.carbs', 'Carbos')}</Text>
+                </View>
+                <Text style={[mv.macroCardValue, { color: colors.textPrimary }]}>
+                  {isActiveToday ? `${consumedMacros.c}/` : ''}{plannedMacros.c}g
+                </Text>
+              </View>
+
+              {/* Fats */}
+              <View style={[mv.macroCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.fat + '25' }]}>
+                <View style={mv.macroCardHeader}>
+                  <Text style={[mv.macroPillLetter, { color: colors.fat }]}>G</Text>
+                  <Text style={[mv.macroCardLabel, { color: colors.textMuted }]}>{t('common.fat', 'Grasas')}</Text>
+                </View>
+                <Text style={[mv.macroCardValue, { color: colors.textPrimary }]}>
+                  {isActiveToday ? `${consumedMacros.f}/` : ''}{plannedMacros.f}g
+                </Text>
+              </View>
+            </View>
+
+            {/* Hydration row if today */}
+            {isActiveToday && (
+              <View style={[mv.hydrationRow, { borderTopColor: colors.border + '40' }]}>
+                <View style={mv.hydroLeft}>
+                  <View style={[mv.hydroIconWrap, { backgroundColor: '#3B82F620' }]}>
+                    <Droplets size={16} color="#3B82F6" />
+                  </View>
+                  <View>
+                    <Text style={[mv.hydroTitle, { color: colors.textSecondary }]}>{t('tracker.waterToday', 'Agua Hoy')}</Text>
+                    <Text style={[mv.hydroVal, { color: colors.textPrimary }]}>{waterToday} ml</Text>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  style={[mv.hydroAddBtn, { backgroundColor: '#3B82F6' }]}
+                  onPress={handleAddWaterPress}
+                  activeOpacity={0.8}
+                >
+                  <Plus size={14} color="#fff" />
+                  <Text style={mv.hydroAddText}>+250ml</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
 
+          {/* Smart Shopping List Card */}
           <TouchableOpacity
-            style={[mv.shoppingBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            onPress={() => router.push('/modals/shopping-list')}
+            style={[mv.shoppingCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/modals/shopping-list');
+            }}
             activeOpacity={0.8}
           >
-            <View style={[mv.shoppingIconWrap, { backgroundColor: colors.primary + '20' }]}>
-              <ShoppingCart size={18} color={colors.primary} />
+            <View style={[mv.shoppingIconWrap, { backgroundColor: '#F59E0B20' }]}>
+              <ShoppingCart size={18} color="#F59E0B" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[mv.shoppingTitle, { color: colors.textPrimary }]}>
@@ -75,59 +184,12 @@ function MealPlanView({
                 {t('planner.shoppingListSubtitle', 'Ingredientes generados para tu semana')}
               </Text>
             </View>
-            <Text style={{ fontSize: 16 }}>🛒</Text>
+            <ChevronRight size={18} color={colors.textMuted} />
           </TouchableOpacity>
-
-          {isActiveToday && plannedMacros.p > 0 && (
-            <View style={[mv.macroBarsWrap, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-               <Text style={[mv.macroTitle, { color: colors.textPrimary }]}>{t('tracker.macroProgressToday', 'Macro Progress (Today)')}</Text>
-               <View style={mv.macroBarRow}>
-                 <Text style={[mv.macroLabel, { color: colors.protein }]}>P</Text>
-                 <View style={[mv.macroTrack, { backgroundColor: colors.protein + '20' }]}>
-                   <View style={[mv.macroFill, { backgroundColor: colors.protein, width: `${Math.min((consumedMacros.p / plannedMacros.p) * 100, 100)}%` }]} />
-                 </View>
-                 <Text style={[mv.macroVal, { color: colors.textSecondary }]}>{consumedMacros.p}/{plannedMacros.p}g</Text>
-               </View>
-               <View style={mv.macroBarRow}>
-                 <Text style={[mv.macroLabel, { color: colors.carbs }]}>C</Text>
-                 <View style={[mv.macroTrack, { backgroundColor: colors.carbs + '20' }]}>
-                   <View style={[mv.macroFill, { backgroundColor: colors.carbs, width: `${Math.min((consumedMacros.c / plannedMacros.c) * 100, 100)}%` }]} />
-                 </View>
-                 <Text style={[mv.macroVal, { color: colors.textSecondary }]}>{consumedMacros.c}/{plannedMacros.c}g</Text>
-               </View>
-               <View style={mv.macroBarRow}>
-                 <Text style={[mv.macroLabel, { color: colors.fat }]}>F</Text>
-                 <View style={[mv.macroTrack, { backgroundColor: colors.fat + '20' }]}>
-                   <View style={[mv.macroFill, { backgroundColor: colors.fat, width: `${Math.min((consumedMacros.f / plannedMacros.f) * 100, 100)}%` }]} />
-                 </View>
-                 <Text style={[mv.macroVal, { color: colors.textSecondary }]}>{consumedMacros.f}/{plannedMacros.f}g</Text>
-               </View>
-            </View>
-          )}
-
-          {isActiveToday && (
-            <View style={[mv.hydrationCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-               <View style={mv.hydroLeft}>
-                  <View style={[mv.hydroIcon, { backgroundColor: '#3b82f622' }]}>
-                    <Droplets size={24} color="#3b82f6" />
-                  </View>
-                  <View>
-                    <Text style={[mv.hydroTitle, { color: colors.textPrimary }]}>{t('tracker.waterToday', 'Water (Today)')}</Text>
-                    <Text style={[mv.hydroVal, { color: '#3b82f6' }]}>{waterToday} ml</Text>
-                  </View>
-               </View>
-               <TouchableOpacity
-                 style={[mv.hydroBtn, { backgroundColor: '#3b82f6' }]}
-                 onPress={onAddWater}
-               >
-                  <Plus size={16} color="#fff" />
-                   <Text style={mv.hydroBtnText}>{t('tracker.glass250ml', 'Glass (250ml)')}</Text>
-               </TouchableOpacity>
-            </View>
-          )}
         </View>
       )}
 
+      {/* Meals List */}
       <View style={mv.contentList}>
         {meals.length > 0 ? (
           meals.map((m, i) => (
@@ -141,26 +203,41 @@ function MealPlanView({
                 fat={m.fat}
                 onSwap={() => onSwapMeal(activeDay, i, m)}
                 onConsume={() => onConsumeMeal(m)}
-                onRecipe={() => router.push({ pathname: '/(tabs)/coach', params: { initialTab: 'nutritionist', prompt: `¿Me puedes dar la receta o decirme cómo preparar: ${m.name}?` } })}
+                onRecipe={() =>
+                  router.push({
+                    pathname: '/(tabs)/coach',
+                    params: {
+                      initialTab: 'nutritionist',
+                      prompt: `¿Me puedes dar la receta paso a paso y los macros de: ${m.name}?`,
+                    },
+                  })
+                }
               />
             </AnimatedCard>
           ))
         ) : (
-          <View style={mv.emptyDay}>
-            <View style={[mv.emptyIconWrap, {backgroundColor: colors.surfaceAlt}]}>
-              <Text style={{ fontSize: 42, color: colors.textMuted }}>📅</Text>
+          <View style={[mv.emptyCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[mv.emptyIconWrap, { backgroundColor: colors.primary + '15' }]}>
+              <Utensils size={36} color={colors.primary} />
             </View>
             <Text style={[mv.emptyTitle, { color: colors.textPrimary }]}>
-              {loading ? t('common.loading') : t('planner.noMeals')}
+              {loading ? t('common.loading') : t('planner.noMeals', 'Sin comidas planificadas')}
             </Text>
             <Text style={[mv.emptySub, { color: colors.textSecondary }]}>
-              {loading ? '' : (isProActually ? t('planner.emptySubPro') : t('planner.emptySubFree'))}
+              {loading
+                ? ''
+                : isProActually
+                ? t('planner.emptySubPro', 'Usa el botón Generar para obtener un menú balanceado para este día.')
+                : t('planner.emptySubFree', 'Desbloquea FitGO Pro para planificar tus comidas personalizadas con IA.')}
             </Text>
             {!isProActually && !loading && (
-              <TouchableOpacity style={mv.proBtn} activeOpacity={0.8} onPress={() => router.push('/modals/paywall')}>
-                <View style={[mv.proGrad, { backgroundColor: colors.primary }]}>
-                  <Text style={mv.proText}>{t('planner.unlockPro')}</Text>
-                </View>
+              <TouchableOpacity
+                style={[mv.proBtn, { backgroundColor: colors.primary }]}
+                activeOpacity={0.8}
+                onPress={() => router.push('/modals/paywall')}
+              >
+                <Sparkles size={16} color="#fff" />
+                <Text style={mv.proText}>{t('planner.unlockPro', 'Desbloquear FitGO Pro')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -169,10 +246,24 @@ function MealPlanView({
         {meals.length > 0 && (
           <TouchableOpacity
             style={[mv.addMealBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            onPress={() => router.push({ pathname: '/(tabs)/coach', params: { initialTab: 'nutritionist', prompt: t('planner.askCustomMeal', 'Suggest another healthy meal for today that fits my remaining macros.') } })}
+            onPress={() =>
+              router.push({
+                pathname: '/(tabs)/coach',
+                params: {
+                  initialTab: 'nutritionist',
+                  prompt: t(
+                    'planner.askCustomMeal',
+                    'Sugiéreme otra comida saludable para hoy que encaje con mis calorías y macros restantes.'
+                  ),
+                },
+              })
+            }
+            activeOpacity={0.75}
           >
-            <Text style={[mv.addMealIcon, { color: colors.primary }]}>+</Text>
-            <Text style={[mv.addMealText, { color: colors.textSecondary }]}>{t('planner.addAnotherMeal', 'Añadir otra comida')}</Text>
+            <Plus size={18} color={colors.primary} />
+            <Text style={[mv.addMealText, { color: colors.textSecondary }]}>
+              {t('planner.addAnotherMeal', 'Consultar o añadir otra comida con IA')}
+            </Text>
           </TouchableOpacity>
         )}
       </View>
@@ -183,40 +274,237 @@ function MealPlanView({
 export default React.memo(MealPlanView);
 
 const mv = StyleSheet.create({
-  contentList: { paddingHorizontal: Spacing.base },
-  summaryContainer: { paddingHorizontal: Spacing.base, marginBottom: Spacing.lg },
-  summaryCard: { flexDirection: 'row', alignItems: 'center', borderRadius: 28, padding: 24, borderWidth: 1, shadowColor: '#000', shadowOffset: {width: 0, height: 8}, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
-  summaryLeft: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  summaryRight: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  summaryDivider: { width: 1, height: 50 },
-  summaryVal:  { fontSize: 28, fontWeight: '900' },
-  summaryLbl:  { fontSize: 12, fontWeight: '700', marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.8 },
-  shoppingBtn: { flexDirection: 'row', alignItems: 'center', marginTop: 12, borderRadius: 20, padding: 14, borderWidth: 1, gap: 12 },
-  shoppingIconWrap: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
-  shoppingTitle: { fontSize: 14, fontWeight: '800' },
-  shoppingSub: { fontSize: 12, fontWeight: '500', marginTop: 1 },
-  macroBarsWrap: { marginTop: 14, borderRadius: 24, padding: 20, borderWidth: 1, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
-  macroTitle: { fontSize: 15, fontWeight: '800', marginBottom: 14 },
-  macroBarRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  macroLabel: { width: 14, fontSize: 13, fontWeight: '900' },
-  macroTrack: { flex: 1, height: 10, borderRadius: 5, marginHorizontal: 10, overflow: 'hidden' },
-  macroFill: { height: '100%', borderRadius: 5 },
-  macroVal: { width: 50, textAlign: 'right', fontSize: 12, fontWeight: '700' },
-  hydrationCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, borderRadius: 24, padding: 18, borderWidth: 1, shadowColor: '#000', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
-  hydroLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  hydroIcon: { width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center' },
-  hydroTitle: { fontSize: 14, fontWeight: '800', marginBottom: 2 },
-  hydroVal: { fontSize: 18, fontWeight: '900' },
-  hydroBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: Radius.full },
-  hydroBtnText: { color: '#fff', fontSize: 13, fontWeight: '800' },
-  addMealBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 18, borderRadius: 28, borderWidth: 1.5, borderStyle: 'dashed', marginTop: 10, marginBottom: 24, gap: 12 },
-  addMealIcon: { fontSize: 26, fontWeight: '400', marginTop: -3 },
-  addMealText: { fontSize: 15, fontWeight: '700' },
-  emptyDay:    { alignItems: 'center', paddingVertical: 80, paddingHorizontal: 20 },
-  emptyIconWrap: { width: 90, height: 90, borderRadius: 45, justifyContent: 'center', alignItems: 'center', marginBottom: 24, shadowColor: '#000', shadowOffset: {width: 0, height: 8}, shadowOpacity: 0.15, shadowRadius: 16, elevation: 5 },
-  emptyTitle:  { fontSize: 24, fontWeight: '900', marginBottom: 10, textAlign: 'center' },
-  emptySub:    { fontSize: 16, textAlign: 'center', marginBottom: 30, lineHeight: 24 },
-  proBtn:      { borderRadius: Radius.full, overflow: 'hidden', elevation: 6, shadowColor: '#7C5CFC', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12 },
-  proGrad:     { paddingHorizontal: 28, paddingVertical: 16, flexDirection: 'row', alignItems: 'center' },
-  proText:     { color: '#fff', fontWeight: '800', fontSize: 16 },
+  summaryContainer: {
+    paddingHorizontal: Spacing.base,
+    marginBottom: 14,
+    gap: 12,
+  },
+  heroCard: {
+    borderRadius: 24,
+    padding: 18,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  heroHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  heroOverline: {
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  calRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 6,
+  },
+  heroTotal: {
+    fontSize: 28,
+    fontWeight: '900',
+    letterSpacing: -0.8,
+  },
+  heroTarget: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  remainingBadge: {
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  remainingValue: {
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  remainingLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    marginTop: -1,
+  },
+  barTrack: {
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
+  barFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  macroGrid: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  macroCard: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  macroCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginBottom: 4,
+  },
+  macroPillLetter: {
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  macroCardLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  macroCardValue: {
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  hydrationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+  },
+  hydroLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  hydroIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  hydroTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  hydroVal: {
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  hydroAddBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: Radius.full,
+  },
+  hydroAddText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  shoppingCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 20,
+    padding: 14,
+    borderWidth: 1,
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  shoppingIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shoppingTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  shoppingSub: {
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 1,
+  },
+  contentList: {
+    paddingHorizontal: Spacing.base,
+  },
+  emptyCard: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+    borderRadius: 24,
+    borderWidth: 1,
+    marginVertical: 10,
+  },
+  emptyIconWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  emptySub: {
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  proBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: Radius.full,
+    shadowColor: '#7C5CFC',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  proText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  addMealBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    marginTop: 8,
+    marginBottom: 24,
+    gap: 10,
+  },
+  addMealText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
 });

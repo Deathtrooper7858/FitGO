@@ -6,6 +6,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Crypto from 'expo-crypto';
+import * as Haptics from 'expo-haptics';
+import { Sparkles, X, Flashlight, FlashlightOff, Camera, Barcode, PenLine, Search, Lightbulb, Crown } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { Spacing, Radius } from '../../constants';
 import { getFoodByBarcode } from '../../services/foodDatabase';
@@ -15,20 +17,51 @@ import { useIsPro } from '../../hooks/useIsPro';
 import { useTheme } from '../../hooks/useTheme';
 import { SuccessModal } from '../../components/SuccessModal';
 import { getLocalDateString } from '../../utils/date';
+import { getSafeColor, isValidPremiumColor } from '../../utils/styles';
 import { CustomAlert, AlertType } from '../../components/CustomAlert';
 import { AIEnergyGate, useAIEnergy, AIEnergyMode } from '../../components/AIEnergyGate';
+import VoiceInput from '../../components/scan/VoiceInput';
 
 import { useAdStore, MAX_AI_PHOTO_ENERGY, MAX_AI_TEXT_ENERGY } from '../../store/adStore';
 import { tryShowInterstitialAd } from '../../hooks/useInterstitialAd';
 
-
 const BarcodeScanner = React.lazy(() => import('../../components/scan/BarcodeScanner'));
-const VoiceInput = React.lazy(() => import('../../components/scan/VoiceInput'));
 const FoodResultCard = React.lazy(() => import('../../components/scan/FoodResultCard'));
 const TextSearch = React.lazy(() => import('../../components/scan/TextSearch'));
 
 type ScanMode = 'barcode' | 'photo' | 'text' | 'search';
 type Meal = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+
+const MEAL_SUGGESTIONS: Record<Meal, { emoji: string; text: string }[]> = {
+  breakfast: [
+    { emoji: '🥣', text: 'Avena con leche de almendras y frutos rojos' },
+    { emoji: '🍳', text: '2 huevos revueltos con 1 tostada integral' },
+    { emoji: '🥑', text: 'Tostada de aguacate con huevo estrellado' },
+    { emoji: '🥞', text: 'Hotcakes de avena con plátano y miel' },
+    { emoji: '☕', text: 'Café con leche y 1 manzana' },
+  ],
+  lunch: [
+    { emoji: '🍗', text: '200g pechuga a la plancha con arroz blanco' },
+    { emoji: '🥩', text: '180g carne asada con papas al horno' },
+    { emoji: '🥗', text: 'Bowl de ensalada con atún, aguacate y quinoa' },
+    { emoji: '🍝', text: 'Pasta boloñesa con carne molida y queso' },
+    { emoji: '🐟', text: 'Filete de pescado con verduras al vapor' },
+  ],
+  dinner: [
+    { emoji: '🐟', text: 'Filete de salmón 150g con ensalada fresca' },
+    { emoji: '🥪', text: 'Sándwich de pechuga de pavo y queso panela' },
+    { emoji: '🥣', text: 'Yogur griego con frutos secos y fresas' },
+    { emoji: '🥑', text: 'Ensalada ligera de pollo y aguacate' },
+    { emoji: '🍳', text: 'Omelette de 3 claras con champiñones' },
+  ],
+  snack: [
+    { emoji: '🥤', text: 'Batido de proteína con 300ml de leche' },
+    { emoji: '🍎', text: '1 manzana picada con mantequilla de maní' },
+    { emoji: '🥜', text: 'Puñado de 30g de nueces o almendras' },
+    { emoji: '🍫', text: '1 barra de proteína de 20g' },
+    { emoji: '🧀', text: '1 taza de queso cottage con durazno' },
+  ],
+};
 
 export default function ScanModal() {
   const { t } = useTranslation();
@@ -38,15 +71,15 @@ export default function ScanModal() {
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<ScanMode>(initialMode || 'photo');
   const [textInput, setTextInput] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
   const colors = useTheme();
   const { language, premiumColor } = useSettingsStore();
   const addLog = useNutritionStore(s => s.addLog);
   const isProActually = useIsPro();
   const { aiPhotoEnergy, aiTextEnergy } = useAdStore();
 
-  const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
-  const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
-  const isPremiumCustom = isProActually && isValidHex;
+  const safePremiumColor = getSafeColor(premiumColor, colors.primary);
+  const isPremiumCustom = !!(isProActually && isValidPremiumColor(premiumColor));
   const [showSuccess, setShowSuccess] = useState(false);
   const [flash, setFlash] = useState<'off' | 'on' | 'auto'>('off');
   const [facing, setFacing] = useState<'back' | 'front'>('back');
@@ -489,6 +522,7 @@ export default function ScanModal() {
     );
   } else {
     const isCameraMode = mode === 'barcode' || mode === 'photo';
+    const currentMeal: Meal = initialMeal || getAutoMeal();
 
     content = (
       <View style={[s.container, { backgroundColor: colors.background }]}>
@@ -520,39 +554,87 @@ export default function ScanModal() {
         )}
 
         <View style={s.overlay}>
+          {/* Header */}
           <View style={s.header}>
-            <TouchableOpacity style={s.closeBtn} onPress={() => router.back()}>
-              <Text style={s.closeText}>✕</Text>
+            <TouchableOpacity
+              style={[s.closeBtn, { backgroundColor: 'rgba(255,255,255,0.1)' }]}
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+            >
+              <X size={18} color="#fff" />
             </TouchableOpacity>
-            <Text style={[s.title, { color: '#fff' }]}>FitGO AI</Text>
-            <TouchableOpacity style={s.closeBtn} onPress={() => setFlash(f => f === 'off' ? 'on' : f === 'on' ? 'auto' : 'off')}>
-              <Text style={{ fontSize: 18 }}>{flash === 'off' ? '🌑' : flash === 'on' ? '💡' : 'A💡'}</Text>
-            </TouchableOpacity>
+
+            <View style={s.titleContainer}>
+              <View style={s.titleRow}>
+                <Text style={s.title}>FitGO AI</Text>
+                <View style={[s.aiPill, { backgroundColor: colors.primary + '2E', borderColor: colors.primary + '60' }]}>
+                  <Sparkles size={10} color={colors.primaryLight || '#C4B5FD'} />
+                  <Text style={[s.aiPillText, { color: colors.primaryLight || '#C4B5FD' }]}>AI</Text>
+                </View>
+              </View>
+              <Text style={s.subtitle}>
+                {t(`tracker.${currentMeal}`)} · {t('scan.aiNutrition', 'Nutrición Inteligente')}
+              </Text>
+            </View>
+
+            {isCameraMode ? (
+              <TouchableOpacity
+                style={[s.closeBtn, { backgroundColor: 'rgba(255,255,255,0.1)' }]}
+                onPress={() => setFlash(f => f === 'off' ? 'on' : f === 'on' ? 'auto' : 'off')}
+                activeOpacity={0.7}
+              >
+                {flash === 'on' ? (
+                  <Flashlight size={18} color="#F59E0B" />
+                ) : flash === 'auto' ? (
+                  <Sparkles size={18} color="#38BDF8" />
+                ) : (
+                  <FlashlightOff size={18} color="rgba(255,255,255,0.6)" />
+                )}
+              </TouchableOpacity>
+            ) : (
+              <View style={{ width: 36, height: 36 }} />
+            )}
           </View>
 
+          {/* Mode Selector Tabs */}
           <View style={s.tabContainer}>
-            <View style={[s.modeRow, { backgroundColor: colors.primary + '18', borderWidth: 1, borderColor: colors.primary + '30' }]}>
-              {(['barcode', 'photo', 'text', 'search'] as ScanMode[]).map((m) => (
-                <TouchableOpacity
-                  key={m}
-                  style={[s.modePill, mode === m && s.modePillActive]}
-                  onPress={() => {
-                    if ((m === 'barcode' || m === 'search') && !isProActually) {
-                      showAlert('info', t('paywall.premiumFeature', 'Función Premium'), t('paywall.premiumRequired', 'Esta función es exclusiva para usuarios Premium.'));
-                      return;
-                    }
-                    setMode(m);
-                  }}
-                >
-                  {mode === m ? (
-                    <LinearGradient colors={[colors.primary, colors.secondary || '#A855F7']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[StyleSheet.absoluteFill, { borderRadius: Radius.full }]} />
-                  ) : null}
-                  <Text style={[s.modeText, mode === m && s.modeTextActive]} numberOfLines={1} adjustsFontSizeToFit>
-                    {m === 'barcode' ? '🔍 ' : m === 'photo' ? '📸 ' : m === 'text' ? '✍️ ' : '🔎 '}
-                    {m === 'barcode' ? t('scan.barcode') : m === 'photo' ? t('scan.photo') : m === 'text' ? t('scan.text') : t('common.search') || 'Buscar'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+            <View style={[s.modeRow, { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }]}>
+              {(['barcode', 'photo', 'text', 'search'] as ScanMode[]).map((m) => {
+                const isActive = mode === m;
+                const iconColor = isActive ? '#FFFFFF' : 'rgba(255,255,255,0.55)';
+                return (
+                  <TouchableOpacity
+                    key={m}
+                    style={[s.modePill, isActive && s.modePillActive]}
+                    onPress={() => {
+                      Haptics.selectionAsync();
+                      setMode(m);
+                    }}
+                    activeOpacity={0.75}
+                  >
+                    {isActive ? (
+                      <LinearGradient
+                        colors={[colors.primary, colors.secondary || '#A855F7']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={[StyleSheet.absoluteFill, { borderRadius: Radius.full }]}
+                      />
+                    ) : null}
+                    {m === 'barcode' ? (
+                      <Barcode size={13} color={iconColor} />
+                    ) : m === 'photo' ? (
+                      <Camera size={13} color={iconColor} />
+                    ) : m === 'text' ? (
+                      <PenLine size={13} color={iconColor} />
+                    ) : (
+                      <Search size={13} color={iconColor} />
+                    )}
+                    <Text style={[s.modeText, isActive && s.modeTextActive]} numberOfLines={1}>
+                      {m === 'barcode' ? t('scan.barcode') : m === 'photo' ? t('scan.photo') : m === 'text' ? t('scan.text') : t('common.search') || 'Buscar'}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
 
@@ -605,41 +687,206 @@ export default function ScanModal() {
                 </View>
               </>
             ) : mode === 'text' ? (
-              <ScrollView contentContainerStyle={s.textInputWrap} style={{ width: '100%' }}>
-                <View style={[s.textCard, { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: colors.border }]}>
+              <ScrollView
+                contentContainerStyle={s.textScrollContent}
+                style={{ width: '100%' }}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                {/* Active Meal Badge */}
+                <View style={s.mealBadgeRow}>
+                  <View style={[s.mealBadge, { backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.1)' }]}>
+                    <Text style={s.mealBadgeEmoji}>
+                      {currentMeal === 'breakfast' ? '🍳' : currentMeal === 'lunch' ? '🍗' : currentMeal === 'dinner' ? '🥗' : '🍎'}
+                    </Text>
+                    <Text style={s.mealBadgeText}>
+                      {t('scan.loggingTo', 'Registrando en')}:{' '}
+                      <Text style={{ fontWeight: '800', color: colors.primaryLight || '#C4B5FD' }}>
+                        {t(`tracker.${currentMeal}`)}
+                      </Text>
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Main Text Input Card */}
+                <View
+                  style={[
+                    s.textCard,
+                    {
+                      backgroundColor: 'rgba(255,255,255,0.05)',
+                      borderColor: isFocused ? (colors.primaryLight || '#8B5CF6') : 'rgba(255,255,255,0.12)',
+                      shadowColor: isFocused ? (colors.primary || '#8B5CF6') : '#000',
+                      shadowOpacity: isFocused ? 0.35 : 0.15,
+                      shadowRadius: isFocused ? 12 : 6,
+                    },
+                  ]}
+                >
+                  {/* Card Header */}
+                  <View style={s.cardHeader}>
+                    <View style={s.cardHeaderLeft}>
+                      <Sparkles size={14} color={colors.primaryLight || '#C4B5FD'} />
+                      <Text style={[s.cardHeaderTitle, { color: colors.primaryLight || '#C4B5FD' }]}>
+                        {t('scan.aiInputPrompt', 'Describe tu comida o usa tu voz')}
+                      </Text>
+                    </View>
+                    {textInput.length > 0 && (
+                      <TouchableOpacity
+                        style={s.clearBtn}
+                        onPress={() => {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          setTextInput('');
+                        }}
+                      >
+                        <X size={14} color="rgba(255,255,255,0.6)" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+
+                  {/* TextInput */}
                   <TextInput
-                    style={[s.textInputArea, { color: colors.primary }]}
-                    placeholder={t('scan.textPlaceholder') || "Describe what you ate..."}
-                    placeholderTextColor={colors.primary + '55'}
+                    style={[s.textInputArea, { backgroundColor: 'transparent' }]}
+                    placeholder={t('scan.textPlaceholder') || "Describe lo que comiste (ej. 2 huevos revueltos con un café y pan tostado)..."}
+                    placeholderTextColor="rgba(255,255,255,0.4)"
                     multiline
                     value={textInput}
                     onChangeText={setTextInput}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    underlineColorAndroid="transparent"
+                    textAlignVertical="top"
+                    cursorColor={colors.primaryLight || '#C4B5FD'}
+                    selectionColor={(colors.primary || '#7C5CFC') + '55'}
                   />
-                  <Suspense fallback={<ActivityIndicator color={colors.primary} size="large" />}>
-                  <VoiceInput
-                    onTextResult={handleVoiceTextResult}
-                    language={language}
-                    colors={colors}
-                    t={t}
-                  />
-                  </Suspense>
+
+                  {/* Card Footer */}
+                  <View style={s.cardFooter}>
+                    <Text style={s.charCount}>
+                      {textInput.length > 0
+                        ? `${textInput.length} ${t('common.characters', 'caracteres')}`
+                        : t('scan.voicePrompt', 'Toca el micro para dictar')}
+                    </Text>
+                    <VoiceInput
+                      onTextResult={handleVoiceTextResult}
+                      language={language}
+                      colors={colors}
+                      t={t}
+                    />
+                  </View>
                 </View>
-                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, textAlign: 'center', fontStyle: 'italic', marginTop: -4 }}>
-                  💡 {t('scan.textPrecisionHint', 'Para mayor precisión, menciona explícitamente las cantidades (ej. 200g) y qué comida es.')}
-                </Text>
-                <TouchableOpacity style={s.analyzeBtn} onPress={handleTextAnalyze} disabled={loading || !textInput.trim()}>
-                  <LinearGradient colors={[colors.primary, colors.secondary || '#A855F7']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.analyzeGrad}>
-                    {loading ? <ActivityIndicator color="#fff" size="small" /> : <Text style={s.analyzeText}>{t('scan.analyze') || 'Analyze with AI'}</Text>}
+
+                {/* Primary Action Button */}
+                <TouchableOpacity
+                  style={[s.analyzeBtn, (!textInput.trim() || loading) && { opacity: 0.55 }]}
+                  onPress={handleTextAnalyze}
+                  disabled={loading || !textInput.trim()}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={[colors.primary, colors.secondary || '#A855F7']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={s.analyzeGrad}
+                  >
+                    {loading ? (
+                      <View style={s.loadingRow}>
+                        <ActivityIndicator color="#fff" size="small" />
+                        <Text style={s.analyzeText}>{t('scan.analyzing', 'Analizando con IA...')}</Text>
+                      </View>
+                    ) : (
+                      <View style={s.loadingRow}>
+                        <Sparkles size={18} color="#fff" />
+                        <Text style={s.analyzeText}>{t('scan.analyze') || 'Analizar comida con IA'}</Text>
+                      </View>
+                    )}
                   </LinearGradient>
                 </TouchableOpacity>
-                {!isProActually && (
-                  <TouchableOpacity style={[s.creditRow, { justifyContent: 'center' }]} onPress={() => { setGateMode('text'); setPendingAction(() => {}); setGateVisible(true); }}>
-                    {Array.from({ length: MAX_AI_TEXT_ENERGY }).map((_, i) => (
-                      <View key={i} style={[s.creditDot, i < aiTextEnergy ? s.creditDotActive : s.creditDotEmpty]} />
-                    ))}
-                    <Text style={s.limitNote}> {aiTextEnergy}/{MAX_AI_TEXT_ENERGY} ⚡ texto <Text style={{ color: colors.tabActive, fontWeight: 'bold' }}>+</Text></Text>
+
+                {/* Pro / Energy Badge */}
+                {isProActually ? (
+                  <View style={s.proPill}>
+                    <Crown size={14} color="#F59E0B" />
+                    <Text style={s.proPillText}>FitGO AI Pro · Análisis Ilimitados</Text>
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    style={s.creditRow}
+                    onPress={() => {
+                      setGateMode('text');
+                      setPendingAction(() => {});
+                      setGateVisible(true);
+                    }}
+                  >
+                    <View style={s.dotsWrap}>
+                      {Array.from({ length: MAX_AI_TEXT_ENERGY }).map((_, i) => (
+                        <View
+                          key={i}
+                          style={[s.creditDot, i < aiTextEnergy ? s.creditDotActive : s.creditDotEmpty]}
+                        />
+                      ))}
+                    </View>
+                    <Text style={s.limitNote}>
+                      {aiTextEnergy}/{MAX_AI_TEXT_ENERGY} {t('scan.aiEnergyAvailable', 'análisis disponibles hoy')} ·{' '}
+                      <Text style={{ color: colors.tabActive, fontWeight: '800' }}>{t('scan.getMore', 'Recargar +')}</Text>
+                    </Text>
                   </TouchableOpacity>
                 )}
+
+                {/* Quick Meal Suggestion Chips */}
+                <View style={s.suggestionsSection}>
+                  <View style={s.sectionHeaderRow}>
+                    <Text style={s.sectionTitle}>💡 {t('scan.quickIdeas', 'Ideas para tu comida')}</Text>
+                    <Text style={s.sectionSubtitle}>{t('scan.tapToUse', 'Toca para rellenar')}</Text>
+                  </View>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={s.chipsScroll}
+                  >
+                    {(MEAL_SUGGESTIONS[currentMeal] || MEAL_SUGGESTIONS.lunch).map((item, idx) => (
+                      <TouchableOpacity
+                        key={idx}
+                        style={s.chip}
+                        onPress={() => {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          setTextInput(prev => prev ? `${prev}, ${item.text}` : item.text);
+                        }}
+                        activeOpacity={0.75}
+                      >
+                        <Text style={s.chipEmoji}>{item.emoji}</Text>
+                        <Text style={s.chipText}>{item.text}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+
+                {/* AI Precision Guide Card */}
+                <View style={[s.tipsCard, { borderColor: 'rgba(255,255,255,0.08)' }]}>
+                  <View style={s.tipsHeader}>
+                    <Lightbulb size={16} color="#F59E0B" />
+                    <Text style={s.tipsTitle}>{t('scan.tipsTitle', 'Tips para máxima precisión')}</Text>
+                  </View>
+                  <View style={s.tipItem}>
+                    <Text style={s.tipIcon}>⚖️</Text>
+                    <Text style={s.tipText}>
+                      <Text style={s.tipBold}>Cantidades: </Text>
+                      {t('scan.tipQuantities', 'Indica gramos o porciones (ej. 150g pollo, 1 taza arroz).')}
+                    </Text>
+                  </View>
+                  <View style={s.tipItem}>
+                    <Text style={s.tipIcon}>🍳</Text>
+                    <Text style={s.tipText}>
+                      <Text style={s.tipBold}>Cocción: </Text>
+                      {t('scan.tipCooking', 'Menciona si es a la plancha, frito, hervido o al vapor.')}
+                    </Text>
+                  </View>
+                  <View style={s.tipItem}>
+                    <Text style={s.tipIcon}>🏷️</Text>
+                    <Text style={s.tipText}>
+                      <Text style={s.tipBold}>Marcas y aderezos: </Text>
+                      {t('scan.tipBrands', 'Añade aceites, salsas o marcas conocidas si aplica.')}
+                    </Text>
+                  </View>
+                </View>
               </ScrollView>
             ) : (
               <Suspense fallback={<ActivityIndicator color={colors.primary} size="large" />}>
@@ -702,15 +949,19 @@ const s = StyleSheet.create({
   permGrad: { paddingHorizontal: 24, paddingVertical: 14 },
   permBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
   overlay: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.base, paddingTop: 56, paddingBottom: 16 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.base, paddingTop: 54, paddingBottom: 14 },
   closeBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
-  closeText: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  title: { fontSize: 17, fontWeight: '800', letterSpacing: 0.5 },
-  tabContainer: { paddingHorizontal: Spacing.base, marginBottom: 16 },
-  modeRow: { flexDirection: 'row', borderRadius: Radius.full, padding: 4, overflow: 'hidden' },
-  modePill: { flex: 1, borderRadius: Radius.full, paddingVertical: 10, alignItems: 'center', justifyContent: 'center' },
-  modePillActive: { shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },
-  modeText: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '700' },
+  titleContainer: { alignItems: 'center', gap: 2 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  title: { fontSize: 17, fontWeight: '800', letterSpacing: 0.5, color: '#fff' },
+  aiPill: { flexDirection: 'row', alignItems: 'center', gap: 3, borderWidth: 1, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 },
+  aiPillText: { fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
+  subtitle: { fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: '600' },
+  tabContainer: { paddingHorizontal: Spacing.base, marginBottom: 14 },
+  modeRow: { flexDirection: 'row', borderRadius: Radius.full, padding: 3, overflow: 'hidden' },
+  modePill: { flex: 1, borderRadius: Radius.full, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 5 },
+  modePillActive: { shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 3 },
+  modeText: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '700' },
   modeTextActive: { color: '#fff' },
   viewfinderWrap: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   viewfinder: { width: 280, height: 200 },
@@ -728,15 +979,44 @@ const s = StyleSheet.create({
   shutterIcon: { fontSize: 32 },
   photoControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 48, width: '100%', marginBottom: 12 },
   galleryBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.1)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
-  textInputWrap: { width: '100%', padding: Spacing.base, gap: 16, paddingTop: 12 },
-  textCard: { borderRadius: Radius.xl, borderWidth: 1, padding: 16, minHeight: 160, flexDirection: 'row', alignItems: 'flex-end' },
-  textInputArea: { flex: 1, height: '100%', fontSize: 20, textAlignVertical: 'top', paddingTop: 0, fontWeight: '800' },
-  analyzeBtn: { borderRadius: Radius.xl, overflow: 'hidden', marginTop: 8 },
-  analyzeGrad: { paddingVertical: 16, alignItems: 'center' },
+  textScrollContent: { paddingHorizontal: Spacing.base, paddingTop: 6, paddingBottom: 50, gap: 14 },
+  mealBadgeRow: { alignItems: 'center' },
+  mealBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 5, borderRadius: Radius.full, borderWidth: 1, gap: 6 },
+  mealBadgeEmoji: { fontSize: 13 },
+  mealBadgeText: { color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: '500' },
+  textCard: { borderRadius: Radius.xl, borderWidth: 1.5, padding: 16, minHeight: 180, overflow: 'hidden' },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  cardHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  cardHeaderTitle: { fontSize: 12, fontWeight: '700', letterSpacing: 0.4, textTransform: 'uppercase' },
+  clearBtn: { width: 24, height: 24, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.1)', justifyContent: 'center', alignItems: 'center' },
+  textInputArea: { flex: 1, minHeight: 95, fontSize: 15, color: '#FFFFFF', textAlignVertical: 'top', paddingTop: 4, paddingBottom: 4, paddingHorizontal: 0, lineHeight: 22, fontWeight: '500', backgroundColor: 'transparent' },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 6, paddingTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)' },
+  charCount: { fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: '500' },
+  analyzeBtn: { borderRadius: Radius.xl, overflow: 'hidden', marginTop: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
+  analyzeGrad: { paddingVertical: 15, alignItems: 'center', justifyContent: 'center' },
+  loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   analyzeText: { color: '#fff', fontWeight: '800', fontSize: 16, letterSpacing: 0.5 },
-  creditRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, marginTop: 10 },
-  creditDot: { width: 10, height: 10, borderRadius: 5 },
+  proPill: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: 'rgba(245, 158, 11, 0.12)', borderWidth: 1, borderColor: 'rgba(245, 158, 11, 0.3)', paddingHorizontal: 14, paddingVertical: 7, borderRadius: Radius.full, alignSelf: 'center' },
+  proPillText: { color: '#F59E0B', fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
+  creditRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, alignSelf: 'center', paddingVertical: 3 },
+  dotsWrap: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  creditDot: { width: 8, height: 8, borderRadius: 4 },
   creditDotActive: { backgroundColor: '#F59E0B' },
   creditDotEmpty: { backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-  limitNote: { fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: '700' },
+  limitNote: { fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: '600' },
+  suggestionsSection: { gap: 8, marginTop: 4 },
+  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingHorizontal: 4 },
+  sectionTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '700', letterSpacing: 0.2 },
+  sectionSubtitle: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '500' },
+  chipsScroll: { gap: 8, paddingHorizontal: 2, paddingVertical: 4 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 13, paddingVertical: 9, borderRadius: Radius.full },
+  chipEmoji: { fontSize: 15 },
+  chipText: { color: '#F1F5F9', fontSize: 12, fontWeight: '600' },
+  tipsCard: { backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: Radius.lg, borderWidth: 1, padding: 14, gap: 8, marginTop: 2 },
+  tipsHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  tipsTitle: { color: '#F1F5F9', fontSize: 13, fontWeight: '700' },
+  tipItem: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  tipIcon: { fontSize: 13, marginTop: 1 },
+  tipText: { flex: 1, color: 'rgba(255,255,255,0.65)', fontSize: 12, lineHeight: 17 },
+  tipBold: { color: '#FFFFFF', fontWeight: '700' },
 });

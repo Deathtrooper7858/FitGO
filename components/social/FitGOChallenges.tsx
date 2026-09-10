@@ -402,7 +402,17 @@ const generateAIChallenge = async () => {
 
         {isAccordionOpen && (
           challenges.length === 0 ? (
-            <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 10, marginBottom: 20 }}>{t('social.challenges.noActiveChallenges', 'No hay retos activos.')}</Text>
+            <GlassCard style={{ padding: 24, alignItems: 'center', marginHorizontal: 4, marginBottom: 24, borderWidth: 1, borderColor: colors.border + '40' }}>
+              <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.surfaceAlt, alignItems: 'center', justifyContent: 'center', marginBottom: 12, borderWidth: 1, borderColor: colors.border + '50' }}>
+                <Sword size={26} color={colors.textSecondary} />
+              </View>
+              <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary, marginBottom: 4 }}>
+                {t('social.challenges.noActiveChallenges', 'No hay retos activos')}
+              </Text>
+              <Text style={{ fontSize: 13, color: colors.textSecondary, textAlign: 'center', lineHeight: 18 }}>
+                {t('social.challenges.noActiveChallengesSub', 'Crea un reto o pídele una sugerencia a Fitz para empezar a competir con tus amigos.')}
+              </Text>
+            </GlassCard>
           ) : (
             challenges.map((challenge: any) => {
               const todayStr = getLocalDateString(new Date());

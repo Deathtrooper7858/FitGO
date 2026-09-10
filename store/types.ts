@@ -58,6 +58,8 @@ export interface UserProfile extends HealthProfile {
   /** Macro distribution type chosen during onboarding. Defaults to 'recommended'. */
   dietType?:       'recommended' | 'high_protein' | 'low_carb' | 'keto' | 'low_fat';
   badges?:         string[];
+  secondaryGoals?: string[];
+  secondary_goals?: string[];
   selectedBadge?:  string;
   unlockedAchievements?: string[];
   pinnedAchievements?:   string[];

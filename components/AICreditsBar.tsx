@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Zap } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../hooks/useTheme';
 import { useAICredits } from '../hooks/useAICredits';
 
@@ -11,6 +12,7 @@ interface AICreditsBarProps {
 }
 
 export const AICreditsBar = React.memo(function AICreditsBar({ compact = false }: AICreditsBarProps) {
+  const { t } = useTranslation();
   const colors = useTheme();
   const { creditsLeft, hasCredits, isPro, maxCredits } = useAICredits();
 
@@ -19,7 +21,7 @@ export const AICreditsBar = React.memo(function AICreditsBar({ compact = false }
     return (
       <View style={[s.proChip, { backgroundColor: colors.primary + '20', borderColor: colors.primary + '40' }]}>
         <Zap size={12} color={colors.primary} fill={colors.primary} />
-        <Text style={[s.proText, { color: colors.primary }]}>IA Ilimitada</Text>
+        <Text style={[s.proText, { color: colors.primary }]}>{t('credits.unlimited', 'IA Ilimitada')}</Text>
       </View>
     );
   }
@@ -35,10 +37,10 @@ export const AICreditsBar = React.memo(function AICreditsBar({ compact = false }
       >
         <Zap size={14} color={hasCredits ? colors.primary : colors.textMuted} fill={hasCredits ? colors.primary : 'transparent'} />
         <Text style={[s.compactText, { color: hasCredits ? colors.textPrimary : colors.textMuted }]}>
-          {creditsLeft}/{maxCredits} IA hoy
+          {creditsLeft}/{maxCredits} {t('credits.aiToday', 'IA hoy')}
         </Text>
         {!hasCredits && (
-          <Text style={[s.rechargeText, { color: colors.primary }]}>Recargar ⚡</Text>
+          <Text style={[s.rechargeText, { color: colors.primary }]}>{t('credits.recharge', 'Recargar ⚡')}</Text>
         )}
       </TouchableOpacity>
     );
@@ -47,7 +49,7 @@ export const AICreditsBar = React.memo(function AICreditsBar({ compact = false }
   return (
     <View style={[s.container, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={s.row}>
-        <Text style={[s.label, { color: colors.textSecondary }]}>Energía IA de hoy</Text>
+        <Text style={[s.label, { color: colors.textSecondary }]}>{t('credits.energyToday', 'Energía IA de hoy')}</Text>
         <Text style={[s.count, { color: hasCredits ? colors.primary : colors.textMuted }]}>
           {creditsLeft}/{maxCredits}
         </Text>
@@ -72,7 +74,7 @@ export const AICreditsBar = React.memo(function AICreditsBar({ compact = false }
           activeOpacity={0.8}
         >
           <Zap size={14} color={colors.primary} fill={colors.primary} />
-          <Text style={[s.rechargeBtnText, { color: colors.primary }]}>Ver video y ganar +2 ⚡</Text>
+          <Text style={[s.rechargeBtnText, { color: colors.primary }]}>{t('credits.watchAdEarn', 'Ver video y ganar +2 ⚡')}</Text>
         </TouchableOpacity>
       )}
     </View>

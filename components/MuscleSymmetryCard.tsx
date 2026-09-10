@@ -32,6 +32,7 @@ import { useAuthStore } from '../store/authStore';
 import { useSettingsStore } from '../store';
 import { useIsPro } from '../hooks/useIsPro';
 import { useTheme } from '../hooks/useTheme';
+import { getSafeColor, isValidPremiumColor, hexToRgba } from '../utils/styles';
 import exercisesData from '../excercise/exercises.json';
 import { getLocalDateString } from '../utils/date';
 
@@ -613,9 +614,8 @@ export default function MuscleSymmetryCard() {
   const { premiumColor } = useSettingsStore();
   const isPro = useIsPro();
   const hasProAccess = isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin';
-  const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
-  const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
-  const isPremiumCustom = hasProAccess && isValidHex;
+  const safePremiumColor = getSafeColor(premiumColor, colors.primary);
+  const isPremiumCustom = !!(hasProAccess && isValidPremiumColor(premiumColor));
   
   const workouts = useMemo(() => {
     if (!hasProAccess) return [];
@@ -781,7 +781,7 @@ export default function MuscleSymmetryCard() {
       <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border + '40' }]}>
       {/* Aurora background gradient */}
       <LinearGradient
-        colors={['rgba(139,92,246,0.12)', 'rgba(6,182,212,0.06)', 'transparent']}
+        colors={[isPremiumCustom ? hexToRgba(safePremiumColor, 0.12) : 'rgba(139,92,246,0.12)', 'rgba(6,182,212,0.06)', 'transparent']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
@@ -792,7 +792,7 @@ export default function MuscleSymmetryCard() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <LinearGradient
-            colors={['#8B5CF6', '#06B6D4']}
+            colors={isPremiumCustom ? (premiumColor === 'admin_glow' ? ['#00F0FF', '#0088FF'] : [safePremiumColor, hexToRgba(safePremiumColor, 0.8)]) : ['#8B5CF6', '#06B6D4']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.headerIcon}
@@ -847,7 +847,7 @@ export default function MuscleSymmetryCard() {
       {/* ── Toggle Frente / Atrás ── */}
       <View style={[styles.toggleContainer, { backgroundColor: colors.background }]}>
         <LinearGradient
-          colors={['rgba(139,92,246,0.08)', 'rgba(6,182,212,0.04)']}
+          colors={[isPremiumCustom ? hexToRgba(safePremiumColor, 0.08) : 'rgba(139,92,246,0.08)', 'rgba(6,182,212,0.04)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={StyleSheet.absoluteFill}
@@ -863,7 +863,7 @@ export default function MuscleSymmetryCard() {
             >
               {isActive ? (
                 <LinearGradient
-                  colors={isPremiumCustom ? [safePremiumColor, safePremiumColor + 'CC'] : ['#8B5CF6', '#6D28D9']}
+                  colors={isPremiumCustom ? (premiumColor === 'admin_glow' ? ['#00F0FF', '#0088FF'] : [safePremiumColor, hexToRgba(safePremiumColor, 0.8)]) : ['#8B5CF6', '#6D28D9']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.toggleTabActive}
@@ -938,10 +938,10 @@ export default function MuscleSymmetryCard() {
       ) : (
         <View style={styles.emptyState}>
           <LinearGradient
-            colors={['rgba(139,92,246,0.15)', 'rgba(6,182,212,0.08)']}
+            colors={[isPremiumCustom ? hexToRgba(safePremiumColor, 0.15) : 'rgba(139,92,246,0.15)', 'rgba(6,182,212,0.08)']}
             style={styles.emptyIcon}
           >
-            <Dumbbell size={36} color="#8B5CF6" />
+            <Dumbbell size={36} color={isPremiumCustom ? safePremiumColor : '#8B5CF6'} />
           </LinearGradient>
           <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
             {t('dashboard.symmetryEmpty', 'Sin entrenamientos aún')}

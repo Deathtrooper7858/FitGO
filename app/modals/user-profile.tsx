@@ -6,7 +6,7 @@ import { Image } from 'expo-image';
 import { ArrowLeft, UserPlus, Check, Trophy, Heart, MessageSquare, Users, Trash2 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
-import { getNameStyle } from '../../utils/styles';
+import { getNameStyle, getSafeColor, isValidPremiumColor, hexToRgba } from '../../utils/styles';
 import { getLucideIcon } from '../../constants/iconMap';
 import { supabase } from '../../services/supabase';
 import { useAuthStore, useSocialStore, useSettingsStore, usePurchaseStore } from '../../store';
@@ -131,10 +131,10 @@ export default function UserProfileModal() {
 
   // For own profile: use premiumColor from local store.
   // For others: use their name_color from DB (visible to ALL users inspecting the profile).
-  const isValidColor = (c: string | null | undefined) => !!c && (c.startsWith('#') || c.startsWith('rgb'));
+  const isCustomPro = !!(isPro || myProfile?.isPro || myProfile?.role === 'owner' || myProfile?.role === 'super_admin' || myProfile?.role === 'admin');
   const vitrineColor: string | null = isMe
-    ? ((isPro || myProfile?.isPro || myProfile?.role === 'owner' || myProfile?.role === 'super_admin' || myProfile?.role === 'admin') && isValidColor(premiumColor) ? premiumColor! : null)
-    : (isValidColor(displayUser.name_color) ? displayUser.name_color : null);
+    ? (isCustomPro && isValidPremiumColor(premiumColor) ? getSafeColor(premiumColor) : null)
+    : (isValidPremiumColor(displayUser.name_color) ? getSafeColor(displayUser.name_color) : null);
 
   const friendStatus = socialStore.friends.find(f =>
     (f.user_id_1 === myProfile?.id && f.user_id_2 === userId) ||
@@ -163,16 +163,15 @@ export default function UserProfileModal() {
     : myAchievements.filter(a => theirUnlockedIds.includes(a.id)).length;
   const totalAchievements = myAchievements.length;
 
-  const hasProAccess = isPro || myProfile?.role === 'owner' || myProfile?.role === 'super_admin' || myProfile?.role === 'admin';
-  const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
-  const safePremiumColor = isValidHex ? premiumColor! : '#7C5CFC';
-  const isPremiumCustom = hasProAccess && isValidHex;
+  const hasProAccess = isCustomPro;
+  const safePremiumColor = getSafeColor(premiumColor, colors.primary);
+  const isPremiumCustom = !!(hasProAccess && isValidPremiumColor(premiumColor));
 
   return (
-    <SafeAreaView style={[s.container, { backgroundColor: isPremiumCustom ? safePremiumColor + '0A' : colors.background }]}>
+    <SafeAreaView style={[s.container, { backgroundColor: isPremiumCustom ? hexToRgba(safePremiumColor, 0.04) : colors.background }]}>
       {isPremiumCustom && (
         <LinearGradient
-          colors={[safePremiumColor + '1A', 'transparent']}
+          colors={[hexToRgba(safePremiumColor, 0.10), 'transparent']}
           style={StyleSheet.absoluteFill}
           pointerEvents="none"
         />
@@ -187,10 +186,10 @@ export default function UserProfileModal() {
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 50 }} showsVerticalScrollIndicator={false}>
         {/* Profile Card */}
-        <GlassCard style={{ margin: 16, padding: 0, overflow: 'hidden', backgroundColor: isPremiumCustom ? safePremiumColor + '10' : colors.surface }}>
+        <GlassCard style={{ margin: 16, padding: 0, overflow: 'hidden', backgroundColor: isPremiumCustom ? hexToRgba(safePremiumColor, 0.06) : colors.surface }}>
           {isPremiumCustom && (
             <LinearGradient
-              colors={[safePremiumColor + '20', 'transparent']}
+              colors={[hexToRgba(safePremiumColor, 0.12), 'transparent']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
@@ -218,7 +217,7 @@ export default function UserProfileModal() {
               )}
             </TouchableOpacity>
 
-            <Text style={[{ color: colors.textPrimary, fontSize: 22, fontWeight: '900', letterSpacing: -0.5 }, getNameStyle(displayUser.name_color, displayUser.id, myProfile?.id, myProfile?.nameColor)]}>{displayUser.name}</Text>
+            <Text style={[{ color: colors.textPrimary, fontSize: 22, fontWeight: '900', letterSpacing: -0.5 }, getNameStyle(displayUser.name_color, displayUser.id, myProfile?.id, myProfile?.nameColor, premiumColor)]}>{displayUser.name}</Text>
 
             <View style={[s.chip, { backgroundColor: currentBadge.colors[0] + '20', flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 }]}>
               <Text style={{ fontSize: 13 }}>{currentBadge.icon}</Text>

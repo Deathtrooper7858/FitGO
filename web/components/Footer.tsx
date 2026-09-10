@@ -41,6 +41,7 @@ export default function Footer() {
     [t("groups.legal")]: [
       { href: "/privacy", label: t("links.privacy") },
       { href: "/terms", label: t("links.terms") },
+      { href: "/contact", label: "Contacto y Soporte" },
     ],
   };
 

@@ -1,15 +1,17 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useConnectivity } from '../hooks/useConnectivity';
 
 export function OfflineBanner() {
+  const { t } = useTranslation();
   const isConnected = useConnectivity();
 
   if (isConnected) return null;
 
   return (
     <View style={styles.banner}>
-      <Text style={styles.text}>Sin conexión</Text>
+      <Text style={styles.text}>{t('common.offline', 'Sin conexión')}</Text>
     </View>
   );
 }

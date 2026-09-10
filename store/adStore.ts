@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /** Max free AI photo scans per day (free users) */
-export const MAX_AI_PHOTO_ENERGY = 3;
+export const MAX_AI_PHOTO_ENERGY = 5;
 /** Max free AI text scans per day (free users) */
 export const MAX_AI_TEXT_ENERGY = 5;
 /** Legacy alias – kept for compatibility */
@@ -68,7 +68,7 @@ export const useAdStore = create<AdState>()(
 
       checkAndResetEnergy: () => {
         const today = new Date().toDateString();
-        const { lastEnergyReset } = get();
+        const { lastEnergyReset, aiPhotoEnergy } = get();
         if (lastEnergyReset !== today) {
           set({
             aiPhotoEnergy: MAX_AI_PHOTO_ENERGY,
@@ -79,6 +79,11 @@ export const useAdStore = create<AdState>()(
             lastEnergyReset: today,
           });
           console.log('[AdStore] New day — energy & ad counters reset');
+        } else if (aiPhotoEnergy < MAX_AI_PHOTO_ENERGY && get().photoAdsWatchedToday === 0) {
+          set({
+            aiPhotoEnergy: MAX_AI_PHOTO_ENERGY,
+            aiEnergy: MAX_AI_PHOTO_ENERGY,
+          });
         }
       },
 
@@ -190,16 +195,7 @@ export const useAdStore = create<AdState>()(
         const { premiumAdAccess } = get();
         const expiresAt = premiumAdAccess[featureId];
         if (!expiresAt) return false;
-
-        if (Date.now() < expiresAt) return true;
-
-        // Expired — clean up
-        set((state) => {
-          const newAccess = { ...state.premiumAdAccess };
-          delete newAccess[featureId];
-          return { premiumAdAccess: newAccess };
-        });
-        return false;
+        return Date.now() < expiresAt;
       },
 
       premiumAdRemainingSeconds: (featureId: string) => {

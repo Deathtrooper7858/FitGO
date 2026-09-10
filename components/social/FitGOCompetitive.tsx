@@ -8,7 +8,7 @@ import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
-import { Trophy, Users, Crown, Copy, LogOut, Plus, Hash, Star, ChevronRight, X, Sword, Trash2 } from 'lucide-react-native';
+import { Trophy, Users, Crown, Copy, LogOut, Plus, Hash, Star, ChevronRight, X, Sword, Trash2, Shield } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +21,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useIsPro } from '../../hooks/useIsPro';
 import { useTheme } from '../../hooks/useTheme';
+import { Radius, Shadow } from '../../constants';
+import { GlassCard } from '../GlassCard';
 import { useAuthStore, useSocialStore, useSettingsStore, useNutritionStore } from '../../store';
 import { useLeagueStore, LeagueTier, SquadMember, Squad } from '../../store/leagueStore';
 import MacroRewardAnimation from '../MacroRewardAnimation';
@@ -234,34 +236,96 @@ function EmptySquad({ onCreate, onJoin }: { onCreate: () => void; onJoin: () => 
   }, [profile?.id, socialStore]);
 
   return (
-    <View style={styles.emptyContainer}>
-      <LinearGradient
-        colors={['rgba(255,215,0,0.06)', 'transparent']}
-        style={styles.emptyGlow}
-      />
-      <View style={[styles.emptyIconWrap, { borderColor: colors.border }]}>
-        <Trophy size={48} color={colors.primary} />
-      </View>
-      <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>{t('competitive.squads.emptyTitle', 'Guerras de Macros')}</Text>
-      <Text style={[styles.emptySub, { color: colors.textSecondary }]}>
-        {t('competitive.squads.emptySub', 'Únete o crea un Squad con hasta 4 amigos. Cumplan sus macros diarios, acumulen puntos y suban de liga juntos.')}
-      </Text>
-      <View style={{ flexDirection: 'row', gap: 12, marginTop: 24, marginBottom: 32 }}>
-        <TouchableOpacity
-          style={[styles.emptyBtn, { backgroundColor: colors.primary }]}
-          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); onCreate(); }}
+    <View style={{ paddingTop: 10, paddingBottom: 30 }}>
+      <GlassCard style={{ padding: 28, alignItems: 'center', borderWidth: 1, borderColor: colors.border + '40', overflow: 'hidden' }}>
+        <LinearGradient
+          colors={['rgba(245,158,11,0.12)', 'rgba(236,72,153,0.04)', 'transparent']}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+        <View
+          style={{
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            backgroundColor: colors.surfaceAlt,
+            borderWidth: 2,
+            borderColor: '#F59E0B50',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 16,
+            shadowColor: '#F59E0B',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 10,
+            elevation: 6,
+          }}
         >
-          <Plus size={18} color="#fff" />
-          <Text style={styles.emptyBtnText}>{t('competitive.squads.createSquad', 'Crear Squad')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.emptyBtnOutline, { borderColor: colors.primary }]}
-          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onJoin(); }}
-        >
-          <Hash size={18} color={colors.primary} />
-          <Text style={[styles.emptyBtnText, { color: colors.primary }]}>{t('competitive.squads.joinSquad', 'Unirme')}</Text>
-        </TouchableOpacity>
-      </View>
+          <Trophy size={40} color="#F59E0B" />
+        </View>
+
+        <Text style={{ fontSize: 22, fontWeight: '900', color: colors.textPrimary, letterSpacing: -0.5, marginBottom: 8, textAlign: 'center' }}>
+          {t('competitive.squads.emptyTitle', 'Guerras de Macros')}
+        </Text>
+        <Text style={{ fontSize: 14, lineHeight: 20, color: colors.textSecondary, textAlign: 'center', marginBottom: 24, paddingHorizontal: 8 }}>
+          {t('competitive.squads.emptySub', 'Únete o crea un Squad con hasta 4 amigos. Cumplan sus macros diarios, acumulen puntos y suban de liga juntos.')}
+        </Text>
+
+        <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
+          <TouchableOpacity
+            style={{
+              flex: 1.2,
+              height: 48,
+              borderRadius: Radius.full,
+              overflow: 'hidden',
+              ...Shadow.md,
+            }}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              onCreate();
+            }}
+            activeOpacity={0.85}
+          >
+            <LinearGradient
+              colors={['#F59E0B', '#EC4899']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+            >
+              <Plus size={18} color="#fff" />
+              <Text style={{ color: '#fff', fontSize: 14, fontWeight: '800' }}>
+                {t('competitive.squads.createSquad', 'Crear Squad')}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              height: 48,
+              borderRadius: Radius.full,
+              borderWidth: 1.5,
+              borderColor: colors.border,
+              backgroundColor: colors.surfaceAlt,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+            }}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onJoin();
+            }}
+            activeOpacity={0.85}
+          >
+            <Hash size={16} color={colors.textPrimary} />
+            <Text style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '800' }}>
+              {t('competitive.squads.joinSquad', 'Unirme')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </GlassCard>
 
       {!loading && invitations.length > 0 && (
         <View style={{ width: '100%', alignItems: 'flex-start' }}>
@@ -347,6 +411,105 @@ function PodiumCard({ squad, position, onInspect }: { squad: Squad; position: nu
       <LinearGradient
         colors={[pd.glow + '35', pd.glow + '05']}
         style={[styles.podiumBar, { height: pd.height, borderColor: pd.glow + '50', borderTopWidth: 2 }]}
+      />
+    </TouchableOpacity>
+  );
+}
+
+export function getRankGrade(points: number) {
+  if (points >= 15000) return { label: 'S++', color: '#FF0055', bg: '#FF005520' };
+  if (points >= 10000) return { label: 'S+', color: '#FFD700', bg: '#FFD70020' };
+  if (points >= 5000)  return { label: 'S',  color: '#A855F7', bg: '#A855F720' };
+  if (points >= 2000)  return { label: 'A',  color: '#3B82F6', bg: '#3B82F620' };
+  if (points >= 1000)  return { label: 'B',  color: '#10B981', bg: '#10B98120' };
+  if (points >= 500)   return { label: 'C',  color: '#F59E0B', bg: '#F59E0B20' };
+  if (points >= 100)   return { label: 'D',  color: '#8B4513', bg: '#8B451320' };
+  return { label: 'F', color: '#6B7280', bg: '#6B728020' };
+}
+
+function IndividualPodiumCard({
+  user,
+  position,
+  onInspect,
+  premiumColor,
+  myId,
+}: {
+  user: any;
+  position: number;
+  onInspect: (u: any) => void;
+  premiumColor?: string | null;
+  myId?: string;
+}) {
+  const colors = useTheme();
+  const grade = getRankGrade(user.points);
+  const isMe = user.id === myId;
+  const podiumData: Record<number, { medal: string; height: number; glow: string; border: string }> = {
+    1: { medal: '🥇', height: 110, glow: '#FFD700', border: '#FBBF24' },
+    2: { medal: '🥈', height: 80, glow: '#C0C0C0', border: '#D1D5DB' },
+    3: { medal: '🥉', height: 60, glow: '#CD7F32', border: '#F59E0B' },
+  };
+  const pd = podiumData[position] || { medal: `#${position}`, height: 40, glow: colors.primary, border: colors.primary };
+
+  return (
+    <TouchableOpacity
+      style={[styles.podiumCard, { shadowColor: pd.glow }]}
+      onPress={() => {
+        Haptics.selectionAsync();
+        onInspect(user);
+      }}
+      activeOpacity={0.82}
+    >
+      <Text style={{ fontSize: position === 1 ? 28 : 24, marginBottom: 4 }}>{pd.medal}</Text>
+
+      {/* Avatar with medal glow ring */}
+      <View
+        style={{
+          padding: 2.5,
+          borderRadius: 24,
+          borderWidth: 2,
+          borderColor: pd.border,
+          shadowColor: pd.glow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.7,
+          shadowRadius: 6,
+          marginBottom: 6,
+        }}
+      >
+        {user.avatar_url ? (
+          <Image cachePolicy="memory-disk" source={{ uri: user.avatar_url }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+        ) : (
+          <View style={[styles.rankAvatarPlaceholder, { backgroundColor: isMe ? colors.primary : colors.surfaceAlt, width: 40, height: 40, borderRadius: 20 }]}>
+            <Text style={{ color: isMe ? '#fff' : colors.textSecondary, fontWeight: 'bold', fontSize: 16 }}>
+              {user.name?.[0]?.toUpperCase()}
+            </Text>
+          </View>
+        )}
+      </View>
+
+      <Text
+        style={[
+          styles.podiumSquadName,
+          { color: colors.textPrimary, fontSize: 12 },
+          getNameStyle(user.name_color, user.id, myId, undefined, premiumColor),
+        ]}
+        numberOfLines={1}
+      >
+        {user.name}
+      </Text>
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 6 }}>
+        <View style={{ backgroundColor: grade.bg, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4 }}>
+          <Text style={{ color: grade.color, fontSize: 10, fontWeight: '900' }}>{grade.label}</Text>
+        </View>
+        <Text style={{ color: colors.textPrimary, fontSize: 11, fontWeight: '800' }}>
+          {Math.round(user.points)} pts
+        </Text>
+      </View>
+
+      {/* Podium step bar */}
+      <LinearGradient
+        colors={[pd.glow + '40', pd.glow + '08']}
+        style={[styles.podiumBar, { height: pd.height, borderColor: pd.border + '60', borderTopWidth: 2 }]}
       />
     </TouchableOpacity>
   );
@@ -556,17 +719,6 @@ export default function FitGOCompetitive({
     setRefreshing(false);
   }, [profile?.id, fetchMySquad, fetchTopSquads, socialStore]);
 
-  const getRankGrade = (points: number) => {
-    if (points >= 15000) return { label: 'S++', color: '#FF0055', bg: '#FF005520' };
-    if (points >= 10000) return { label: 'S+', color: '#FFD700', bg: '#FFD70020' };
-    if (points >= 5000)  return { label: 'S',  color: '#A855F7', bg: '#A855F720' };
-    if (points >= 2000)  return { label: 'A',  color: '#3B82F6', bg: '#3B82F620' };
-    if (points >= 1000)  return { label: 'B',  color: '#10B981', bg: '#10B98120' };
-    if (points >= 500)   return { label: 'C',  color: '#F59E0B', bg: '#F59E0B20' };
-    if (points >= 100)   return { label: 'D',  color: '#8B4513', bg: '#8B451320' };
-    return { label: 'F', color: '#6B7280', bg: '#6B728020' };
-  };
-
   const handleCreate = async () => {
     if (!squadName.trim() || !profile?.id) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -628,34 +780,104 @@ export default function FitGOCompetitive({
       <MacroRewardAnimation visible={rewardVisible} points={rewardPoints} onHide={hideReward} />
 
       {/* Section Toggle */}
-      <View style={[styles.sectionToggle, { backgroundColor: colors.surfaceAlt }]}>
-        <TouchableOpacity
-          style={[styles.sectionToggleBtn, activeSection === 'ranking' && { backgroundColor: colors.surface }]}
-          onPress={() => { Haptics.selectionAsync(); setActiveSection('ranking'); }}
-        >
-          <Trophy size={15} color={activeSection === 'ranking' ? colors.primary : colors.textSecondary} />
-          <Text style={[styles.sectionToggleText, { color: activeSection === 'ranking' ? colors.primary : colors.textSecondary }]}>
-            {t('social.ranking.globalRanking', 'Ranking')}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.sectionToggleBtn, activeSection === 'my-squad' && { backgroundColor: colors.surface }]}
-          onPress={() => { Haptics.selectionAsync(); setActiveSection('my-squad'); }}
-        >
-          <Users size={15} color={activeSection === 'my-squad' ? colors.primary : colors.textSecondary} />
-          <Text style={[styles.sectionToggleText, { color: activeSection === 'my-squad' ? colors.primary : colors.textSecondary }]}>
-            {t('competitive.mySquad', 'My Squad')}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.sectionToggleBtn, activeSection === 'challenges' && { backgroundColor: colors.surface }]}
-          onPress={() => { Haptics.selectionAsync(); setActiveSection('challenges'); }}
-        >
-          <Sword size={15} color={activeSection === 'challenges' ? colors.primary : colors.textSecondary} />
-          <Text style={[styles.sectionToggleText, { color: activeSection === 'challenges' ? colors.primary : colors.textSecondary }]}>
-            {t('social.challenges.fitgoChallenges', 'Challenges')}
-          </Text>
-        </TouchableOpacity>
+      <View style={{ paddingHorizontal: 18, marginBottom: 12 }}>
+        <View style={{ flexDirection: 'row', backgroundColor: colors.surfaceAlt, borderRadius: Radius.full, padding: 4, borderWidth: 1, borderColor: colors.border + '35' }}>
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              paddingVertical: 9,
+              borderRadius: Radius.full,
+              overflow: 'hidden',
+              ...(activeSection === 'ranking' ? Shadow.sm : {}),
+            }}
+            onPress={() => {
+              Haptics.selectionAsync();
+              setActiveSection('ranking');
+            }}
+            activeOpacity={0.85}
+          >
+            {activeSection === 'ranking' && (
+              <LinearGradient
+                colors={['#F59E0B', '#EC4899']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
+            )}
+            <Trophy size={15} color={activeSection === 'ranking' ? '#fff' : colors.textSecondary} />
+            <Text style={{ fontSize: 13, fontWeight: '800', color: activeSection === 'ranking' ? '#fff' : colors.textSecondary }}>
+              {t('social.ranking.globalRanking', 'Rankings')}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              paddingVertical: 9,
+              borderRadius: Radius.full,
+              overflow: 'hidden',
+              ...(activeSection === 'my-squad' ? Shadow.sm : {}),
+            }}
+            onPress={() => {
+              Haptics.selectionAsync();
+              setActiveSection('my-squad');
+            }}
+            activeOpacity={0.85}
+          >
+            {activeSection === 'my-squad' && (
+              <LinearGradient
+                colors={['#F59E0B', '#EC4899']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
+            )}
+            <Shield size={15} color={activeSection === 'my-squad' ? '#fff' : colors.textSecondary} />
+            <Text style={{ fontSize: 13, fontWeight: '800', color: activeSection === 'my-squad' ? '#fff' : colors.textSecondary }}>
+              {t('competitive.mySquad', 'Mi Squad')}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              paddingVertical: 9,
+              borderRadius: Radius.full,
+              overflow: 'hidden',
+              ...(activeSection === 'challenges' ? Shadow.sm : {}),
+            }}
+            onPress={() => {
+              Haptics.selectionAsync();
+              setActiveSection('challenges');
+            }}
+            activeOpacity={0.85}
+          >
+            {activeSection === 'challenges' && (
+              <LinearGradient
+                colors={['#F59E0B', '#EC4899']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
+            )}
+            <Sword size={15} color={activeSection === 'challenges' ? '#fff' : colors.textSecondary} />
+            <Text style={{ fontSize: 13, fontWeight: '800', color: activeSection === 'challenges' ? '#fff' : colors.textSecondary }}>
+              {t('social.challenges.fitgoChallenges', 'Retos')}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Content wrapped in swipe gesture */}
@@ -675,24 +897,75 @@ export default function FitGOCompetitive({
         {/* ── RANKING SECTION ── */}
         {activeSection === 'ranking' && (
           <>
-            {/* Sub-toggle: Squads vs Individual */}
-            <View style={[styles.subToggle, { backgroundColor: colors.surfaceAlt }]}>
+            {/* Streamlined Sub-header: Mode Toggle on left, Ligas on right */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <View style={{ flexDirection: 'row', backgroundColor: colors.surfaceAlt, borderRadius: Radius.full, padding: 3, borderWidth: 1, borderColor: colors.border + '30' }}>
+                <TouchableOpacity
+                  style={{
+                    paddingHorizontal: 14,
+                    paddingVertical: 7,
+                    borderRadius: Radius.full,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    backgroundColor: rankingSubTab === 'individual' ? colors.primary : 'transparent',
+                    ...(rankingSubTab === 'individual' ? Shadow.sm : {}),
+                  }}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    setRankingSubTab('individual');
+                  }}
+                >
+                  <Users size={13} color={rankingSubTab === 'individual' ? '#fff' : colors.textMuted} />
+                  <Text style={{ fontSize: 12, fontWeight: '800', color: rankingSubTab === 'individual' ? '#fff' : colors.textMuted }}>
+                    {t('competitive.individual', 'Individual')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={{
+                    paddingHorizontal: 14,
+                    paddingVertical: 7,
+                    borderRadius: Radius.full,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    backgroundColor: rankingSubTab === 'squads' ? colors.primary : 'transparent',
+                    ...(rankingSubTab === 'squads' ? Shadow.sm : {}),
+                  }}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    setRankingSubTab('squads');
+                  }}
+                >
+                  <Trophy size={13} color={rankingSubTab === 'squads' ? '#fff' : colors.textMuted} />
+                  <Text style={{ fontSize: 12, fontWeight: '800', color: rankingSubTab === 'squads' ? '#fff' : colors.textMuted }}>
+                    Squads
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Ligas / Rangos Info Button */}
               <TouchableOpacity
-                style={[styles.subToggleBtn, rankingSubTab === 'individual' && { backgroundColor: colors.surface }]}
-                onPress={() => { Haptics.selectionAsync(); setRankingSubTab('individual'); }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  backgroundColor: colors.surfaceAlt,
+                  paddingHorizontal: 13,
+                  paddingVertical: 7,
+                  borderRadius: Radius.full,
+                  borderWidth: 1,
+                  borderColor: colors.border + '30',
+                }}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setShowRankingInfo(true);
+                }}
               >
-                <Users size={14} color={rankingSubTab === 'individual' ? colors.primary : colors.textMuted} />
-                <Text style={[styles.subToggleText, { color: rankingSubTab === 'individual' ? colors.primary : colors.textMuted }]}>
-                  {t('competitive.individual', 'Individual')}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.subToggleBtn, rankingSubTab === 'squads' && { backgroundColor: colors.surface }]}
-                onPress={() => { Haptics.selectionAsync(); setRankingSubTab('squads'); }}
-              >
-                <Trophy size={14} color={rankingSubTab === 'squads' ? colors.primary : colors.textMuted} />
-                <Text style={[styles.subToggleText, { color: rankingSubTab === 'squads' ? colors.primary : colors.textMuted }]}>
-                  Squads
+                <Trophy size={13} color="#F59E0B" />
+                <Text style={{ color: colors.textPrimary, fontSize: 12, fontWeight: '800' }}>
+                  {t('competitive.ranks', 'Ligas')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -708,12 +981,12 @@ export default function FitGOCompetitive({
                 </View>
 
                 {topSquads.length === 0 && !loading ? (
-                  <View style={{ alignItems: 'center', paddingVertical: 40 }}>
+                  <GlassCard style={{ alignItems: 'center', paddingVertical: 36, marginTop: 8 }}>
                     <Trophy size={48} color={colors.textMuted} style={{ opacity: 0.3 }} />
                     <Text style={{ color: colors.textMuted, marginTop: 12, fontSize: 15, textAlign: 'center' }}>
                       {t('competitive.squads.noSquads', 'Aún no hay squads en el ranking.') + '\n' + t('competitive.squads.beFirst', '¡Sé el primero!')}
                     </Text>
-                  </View>
+                  </GlassCard>
                 ) : loading && topSquads.length === 0 ? (
                   <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} size="large" />
                 ) : (
@@ -725,14 +998,14 @@ export default function FitGOCompetitive({
                     </View>
 
                     {rest.length > 0 && (
-                      <View style={[styles.restList, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                      <View style={[styles.restList, { backgroundColor: colors.surface, borderColor: colors.border + '30' }]}>
                         <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 12 }]}>{t('competitive.squads.generalRanking', 'Clasificación General')}</Text>
                         {rest.map((s, i) => {
                           const cfg = LEAGUE_CONFIG[s.league_tier];
                           return (
                             <TouchableOpacity
                               key={s.id}
-                              style={[styles.restRow, { borderBottomColor: colors.border + '40' }]}
+                              style={[styles.restRow, { borderBottomColor: colors.border + '25' }]}
                               onPress={() => handleInspectSquad(s)}
                             >
                               <Text style={[styles.restRank, { color: colors.textMuted }]}>#{i + 4}</Text>
@@ -757,60 +1030,114 @@ export default function FitGOCompetitive({
               const myRankInfo = socialStore.globalRanking.find(u => u.id === profile?.id);
               const myRankIndex = socialStore.globalRanking.findIndex(u => u.id === profile?.id);
               const myGrade = myRankInfo ? getRankGrade(myRankInfo.points) : getRankGrade(0);
+              const top3Users = socialStore.globalRanking.slice(0, 3);
+              const restUsers = socialStore.globalRanking.slice(3);
+
               return (
                 <>
-                  <View style={styles.rankingHeader}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <View>
-                        <Text style={[styles.rankingTitle, { color: colors.textPrimary }]}>🌍 {t('social.ranking.globalRanking', 'Ranking Global')}</Text>
-                        <Text style={[styles.rankingSub, { color: colors.textSecondary }]}>{t('competitive.individual.subtitle', 'Ranking individual de usuarios')}</Text>
-                      </View>
-                      <View style={{ flexDirection: 'row', gap: 8 }}>
-                        <TouchableOpacity
-                          style={{ backgroundColor: colors.primary + '18', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 4 }}
-                          onPress={() => setShowRanksList(true)}
-                        >
-                          <Trophy size={14} color={colors.primary} />
-                          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '800' }}>{t('competitive.ranks', 'RANGOS')}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={{ backgroundColor: '#F59E0B18', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}
-                          onPress={() => setShowRankingInfo(true)}
-                        >
-                          <Text style={{ color: '#F59E0B', fontSize: 12, fontWeight: '800' }}>INFO</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-
-                  {/* My position card */}
+                  {/* Hero Card: Tu Posición Actual */}
                   {myRankInfo && (
                     <TouchableOpacity 
-                      activeOpacity={0.8}
-                      onPress={() => setShowRanksList(true)}
-                      style={[styles.myRankCard, { backgroundColor: colors.surface, borderColor: myGrade.color + '50', borderLeftColor: myGrade.color }]}
+                      activeOpacity={0.85}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setShowRanksList(true);
+                      }}
+                      style={{ marginBottom: 20 }}
                     >
-                      <View style={[styles.myRankBadge, { backgroundColor: myGrade.bg }]}>
-                        <Text style={{ color: myGrade.color, fontSize: 18, fontWeight: '900' }}>{myGrade.label}</Text>
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '600', textTransform: 'uppercase' }}>{t('social.ranking.currentRank', 'Your Current Rank')}</Text>
-                        <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: '900', letterSpacing: -0.5 }}>#{myRankIndex + 1} {t('social.ranking.inWorld', 'in the world')}</Text>
-                      </View>
-                      <View style={{ alignItems: 'flex-end' }}>
-                        <Text style={{ color: colors.primary, fontSize: 22, fontWeight: '900' }}>{Math.round(myRankInfo.points)}</Text>
-                        <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '700' }}>{t('social.ranking.points', 'POINTS')}</Text>
-                      </View>
+                      <GlassCard style={{ padding: 16, borderWidth: 1.5, borderColor: myGrade.color + '55' }}>
+                        <LinearGradient
+                          colors={[myGrade.color + '15', 'transparent']}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 0 }}
+                          style={StyleSheet.absoluteFill}
+                        />
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                          <View
+                            style={{
+                              width: 50,
+                              height: 50,
+                              borderRadius: 16,
+                              backgroundColor: myGrade.bg,
+                              borderWidth: 1.5,
+                              borderColor: myGrade.color + '60',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              shadowColor: myGrade.color,
+                              shadowOffset: { width: 0, height: 2 },
+                              shadowOpacity: 0.5,
+                              shadowRadius: 6,
+                            }}
+                          >
+                            <Text style={{ color: myGrade.color, fontSize: 20, fontWeight: '900' }}>{myGrade.label}</Text>
+                          </View>
+
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                              {t('social.ranking.currentRank', 'Tu Posición Global')}
+                            </Text>
+                            <Text style={{ color: colors.textPrimary, fontSize: 19, fontWeight: '900', letterSpacing: -0.5, marginTop: 1 }}>
+                              #{myRankIndex + 1} {t('social.ranking.inWorld', 'en el mundo')}
+                            </Text>
+                            <Text style={{ color: myGrade.color, fontSize: 11, fontWeight: '700', marginTop: 2 }}>
+                              Clase {myGrade.label} · Toca para ver rangos
+                            </Text>
+                          </View>
+
+                          <View style={{ alignItems: 'flex-end' }}>
+                            <Text style={{ color: colors.primary, fontSize: 22, fontWeight: '900' }}>
+                              {Math.round(myRankInfo.points)}
+                            </Text>
+                            <Text style={{ color: colors.textMuted, fontSize: 10, fontWeight: '800' }}>
+                              PUNTOS
+                            </Text>
+                          </View>
+                        </View>
+                      </GlassCard>
                     </TouchableOpacity>
                   )}
 
-                  {/* Global list */}
-                  <View style={[styles.restList, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 12 }]}>{t('social.ranking.globalRanking', 'Global Ranking')}</Text>
+                  {/* Individual Top 3 Podium */}
+                  {top3Users.length >= 3 && (
+                    <>
+                      <View style={styles.podiumContainer}>
+                        {top3Users[1] && (
+                          <View style={styles.podiumSlot}>
+                            <IndividualPodiumCard user={top3Users[1]} position={2} onInspect={setInspectingUser} premiumColor={premiumColor} myId={profile?.id} />
+                          </View>
+                        )}
+                        {top3Users[0] && (
+                          <View style={[styles.podiumSlot, { zIndex: 2 }]}>
+                            <IndividualPodiumCard user={top3Users[0]} position={1} onInspect={setInspectingUser} premiumColor={premiumColor} myId={profile?.id} />
+                          </View>
+                        )}
+                        {top3Users[2] && (
+                          <View style={styles.podiumSlot}>
+                            <IndividualPodiumCard user={top3Users[2]} position={3} onInspect={setInspectingUser} premiumColor={premiumColor} myId={profile?.id} />
+                          </View>
+                        )}
+                      </View>
+                    </>
+                  )}
+
+                  {/* Global list (#4 onwards, or all if < 3) */}
+                  <View style={[styles.restList, { backgroundColor: colors.surface, borderColor: colors.border + '35' }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 0 }]}>
+                        {top3Users.length >= 3 ? t('competitive.squads.generalRanking', 'Clasificación General') : t('social.ranking.globalRanking', 'Ranking Global')}
+                      </Text>
+                      {socialStore.globalRanking.length > 0 && (
+                        <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '700' }}>
+                          {socialStore.globalRanking.length} {socialStore.globalRanking.length === 1 ? 'usuario' : 'usuarios'}
+                        </Text>
+                      )}
+                    </View>
+
                     {socialStore.isRankingLoading && socialStore.globalRanking.length === 0 ? (
                       <ActivityIndicator color="#F59E0B" />
                     ) : (
-                      socialStore.globalRanking.map((user, index) => {
+                      (top3Users.length >= 3 ? restUsers : socialStore.globalRanking).map((user, idx) => {
+                        const index = top3Users.length >= 3 ? idx + 3 : idx;
                         const grade = getRankGrade(user.points);
                         const isMe = user.id === profile?.id;
                         return (
@@ -820,8 +1147,8 @@ export default function FitGOCompetitive({
                             onPress={() => { Haptics.selectionAsync(); setInspectingUser(user); }}
                             style={[
                               styles.restRow,
-                              { borderBottomColor: colors.border + '33' },
-                              isMe && { backgroundColor: colors.primary + '08' },
+                              { borderBottomColor: colors.border + '25' },
+                              isMe && { backgroundColor: colors.primary + '12', borderRadius: 12, paddingHorizontal: 8 },
                             ]}
                           >
                             <Text style={[

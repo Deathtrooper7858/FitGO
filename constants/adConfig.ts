@@ -54,7 +54,7 @@ export const AD_CONFIG = {
   /**
    * Créditos de IA que recibe un usuario Free por día (foto).
    */
-  freeAICreditsPerDay: 3,
+  freeAICreditsPerDay: 5,
 
   /**
    * Créditos de IA que recibe un usuario Free por día (texto).

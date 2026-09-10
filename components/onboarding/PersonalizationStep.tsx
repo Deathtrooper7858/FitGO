@@ -143,8 +143,8 @@ export function PersonalizationStep({ value: data, onChange }: StepProps) {
         title: t('onboarding.paceSlowTitle', 'Gentle pace'),
         sub: t('onboarding.paceSlowSub', 'Gradual changes that are very easy to sustain long-term.'),
         rate: isLbs
-          ? isGain ? '~0.5 lb / week' : '~0.5 lb / week'
-          : isGain ? '~0.25 kg / week' : '~0.25 kg / week',
+          ? isGain ? `~0.5 lb / ${t('common.week', 'semana')}` : `~0.5 lb / ${t('common.week', 'semana')}`
+          : isGain ? `~0.25 kg / ${t('common.week', 'semana')}` : `~0.25 kg / ${t('common.week', 'semana')}`,
         color: '#10B981',
       },
       moderate: {
@@ -152,8 +152,8 @@ export function PersonalizationStep({ value: data, onChange }: StepProps) {
         title: t('onboarding.paceNormalTitle', 'Normal pace'),
         sub: t('onboarding.paceNormalSub', "A steady pace that's easier to maintain with great results."),
         rate: isLbs
-          ? isGain ? '~1.0 lb / week' : '~1.0 lb / week'
-          : isGain ? '~0.5 kg / week' : '~0.5 kg / week',
+          ? isGain ? `~1.0 lb / ${t('common.week', 'semana')}` : `~1.0 lb / ${t('common.week', 'semana')}`
+          : isGain ? `~0.5 kg / ${t('common.week', 'semana')}` : `~0.5 kg / ${t('common.week', 'semana')}`,
         color: '#8B5CF6',
       },
       fast: {
@@ -161,8 +161,8 @@ export function PersonalizationStep({ value: data, onChange }: StepProps) {
         title: t('onboarding.paceFastTitle', 'Aggressive pace'),
         sub: t('onboarding.paceFastSub', 'Fastest progress requiring strict dietary discipline.'),
         rate: isLbs
-          ? isGain ? '~1.5 lb / week' : '~2.0 lb / week'
-          : isGain ? '~0.75 kg / week' : '~1.0 kg / week',
+          ? isGain ? `~1.5 lb / ${t('common.week', 'semana')}` : `~2.0 lb / ${t('common.week', 'semana')}`
+          : isGain ? `~0.75 kg / ${t('common.week', 'semana')}` : `~1.0 kg / ${t('common.week', 'semana')}`,
         color: '#EF4444',
       },
     };

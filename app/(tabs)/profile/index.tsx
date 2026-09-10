@@ -2,10 +2,11 @@ import React, { useState, useMemo } from 'react';
 import {
   View, ScrollView, Alert, Linking,
   LayoutAnimation, useWindowDimensions, Share,
-  Text, TouchableOpacity, ActivityIndicator
+  Text, TouchableOpacity
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import * as ImagePicker from 'expo-image-picker';
+import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { decode } from 'base64-arraybuffer';
@@ -53,7 +54,8 @@ import { SexSelectionModal } from '../../../components/profile/SexSelectionModal
 import { VitrinaTrofeos } from '../../../components/profile/VitrinaTrofeos';
 import { CustomToast } from '../../../components/profile/CustomToast';
 import { InviteFriendsModal } from '../../../components/profile/InviteFriendsModal';
-const WeightChart = React.lazy(() => import('../../../components/profile/WeightChart').then(m => ({ default: m.WeightChart })));
+import { WeightChart } from '../../../components/profile/WeightChart';
+import { SecondaryGoalsModal } from '../../../components/profile/SecondaryGoalsModal';
 
 
 export default function ProfileScreen() {
@@ -78,6 +80,7 @@ export default function ProfileScreen() {
   const [showHealth, setShowHealth] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [goalModalVisible, setGoalModalVisible] = useState(false);
+  const [secondaryGoalsModalVisible, setSecondaryGoalsModalVisible] = useState(false);
   const [showInterface, setShowInterface] = useState(false);
   const [unitModal, setUnitModal] = useState<any>({ visible: false, title: '', options: [], selectedValue: '', onSelect: () => {} });
   const [badgeModalVisible, setBadgeModalVisible] = useState(false);
@@ -218,6 +221,35 @@ export default function ProfileScreen() {
 
   const handleExportData = () => {
     if (!profile) return;
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch {}
+
+    const isUserPro = !!(isPro || profile?.isPro || isAdminRole);
+    if (!isUserPro) {
+      try {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      } catch {}
+      showAlert(
+        'info',
+        t('profile.proFeatureTitle', 'Función FitGO Pro'),
+        t(
+          'profile.exportProPrompt',
+          'La exportación de informes en PDF (listos para nutricionista) y hojas Excel completas (.xlsx) es una función exclusiva de FitGO Pro. ¿Deseas mejorar tu cuenta?'
+        ),
+        () => {
+          try {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          } catch {}
+          router.push('/modals/paywall');
+        },
+        () => {},
+        t('profile.upgradeNow', 'Mejorar a Pro'),
+        t('common.cancel', 'Cancelar')
+      );
+      return;
+    }
+
     showAlert(
       'info',
       t('profile.exportTitle', 'Exportar Progreso'),
@@ -543,13 +575,133 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleManageSubscription = async () => router.push('/modals/paywall');
-  const handleCancelSubscription = () => showAlert('confirm', t('profile.cancelSubscription', 'Cancelar Suscripción'), t('profile.cancelSubscriptionConfirm', '¿Estás seguro de que deseas cancelar tu suscripción Pro?'), async () => { await usePurchaseStore.getState().cancelPro(); setToastMsg({ text: t('profile.subscriptionCancelled', 'Suscripción cancelada correctamente'), type: 'success' }); }, () => {}, t('profile.cancelSubscription', 'Cancelar Suscripción'), t('common.cancel'));
-  const handleVerifySubscription = async () => { const p = await usePurchaseStore.getState().verifyProStatus(); if (p) setToastMsg({ text: t('profile.verifySuccess', 'Suscripción verificada correctamente'), type: 'success' }); else showAlert('info', t('profile.notPremiumTitle', 'Sin Suscripción Activa'), t('profile.notPremiumDesc', 'No hemos encontrado una suscripción Pro asociada a tu cuenta.'), () => router.push('/modals/paywall'), () => {}, t('profile.upgradeNow', 'Mejorar ahora'), t('common.cancel')); };
-  const handleCopyID = async () => { if (!profile?.id) return; try { await Clipboard.setStringAsync(profile.id); setToastMsg({ text: t('profile.idCopied'), type: 'success' }); } catch { await Share.share({ message: profile.id }); } };
-  const handleDeleteAccount = () => showAlert('confirm', t('profile.deleteAccount', 'Eliminar Cuenta'), t('profile.deleteAccountConfirm', '¿Estás seguro?'), async () => { try { const { error } = await supabase.rpc('delete_user'); if (error) throw error; useNutritionStore.getState().reset(); useCoachStore.getState().resetAll(); useBodyStore.getState().reset(); useRecipesStore.getState().reset(); useProgressStore.getState().reset(); useSocialStore.getState().reset(); usePlannerStore.getState().clearPlans(); usePurchaseStore.setState({ isPro: false, customerInfo: null }); await supabase.auth.signOut(); } catch { setTimeout(() => showAlert('error', t('common.error'), t('profile.deleteAccountError', 'No se pudo eliminar la cuenta.'), () => {}, undefined, t('common.ok'))); } }, () => {}, t('common.delete'), t('common.cancel'));
+  const handleManageSubscription = async () => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch {}
+    router.push('/modals/paywall');
+  };
+
+  const handleCancelSubscription = () => {
+    try {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    } catch {}
+    showAlert(
+      'confirm',
+      t('profile.cancelSubscription', 'Cancelar Suscripción'),
+      t('profile.cancelSubscriptionConfirm', '¿Estás seguro de que deseas cancelar tu suscripción Pro?'),
+      async () => {
+        await usePurchaseStore.getState().cancelPro();
+        setToastMsg({ text: t('profile.subscriptionCancelled', 'Suscripción cancelada correctamente'), type: 'success' });
+      },
+      () => {},
+      t('profile.cancelSubscription', 'Cancelar Suscripción'),
+      t('common.cancel')
+    );
+  };
+
+  const handleVerifySubscription = async () => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch {}
+    setToastMsg({ text: t('profile.verifyingSub', 'Verificando suscripción con la tienda...'), type: 'success' });
+    try {
+      const p = await usePurchaseStore.getState().verifyProStatus();
+      if (p) {
+        try {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        } catch {}
+        setToastMsg({ text: t('profile.verifySuccess', '¡Suscripción verificada correctamente!'), type: 'success' });
+      } else {
+        try {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        } catch {}
+        showAlert(
+          'info',
+          t('profile.notPremiumTitle', 'Sin Suscripción Activa'),
+          t('profile.notPremiumDesc', 'No hemos encontrado una suscripción Pro asociada a tu cuenta.'),
+          () => {
+            try {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            } catch {}
+            router.push('/modals/paywall');
+          },
+          () => {},
+          t('profile.upgradeNow', 'Mejorar ahora'),
+          t('common.cancel')
+        );
+      }
+    } catch {
+      setToastMsg({ text: t('profile.verifyFailed', 'Error al verificar suscripción'), type: 'error' });
+    }
+  };
+
+  const handleCopyID = async () => {
+    if (!profile?.id) return;
+    try {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch {}
+    try {
+      await Clipboard.setStringAsync(profile.id);
+      setToastMsg({ text: t('profile.idCopied', 'ID de cuenta copiado al portapapeles ✨'), type: 'success' });
+    } catch {
+      await Share.share({ message: profile.id });
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    try {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    } catch {}
+    showAlert(
+      'confirm',
+      t('profile.deleteAccount', 'Eliminar Cuenta'),
+      t('profile.deleteAccountConfirm', '¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es permanente y se borrarán todos tus datos.'),
+      async () => {
+        try {
+          const { error } = await supabase.rpc('delete_user');
+          if (error) throw error;
+          useNutritionStore.getState().reset();
+          useCoachStore.getState().resetAll();
+          useBodyStore.getState().reset();
+          useRecipesStore.getState().reset();
+          useProgressStore.getState().reset();
+          useSocialStore.getState().reset();
+          usePlannerStore.getState().clearPlans();
+          usePurchaseStore.setState({ isPro: false, customerInfo: null });
+          await supabase.auth.signOut();
+        } catch {
+          setTimeout(() => showAlert('error', t('common.error'), t('profile.deleteAccountError', 'No se pudo eliminar la cuenta.'), () => {}, undefined, t('common.ok')));
+        }
+      },
+      () => {},
+      t('common.delete', 'Eliminar'),
+      t('common.cancel', 'Cancelar')
+    );
+  };
   const handleInviteFriends = () => setInviteModalVisible(true);
-  const handleLogout = () => showAlert('confirm', t('profile.signOut'), t('profile.signOutConfirm'), async () => { useNutritionStore.getState().reset(); useCoachStore.getState().resetAll(); useBodyStore.getState().reset(); useRecipesStore.getState().reset(); useSocialStore.getState().reset(); usePlannerStore.getState().clearPlans(); await supabase.auth.signOut(); }, () => {}, t('profile.signOut'), t('common.cancel'));
+  const handleLogout = () => {
+    try {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    } catch {}
+    showAlert(
+      'confirm',
+      t('profile.signOut', 'Cerrar Sesión'),
+      t('profile.signOutConfirm', '¿Estás seguro de que deseas cerrar sesión?'),
+      async () => {
+        useNutritionStore.getState().reset();
+        useCoachStore.getState().resetAll();
+        useBodyStore.getState().reset();
+        useRecipesStore.getState().reset();
+        useSocialStore.getState().reset();
+        usePlannerStore.getState().clearPlans();
+        await supabase.auth.signOut();
+      },
+      () => {},
+      t('profile.signOut', 'Cerrar Sesión'),
+      t('common.cancel', 'Cancelar')
+    );
+  };
   const handleLanguageSelect = async (lang: string) => {
     setLanguage(lang as any);
     setLangModalVisible(false);
@@ -596,65 +748,226 @@ export default function ProfileScreen() {
         <PhotoSourceModal visible={photoModalVisible} onSelectCamera={handleSelectCamera} onSelectGallery={handleSelectGallery} onClose={() => setPhotoModalVisible(false)} />
         <SexSelectionModal visible={sexModalVisible} onClose={() => setSexModalVisible(false)} onSelect={(val) => updateProfileField('sex', val)} selectedValue={profile?.sex} premiumColor={premiumColor} />
         <InviteFriendsModal visible={inviteModalVisible} onClose={() => setInviteModalVisible(false)} onToast={(msg, type) => setToastMsg({ text: msg, type })} />
+        <SecondaryGoalsModal visible={secondaryGoalsModalVisible} onClose={() => setSecondaryGoalsModalVisible(false)} onSaved={() => setToastMsg({ text: t('common.saved', 'Guardado con éxito'), type: 'success' })} />
 
         <ScrollView nestedScrollEnabled style={{ flex: 1, backgroundColor: colors.background }} showsVerticalScrollIndicator={false}>
-          <ProfileHeader profile={profile} currentBadge={currentBadge} safePremiumColor={safePremiumColor} isPremiumCustom={isPremiumCustom} onAvatarPress={() => setPhotoModalVisible(true)} onNamePress={() => openEdit('name', t('profile.editName'), t('profile.enterName'))} onBadgePress={() => setBadgeModalVisible(true)} />
+          <ProfileHeader
+            profile={profile}
+            currentBadge={currentBadge}
+            safePremiumColor={safePremiumColor}
+            isPremiumCustom={isPremiumCustom}
+            massUnit={massUnit}
+            lengthUnit={lengthUnit}
+            onAvatarPress={() => setPhotoModalVisible(true)}
+            onNamePress={() => openEdit('name', t('profile.editName', 'Editar Nombre'), t('profile.enterName', 'Ingresa tu nombre'))}
+            onBadgePress={() => setBadgeModalVisible(true)}
+            onBackPress={() => {
+              if (router.canGoBack()) router.back();
+              else router.push('/(tabs)/tracker' as any);
+            }}
+          />
 
-          <VitrinaTrofeos pinnedAchievements={profile?.pinnedAchievements} achievements={achievements} onEdit={() => router.push('/modals/achievements')} premiumColor={premiumColor || undefined} isPro={isPro || profile?.isPro || isAdminRole} />
+          <VitrinaTrofeos
+            pinnedAchievements={profile?.pinnedAchievements}
+            achievements={achievements}
+            onEdit={() => router.push('/modals/achievements')}
+            premiumColor={premiumColor || undefined}
+            isPro={isPro || profile?.isPro || isAdminRole}
+          />
 
-          <React.Suspense fallback={<View style={{ height: 180, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator color={colors.primary} size="large" /></View>}>
-            <WeightChart profile={profile} measurements={measurements} massUnit={massUnit} language={language} isPremiumCustom={isPremiumCustom} safePremiumColor={safePremiumColor} SCREEN_WIDTH={SCREEN_WIDTH} onHistoryPress={() => router.push('/modals/body-measurements' as any)} onAddMeasurement={() => router.push('/modals/body-measurements' as any)} />
-          </React.Suspense>
+          <WeightChart
+            profile={profile}
+            measurements={measurements}
+            massUnit={massUnit}
+            language={language}
+            isPremiumCustom={isPremiumCustom}
+            safePremiumColor={safePremiumColor}
+            SCREEN_WIDTH={SCREEN_WIDTH}
+            onHistoryPress={() => router.push('/modals/body-measurements' as any)}
+            onAddMeasurement={() => router.push('/modals/body-measurements' as any)}
+          />
 
-          <SettingsSection title={t('profile.settings', 'Configuración')}>
-            <GoalsSection onEditPress={() => setGoalModalVisible(true)} />
-            <SettingsItem icon={Target} label={t('profile.mealPlanFoods', 'Tus Comidas Disponibles')} onPress={() => router.push('/modals/food-selection' as any)} iconColor="#10B981" />
-            <HealthSection profile={profile} expanded={showHealth} onToggle={() => toggleSection(setShowHealth, showHealth)} onHealthPress={() => router.push('/modals/health-profile' as any)} />
-            <SettingsItem icon={Bell} label={t('profile.reminders', 'Recordatorios')} onPress={() => router.push('/modals/reminders' as any)} iconColor="#F59E0B" />
-            <SettingsItem icon={Palette} label={t('profile.interface', 'Interfaz')} rightIcon={showInterface ? '▼' : '›'} onPress={() => toggleSection(setShowInterface, showInterface)} iconColor="#8B5CF6" />
-            {showInterface && <AppearanceSection theme={theme} setTheme={setTheme} premiumColor={premiumColor} language={language} massUnit={massUnit} volumeUnit={volumeUnit} lengthUnit={lengthUnit} energyUnit={energyUnit} tempUnit={tempUnit} safePremiumColor={safePremiumColor} onLanguagePress={() => setLangModalVisible(true)} onMassUnitPress={unitHandlers.mass} onVolumeUnitPress={unitHandlers.volume} onLengthUnitPress={unitHandlers.length} onEnergyUnitPress={unitHandlers.energy} onTempUnitPress={unitHandlers.temp} onPremiumColorPress={() => router.push('/modals/premium-colors' as any)} />}
-            <AccountSection profile={profile} massUnit={massUnit} lengthUnit={lengthUnit} isPro={!!(isPro || profile?.isPro || isAdminRole)} expanded={showAccount} onToggle={() => toggleSection(setShowAccount, showAccount)} onEditName={() => openEdit('name', t('profile.editName'), t('profile.enterName'))} onEditWeight={() => openEdit('weight', t('profile.weight'), t('profile.enterWeight'), 'numeric')} onEditHeight={() => openEdit('height', t('profile.height'), t('profile.enterHeight'), 'numeric')} onEditAge={() => openEdit('age', t('profile.age'), t('profile.enterAge'), 'numeric')} onEditSex={handleEditSex} onExportData={handleExportData} onManageSubscription={handleManageSubscription} onCancelSubscription={handleCancelSubscription} onVerifySubscription={handleVerifySubscription} onCopyID={handleCopyID} onUpdateEmail={() => router.push('/modals/update-account')} onDeleteAccount={handleDeleteAccount} />
+          {/* Bloque 1: Mi Plan y Salud */}
+          <SettingsSection
+            title={t('profile.planAndHealth', 'Mi Plan y Físico')}
+            subtitle={t('profile.planAndHealthSubtitle', 'Objetivos nutricionales y perfil médico')}
+            icon={Target}
+            accentColor="#10B981"
+          >
+            <GoalsSection
+              onEditPress={() => setGoalModalVisible(true)}
+              onEditSecondaryPress={() => setSecondaryGoalsModalVisible(true)}
+            />
+            <SettingsItem
+              icon={Target}
+              label={t('profile.mealPlanFoods', 'Tus Comidas Disponibles')}
+              subtitle={t('profile.mealPlanFoodsSubtitle', 'Ingredientes y snacks que tienes en casa')}
+              onPress={() => router.push('/modals/food-selection' as any)}
+              iconColor="#10B981"
+            />
+            <HealthSection
+              profile={profile}
+              expanded={showHealth}
+              onToggle={() => toggleSection(setShowHealth, showHealth)}
+              onHealthPress={() => router.push('/modals/health-profile' as any)}
+            />
+            <SettingsItem
+              icon={Bell}
+              label={t('profile.reminders', 'Recordatorios')}
+              subtitle={t('profile.remindersSubtitle', 'Comidas, hidratación y entrenamientos')}
+              onPress={() => router.push('/modals/reminders' as any)}
+              iconColor="#F59E0B"
+            />
           </SettingsSection>
 
-          <SettingsSection title={t('about.title', 'SOBRE FITGO')} accentColor="#8B5CF6" opacity={0.4}>
-            <SettingsItem icon={Share2} label={t('profile.inviteFriends', 'Invite Friends')} onPress={handleInviteFriends} iconColor="#10B981" />
-            <SettingsItem icon={FileText} label={t('profile.terms', 'Terms and Conditions')} onPress={() => router.push({ pathname: '/modals/terms', params: { tab: 'terms' } } as any)} iconColor="#6366F1" />
-            <SettingsItem icon={ShieldCheck} label={t('profile.privacy', 'Privacy Policy')} onPress={() => router.push({ pathname: '/modals/terms', params: { tab: 'privacy' } } as any)} iconColor="#10B981" />
-            <SettingsItem icon={Info} label={t('about.moreInfo', 'More about FitGO')} rightIcon={showAbout ? '▼' : '›'} onPress={() => toggleSection(setShowAbout, showAbout)} iconColor="#3B82F6" />
+          {/* Bloque 2: Preferencias y Sistema */}
+          <SettingsSection
+            title={t('profile.preferences', 'Preferencias e Interfaz')}
+            subtitle={t('profile.preferencesSubtitle', 'Tema, colores Pro, idioma y unidades')}
+            icon={Palette}
+            accentColor="#8B5CF6"
+          >
+            <SettingsItem
+              icon={Palette}
+              label={t('profile.interface', 'Personalización y Unidades')}
+              subtitle={t('profile.interfaceSubtitle', 'Aspecto, idioma y unidades de medida')}
+              rightIcon={showInterface ? '▼' : '›'}
+              onPress={() => toggleSection(setShowInterface, showInterface)}
+              iconColor="#8B5CF6"
+            />
+            {showInterface && (
+              <AppearanceSection
+                theme={theme}
+                setTheme={setTheme}
+                premiumColor={premiumColor}
+                language={language}
+                massUnit={massUnit}
+                volumeUnit={volumeUnit}
+                lengthUnit={lengthUnit}
+                energyUnit={energyUnit}
+                tempUnit={tempUnit}
+                safePremiumColor={safePremiumColor}
+                onLanguagePress={() => setLangModalVisible(true)}
+                onMassUnitPress={unitHandlers.mass}
+                onVolumeUnitPress={unitHandlers.volume}
+                onLengthUnitPress={unitHandlers.length}
+                onEnergyUnitPress={unitHandlers.energy}
+                onTempUnitPress={unitHandlers.temp}
+                onPremiumColorPress={() => router.push('/modals/premium-colors' as any)}
+              />
+            )}
+          </SettingsSection>
+
+          {/* Bloque 3: Cuenta y Seguridad */}
+          <SettingsSection
+            title={t('profile.accountAndSecurity', 'Cuenta y Seguridad')}
+            subtitle={t('profile.accountAndSecuritySubtitle', 'Datos personales, suscripción FitGO Pro y exportador')}
+            icon={ShieldCheck}
+            accentColor="#6366F1"
+          >
+            <AccountSection
+              profile={profile}
+              massUnit={massUnit}
+              lengthUnit={lengthUnit}
+              isPro={!!(isPro || profile?.isPro || isAdminRole)}
+              expanded={showAccount}
+              onToggle={() => toggleSection(setShowAccount, showAccount)}
+              onEditName={() => openEdit('name', t('profile.editName', 'Editar Nombre'), t('profile.enterName', 'Ingresa tu nombre'))}
+              onEditWeight={() => openEdit('weight', t('profile.weight', 'Peso Corporal'), t('profile.enterWeight', 'Ingresa tu peso actual'), 'numeric')}
+              onEditHeight={() => openEdit('height', t('profile.height', 'Estatura'), t('profile.enterHeight', 'Ingresa tu estatura'), 'numeric')}
+              onEditAge={() => openEdit('age', t('profile.age', 'Edad'), t('profile.enterAge', 'Ingresa tu edad'), 'numeric')}
+              onEditSex={handleEditSex}
+              onExportData={handleExportData}
+              onManageSubscription={handleManageSubscription}
+              onCancelSubscription={handleCancelSubscription}
+              onVerifySubscription={handleVerifySubscription}
+              onCopyID={handleCopyID}
+              onUpdateEmail={() => router.push('/modals/update-account')}
+              onDeleteAccount={handleDeleteAccount}
+            />
+          </SettingsSection>
+
+          {/* Bloque 4: FitGO y Comunidad */}
+          <SettingsSection
+            title={t('about.title', 'SOBRE FITGO')}
+            subtitle={t('about.subtitle', 'Amigos, redes oficiales y legal')}
+            icon={Info}
+            accentColor="#3B82F6"
+          >
+            <SettingsItem
+              icon={Share2}
+              label={t('profile.inviteFriends', 'Invitar Amigos')}
+              subtitle={t('profile.inviteFriendsSubtitle', 'Comparte FitGO con tus amigos')}
+              onPress={handleInviteFriends}
+              iconColor="#10B981"
+            />
+            <SettingsItem
+              icon={FileText}
+              label={t('profile.terms', 'Términos y Condiciones')}
+              onPress={() => router.push({ pathname: '/modals/terms', params: { tab: 'terms' } } as any)}
+              iconColor="#6366F1"
+            />
+            <SettingsItem
+              icon={ShieldCheck}
+              label={t('profile.privacy', 'Política de Privacidad')}
+              onPress={() => router.push({ pathname: '/modals/terms', params: { tab: 'privacy' } } as any)}
+              iconColor="#10B981"
+            />
+            <SettingsItem
+              icon={Info}
+              label={t('about.moreInfo', 'Más información de FitGO')}
+              subtitle={t('about.moreInfoSubtitle', 'Redes sociales, créditos y soporte')}
+              rightIcon={showAbout ? '▼' : '›'}
+              onPress={() => toggleSection(setShowAbout, showAbout)}
+              iconColor="#3B82F6"
+            />
             {showAbout && (
-              <View style={{ backgroundColor: colors.surfaceAlt + '10', borderTopWidth: 1, borderTopColor: colors.border + '10' }}>
-                <SettingsItem icon={Globe} label={t('about.website', 'Website')} value="FitGO" indent onPress={() => Linking.openURL('https://fit-go-page.vercel.app/es')} iconColor="#3B82F6" />
-                <SettingsItem icon={Smartphone} label={t('about.tiktok', 'TikTok')} indent onPress={() => Linking.openURL('https://www.tiktok.com/@fit_go?is_from_webapp=1&sender_device=pc')} iconColor="#FF0050" />
-                <SettingsItem icon={Camera} label={t('about.instagram', 'Instagram')} indent onPress={() => Linking.openURL('https://www.instagram.com/fit___go/')} iconColor="#E1306C" />
-                <SettingsItem icon={Mail} label={t('about.email', 'Email')} value="fitgoenterprise@gmail.com" indent onPress={() => Linking.openURL('mailto:fitgoenterprise@gmail.com')} iconColor="#EA4335" />
-                <SettingsItem icon={MessageSquare} label={t('profile.sendFeedback', 'Send Feedback')} indent onPress={() => Linking.openURL('mailto:fitgoenterprise@gmail.com')} iconColor="#10B981" />
-                <SettingsItem icon={Heart} label={t('about.credits', 'Créditos')} indent onPress={() => showAlert('info', t('about.creditsTitle', 'Créditos'), t('about.creditsMessage', 'Las animaciones (GIFs) del directorio de ejercicios son propiedad y cortesía de ExerciseDB API.'), () => {}, undefined, t('about.creditsOk', 'Entendido'))} iconColor="#EF4444" />
-                <SettingsItem icon={Info} label={t('about.version', 'Versión')} value="v1.0.1" indent iconColor={colors.textMuted} />
+              <View style={{ backgroundColor: colors.surfaceAlt + '10', borderTopWidth: 1, borderTopColor: colors.border + '15' }}>
+                <SettingsItem icon={Globe} label={t('about.website', 'Sitio Web')} value="FitGO Oficial" indent onPress={() => Linking.openURL('https://fit-go-page.vercel.app/es')} iconColor="#3B82F6" />
+                <SettingsItem icon={Smartphone} label={t('about.tiktok', 'TikTok')} value="@fit_go" indent onPress={() => Linking.openURL('https://www.tiktok.com/@fit_go?is_from_webapp=1&sender_device=pc')} iconColor="#FF0050" />
+                <SettingsItem icon={Camera} label={t('about.instagram', 'Instagram')} value="@fit___go" indent onPress={() => Linking.openURL('https://www.instagram.com/fit___go/')} iconColor="#E1306C" />
+                <SettingsItem icon={Mail} label={t('about.email', 'Email Oficial')} value="fitgoenterprise@gmail.com" indent onPress={() => Linking.openURL('mailto:fitgoenterprise@gmail.com')} iconColor="#EA4335" />
+                <SettingsItem icon={MessageSquare} label={t('profile.sendFeedback', 'Enviar Sugerencia')} indent onPress={() => Linking.openURL('mailto:fitgoenterprise@gmail.com')} iconColor="#10B981" />
+                <SettingsItem icon={Heart} label={t('about.credits', 'Créditos')} indent onPress={() => showAlert('info', t('about.creditsTitle', 'Créditos'), t('about.creditsMessage', 'Las animaciones (GIFs) del directorio de ejercicios son cortesía de ExerciseDB API.'), () => {}, undefined, t('about.creditsOk', 'Entendido'))} iconColor="#EF4444" />
+                <SettingsItem icon={Info} label={t('about.version', 'Versión')} value="v2.1.1" indent iconColor={colors.textMuted} />
               </View>
             )}
           </SettingsSection>
 
-          {/* Sign Out Button at the very bottom */}
-          <View style={{ marginHorizontal: Spacing.base, marginTop: Spacing.base }}>
+          {/* Botón de Cerrar Sesión */}
+          <View style={{ marginHorizontal: Spacing.base, marginTop: Spacing.xs, marginBottom: Spacing.xl }}>
             <TouchableOpacity
               onPress={handleLogout}
-              activeOpacity={0.7}
+              activeOpacity={0.8}
+              style={{
+                borderRadius: 20,
+                overflow: 'hidden',
+                backgroundColor: colors.surface,
+                borderWidth: 1,
+                borderColor: 'rgba(239, 68, 68, 0.35)',
+              }}
             >
               <LinearGradient
-                colors={['rgba(239, 68, 68, 0.15)', 'rgba(239, 68, 68, 0.05)']}
+                colors={['rgba(239, 68, 68, 0.16)', 'rgba(239, 68, 68, 0.05)']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={{ borderRadius: 20, borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.2)', paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}
+                style={{
+                  paddingVertical: 15,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 10,
+                }}
               >
-                <LogOut size={20} color="#EF4444" strokeWidth={2.5} />
-                <Text style={{ color: '#EF4444', fontSize: 16, fontWeight: '700' }}>
+                <LogOut size={18} color="#EF4444" strokeWidth={2.5} />
+                <Text style={{ color: '#EF4444', fontSize: 15, fontWeight: '800', letterSpacing: 0.2 }}>
                   {t('profile.signOut', 'Cerrar Sesión')}
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
 
-          <View style={{ height: 48 }} />
+          <View style={{ height: 32 }} />
         </ScrollView>
       </SafeAreaView>
     </View>

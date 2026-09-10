@@ -6,6 +6,7 @@ import { useTheme } from '../hooks/useTheme';
 import { Radius, Spacing } from '../constants';
 import { useSettingsStore } from '../store';
 import { useIsPro } from '../hooks/useIsPro';
+import { getSafeColor, isValidPremiumColor, hexToRgba } from '../utils/styles';
 
 interface SuccessModalProps {
   visible: boolean;
@@ -22,10 +23,12 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({ visible, title, mess
 
   const { premiumColor } = useSettingsStore();
   const isProActually = useIsPro();
-  const isPremiumCustom = isProActually && premiumColor && premiumColor.startsWith('#');
-  const safePremiumColor = (isPremiumCustom && premiumColor) ? premiumColor : '#7C5CFC';
-  const mainColors = isPremiumCustom ? [safePremiumColor, safePremiumColor + 'CC'] : ['#7C5CFC', '#4338CA'];
-  const baseColor = isPremiumCustom ? safePremiumColor : '#7C5CFC';
+  const isPremiumCustom = isProActually && isValidPremiumColor(premiumColor);
+  const safePremiumColor = getSafeColor(premiumColor, colors.primary);
+  const mainColors: [string, string] = isPremiumCustom
+    ? (premiumColor === 'admin_glow' ? ['#00F0FF', '#0088FF'] : [safePremiumColor, hexToRgba(safePremiumColor, 0.8)])
+    : [colors.primary, '#4338CA'];
+  const baseColor = isPremiumCustom ? safePremiumColor : colors.primary;
 
   React.useEffect(() => {
     if (visible) {

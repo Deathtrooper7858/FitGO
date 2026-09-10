@@ -5,6 +5,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Play, X, Crown } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../hooks/useTheme';
 import { useRewardedAd } from '../hooks/useRewardedAd';
 
@@ -48,10 +49,12 @@ export function RewardedAdGate({
   emoji,
   title,
   subtitle,
-  watchLabel = '▶ Ver video · Desbloquear gratis',
+  watchLabel,
   showProButton = true,
 }: RewardedAdGateProps) {
+  const { t } = useTranslation();
   const colors = useTheme();
+  const effectiveWatchLabel = watchLabel || t('common.watchAdUnlock', '▶ Ver video · Desbloquear gratis');
 
   const handleRewarded = () => {
     onRewarded();
@@ -101,7 +104,7 @@ export function RewardedAdGate({
               ) : (
                 <>
                   <Play size={18} color="#FFF" fill="#FFF" />
-                  <Text style={s.watchBtnText}>{watchLabel}</Text>
+                  <Text style={s.watchBtnText}>{effectiveWatchLabel}</Text>
                 </>
               )}
             </LinearGradient>
@@ -115,12 +118,12 @@ export function RewardedAdGate({
               activeOpacity={0.85}
             >
               <Crown size={15} color={colors.primary} />
-              <Text style={[s.proBtnText, { color: colors.primary }]}>Ir a Pro · Sin anuncios</Text>
+              <Text style={[s.proBtnText, { color: colors.primary }]}>{t('common.goToProNoAds', 'Ir a Pro · Sin anuncios')}</Text>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity onPress={onClose} style={{ marginTop: 10 }}>
-            <Text style={[s.cancelTxt, { color: colors.textMuted }]}>Ahora no</Text>
+            <Text style={[s.cancelTxt, { color: colors.textMuted }]}>{t('common.notNow', 'Ahora no')}</Text>
           </TouchableOpacity>
 
         </View>

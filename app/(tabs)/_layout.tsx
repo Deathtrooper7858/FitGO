@@ -61,15 +61,19 @@ const TAB_ROUTES = [
 export default function TabsLayout() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const { profile } = useAuthStore();
+  const profileId = useAuthStore(s => s.profile?.id);
   const pathname = usePathname();
   const isProActually = useIsPro();
 
   // Social notifications badge
   const totalUnreadCount = useSocialStore(s => s.totalUnreadCount);
-  const pendingFriendRequests = useSocialStore(s => s.friends.reduce((count, f) => 
-    count + (f.status === 'pending' && f.user_id_2 === profile?.id ? 1 : 0), 0
-  ));
+  const friends = useSocialStore(s => s.friends);
+  const pendingFriendRequests = useMemo(() => {
+    if (!profileId || !friends) return 0;
+    return friends.reduce((count, f) => 
+      count + (f.status === 'pending' && f.user_id_2 === profileId ? 1 : 0), 0
+    );
+  }, [friends, profileId]);
   const socialBadgeCount = totalUnreadCount + pendingFriendRequests;
 
   const insets = useSafeAreaInsets();

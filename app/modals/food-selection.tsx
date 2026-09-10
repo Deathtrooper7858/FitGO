@@ -254,9 +254,9 @@ export default function FoodSelectionModal() {
       </ScrollView>
 
       {/* Footer Save Button */}
-      <View style={[s.footer, { backgroundColor: colors.background }]}>
-        <TouchableOpacity style={s.saveBtn} onPress={handleSave} disabled={saving} activeOpacity={0.85}>
-          <LinearGradient colors={['#7C5CFC', '#4338CA']} style={s.saveGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+      <View style={[s.footer, { backgroundColor: colors.background, borderTopColor: colors.border + '30' }]}>
+        <TouchableOpacity style={[s.saveBtn, { shadowColor: colors.primary }]} onPress={handleSave} disabled={saving} activeOpacity={0.85}>
+          <LinearGradient colors={(colors.gradientPrimary as [string, string]) || [colors.primary, colors.primaryDark || '#4338CA']} style={s.saveGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
             {saving ? (
               <ActivityIndicator color="#fff" />
             ) : (

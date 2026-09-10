@@ -1,27 +1,33 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Platform, RefreshControl, ActivityIndicator
+  TouchableOpacity, RefreshControl,
 } from 'react-native';
 import { router, useNavigation } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
-
 import * as Haptics from 'expo-haptics';
-import { Trophy, Flame, Dumbbell, Heart, Target } from 'lucide-react-native';
+import {
+  Trophy,
+  Flame,
+  Zap,
+  BarChart2,
+  Calendar,
+  Activity,
+} from 'lucide-react-native';
+
 import { Spacing, Radius, Shadow } from '../../../constants';
 import { useAuthStore } from '../../../store/authStore';
 import { useNutritionStore, selectDailyTotals } from '../../../store/nutritionStore';
 import { useSettingsStore } from '../../../store/settingsStore';
 import { useBodyStore } from '../../../store/bodyStore';
-
 import { useTheme } from '../../../hooks/useTheme';
 import { supabase } from '../../../services/supabase';
 import { getLocalDateString } from '../../../utils/date';
 import { GlobalBackground } from '../../../components/GlobalBackground';
-import { getNameStyle } from '../../../utils/styles';
+import { getNameStyle, getSafeColor, isValidPremiumColor } from '../../../utils/styles';
 import { useAchievements, Achievement } from '../../../hooks/useAchievements';
 import { GoalWizardModal } from '../../../components/GoalWizardModal';
 import { PremiumGate } from '../../../components/PremiumGate';
@@ -30,40 +36,56 @@ import { CustomAlert, AlertType } from '../../../components/CustomAlert';
 import { calculateProgressPct } from '../../../hooks/useDashboardLogic';
 import { renderDashboardWidget } from '../../../components/dashboard/WidgetRenderer';
 import { useIsPro } from '../../../hooks/useIsPro';
-
 import { FitzDailyTip } from '../../../components/FitzDailyTip';
-const MuscleSymmetryCard = React.lazy(() => import('../../../components/MuscleSymmetryCard'));
+import MuscleSymmetryCard from '../../../components/MuscleSymmetryCard';
+import { GoalProgressHero } from '../../../components/dashboard/GoalProgressHero';
+import { WeeklyConsistencyCard } from '../../../components/dashboard/WeeklyConsistencyCard';
 
-const RING_SIZE     = 180;
-const STROKE_WIDTH  = 15;
-const RADIUS        = (RING_SIZE - STROKE_WIDTH) / 2;
+const RING_SIZE = 175;
+const STROKE_WIDTH = 14;
+const RADIUS = (RING_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
-// ─── Calorie/Score Ring (Premium) ────────────────────────────────────────────
-const ScoreRing = React.memo(function ScoreRing({ consumed, target, dateLabel, customColor }: { consumed: number; target: number; dateLabel: string; customColor?: string | null }) {
+// ─── Calorie / Nutritional Score Ring ──────────────────────────────────────────
+interface ScoreRingProps {
+  consumed: number;
+  target: number;
+  burnedCals?: number;
+  dateLabel: string;
+  customColor?: string | null;
+}
+
+const ScoreRing = React.memo(function ScoreRing({
+  consumed,
+  target,
+  burnedCals = 0,
+  dateLabel,
+  customColor,
+}: ScoreRingProps) {
   const { t } = useTranslation();
   const colors = useTheme();
+
   const safeConsumed = Number(consumed) || 0;
-  const safeTarget = Number(target) || 2000;
-  const pct = Number.isFinite(safeConsumed / Math.max(safeTarget, 1))
-    ? Math.min(Math.max(safeConsumed / Math.max(safeTarget, 1), 0), 1)
-    : 0;
-  const strokeDashoffset = useMemo(() => CIRCUMFERENCE - pct * CIRCUMFERENCE, [pct]);
+  const safeTarget = Math.max(Number(target) || 2000, 1);
+  const pct = Math.min(Math.max(safeConsumed / safeTarget, 0), 1);
+  const strokeDashoffset = CIRCUMFERENCE - pct * CIRCUMFERENCE;
   const remaining = Math.max(safeTarget - safeConsumed, 0);
 
   const isOver = consumed > target;
   const isWarning = consumed >= target * 0.9 && consumed <= target;
-  
-  const ringColorA = isOver ? colors.error : (isWarning ? '#FFB800' : (customColor || '#00F0FF'));
-  const ringColorB = isOver ? '#FF4B4B' : (isWarning ? '#F59E0B' : (customColor || '#7C5CFC'));
+
+  const ringColorA = isOver ? colors.error : (isWarning ? '#FFB800' : (customColor || '#8B5CF6'));
+  const ringColorB = isOver ? '#FF5252' : (isWarning ? '#F59E0B' : (customColor || '#06B6D4'));
 
   return (
     <View style={ring.container}>
-      {/* Date pill above */}
+      {/* Date Capsule */}
       <View style={[ring.datePill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '30' }]}>
+        <Calendar size={12} color={colors.primary} />
         <Text style={[ring.topLabel, { color: colors.primary }]}>{dateLabel}</Text>
       </View>
-      <View style={{ height: 12 }} />
+
+      <View style={{ height: 8 }} />
 
       <Svg width={RING_SIZE} height={RING_SIZE}>
         <Defs>
@@ -73,99 +95,223 @@ const ScoreRing = React.memo(function ScoreRing({ consumed, target, dateLabel, c
           </SvgLinearGradient>
         </Defs>
 
-        {/* Ghost track ring */}
+        {/* Ghost Track */}
         <Circle
-          cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={RADIUS}
-          stroke={colors.border + '55'}
+          cx={RING_SIZE / 2}
+          cy={RING_SIZE / 2}
+          r={RADIUS}
+          stroke={colors.border + '44'}
           strokeWidth={STROKE_WIDTH}
           fill="transparent"
         />
 
-        {/* Inner glow ring (blurred softness) */}
+        {/* Outer Glow */}
         <Circle
-          cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={RADIUS}
-          stroke={isOver ? colors.error + '30' : (isWarning ? '#FFB80030' : (customColor ? customColor + '30' : '#7C5CFC30'))}
-          strokeWidth={STROKE_WIDTH + 8}
+          cx={RING_SIZE / 2}
+          cy={RING_SIZE / 2}
+          r={RADIUS}
+          stroke={isOver ? colors.error + '25' : (isWarning ? '#FFB80025' : (customColor ? customColor + '25' : '#8B5CF625'))}
+          strokeWidth={STROKE_WIDTH + 6}
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round" fill="transparent"
-          rotation="-90" originX={RING_SIZE / 2} originY={RING_SIZE / 2}
+          strokeLinecap="round"
+          fill="transparent"
+          rotation="-90"
+          originX={RING_SIZE / 2}
+          originY={RING_SIZE / 2}
         />
 
-        {/* Main progress ring */}
+        {/* Progress Ring */}
         <Circle
-          cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={RADIUS}
+          cx={RING_SIZE / 2}
+          cy={RING_SIZE / 2}
+          r={RADIUS}
           stroke="url(#scoreGrad)"
           strokeWidth={STROKE_WIDTH}
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round" fill="transparent"
-          rotation="-90" originX={RING_SIZE / 2} originY={RING_SIZE / 2}
+          strokeLinecap="round"
+          fill="transparent"
+          rotation="-90"
+          originX={RING_SIZE / 2}
+          originY={RING_SIZE / 2}
         />
       </Svg>
 
+      {/* Centered Numbers */}
       <View style={ring.textWrap}>
-        <Text style={[ring.consumed, { color: colors.textPrimary }]}>{consumed}</Text>
-        <Text style={[ring.unitLabel, { color: colors.textMuted }]}>{t('dashboard.kcalConsumed', 'kcal consumed')}</Text>
-        <View style={[ring.statusPill, { 
-          backgroundColor: isOver ? colors.error + '20' : (isWarning ? '#FFB80020' : (customColor ? customColor + '15' : colors.primary + '15')), 
-          borderColor: isOver ? colors.error + '40' : (isWarning ? '#FFB80040' : (customColor ? customColor + '30' : colors.primary + '30')) 
+        <Text style={[ring.consumed, { color: colors.textPrimary }]}>{safeConsumed}</Text>
+        <Text style={[ring.targetMeta, { color: colors.textMuted }]}>
+          / {safeTarget} kcal
+        </Text>
+        <View style={[ring.statusPill, {
+          backgroundColor: isOver ? colors.error + '20' : (isWarning ? '#FFB80020' : (customColor ? customColor + '18' : colors.primary + '18')),
+          borderColor: isOver ? colors.error + '44' : (isWarning ? '#FFB80044' : (customColor ? customColor + '35' : colors.primary + '35'))
         }]}>
-          <Text style={[ring.label, { color: isOver ? colors.error : (isWarning ? '#F59E0B' : (customColor || colors.primary)) }]}>
+          <Text style={[ring.statusText, { color: isOver ? colors.error : (isWarning ? '#F59E0B' : (customColor || colors.primary)) }]}>
             {isOver
-              ? `+${Math.round(consumed - target)} ${t('dashboard.overGoal', 'over goal')}`
+              ? `+${Math.round(consumed - target)} ${t('dashboard.overGoal', 'sobre meta')}`
               : remaining > 0
-                ? `${Math.round(remaining)} ${t('dashboard.remaining', 'remaining')}`
+                ? `${Math.round(remaining)} ${t('dashboard.remaining', 'restantes')}`
                 : t('dashboard.medium', 'En meta')}
           </Text>
         </View>
       </View>
+
+      {/* Burned vs Consumed Sub-row */}
+      {burnedCals > 0 && (
+        <View style={[ring.burnedRow, { backgroundColor: colors.surfaceAlt + '70', borderColor: colors.border + '33' }]}>
+          <Activity size={13} color="#F59E0B" />
+          <Text style={[ring.burnedText, { color: colors.textSecondary }]}>
+            {t('dashboard.burnedToday', 'Quemadas en actividad')}: <Text style={{ fontWeight: '800', color: '#F59E0B' }}>{burnedCals} kcal</Text>
+          </Text>
+        </View>
+      )}
     </View>
   );
 });
+
 const ring = StyleSheet.create({
-  container:  { alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginVertical: 12 },
-  datePill:   { paddingHorizontal: 14, paddingVertical: 5, borderRadius: 20, borderWidth: 1, marginBottom: 4 },
-  topLabel:   { fontSize: 13, fontWeight: '700', letterSpacing: 0.5 },
-  textWrap:   { position: 'absolute', alignItems: 'center', zIndex: 2, top: RING_SIZE / 2 - 26 },
-  consumed:   { fontSize: 42, fontWeight: '900', letterSpacing: -2 },
-  unitLabel:  { fontSize: 11, fontWeight: '600', letterSpacing: 0.5, marginTop: 2, opacity: 0.7 },
-  statusPill: { marginTop: 10, paddingHorizontal: 14, paddingVertical: 5, borderRadius: 20, borderWidth: 1 },
-  label:      { fontSize: 12, fontWeight: '800', letterSpacing: 0.3 },
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginVertical: 8,
+  },
+  datePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginBottom: 4,
+  },
+  topLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  textWrap: {
+    position: 'absolute',
+    alignItems: 'center',
+    zIndex: 2,
+    top: RING_SIZE / 2 - 34,
+  },
+  consumed: {
+    fontSize: 38,
+    fontWeight: '900',
+    letterSpacing: -1.5,
+  },
+  targetMeta: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: -2,
+    opacity: 0.8,
+  },
+  statusPill: {
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+  },
+  burnedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  burnedText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
 });
 
-// ─── Achievement Preview ───────────────────────────────────────────────────────
-const AchievementPreview = React.memo(function AchievementPreview({ achievements, onPress }: { achievements: Achievement[]; onPress: () => void }) {
+// ─── Achievement Preview Pill ──────────────────────────────────────────────────
+const AchievementPreview = React.memo(function AchievementPreview({
+  achievements,
+  onPress,
+}: {
+  achievements: Achievement[];
+  onPress: () => void;
+}) {
   const colors = useTheme();
   const { t } = useTranslation();
   const unlockedCount = achievements.filter(a => a.unlocked).length;
-  
+
   return (
-    <TouchableOpacity style={ap.container} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={ap.container}
+      onPress={() => {
+        Haptics.selectionAsync();
+        onPress();
+      }}
+      activeOpacity={0.75}
+    >
       <LinearGradient
         colors={['#FFD700', '#FFA500']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={ap.trophyCircle}
       >
-        <Trophy size={18} color="#FFF" />
+        <Trophy size={16} color="#FFF" />
       </LinearGradient>
       <View style={ap.textWrap}>
-        <Text style={[ap.label, { color: colors.textSecondary }]}>{t('dashboard.achievements', 'Logros')}</Text>
-        <Text style={[ap.value, { color: colors.textPrimary }]}>{unlockedCount} / {achievements.length}</Text>
+        <Text style={[ap.label, { color: colors.textSecondary }]}>
+          {t('dashboard.achievements', 'Logros')}
+        </Text>
+        <Text style={[ap.value, { color: colors.textPrimary }]}>
+          {unlockedCount} / {achievements.length}
+        </Text>
       </View>
     </TouchableOpacity>
   );
 });
+
 const ap = StyleSheet.create({
-  container: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(255, 215, 0, 0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255, 215, 0, 0.2)' },
-  trophyCircle: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
-  textWrap: { justifyContent: 'center' },
-  label: { fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
-  value: { fontSize: 14, fontWeight: '800' },
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 215, 0, 0.25)',
+  },
+  trophyCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  textWrap: {
+    justifyContent: 'center',
+  },
+  label: {
+    fontSize: 9,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  value: {
+    fontSize: 13,
+    fontWeight: '900',
+  },
 });
-
-
 
 const DEFAULT_WIDGETS = ['weight', 'bodyFat', 'muscle_directory', 'recipe_search', 'photos', 'measurements', 'sleep', 'calories'];
 
@@ -177,33 +323,35 @@ export default function DashboardScreen() {
   const { profile, setProfile } = useAuthStore();
   const dailySleep = useNutritionStore(s => s.dailySleep);
   const selectedDate = useNutritionStore(s => s.selectedDate);
+  const setDate = useNutritionStore(s => s.setDate);
   const fetchLogs = useNutritionStore(s => s.fetchLogs);
-  const { fetchMeasurements, getForDate, measurements, latest } = useBodyStore();
+  const activityCals = useNutritionStore(s => s.activityCals);
+  const measurements = useBodyStore(s => s.measurements);
+  const fetchMeasurements = useBodyStore(s => s.fetchMeasurements);
+  const getForDate = useBodyStore(s => s.getForDate);
+  const latest = useBodyStore(s => s.latest);
   const { achievements } = useAchievements();
-  
+
   const totalsData = useNutritionStore(selectDailyTotals);
   const { calories } = totalsData;
   const target = profile?.targetCalories ?? 2000;
-  const name = profile?.name?.split(' ')[0] ?? t('dashboard.fallbackName');
+  const name = profile?.name?.split(' ')[0] ?? t('dashboard.fallbackName', 'Atleta');
   const streakDays = useNutritionStore(state => state.streakDays);
 
   const navigation = useNavigation();
 
   useEffect(() => {
-    async function loadSelectedData() {
-      if (!profile?.id) return;
-      await Promise.all([
-        fetchLogs(profile.id, selectedDate),
-        fetchMeasurements(profile.id)
-      ]);
-    }
-    loadSelectedData();
+    const profileId = profile?.id;
+    if (!profileId) return;
+    useNutritionStore.getState().fetchLogs(profileId, selectedDate);
+    useBodyStore.getState().fetchMeasurements(profileId);
 
     const unsubscribe = navigation.addListener('focus', () => {
-      loadSelectedData();
+      useNutritionStore.getState().fetchLogs(profileId, selectedDate);
+      useBodyStore.getState().fetchMeasurements(profileId);
     });
     return unsubscribe;
-  }, [profile?.id, selectedDate, navigation, fetchLogs, fetchMeasurements]);
+  }, [profile?.id, selectedDate, navigation]);
 
   const dateMeasurement = getForDate(selectedDate);
   const latestMeasurement = latest();
@@ -211,44 +359,39 @@ export default function DashboardScreen() {
     || profile?.startingWeight
     || profile?.weight
     || 70;
-    
+
   const initialWeight = Number(profile?.startingWeight || oldestWeight) || 70;
   const currentWeightKg = Number(dateMeasurement?.weight || latestMeasurement?.weight || profile?.weight) || 70;
-  const currentWeight = currentWeightKg;
-  const targetWeightKg  = Number(profile?.targetWeight || currentWeightKg) || 70;
+  const targetWeightKg = Number(profile?.targetWeight || currentWeightKg) || 70;
   const sleepHours = Number(dailySleep[selectedDate]) || 0;
   const bodyFat = dateMeasurement?.bodyFat || latestMeasurement?.bodyFat;
 
-  const isLbs = massUnit === 'lb';
-  const displayCurrentWeight = isLbs ? (currentWeightKg * 2.20462).toFixed(1) : currentWeightKg.toFixed(1);
-  const displayTargetWeight = isLbs ? (targetWeightKg * 2.20462).toFixed(1) : targetWeightKg.toFixed(1);
-
   const progressPct = calculateProgressPct(profile?.goal, initialWeight, currentWeightKg, targetWeightKg);
-  const safeProgressPct = progressPct;
 
   const todayStr = getLocalDateString();
-  let dateLabel = t('tracker.today', 'Hoy');
-  if (selectedDate === todayStr) {
-    dateLabel = t('tracker.today', 'Hoy');
-  } else {
+  const dateLabel = useMemo(() => {
+    if (selectedDate === todayStr) {
+      return t('tracker.today', 'Hoy');
+    }
     const yest = new Date();
     yest.setDate(yest.getDate() - 1);
     if (selectedDate === getLocalDateString(yest)) {
-      dateLabel = t('tracker.yesterday', 'Ayer');
-    } else {
-      dateLabel = new Date(selectedDate + 'T12:00:00').toLocaleDateString(language, { month: 'short', day: 'numeric' });
+      return t('tracker.yesterday', 'Ayer');
     }
-  }
+    return new Date(selectedDate + 'T12:00:00').toLocaleDateString(language, { month: 'short', day: 'numeric' });
+  }, [selectedDate, todayStr, language, t]);
 
   const isPro = useIsPro();
   const { safePremiumColor, isPremiumCustom } = useMemo(() => {
-    const isValidHex = !!(premiumColor && premiumColor.startsWith('#'));
+    const hasValidColor = isValidPremiumColor(premiumColor);
     const isAdmin = profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin';
+    const safe = getSafeColor(premiumColor, colors.primary);
     return {
-      safePremiumColor: isValidHex ? premiumColor! : '#7C5CFC',
-      isPremiumCustom: (isPro || isAdmin) && isValidHex,
+      safePremiumColor: safe,
+      isPremiumCustom: (isPro || isAdmin) && hasValidColor,
     };
-  }, [isPro, premiumColor, profile?.role]);
+  }, [isPro, premiumColor, profile?.role, colors.primary]);
+
   const { hasPremiumAdAccess } = useAdStore();
   const [premiumGate, setPremiumGate] = useState<{
     visible: boolean;
@@ -270,6 +413,7 @@ export default function DashboardScreen() {
       openPremiumGate(featureId, featureName, featureIcon, route);
     }
   };
+
   const [isEditing, setIsEditing] = useState(false);
 
   const [alert, setAlert] = useState<{
@@ -290,10 +434,10 @@ export default function DashboardScreen() {
   });
 
   const showAlert = (
-    type: AlertType, 
-    title: string, 
-    message: string, 
-    onConfirm?: () => void, 
+    type: AlertType,
+    title: string,
+    message: string,
+    onConfirm?: () => void,
     onCancel?: () => void,
     confirmText?: string,
     cancelText?: string
@@ -315,8 +459,6 @@ export default function DashboardScreen() {
       } : undefined,
     });
   };
-
-
 
   const [widgetsOrder, setWidgetsOrder] = useState(() => {
     if (profile?.widgetsOrder) {
@@ -348,14 +490,6 @@ export default function DashboardScreen() {
     }
   };
 
-  const goalInfo = useMemo(() => {
-    switch (profile?.goal) {
-      case 'lose': return { label: t('profile.loseWeight', 'Pérdida de Peso'), icon: <Flame size={28} color="#FF4D4D" />, accent: '#FF4D4D' };
-      case 'gain': return { label: t('profile.gainMuscle', 'Ganancia Muscular'), icon: <Dumbbell size={28} color="#4D94FF" />, accent: '#4D94FF' };
-      default: return { label: t('profile.maintain', 'Mantenimiento'), icon: <Heart size={28} color="#4DFF88" />, accent: '#4DFF88' };
-    }
-  }, [profile?.goal, t]);
-
   const [goalModalVisible, setGoalModalVisible] = useState(false);
 
   const moveWidget = (index: number, direction: 1 | -1) => {
@@ -383,201 +517,234 @@ export default function DashboardScreen() {
     }
   };
 
+  const handleQuickLogWeight = useCallback(() => {
+    router.push('/modals/body-measurements' as any);
+  }, []);
+
   return (
     <View style={{ flex: 1 }}>
       <GlobalBackground />
       <SafeAreaView style={[s.safe, { backgroundColor: 'transparent' }]}>
-      <CustomAlert 
-        visible={alert.visible}
-        type={alert.type}
-        title={alert.title}
-        message={alert.message}
-        confirmText={alert.confirmText}
-        cancelText={alert.cancelText}
-        onConfirm={alert.onConfirm}
-        onCancel={alert.onCancel}
-      />
-      <View style={{ flex: 1 }}>
+        <CustomAlert
+          visible={alert.visible}
+          type={alert.type}
+          title={alert.title}
+          message={alert.message}
+          confirmText={alert.confirmText}
+          cancelText={alert.cancelText}
+          onConfirm={alert.onConfirm}
+          onCancel={alert.onCancel}
+        />
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
-        {/* Header */}
-        <View style={s.header}>
-          <View style={{ gap: 4 }}>
-            <Text style={[s.greeting, { color: colors.textPrimary }]}>
-              {t('dashboard.hello', '¡Hola')}{' '}
-              <Text style={[{ color: colors.primary }, getNameStyle(profile?.nameColor)]}>{name}!</Text>
-            </Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <View style={[s.datePill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '30' }]}>
-                <Text style={[s.dateText, { color: colors.primary }]}>
-                  {new Date(selectedDate + 'T12:00:00').toLocaleDateString(language, { weekday: 'short', day: 'numeric', month: 'short' })}
+        <View style={{ flex: 1 }}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={s.scroll}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.primary}
+              />
+            }
+          >
+            {/* Header: Personalized Greeting + Badges */}
+            <View style={s.header}>
+              <View style={{ gap: 4 }}>
+                <Text style={[s.greeting, { color: colors.textPrimary }]}>
+                  {t('dashboard.hello', '¡Hola')}{' '}
+                  <Text style={[{ color: colors.primary }, getNameStyle(profile?.nameColor)]}>
+                    {name}!
+                  </Text>
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <View style={[s.datePill, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '30' }]}>
+                    <Calendar size={12} color={colors.primary} />
+                    <Text style={[s.dateText, { color: colors.primary }]}>
+                      {new Date(selectedDate + 'T12:00:00').toLocaleDateString(language, { weekday: 'short', day: 'numeric', month: 'short' })}
+                    </Text>
+                  </View>
+
+                  {streakDays > 0 && (
+                    <View style={[s.streakPill, { backgroundColor: '#F59E0B18', borderColor: '#F59E0B35' }]}>
+                      <Flame size={12} color="#F59E0B" />
+                      <Text style={[s.streakText, { color: '#F59E0B' }]}>
+                        {streakDays} {streakDays === 1 ? 'día' : 'días'}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+
+              <AchievementPreview
+                achievements={achievements}
+                onPress={() => router.push('/modals/achievements' as any)}
+              />
+            </View>
+
+            {/* Fitz Daily Coach Tip */}
+            <FitzDailyTip streakDays={streakDays} />
+
+            {/* 1. HERO: Transformation & Active Goal Journey */}
+            <View style={s.sectionHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={[s.sectionIconWrap, { backgroundColor: colors.primary + '20' }]}>
+                  <Text style={{ fontSize: 14 }}>🎯</Text>
+                </View>
+                <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>
+                  {t('dashboard.transformationPath', 'Ruta de Transformación')}
                 </Text>
               </View>
             </View>
-          </View>
-          <AchievementPreview achievements={achievements} onPress={() => router.push('/modals/achievements' as any)} />
-        </View>
 
-        {/* Fitz Daily Tip Widget */}
-        <FitzDailyTip streakDays={streakDays} />
-
-        {/* Nutritional Score Card */}
-        <View style={s.sectionHeader}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <View style={[s.sectionIconWrap, { backgroundColor: (isPremiumCustom ? safePremiumColor : colors.primary) + '20' }]}>
-              <Text style={{ fontSize: 14 }}>⚡</Text>
-            </View>
-            <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>{t('dashboard.scoreTitle', 'Score Nutricional')}</Text>
-          </View>
-        </View>
-        <View style={[s.cardFull, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border + '50' }]}>
-          <LinearGradient
-            colors={['rgba(139,92,246,0.06)', 'transparent']}
-            style={StyleSheet.absoluteFill}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            pointerEvents="none"
-          />
-          <ScoreRing consumed={calories} target={target} dateLabel={dateLabel} customColor={isPremiumCustom ? safePremiumColor : null} />
-        </View>
-
-
-        {/* Phase Card */}
-        <View style={s.sectionHeader}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <View style={[s.sectionIconWrap, { backgroundColor: colors.accent + '20' }]}>
-              <Text style={{ fontSize: 14 }}>🎯</Text>
-            </View>
-            <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>{t('dashboard.phaseTitle', 'Fase')}</Text>
-          </View>
-          <TouchableOpacity onPress={() => setGoalModalVisible(true)} style={[s.editBtn, { borderColor: colors.primary + '50', backgroundColor: colors.primary + '10' }]}>
-            <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 13 }}>{t('common.edit', 'Editar')}</Text>
-          </TouchableOpacity>
-        </View>
-        <LinearGradient
-          colors={[colors.surface, colors.surfaceAlt]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={s.cardFull}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-            <View style={[s.goalIconCircle, { backgroundColor: goalInfo.accent + '20', shadowColor: goalInfo.accent }]}>
-              {goalInfo.icon}
-            </View>
-            <View>
-              <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 2 }}>{t('profile.activeGoal', 'Objetivo Activo')}</Text>
-              <Text style={{ fontSize: 22, fontWeight: '900', color: colors.textPrimary }}>{goalInfo.label}</Text>
-            </View>
-          </View>
-
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12, alignItems: 'flex-end' }}>
-            <View>
-              <Text style={{ fontSize: 13, color: colors.textMuted, marginBottom: 4 }}>{t('profile.currentWeight')}</Text>
-              <Text style={{ fontSize: 26, fontWeight: '900', color: colors.textPrimary }}>{displayCurrentWeight} <Text style={{ fontSize: 16, opacity: 0.5 }}>{massUnit}</Text></Text>
-            </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text style={{ fontSize: 13, color: colors.textMuted, marginBottom: 4, textAlign: 'right' }}>{t('profile.targetWeight')}</Text>
-              <Text style={{ fontSize: 26, fontWeight: '900', color: goalInfo.accent }}>{displayTargetWeight} <Text style={{ fontSize: 16, opacity: 0.5 }}>{massUnit}</Text></Text>
-            </View>
-          </View>
-
-          <View style={[s.progressBar, { backgroundColor: colors.border, height: 10 }]}>
-            <LinearGradient
-              colors={[goalInfo.accent, '#7C5CFC']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={[s.progressFill, { width: `${safeProgressPct}%` }]}
+            <GoalProgressHero
+              goal={profile?.goal}
+              initialWeightKg={initialWeight}
+              currentWeightKg={currentWeightKg}
+              targetWeightKg={targetWeightKg}
+              progressPct={progressPct}
+              massUnit={massUnit}
+              isCustomTheme={isPremiumCustom}
+              themeAccentColor={safePremiumColor}
+              onOpenGoalWizard={() => setGoalModalVisible(true)}
+              onQuickLogWeight={handleQuickLogWeight}
+              t={t as any}
             />
-          </View>
-          
-          <View style={{ height: 24 }} />
-          
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <TouchableOpacity 
-              style={{ flex: 1 }} 
-              onPress={() => setGoalModalVisible(true)}
-            >
+
+            {/* 2. Weekly Consistency & Habit Tracker */}
+            <WeeklyConsistencyCard
+              selectedDate={selectedDate}
+              onSelectDate={setDate}
+              streakDays={streakDays}
+              language={language}
+              t={t as any}
+            />
+
+            {/* 3. Nutritional Score & Energy Balance */}
+            <View style={s.sectionHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={[s.sectionIconWrap, { backgroundColor: (isPremiumCustom ? safePremiumColor : colors.primary) + '20' }]}>
+                  <Zap size={15} color={isPremiumCustom ? safePremiumColor : colors.primary} />
+                </View>
+                <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>
+                  {t('dashboard.scoreTitle', 'Score Nutricional')}
+                </Text>
+              </View>
+            </View>
+
+            <View style={[s.cardFull, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border + '45' }]}>
               <LinearGradient
-                colors={isPremiumCustom ? [safePremiumColor, safePremiumColor + 'CC'] : ['#7C5CFC', '#6344E0']}
+                colors={[(isPremiumCustom ? safePremiumColor : colors.primary) + '12', 'transparent']}
+                style={StyleSheet.absoluteFill}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={s.updateBtnSmall}
-              >
-                <Target size={18} color="#FFF" />
-                <Text style={[s.updateBtnTextSmall, { color: '#FFF' }]}>{t('profile.updateGoals', 'Actualizar Objetivos')}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </LinearGradient>
-
-        {/* Muscle Symmetry Section */}
-        <View style={{ paddingHorizontal: Spacing.lg }}>
-          <React.Suspense fallback={<View style={{ height: 350, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator color={colors.primary} size="large" /></View>}>
-            <MuscleSymmetryCard />
-          </React.Suspense>
-        </View>
-
-        {/* Statistics Grid */}
-        <View style={s.sectionHeader}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <View style={[s.sectionIconWrap, { backgroundColor: colors.carbs + '20' }]}>
-              <Text style={{ fontSize: 14 }}>📊</Text>
+                pointerEvents="none"
+              />
+              <ScoreRing
+                consumed={calories}
+                target={target}
+                burnedCals={activityCals}
+                dateLabel={dateLabel}
+                customColor={isPremiumCustom ? safePremiumColor : null}
+              />
             </View>
-            <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>{t('dashboard.statsTitle', 'Estadísticas')}</Text>
-          </View>
-          {isEditing && (
-            <TouchableOpacity onPress={saveWidgetsOrder} style={s.doneBtn}>
-              <Text style={s.doneText}>{t('common.done', 'Listo')}</Text>
-            </TouchableOpacity>
-          )}
+
+            {/* 4. Muscle Symmetry Section */}
+            <View style={{ marginVertical: Spacing.sm }}>
+              <MuscleSymmetryCard />
+            </View>
+
+            {/* 5. Statistics & Tool Grid */}
+            <View style={s.sectionHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={[s.sectionIconWrap, { backgroundColor: colors.carbs + '20' }]}>
+                  <BarChart2 size={16} color={colors.carbs} />
+                </View>
+                <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>
+                  {t('dashboard.statsTitle', 'Estadísticas y Herramientas')}
+                </Text>
+              </View>
+              {isEditing ? (
+                <TouchableOpacity onPress={saveWidgetsOrder} style={s.doneBtn}>
+                  <Text style={s.doneText}>{t('common.done', 'Listo')}</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    setIsEditing(true);
+                  }}
+                  style={[s.editOrderBtn, { borderColor: colors.border + '50' }]}
+                >
+                  <Text style={[s.editOrderText, { color: colors.textSecondary }]}>
+                    {t('dashboard.reorder', 'Reordenar')}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <View style={s.widgetGrid}>
+              {widgetsOrder.map((id, index) => renderDashboardWidget({
+                id,
+                index,
+                isEditing,
+                canMoveLeft: index > 0,
+                canMoveRight: index < widgetsOrder.length - 1,
+                onMoveLeft: () => moveWidget(index, -1),
+                onMoveRight: () => moveWidget(index, 1),
+                onLongPress: () => {
+                  setIsEditing(true);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                },
+                currentWeight: currentWeightKg,
+                sleepHours,
+                calories,
+                bodyFat,
+                totalsData,
+                isPro,
+                colors,
+                massUnit,
+                t: t as any,
+                router,
+                hasPremiumAdAccess,
+                handlePremiumFeaturePress
+              }))}
+            </View>
+
+            <View style={{ height: 48 }} />
+          </ScrollView>
         </View>
-        <View style={s.widgetGrid}>
-          {widgetsOrder.map((id, index) => renderDashboardWidget({
-            id, index, isEditing,
-            canMoveLeft: index > 0,
-            canMoveRight: index < widgetsOrder.length - 1,
-            onMoveLeft: () => moveWidget(index, -1),
-            onMoveRight: () => moveWidget(index, 1),
-            onLongPress: () => { setIsEditing(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); },
-            currentWeight, sleepHours, calories, bodyFat, totalsData,
-            isPro, colors, t: t as any, router,
-            hasPremiumAdAccess, handlePremiumFeaturePress
-          }))}
-        </View>
 
-        <View style={{ height: 40 }} />
-      </ScrollView>
-      </View>
+        {/* Premium Gate Modal */}
+        <PremiumGate
+          visible={premiumGate.visible}
+          featureId={premiumGate.featureId}
+          featureName={premiumGate.featureName}
+          featureIcon={premiumGate.featureIcon}
+          onClose={() => setPremiumGate(prev => ({ ...prev, visible: false }))}
+          onAdAccessGranted={() => {
+            router.push(premiumGate.route as any);
+          }}
+        />
 
-      {/* Premium Gate Modal */}
-      <PremiumGate
-        visible={premiumGate.visible}
-        featureId={premiumGate.featureId}
-        featureName={premiumGate.featureName}
-        featureIcon={premiumGate.featureIcon}
-        onClose={() => setPremiumGate(prev => ({ ...prev, visible: false }))}
-        onAdAccessGranted={() => {
-          router.push(premiumGate.route as any);
-        }}
-      />
-
-      <GoalWizardModal
-        visible={goalModalVisible}
-        onClose={() => setGoalModalVisible(false)}
-        initialData={{
-          weight: latestMeasurement?.weight || profile?.weight || 70,
-          targetWeight: profile?.targetWeight || latestMeasurement?.weight || profile?.weight || 70,
-          height: profile?.height || 170,
-          age: profile?.age || 25,
-          sex: profile?.sex || 'male',
-          goal: profile?.goal || 'maintain',
-          lifestyle: profile?.lifestyle || 'standing_sometimes',
-          activityLevel: profile?.activityLevel || 'moderate',
-          dietType: profile?.dietType || 'recommended',
-        }}
-        onSave={() => setGoalModalVisible(false)}
-      />
-    </SafeAreaView>
+        {/* Goal Wizard Modal */}
+        <GoalWizardModal
+          visible={goalModalVisible}
+          onClose={() => setGoalModalVisible(false)}
+          initialData={{
+            weight: latestMeasurement?.weight || profile?.weight || 70,
+            targetWeight: profile?.targetWeight || latestMeasurement?.weight || profile?.weight || 70,
+            height: profile?.height || 170,
+            age: profile?.age || 25,
+            sex: profile?.sex || 'male',
+            goal: profile?.goal || 'maintain',
+            lifestyle: profile?.lifestyle || 'standing_sometimes',
+            activityLevel: profile?.activityLevel || 'moderate',
+            dietType: profile?.dietType || 'recommended',
+          }}
+          onSave={() => setGoalModalVisible(false)}
+        />
+      </SafeAreaView>
     </View>
   );
 }
@@ -585,73 +752,97 @@ export default function DashboardScreen() {
 const s = StyleSheet.create({
   safe: { flex: 1 },
   scroll: { flexGrow: 1, paddingHorizontal: Spacing.base },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: Spacing.lg },
-  greeting: { fontSize: 26, fontWeight: '900', letterSpacing: -0.5 },
-  // date pill
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+  },
+  greeting: {
+    fontSize: 26,
+    fontWeight: '900',
+    letterSpacing: -0.6,
+  },
   datePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 3.5,
     borderRadius: 20,
     borderWidth: 1,
-    alignSelf: 'flex-start',
   },
   dateText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.3,
     textTransform: 'capitalize',
   },
-  avatar: { width: 48, height: 48, borderRadius: 24, overflow: 'hidden' },
-  avatarGrad: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  avatarText: { fontSize: 18, fontWeight: '700', color: '#fff' },
-  avatarImage: { width: 48, height: 48, borderRadius: 24 },
-  // Section headers
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: Spacing.lg, marginBottom: Spacing.md },
-  sectionTitle: { fontSize: 18, fontWeight: '800', letterSpacing: -0.3 },
-  sectionIconWrap: {
-    width: 30,
-    height: 30,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  editBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  // Cards
-  cardFull: { borderRadius: Radius.xl, padding: Spacing.lg, ...Shadow.md, overflow: 'hidden' },
-  progressBar: { height: 8, borderRadius: 4, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 4 },
-  updateBtn: { height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
-  updateBtnText: { fontSize: 16, fontWeight: '700' },
-  widgetGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md, justifyContent: 'space-between' },
-  doneBtn: { backgroundColor: '#7C5CFC', paddingHorizontal: 16, paddingVertical: 6, borderRadius: Radius.full },
-  doneText: { color: '#FFF', fontWeight: 'bold', fontSize: 14 },
-  goalIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: Platform.OS === 'ios' ? 4 : 0
-  },
-  updateBtnSmall: {
+  streakPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    height: 48,
-    borderRadius: 16,
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 20,
     borderWidth: 1,
   },
-  updateBtnTextSmall: {
-    fontSize: 14,
+  streakText: {
+    fontSize: 11,
     fontWeight: '800',
+  },
+  // Section Headers
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: Spacing.md + 4,
+    marginBottom: Spacing.sm,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '900',
+    letterSpacing: -0.3,
+  },
+  sectionIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  editOrderBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  editOrderText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  doneBtn: {
+    backgroundColor: '#7C5CFC',
+    paddingHorizontal: 16,
+    paddingVertical: 5,
+    borderRadius: Radius.full,
+  },
+  doneText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
+  // Cards
+  cardFull: {
+    borderRadius: Radius.xl,
+    padding: Spacing.md,
+    ...Shadow.sm,
+    overflow: 'hidden',
+  },
+  widgetGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.md,
+    justifyContent: 'space-between',
   },
 });

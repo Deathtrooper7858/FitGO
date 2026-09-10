@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
   TextInput, ActivityIndicator, Alert, Animated,
@@ -15,7 +15,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import {
-  X, Search, Mic, Square, Flame, Clock, Sparkles, Plus, Minus, Check, ArrowLeft, Lock
+  X, Search, Mic, Square, Flame, Clock, Sparkles, Plus, Minus, Check, ArrowLeft, Lock, ChevronRight
 } from 'lucide-react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { useNutritionStore, useSettingsStore } from '../../store';
@@ -101,6 +101,7 @@ export default function AddActivityModal() {
 
   const [activeCategory, setActiveCategory] = useState<'all' | 'cardio' | 'strength' | 'sports'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   // Premium alert state
   const [premiumAlert, setPremiumAlert] = useState(false);
@@ -268,23 +269,59 @@ export default function AddActivityModal() {
   const getBadgeBg = (category: string) => {
     switch (category) {
       case 'strength':
-        return 'rgba(16, 185, 129, 0.12)';
+        return 'rgba(16, 185, 129, 0.15)';
       case 'cardio':
-        return 'rgba(244, 63, 94, 0.12)';
+        return 'rgba(244, 63, 94, 0.15)';
       case 'sports':
-        return 'rgba(6, 182, 212, 0.12)';
+        return 'rgba(6, 182, 212, 0.15)';
       default:
-        return 'rgba(139, 92, 246, 0.12)';
+        return 'rgba(139, 92, 246, 0.15)';
+    }
+  };
+
+  const getCategoryStyles = (category: string) => {
+    switch (category) {
+      case 'strength':
+        return {
+          bg: 'rgba(16, 185, 129, 0.15)',
+          border: 'rgba(16, 185, 129, 0.3)',
+          color: '#34D399',
+          label: t('activities.strength', 'Fuerza'),
+        };
+      case 'cardio':
+        return {
+          bg: 'rgba(244, 63, 94, 0.15)',
+          border: 'rgba(244, 63, 94, 0.3)',
+          color: '#FB7185',
+          label: t('activities.cardio', 'Cardio'),
+        };
+      case 'sports':
+        return {
+          bg: 'rgba(6, 182, 212, 0.15)',
+          border: 'rgba(6, 182, 212, 0.3)',
+          color: '#38BDF8',
+          label: t('activities.sports', 'Deporte'),
+        };
+      default:
+        return {
+          bg: 'rgba(139, 92, 246, 0.15)',
+          border: 'rgba(139, 92, 246, 0.3)',
+          color: '#A78BFA',
+          label: 'Fitness',
+        };
     }
   };
 
   // Filter exercises by category and search query (excluding custom entry)
-  const filteredExercises = EXERCISES.filter(ex => {
-    if (ex.id === 'custom') return false;
-    const matchesSearch = t(ex.name).toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = activeCategory === 'all' || ex.category === activeCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredExercises = useMemo(() => {
+    return EXERCISES.filter(ex => {
+      if (ex.id === 'custom') return false;
+      const translatedName = t(ex.name).toLowerCase();
+      const matchesSearch = translatedName.includes(searchQuery.toLowerCase());
+      const matchesCategory = activeCategory === 'all' || ex.category === activeCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [searchQuery, activeCategory, t]);
 
   const quickMinutes = [15, 30, 45, 60, 90];
   const quickHours = [0.5, 1.0, 1.5, 2.0, 3.0];
@@ -725,16 +762,18 @@ export default function AddActivityModal() {
       />
       {/* Header */}
       <View style={s.header}>
-        <Text style={[s.title, { color: colors.textPrimary }]}>
-          {t('activities.addActivity')}
-        </Text>
-        <Text style={[s.subtitle, { color: colors.textSecondary }]}>
-          {t('activities.selectDescription', 'Selecciona o describe un ejercicio para registrar tu progreso')}
-        </Text>
+        <View style={s.headerLeft}>
+          <Text style={[s.title, { color: colors.textPrimary }]}>
+            {t('activities.addActivity')}
+          </Text>
+          <Text style={[s.subtitle, { color: colors.textSecondary }]}>
+            {t('activities.selectDescription', 'Selecciona o describe un ejercicio para registrar tu progreso')}
+          </Text>
+        </View>
         <TouchableOpacity
           onPress={() => router.back()}
           style={[s.closeBtnCircle, { backgroundColor: colors.surface, borderColor: colors.border }]}
-          activeOpacity={0.7}
+          activeOpacity={0.75}
         >
           <X size={18} color={colors.textPrimary} />
         </TouchableOpacity>
@@ -742,17 +781,36 @@ export default function AddActivityModal() {
 
       {/* Glassmorphic Search Bar */}
       <View style={s.searchContainer}>
-        <View style={[s.searchBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Search size={18} color={colors.textMuted} />
+        <View
+          style={[
+            s.searchBox,
+            {
+              backgroundColor: colors.surface,
+              borderColor: isSearchFocused ? (colors.primary || '#8B5CF6') : colors.border,
+              shadowColor: isSearchFocused ? colors.primary : 'transparent',
+              shadowOpacity: isSearchFocused ? 0.25 : 0,
+              shadowRadius: 8,
+            },
+          ]}
+        >
+          <Search size={18} color={isSearchFocused ? (colors.primary || '#8B5CF6') : colors.textMuted} />
           <TextInput
             style={[s.searchInput, { color: colors.textPrimary }]}
             placeholder={t('activities.search', 'Buscar actividad...')}
             placeholderTextColor={colors.textMuted}
             value={searchQuery}
             onChangeText={setSearchQuery}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')} style={s.clearBtn}>
+            <TouchableOpacity
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setSearchQuery('');
+              }}
+              style={s.clearBtn}
+            >
               <X size={16} color={colors.textSecondary} />
             </TouchableOpacity>
           )}
@@ -771,19 +829,22 @@ export default function AddActivityModal() {
             return (
               <TouchableOpacity
                 key={cat.id}
-                onPress={() => setActiveCategory(cat.id as any)}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setActiveCategory(cat.id as any);
+                }}
                 activeOpacity={0.8}
                 style={s.tabWrapper}
               >
                 {isActive ? (
                   <LinearGradient
-                    colors={[colors.primary, colors.primary + 'CC']}
+                    colors={[colors.primary, colors.secondary || '#A855F7']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={s.activeTabGrad}
                   >
                     <Text style={s.activeTabEmoji}>{cat.icon}</Text>
-                    <Text style={[s.tabText, { color: '#FFF', fontWeight: '700' }]}>
+                    <Text style={[s.tabText, { color: '#FFF', fontWeight: '800' }]}>
                       {t(cat.name, cat.label)}
                     </Text>
                   </LinearGradient>
@@ -807,48 +868,64 @@ export default function AddActivityModal() {
         {(activeCategory === 'all') && !searchQuery && (
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => setSelected(EXERCISES.find(e => e.id === 'custom') || null)}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              setSelected(EXERCISES.find(e => e.id === 'custom') || null);
+            }}
             style={s.heroCardWrapper}
           >
             <LinearGradient
-              colors={[colors.primary + '20', colors.primary + '05']}
-              style={[s.heroCard, { borderColor: colors.primary + '40' }]}
+              colors={[colors.primary + '30', colors.secondary ? colors.secondary + '18' : '#38BDF818', colors.surface]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[s.heroCard, { borderColor: colors.primary + '50' }]}
             >
               <View style={s.heroContent}>
-                <View style={[s.heroIconBadge, { backgroundColor: colors.primary + '25' }]}>
-                  <Sparkles size={22} color={colors.primary} fill={colors.primary + '33'} />
+                <View style={[s.heroIconBadge, { backgroundColor: colors.primary }]}>
+                  <Sparkles size={22} color="#FFF" />
                 </View>
                 <View style={s.heroInfo}>
-                  <Text style={[s.heroTitle, { color: colors.textPrimary }]}>
-                    {t('activities.custom', 'Actividad con IA')}
-                  </Text>
+                  <View style={s.heroTitleRow}>
+                    <Text style={[s.heroTitle, { color: colors.textPrimary }]}>
+                      {t('activities.custom', 'Actividad Personalizada')}
+                    </Text>
+                    <View style={[s.heroIaBadge, { backgroundColor: colors.primary + '30', borderColor: colors.primary + '70' }]}>
+                      <Text style={[s.heroIaText, { color: colors.primaryLight || '#C4B5FD' }]}>✨ IA</Text>
+                    </View>
+                  </View>
                   <Text style={[s.heroSubtitle, { color: colors.textSecondary }]}>
                     {t('activities.customDesc', 'Describe tu ejercicio por voz o texto y calcula calorías automáticamente')}
                   </Text>
                 </View>
-                <View style={[s.heroIaBadge, { backgroundColor: colors.primary + '20' }]}>
-                  <Text style={[s.heroIaText, { color: colors.primary }]}>✨ IA</Text>
-                </View>
+                <ChevronRight size={18} color={colors.textMuted} />
               </View>
             </LinearGradient>
           </TouchableOpacity>
         )}
 
-        {/* List Title */}
+        {/* List Title and Counter */}
         {filteredExercises.length > 0 && (
-          <Text style={[s.sectionTitle, { color: colors.textSecondary }]}>
-            {searchQuery ? t('activities.searchResults', 'Resultados de búsqueda') : t('activities.popular', 'Populares')}
-          </Text>
+          <View style={s.sectionHeaderRow}>
+            <View style={s.sectionTitleRow}>
+              <Flame size={14} color={colors.accent} fill={colors.accent + '33'} />
+              <Text style={[s.sectionTitle, { color: colors.textSecondary }]}>
+                {searchQuery ? t('activities.searchResults', 'Resultados de búsqueda') : t('activities.popular', 'Populares')}
+              </Text>
+            </View>
+            <Text style={[s.sectionCount, { color: colors.textMuted }]}>
+              {filteredExercises.length} {t('activities.activities', 'actividades')}
+            </Text>
+          </View>
         )}
 
         {/* 2-Column Responsive Grid */}
         <View style={s.grid}>
           {filteredExercises.map(ex => {
-            const badgeBg = getBadgeBg(ex.category);
+            const catStyle = getCategoryStyles(ex.category);
             return (
               <TouchableOpacity
                 key={ex.id}
-                activeOpacity={0.85}
+                activeOpacity={0.78}
                 style={[
                   s.card, 
                   { 
@@ -856,33 +933,47 @@ export default function AddActivityModal() {
                     borderColor: colors.border,
                     shadowColor: colors.primary,
                     shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 12,
-                    elevation: 4
+                    shadowOpacity: 0.12,
+                    shadowRadius: 10,
+                    elevation: 3
                   }
                 ]}
-                onPress={() => setSelected(ex)}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setSelected(ex);
+                }}
               >
                 <LinearGradient
-                  colors={[colors.surface, colors.primary + '05']}
+                  colors={[colors.surface, colors.primary + '08']}
                   style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
                 />
-                <View style={[s.cardBadge, { backgroundColor: badgeBg }]}>
-                  <Text style={{ fontSize: 22 }}>{ex.icon}</Text>
+                <View style={s.cardTopRow}>
+                  <View style={[s.cardBadge, { backgroundColor: catStyle.bg, borderColor: catStyle.border }]}>
+                    <Text style={{ fontSize: 24 }}>{ex.icon}</Text>
+                  </View>
+                  <View style={[s.miniCatBadge, { backgroundColor: catStyle.bg }]}>
+                    <Text style={[s.miniCatText, { color: catStyle.color }]}>
+                      {catStyle.label}
+                    </Text>
+                  </View>
                 </View>
-                <Text style={[s.cardName, { color: colors.textPrimary }]} numberOfLines={1}>
+
+                <Text style={[s.cardName, { color: colors.textPrimary }]} numberOfLines={2}>
                   {t(ex.name)}
                 </Text>
-                <View style={s.cardMeta}>
-                  <View style={s.metaItem}>
-                    <Flame size={12} color={colors.accent} fill={colors.accent + '22'} />
-                    <Text style={[s.metaKcal, { color: colors.textSecondary }]}>
+
+                <View style={[s.cardMeta, { borderTopColor: colors.border + '60' }]}>
+                  <View style={[s.metaKcalPill, { backgroundColor: colors.accent + '15' }]}>
+                    <Flame size={12} color={colors.accent} fill={colors.accent} />
+                    <Text style={[s.metaKcalText, { color: colors.accent }]}>
                       {ex.kcalPer30m} kcal
                     </Text>
                   </View>
-                  <View style={s.metaItem}>
-                    <Clock size={12} color={colors.textMuted} />
-                    <Text style={[s.metaMin, { color: colors.textMuted }]}>
+                  <View style={s.metaTimePill}>
+                    <Clock size={11} color={colors.textMuted} />
+                    <Text style={[s.metaMinText, { color: colors.textMuted }]}>
                       30 min
                     </Text>
                   </View>
@@ -912,24 +1003,28 @@ const s = StyleSheet.create({
     flex: 1
   },
   header: {
-    padding: 24,
-    paddingBottom: 12,
-    position: 'relative'
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 12
+  },
+  headerLeft: {
+    flex: 1,
+    paddingRight: 14
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '800',
-    marginBottom: 6
+    letterSpacing: -0.5,
+    marginBottom: 4
   },
   subtitle: {
     fontSize: 13,
-    lineHeight: 18,
-    width: '80%'
+    lineHeight: 18
   },
   closeBtnCircle: {
-    position: 'absolute',
-    right: 24,
-    top: 24,
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -946,34 +1041,34 @@ const s = StyleSheet.create({
     alignItems: 'center'
   },
   searchContainer: {
-    paddingHorizontal: 24,
-    marginBottom: 16
+    paddingHorizontal: 20,
+    marginBottom: 14
   },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
     height: 48,
     borderRadius: 24,
-    borderWidth: 1,
+    borderWidth: 1.5,
     paddingHorizontal: 16,
-    gap: 8
+    gap: 10
   },
   searchInput: {
     flex: 1,
     height: '100%',
-    fontSize: 14,
-    paddingVertical: 0
+    fontSize: 15,
+    paddingVertical: 0,
+    fontWeight: '500'
   },
   clearBtn: {
     padding: 4
   },
   tabsWrapper: {
-    paddingLeft: 24,
-    marginBottom: 20
+    marginBottom: 16
   },
   tabsScroll: {
-    paddingRight: 24,
-    gap: 10
+    paddingHorizontal: 20,
+    gap: 8
   },
   tabWrapper: {
     borderRadius: 20,
@@ -983,124 +1078,185 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 9,
+    borderRadius: 20,
     gap: 6
   },
   activeTabEmoji: {
-    fontSize: 16
+    fontSize: 15
   },
   inactiveTab: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 9,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
     gap: 6
   },
   tabEmoji: {
-    fontSize: 16
+    fontSize: 15
   },
   tabText: {
     fontSize: 13,
     fontWeight: '600'
   },
   scrollContent: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingBottom: 40
   },
   heroCardWrapper: {
-    marginBottom: 24,
-    borderRadius: 20,
-    overflow: 'hidden'
+    marginBottom: 18,
+    borderRadius: 22,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4
   },
   heroCard: {
-    padding: 18,
-    borderRadius: 20,
-    borderWidth: 1,
-    overflow: 'hidden'
+    padding: 16,
+    borderRadius: 22,
+    borderWidth: 1.5
   },
   heroContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14
+    gap: 12
   },
   heroIconBadge: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center'
   },
   heroInfo: {
     flex: 1
   },
+  heroTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 3
+  },
   heroTitle: {
     fontSize: 15,
-    fontWeight: '800',
-    marginBottom: 2
+    fontWeight: '800'
   },
   heroSubtitle: {
     fontSize: 11,
     lineHeight: 15
   },
   heroIaBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 10
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1
   },
   heroIaText: {
     fontSize: 10,
-    fontWeight: '700'
+    fontWeight: '800',
+    letterSpacing: 0.3
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    paddingHorizontal: 2
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6
   },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '800',
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: 14
+    letterSpacing: 0.8
+  },
+  sectionCount: {
+    fontSize: 11,
+    fontWeight: '700'
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    paddingBottom: 24
+    rowGap: 12
   },
   card: {
     width: '48%',
     borderRadius: 20,
     borderWidth: 1,
-    padding: 16,
-    marginBottom: 16
+    padding: 14,
+    minHeight: 146,
+    overflow: 'hidden',
+    justifyContent: 'space-between'
   },
-  cardBadge: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12
-  },
-  cardName: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 8
-  },
-  cardMeta: {
-    flexDirection: 'column',
-    gap: 6
-  },
-  metaItem: {
+  cardTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6
+    justifyContent: 'space-between',
+    marginBottom: 8
   },
-  metaKcal: {
-    fontSize: 12,
-    fontWeight: '600'
+  cardBadge: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
-  metaMin: {
-    fontSize: 11
+  miniCatBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 8
+  },
+  miniCatText: {
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3
+  },
+  cardName: {
+    fontSize: 13,
+    fontWeight: '700',
+    lineHeight: 18,
+    minHeight: 36,
+    marginBottom: 6
+  },
+  cardMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 4,
+    paddingTop: 6,
+    borderTopWidth: 1
+  },
+  metaKcalPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 10
+  },
+  metaKcalText: {
+    fontSize: 11,
+    fontWeight: '700'
+  },
+  metaTimePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3
+  },
+  metaMinText: {
+    fontSize: 10,
+    fontWeight: '500'
   },
   emptyState: {
     alignItems: 'center',

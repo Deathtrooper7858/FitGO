@@ -65,12 +65,22 @@ async function fetchGroq(payload: any): Promise<any> {
     } else if (payload.model === FAST_MODEL) {
       modelsArray = [FAST_MODEL, CHAT_MODEL];
     } else if (payload.model === VISION_MODEL || (typeof payload.model === 'string' && payload.model.includes('qwen'))) {
-      modelsArray = ['qwen/qwen3.6-27b', 'qwen-3.6-27b', 'qwen/qwen3.8-27b', 'qwen-3.8-27b'];
+      modelsArray = ['qwen/qwen3.6-27b', 'qwen/qwen3.8-27b'];
     }
 
+    const isQwenModel = modelsArray.some((m: string) => typeof m === 'string' && m.toLowerCase().includes('qwen'));
     const attemptPayload: Record<string, any> = { ...payload, models: modelsArray, model: undefined };
-    attemptPayload.reasoning_format = payload.reasoning_format || 'hidden';
-    attemptPayload.reasoning_effort = payload.reasoning_effort || 'low';
+
+    if (isQwenModel) {
+      // Qwen models on Groq do not support response_format: 'json_object'
+      // and reject reasoning_effort values other than 'none'/'default'.
+      delete attemptPayload.response_format;
+      delete attemptPayload.reasoning_format;
+      delete attemptPayload.reasoning_effort;
+    } else {
+      attemptPayload.reasoning_format = payload.reasoning_format || 'hidden';
+      attemptPayload.reasoning_effort = payload.reasoning_effort || 'low';
+    }
 
     try {
       const { data: { session } } = await supabase.auth.getSession();

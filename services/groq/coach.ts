@@ -53,13 +53,18 @@ export async function sendCoachMessage(
     messages.push({ role: 'user', content: `<user_input>\n${userMessage}\n</user_input>` });
   }
 
-  const data = await fetchGroq({
-    model: base64Image ? VISION_MODEL : CHAT_MODEL,
+  const isVision = !!base64Image;
+  const payload: any = {
+    model: isVision ? VISION_MODEL : CHAT_MODEL,
     messages,
     max_tokens: 1024,
     temperature: 0.6,
-    reasoning_effort: 'low',
-  });
+  };
+  if (!isVision) {
+    payload.reasoning_effort = 'low';
+  }
+
+  const data = await fetchGroq(payload);
 
   let content = data.choices[0]?.message?.content ?? '';
   // Sanitize any trailing hanging bullet points (e.g. trailing "•" or "-")

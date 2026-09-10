@@ -68,8 +68,11 @@ preventAutoHideAsync();
 
 // ─── Navigation Guard ─────────────────────────────────────────────────────────
 function NavigationGuard() {
-  const { session, profile, isLoading } = useAuthStore();
-  const segments = useSegments();
+  const session = useAuthStore(s => s.session);
+  const profileId = useAuthStore(s => s.profile?.id);
+  const onboardingDone = useAuthStore(s => s.profile?.onboardingDone);
+  const isLoading = useAuthStore(s => s.isLoading);
+  const segmentsKey = useSegments().join('/');
   // Wait for the root navigator to finish mounting before any navigation.
   // Without this guard, router.replace fires before the Stack registers its
   // screens, causing the "action was not handled by any navigator" warning.
@@ -82,35 +85,35 @@ function NavigationGuard() {
     // ── Auth still resolving — never navigate while loading to prevent flashes
     if (isLoading) return;
 
-    const inAuthGroup   = segments[0] === '(auth)' || segments[0] === 'auth';
-    const inOnboarding  = segments[0] === 'onboarding';
-    const isTermsModal  = segments.join('/') === 'modals/terms' || (segments[0] === '(auth)' && segments[1] === 'terms');
-    const allSegments   = segments as string[];
+    const seg0 = segmentsKey.split('/')[0] || '';
+    const inAuthGroup   = seg0 === '(auth)' || seg0 === 'auth';
+    const inOnboarding  = seg0 === 'onboarding';
+    const isTermsModal  = segmentsKey === 'modals/terms' || segmentsKey === '(auth)/terms';
 
     if (!session) {
       if (!inAuthGroup) {
         router.replace('/(auth)/welcome');
       }
-    } else if (!profile || !profile.onboardingDone || !profile.id) {
+    } else if (!profileId || !onboardingDone) {
       // Session exists but profile is invalid or incomplete → onboarding
       if (!inOnboarding && !isTermsModal) {
-        if (segments[0] === 'auth' && router.canGoBack()) {
+        if (seg0 === 'auth' && router.canGoBack()) {
           router.back();
         }
         router.replace('/onboarding');
       }
     } else {
-      const isUpdatePassword = segments.join('/') === '(auth)/update-password';
+      const isUpdatePassword = segmentsKey === '(auth)/update-password';
       if (isUpdatePassword) return; // Stay on the screen to type new password
 
-      if (inAuthGroup || inOnboarding || allSegments.length === 0) {
-        if (segments[0] === 'auth' && router.canGoBack()) {
+      if (inAuthGroup || inOnboarding || !segmentsKey) {
+        if (seg0 === 'auth' && router.canGoBack()) {
           router.back();
         }
         router.replace('/(tabs)/tracker');
       }
     }
-  }, [navigationState?.key, session, profile, isLoading, segments]);
+  }, [navigationState?.key, session, profileId, onboardingDone, isLoading, segmentsKey]);
 
   return null;
 }
@@ -289,8 +292,9 @@ function RootLayout() {
     })();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // Ignore INITIAL_SESSION here because getSession() already handles initial startup
-      if (event === 'INITIAL_SESSION') return;
+      // Ignore INITIAL_SESSION here because getSession() already handles initial startup.
+      // Ignore USER_UPDATED to avoid cyclic re-fetching when user metadata is synced.
+      if (event === 'INITIAL_SESSION' || event === 'USER_UPDATED') return;
       handleAuthStateChange(session);
     });
 

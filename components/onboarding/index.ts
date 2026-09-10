@@ -10,5 +10,8 @@ export { DietStep } from './DietStep';
 export { PersonalizationStep } from './PersonalizationStep';
 export { TermsStep } from './TermsStep';
 export { ProjectionStep } from './ProjectionStep';
+export { SecondaryGoalsStep } from './SecondaryGoalsStep';
+export { SocialProofStep } from './SocialProofStep';
+export { ExperienceRatingStep } from './ExperienceRatingStep';
 export { HealthProfileStep } from './HealthProfileStep';
 export { FloatingHeroIcon } from './FloatingHeroIcon';

@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Play, CheckCircle, Dumbbell, Moon } from 'lucide-react-native';
+import { Play, CheckCircle, Dumbbell, Moon, Zap, ArrowDown, ArrowUp, Home } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { useTheme } from '../../hooks/useTheme';
@@ -26,9 +27,18 @@ interface WorkoutPlanViewProps {
 }
 
 function WorkoutPlanView({
-  workout, activeDay, isFutureDay, isAdjustingBW, alreadyCompleted, exerciseMetrics,
-  onMoveExercise, onCompleteWorkout, onAdjustWorkout, onUpdateMetric, onStartRest,
-  getPreviousRPE
+  workout,
+  activeDay,
+  isFutureDay,
+  isAdjustingBW,
+  alreadyCompleted,
+  exerciseMetrics,
+  onMoveExercise,
+  onCompleteWorkout,
+  onAdjustWorkout,
+  onUpdateMetric,
+  onStartRest,
+  getPreviousRPE,
 }: WorkoutPlanViewProps) {
   const { t } = useTranslation();
   const colors = useTheme();
@@ -36,13 +46,15 @@ function WorkoutPlanView({
   if (!workout) {
     return (
       <View style={[wv.contentList, { paddingHorizontal: Spacing.base }]}>
-        <View style={wv.emptyDay}>
-          <View style={[wv.emptyIconWrap, {backgroundColor: colors.surfaceAlt}]}>
-            <Text style={{ fontSize: 42, color: colors.textMuted }}>🏋️</Text>
+        <View style={[wv.emptyCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[wv.emptyIconWrap, { backgroundColor: colors.primary + '15' }]}>
+            <Dumbbell size={36} color={colors.primary} />
           </View>
-          <Text style={[wv.emptyTitle, { color: colors.textPrimary }]}>{t('planner.noWorkouts')}</Text>
+          <Text style={[wv.emptyTitle, { color: colors.textPrimary }]}>
+            {t('planner.noWorkouts', 'Sin rutina programada')}
+          </Text>
           <Text style={[wv.emptySub, { color: colors.textSecondary }]}>
-            {t('planner.emptyWorkoutSub', "Toca 'Generar' para crear un plan de entrenamiento con IA")}
+            {t('planner.emptyWorkoutSub', 'Toca Generar para que la IA diseñe tu rutina de hoy')}
           </Text>
         </View>
       </View>
@@ -55,26 +67,104 @@ function WorkoutPlanView({
     return (
       <View style={[wv.contentList, { paddingHorizontal: Spacing.base }]}>
         <View style={[wv.restDayCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <LinearGradient colors={[colors.primary + '11', 'transparent']} style={StyleSheet.absoluteFillObject} />
-          <View style={[wv.restIconWrap, { backgroundColor: colors.primary + '22' }]}>
+          <LinearGradient
+            colors={[colors.primary + '18', 'transparent']}
+            style={StyleSheet.absoluteFillObject}
+          />
+          <View style={[wv.restIconWrap, { backgroundColor: colors.primary + '20' }]}>
             <Moon size={36} color={colors.primary} />
           </View>
-          <Text style={[wv.restDayTitle, { color: colors.textPrimary }]}>{t('planner.restDay', 'Día de Descanso')}</Text>
-          <Text style={[wv.restDayText, { color: colors.textSecondary }]}>{t('planner.restDayHint', '¡Hoy toca descansar! Recupera energías para tu próxima sesión.')}</Text>
+          <Text style={[wv.restDayTitle, { color: colors.textPrimary }]}>
+            {t('planner.restDay', 'Día de Descanso')}
+          </Text>
+          <Text style={[wv.restDayText, { color: colors.textSecondary }]}>
+            {t('planner.restDayHint', '¡Hoy toca descansar! El músculo crece y se repara mientras reposas.')}
+          </Text>
         </View>
       </View>
     );
   }
 
+  const estimatedMinutes = Math.max((workout.exercises?.length || 0) * 8, 20);
+
+  const handleAdjustPress = (type: 'up' | 'down' | 'bodyweight') => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onAdjustWorkout(type);
+  };
+
   return (
     <View style={wv.contentList}>
-      <View style={wv.routineHeaderCompact}>
-        <Text style={[wv.routineName, { color: colors.textPrimary }]}>{workout.name}</Text>
-        <View style={[wv.workoutBadge, {backgroundColor: colors.primary + '15'}]}>
-           <Text style={[wv.workoutBadgeText, {color: colors.primary}]}>{workout.exercises?.length || 0} Exercises</Text>
+      {/* Routine Hero Header */}
+      <View style={[wv.routineHero, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={{ flex: 1 }}>
+          <Text style={[wv.routineOverline, { color: colors.textMuted }]}>
+            {t('planner.routineForToday', 'RUTINA DE HOY')}
+          </Text>
+          <Text style={[wv.routineName, { color: colors.textPrimary }]}>{workout.name}</Text>
+        </View>
+
+        <View style={wv.badgesRow}>
+          <View style={[wv.pillBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}>
+            <Text style={[wv.pillBadgeText, { color: colors.primary }]}>
+              {workout.exercises.length} {t('planner.exercises', 'Ejercicios')}
+            </Text>
+          </View>
+          <View style={[wv.pillBadge, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
+            <Text style={[wv.pillBadgeText, { color: colors.textSecondary }]}>~{estimatedMinutes} min</Text>
+          </View>
         </View>
       </View>
 
+      {/* Quick Difficulty Adjustment Bar */}
+      {!alreadyCompleted && (
+        <View style={wv.difficultyWrap}>
+          <View style={wv.difficultyHeader}>
+            <Zap size={14} color={colors.textSecondary} />
+            <Text style={[wv.difficultyTitle, { color: colors.textSecondary }]}>
+              {t('planner.quickDifficultyAdjust', 'Ajuste Rápido de Dificultad')}
+            </Text>
+          </View>
+          <View style={wv.difficultyButtonsRow}>
+            <TouchableOpacity
+              style={[wv.diffBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              onPress={() => handleAdjustPress('down')}
+              activeOpacity={0.75}
+            >
+              <ArrowDown size={14} color="#06B6D4" />
+              <Text style={[wv.diffBtnText, { color: colors.textPrimary }]}>-20% Vol.</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[wv.diffBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              onPress={() => handleAdjustPress('up')}
+              activeOpacity={0.75}
+            >
+              <ArrowUp size={14} color="#EF4444" />
+              <Text style={[wv.diffBtnText, { color: colors.textPrimary }]}>+20% Int.</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[wv.diffBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              onPress={() => handleAdjustPress('bodyweight')}
+              disabled={isAdjustingBW}
+              activeOpacity={0.75}
+            >
+              {isAdjustingBW ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <>
+                  <Home size={14} color="#10B981" />
+                  <Text style={[wv.diffBtnText, { color: colors.textPrimary }]}>
+                    {t('planner.noEquipmentShort', 'Calistenia')}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {/* Exercises List */}
       {(workout.exercises || []).map((ex, i) => (
         <AnimatedCard key={i} index={i} direction="up">
           <ExerciseCard
@@ -88,7 +178,15 @@ function WorkoutPlanView({
             onMoveUp={() => onMoveExercise(i, -1)}
             onMoveDown={() => onMoveExercise(i, 1)}
             onStartRest={() => onStartRest(parseInt(ex.rest) || 90)}
-            onAskCoach={() => router.push({ pathname: '/(tabs)/coach', params: { initialTab: 'trainer', prompt: `¿Cómo se hace el ejercicio: ${ex.name}? ¿Qué significa ${ex.sets} sets de ${ex.reps}?` } })}
+            onAskCoach={() =>
+              router.push({
+                pathname: '/(tabs)/coach',
+                params: {
+                  initialTab: 'trainer',
+                  prompt: `¿Cómo se hace el ejercicio: ${ex.name}? ¿Qué técnica recomiendas para ${ex.sets} series de ${ex.reps}?`,
+                },
+              })
+            }
             weight={exerciseMetrics[i]?.weight || ''}
             rpe={exerciseMetrics[i]?.rpe || ''}
             onWeightChange={(text) => onUpdateMetric(i, 'weight', text)}
@@ -98,80 +196,79 @@ function WorkoutPlanView({
         </AnimatedCard>
       ))}
 
-      {!alreadyCompleted && (
-        <View style={{ gap: 8, marginTop: 12, marginBottom: 8 }}>
-          <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textSecondary, marginLeft: 4 }}>{t('planner.quickDifficultyAdjust', 'Quick Difficulty Adjustment')}</Text>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <TouchableOpacity
-              style={{ flex: 1, backgroundColor: colors.surfaceAlt, padding: 12, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
-              onPress={() => onAdjustWorkout('down')}
-            >
-              <Text style={{ fontSize: 18 }}>🔽</Text>
-              <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, marginTop: 4, textAlign: 'center' }}>-20% Inten.</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ flex: 1, backgroundColor: colors.surfaceAlt, padding: 12, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
-              onPress={() => onAdjustWorkout('up')}
-            >
-              <Text style={{ fontSize: 18 }}>🔼</Text>
-              <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, marginTop: 4, textAlign: 'center' }}>+20% Inten.</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ flex: 1, backgroundColor: colors.surfaceAlt, padding: 12, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
-              onPress={() => onAdjustWorkout('bodyweight')}
-              disabled={isAdjustingBW}
-            >
-              {isAdjustingBW ? <ActivityIndicator size="small" color={colors.primary} /> : <Text style={{ fontSize: 18 }}>🏠</Text>}
-              <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary, marginTop: 4, textAlign: 'center' }}>{t('planner.noEquipment', 'No Equipment')}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
+      {/* Action Buttons */}
+      <View style={wv.actionButtonsContainer}>
+        {/* Primary CTA: Focus Mode */}
+        <TouchableOpacity
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            router.push({ pathname: '/modals/focus-mode', params: { day: activeDay } });
+          }}
+          style={wv.primaryFocusBtn}
+          activeOpacity={0.85}
+        >
+          <LinearGradient
+            colors={colors.gradientPrimary || ['#7C5CFC', '#4338CA']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={wv.primaryFocusGrad}
+          >
+            <Play size={18} color="#fff" fill="#fff" />
+            <Text style={wv.primaryFocusText}>
+              {t('planner.startWorkout', 'Entrenar (Modo Enfoque)')}
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => router.push({ pathname: '/modals/focus-mode', params: { day: activeDay } })}
-        style={[wv.completeBtn, { backgroundColor: colors.primary, borderColor: colors.primary, marginTop: 20 }]}
-        activeOpacity={0.8}
-      >
-        <Play size={20} color="#fff" style={{ marginLeft: 4 }} />
-        <Text style={[wv.completeBtnText, { color: '#fff' }]}>
-          {t('planner.startWorkout', 'Entrenar (Focus Mode)')}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={onCompleteWorkout}
-        disabled={alreadyCompleted || isFutureDay}
-        style={[
-          wv.completeBtn,
-          alreadyCompleted
-            ? { backgroundColor: '#10B98122', borderColor: '#10B98166' }
-            : isFutureDay
+        {/* Secondary: Mark as Complete */}
+        <TouchableOpacity
+          onPress={onCompleteWorkout}
+          disabled={alreadyCompleted || isFutureDay}
+          style={[
+            wv.secondaryBtn,
+            alreadyCompleted
+              ? { backgroundColor: '#10B98120', borderColor: '#10B98150' }
+              : isFutureDay
               ? { backgroundColor: colors.surfaceAlt, borderColor: colors.border, opacity: 0.5 }
-              : { backgroundColor: colors.primary + '18', borderColor: colors.primary + '66' }
-        ]}
-        activeOpacity={0.75}
-      >
-        <CheckCircle size={20} color={alreadyCompleted ? '#10B981' : isFutureDay ? colors.textMuted : colors.primary} />
-        <Text style={[wv.completeBtnText, { color: alreadyCompleted ? '#10B981' : isFutureDay ? colors.textMuted : colors.primary }]}>
-          {alreadyCompleted
-            ? t('planner.workoutDone', '¡Entrenamiento Completado! ✅')
-            : isFutureDay
+              : { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+          activeOpacity={0.8}
+        >
+          <CheckCircle
+            size={18}
+            color={alreadyCompleted ? '#10B981' : isFutureDay ? colors.textMuted : colors.primary}
+          />
+          <Text
+            style={[
+              wv.secondaryBtnText,
+              {
+                color: alreadyCompleted ? '#10B981' : isFutureDay ? colors.textMuted : colors.textPrimary,
+              },
+            ]}
+          >
+            {alreadyCompleted
+              ? t('planner.workoutDone', '¡Entrenamiento Completado! ✅')
+              : isFutureDay
               ? t('planner.futureWorkout', 'No puedes completar días futuros')
               : t('planner.markComplete', 'Marcar como Completado')}
-        </Text>
-      </TouchableOpacity>
+          </Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => router.push('/modals/muscle-directory')}
-        style={[wv.completeBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border, marginTop: 12 }]}
-        activeOpacity={0.75}
-      >
-        <Dumbbell size={20} color={colors.primary} />
-        <Text style={[wv.completeBtnText, { color: colors.primary }]}>
-          {t('planner.viewMuscleDirectory', 'Directorio de Ejercicios y GIFs')}
-        </Text>
-      </TouchableOpacity>
+        {/* Tertiary: Muscle Directory */}
+        <TouchableOpacity
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push('/modals/muscle-directory');
+          }}
+          style={[wv.tertiaryBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+          activeOpacity={0.75}
+        >
+          <Dumbbell size={16} color={colors.textSecondary} />
+          <Text style={[wv.tertiaryBtnText, { color: colors.textSecondary }]}>
+            {t('planner.viewMuscleDirectory', 'Directorio de Ejercicios y GIFs')}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -179,19 +276,190 @@ function WorkoutPlanView({
 export default React.memo(WorkoutPlanView);
 
 const wv = StyleSheet.create({
-  contentList: {},
-  routineHeaderCompact: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  routineName: { fontSize: 22, fontWeight: '900', letterSpacing: -0.5 },
-  workoutBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: Radius.full },
-  workoutBadgeText: { fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
-  restDayCard: { padding: 36, alignItems: 'center', borderRadius: 28, borderWidth: 1, overflow: 'hidden', marginTop: 10, shadowColor: '#000', shadowOffset: {width: 0, height: 8}, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
-  restIconWrap: { width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
-  restDayTitle: { fontSize: 24, fontWeight: '900', marginBottom: 10 },
-  restDayText: { textAlign: 'center', fontSize: 16, lineHeight: 26 },
-  completeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 8, marginBottom: 20, paddingVertical: 16, borderRadius: Radius.full, borderWidth: 1.5 },
-  completeBtnText: { fontSize: 16, fontWeight: '800' },
-  emptyDay:    { alignItems: 'center', paddingVertical: 80, paddingHorizontal: 20 },
-  emptyIconWrap: { width: 90, height: 90, borderRadius: 45, justifyContent: 'center', alignItems: 'center', marginBottom: 24, shadowColor: '#000', shadowOffset: {width: 0, height: 8}, shadowOpacity: 0.15, shadowRadius: 16, elevation: 5 },
-  emptyTitle:  { fontSize: 24, fontWeight: '900', marginBottom: 10, textAlign: 'center' },
-  emptySub:    { fontSize: 16, textAlign: 'center', marginBottom: 30, lineHeight: 24 },
+  contentList: {
+    paddingHorizontal: Spacing.base,
+  },
+  routineHero: {
+    borderRadius: 24,
+    padding: 18,
+    borderWidth: 1,
+    marginBottom: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  routineOverline: {
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  routineName: {
+    fontSize: 22,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+  },
+  badgesRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+  },
+  pillBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  pillBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  difficultyWrap: {
+    marginBottom: 16,
+    gap: 8,
+  },
+  difficultyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginLeft: 4,
+  },
+  difficultyTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+  },
+  difficultyButtonsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  diffBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  diffBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  actionButtonsContainer: {
+    marginTop: 8,
+    marginBottom: 24,
+    gap: 10,
+  },
+  primaryFocusBtn: {
+    borderRadius: Radius.full,
+    overflow: 'hidden',
+    shadowColor: '#7C5CFC',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  primaryFocusGrad: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
+  primaryFocusText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+  },
+  secondaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 14,
+    borderRadius: Radius.full,
+    borderWidth: 1.5,
+  },
+  secondaryBtnText: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  tertiaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+  },
+  tertiaryBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  restDayCard: {
+    padding: 36,
+    alignItems: 'center',
+    borderRadius: 28,
+    borderWidth: 1,
+    overflow: 'hidden',
+    marginVertical: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  restIconWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  restDayTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    marginBottom: 8,
+  },
+  restDayText: {
+    textAlign: 'center',
+    fontSize: 14,
+    lineHeight: 22,
+  },
+  emptyCard: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+    borderRadius: 24,
+    borderWidth: 1,
+    marginVertical: 10,
+  },
+  emptyIconWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  emptySub: {
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
 });

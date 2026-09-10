@@ -33,6 +33,7 @@ import {
   Sparkles,
   ChevronRight,
   Heart,
+  HelpCircle,
 } from "lucide-react";
 
 function HighlightedText({ text, className = "text-white" }: { text: string; className?: string }) {
@@ -754,6 +755,74 @@ export default function HomePage() {
                   <div>
                     <div className="text-sm font-bold text-text-primary">{t_item.name}</div>
                     <div className="text-xs text-text-muted">{t_item.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ SECTION ────────────────────────────────────────── */}
+      <section className="py-24 px-6 relative">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs text-[#a78bfa] font-bold mb-4">
+              <HelpCircle size={14} />
+              <span>Preguntas Frecuentes</span>
+            </div>
+            <h2
+              className="font-display font-black text-4xl md:text-5xl text-text-primary mt-2"
+              style={{ letterSpacing: "-1.5px" }}
+            >
+              Todo lo que necesitas saber
+            </h2>
+            <p className="text-text-secondary text-sm md:text-base mt-3 max-w-lg mx-auto">
+              Respuestas directas sobre la suscripción, la app móvil y cómo FitGO acelera tu progreso.
+            </p>
+          </div>
+
+          <div className="space-y-3.5">
+            {[
+              {
+                q: "¿Puedo cancelar mi suscripción cuando quiera?",
+                a: "Sí, sin compromisos ni letra pequeña. Puedes cancelar en cualquier momento desde los ajustes de tu cuenta y conservarás los beneficios Pro hasta el final de tu período actual."
+              },
+              {
+                q: "¿La suscripción adquirida en la web se sincroniza con la app móvil?",
+                a: "Totalmente. Tu cuenta es única: al iniciar sesión en iOS o Android con el mismo usuario, tendrás acceso instantáneo a todas las funciones Pro y tu historial sincronizado."
+              },
+              {
+                q: "¿Qué métodos de pago aceptan?",
+                a: "Aceptamos tarjetas de crédito y débito (Visa, Mastercard, American Express) procesadas de forma segura y encriptada a través de Stripe."
+              },
+              {
+                q: "¿Qué diferencia a FitGO de otras apps de fitness?",
+                a: "FitGO combina el registro inteligente de macros con un Coach IA conversacional con voz, análisis de fotos de comida por visión artificial y gamificación con Guerras de Macros y Ligas Élite."
+              }
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="rounded-2xl p-6 transition-all duration-200 hover:bg-white/4"
+                style={{
+                  background: "rgba(15,23,42,0.5)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                }}
+              >
+                <div className="flex items-start gap-4">
+                  <div
+                    className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0 mt-0.5 text-xs font-black"
+                    style={{
+                      background: "rgba(139,92,246,0.15)",
+                      color: "#8B5CF6",
+                      border: "1px solid rgba(139,92,246,0.25)",
+                    }}
+                  >
+                    {idx + 1}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-text-primary text-base mb-2">{item.q}</h3>
+                    <p className="text-text-secondary text-sm leading-relaxed">{item.a}</p>
                   </div>
                 </div>
               </div>

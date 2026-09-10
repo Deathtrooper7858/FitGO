@@ -193,7 +193,407 @@ export const STRUCTURED_TERMS: Record<string, LegalDocument> = {
         fullContent: "Para cualquier duda, solicitud o aclaración referente a los presentes Términos, comunícate directamente con nuestro equipo legal en fitgoenterprise@gmail.com."
       }
     ]
-  }
+  },
+  fr: {
+    "company": "FitGO Technologies S.A.S.",
+    "lastUpdatedLabel": "Dernière mise à jour",
+    "lastUpdatedDate": "28 mai 2025",
+    "title": "Conditions Générales d'Utilisation",
+    "items": [
+        {
+            "id": "terms-01",
+            "type": "clause",
+            "number": "01",
+            "title": "Acceptation et Champ d'Application",
+            "summary": "Ces Conditions régissent votre accès et votre utilisation de l'application mobile FitGO.",
+            "fullContent": "Les présentes Conditions Générales d'Utilisation régissent votre accès et votre utilisation de l'application mobile FitGO et de tous les services associés exploités par FitGO Technologies S.A.S. En téléchargeant ou en utilisant l'application, vous acceptez d'être lié par ces Conditions et notre Politique de Confidentialité."
+        },
+        {
+            "id": "terms-02",
+            "type": "clause",
+            "number": "02",
+            "title": "Description du Service",
+            "summary": "FitGO est une application de santé, nutrition et fitness offrant suivi quotidien, Coach IA et communauté.",
+            "fullContent": "FitGO fournit des outils intelligents pour le suivi nutritionnel quotidien (calories et macronutriments), l'hydratation, l'enregistrement des séances d'entraînement, le coaching par IA et les classements de ligue. FitGO se réserve le droit de faire évoluer ses fonctionnalités en continu."
+        },
+        {
+            "id": "terms-callout-1",
+            "type": "callout",
+            "calloutType": "important",
+            "calloutIcon": "shield",
+            "title": "IMPORTANT",
+            "fullContent": "Vous devez avoir au moins 16 ans pour utiliser FitGO.\nEn installant ou en utilisant l'application, vous acceptez ces Conditions."
+        },
+        {
+            "id": "terms-03",
+            "type": "clause",
+            "number": "03",
+            "title": "Nature Informative",
+            "summary": "FitGO fournit du contenu informatif. Ce n'est pas un dispositif médical et ne fournit aucun avis médical.",
+            "fullContent": "FitGO est une application éducative et de bien-être. FITGO N'EST PAS UN DISPOSITIF MÉDICAL ET NE FOURNIT AUCUN SERVICE MÉDICAL. Consultez toujours un médecin qualifié avant d'entreprendre tout programme intensif d'exercice ou de nutrition."
+        },
+        {
+            "id": "terms-callout-2",
+            "type": "callout",
+            "calloutType": "ai",
+            "calloutIcon": "bot",
+            "title": "AVIS DU COACH IA",
+            "fullContent": "Le Coach IA propose des suggestions de bien-être algorithmiques. Ses réponses ne remplacent pas une consultation avec un nutritionniste ou un médecin agréé."
+        },
+        {
+            "id": "terms-04",
+            "type": "clause",
+            "number": "04",
+            "title": "Abonnements et Facturation",
+            "summary": "Les fonctionnalités FitGO Pro nécessitent un abonnement payant géré via l'App Store ou Google Play.",
+            "fullContent": "Les abonnements FitGO Pro se renouvellent automatiquement à moins d'être annulés au moins 24 heures avant la fin de la période en cours dans les paramètres de votre compte Apple ou Google Play."
+        },
+        {
+            "id": "terms-05",
+            "type": "clause",
+            "number": "05",
+            "title": "Comptes Utilisateurs",
+            "summary": "Vous devez fournir des informations exactes et sécuriser vos identifiants d'accès.",
+            "fullContent": "Vous êtes responsable de la confidentialité de vos identifiants. L'utilisation de robots ou de pratiques abusives entraînera la suspension immédiate du compte."
+        },
+        {
+            "id": "terms-06",
+            "type": "clause",
+            "number": "06",
+            "title": "Propriété Intellectuelle",
+            "summary": "Tous les composants de FitGO appartiennent exclusivement à FitGO Technologies S.A.S.",
+            "fullContent": "Tous les graphismes, logiciels, codes sources, conceptions d'interface, algorithmes et marques sont la propriété intellectuelle exclusive de FitGO Technologies S.A.S."
+        },
+        {
+            "id": "terms-07",
+            "type": "clause",
+            "number": "07",
+            "title": "Contact",
+            "summary": "Pour toute question concernant ces Conditions, contactez fitgoenterprise@gmail.com",
+            "fullContent": "Si vous avez des questions relatives à ces Conditions Générales, contactez notre équipe à fitgoenterprise@gmail.com."
+        }
+    ]
+},
+  pt: {
+    "company": "FitGO Technologies S.A.S.",
+    "lastUpdatedLabel": "Última atualização",
+    "lastUpdatedDate": "28 de maio de 2025",
+    "title": "Termos e Condições",
+    "items": [
+        {
+            "id": "terms-01",
+            "type": "clause",
+            "number": "01",
+            "title": "Aceitação e Âmbito",
+            "summary": "Estes Termos regulam seu acesso e uso do aplicativo móvel FitGO.",
+            "fullContent": "Estes Termos e Condições de Uso regem seu acesso e uso do aplicativo móvel FitGO operado pela FitGO Technologies S.A.S. Ao baixar ou usar o aplicativo, você concorda com estes Termos e nossa Política de Privacidade."
+        },
+        {
+            "id": "terms-02",
+            "type": "clause",
+            "number": "02",
+            "title": "Descrição do Serviço",
+            "summary": "FitGO é um app de saúde, nutrição e fitness com rastreamento diário, Coach IA e comunidade.",
+            "fullContent": "O FitGO fornece ferramentas inteligentes para monitoramento de calorias, macronutrientes, hidratação, treinos e acompanhamento por Inteligência Artificial."
+        },
+        {
+            "id": "terms-callout-1",
+            "type": "callout",
+            "calloutType": "important",
+            "calloutIcon": "shield",
+            "title": "IMPORTANTE",
+            "fullContent": "Você deve ter pelo menos 16 anos para usar o FitGO.\nAo instalar ou usar o app, você aceita estes Termos."
+        },
+        {
+            "id": "terms-03",
+            "type": "clause",
+            "number": "03",
+            "title": "Natureza Informativa",
+            "summary": "O FitGO fornece conteúdo informativo. Não é dispositivo médico e não substitui orientação médica.",
+            "fullContent": "O FitGO é um aplicativo de bem-estar. NÃO É DISPOSITIVO MÉDICO E NÃO PRESTA SERVIÇOS MÉDICOS. Consulte sempre um médico ou nutricionista qualificado."
+        },
+        {
+            "id": "terms-callout-2",
+            "type": "callout",
+            "calloutType": "ai",
+            "calloutIcon": "bot",
+            "title": "AVISO DO COACH IA",
+            "fullContent": "As respostas do Coach IA são informativas e não substituem o diagnóstico de profissionais de saúde qualificados."
+        },
+        {
+            "id": "terms-04",
+            "type": "clause",
+            "number": "04",
+            "title": "Assinaturas e Faturamento",
+            "summary": "As funções FitGO Pro requerem assinatura através do Google Play ou App Store.",
+            "fullContent": "As assinaturas renovam-se automaticamente a menos que sejam canceladas até 24 horas antes do fim do período atual."
+        },
+        {
+            "id": "terms-05",
+            "type": "clause",
+            "number": "05",
+            "title": "Contas de Usuário",
+            "summary": "Você é responsável por manter a segurança e a veracidade dos seus dados de acesso.",
+            "fullContent": "O uso indevido, bots ou fraudes resultarão na suspensão imediata da sua conta."
+        },
+        {
+            "id": "terms-06",
+            "type": "clause",
+            "number": "06",
+            "title": "Propriedade Intelectual",
+            "summary": "Todos os códigos, designs e algoritmos pertencem à FitGO Technologies S.A.S.",
+            "fullContent": "Todos os gráficos, interfaces, códigos-fonte e algoritmos são propriedade exclusiva da FitGO Technologies S.A.S."
+        },
+        {
+            "id": "terms-07",
+            "type": "clause",
+            "number": "07",
+            "title": "Contato",
+            "summary": "Para dúvidas sobre estes Termos, contate fitgoenterprise@gmail.com",
+            "fullContent": "Em caso de dúvidas sobre nossos Termos e Condições, escreva para fitgoenterprise@gmail.com."
+        }
+    ]
+},
+  de: {
+    "company": "FitGO Technologies S.A.S.",
+    "lastUpdatedLabel": "Zuletzt aktualisiert",
+    "lastUpdatedDate": "28. Mai 2025",
+    "title": "Allgemeine Geschäftsbedingungen",
+    "items": [
+        {
+            "id": "terms-01",
+            "type": "clause",
+            "number": "01",
+            "title": "Geltungsbereich & Annahme",
+            "summary": "Diese Bedingungen regeln den Zugriff auf die FitGO-App und deren Nutzung.",
+            "fullContent": "Diese Allgemeinen Geschäftsbedingungen regeln Ihre Nutzung der mobilen App FitGO von FitGO Technologies S.A.S. Mit dem Download oder der Nutzung stimmen Sie diesen Bedingungen und der Datenschutzerklärung zu."
+        },
+        {
+            "id": "terms-02",
+            "type": "clause",
+            "number": "02",
+            "title": "Leistungsbeschreibung",
+            "summary": "FitGO ist eine Fitness- und Ernährungs-App mit Tracking, KI-Coach und Community.",
+            "fullContent": "FitGO bietet Werkzeuge zur Erfassung von Kalorien, Makronährstoffen, Flüssigkeit, Trainingseinheiten und KI-Unterstützung."
+        },
+        {
+            "id": "terms-callout-1",
+            "type": "callout",
+            "calloutType": "important",
+            "calloutIcon": "shield",
+            "title": "WICHTIG",
+            "fullContent": "Sie müssen mindestens 16 Jahre alt sein, um FitGO zu nutzen.\nMit der Nutzung der App stimmen Sie diesen Bedingungen zu."
+        },
+        {
+            "id": "terms-03",
+            "type": "clause",
+            "number": "03",
+            "title": "Informativer Charakter",
+            "summary": "FitGO ist kein Medizinprodukt und bietet keine ärztliche Beratung.",
+            "fullContent": "FitGO ist kein Medizinprodukt und ersetzt keine professionelle medizinische Beratung oder Diagnose. Konsultieren Sie stets einen Arzt."
+        },
+        {
+            "id": "terms-callout-2",
+            "type": "callout",
+            "calloutType": "ai",
+            "calloutIcon": "bot",
+            "title": "KI-COACH HINWEIS",
+            "fullContent": "Die Antworten des KI-Coaches sind algorithmische Ratschläge und ersetzen keine professionelle Ernährungsberatung."
+        },
+        {
+            "id": "terms-04",
+            "type": "clause",
+            "number": "04",
+            "title": "Abonnements & Abrechnung",
+            "summary": "FitGO Pro erfordert ein Abonnement über den Apple App Store oder Google Play.",
+            "fullContent": "Abonnements verlängern sich automatisch, sofern sie nicht mindestens 24 Stunden vor Ablauf gekündigt werden."
+        },
+        {
+            "id": "terms-05",
+            "type": "clause",
+            "number": "05",
+            "title": "Benutzerkonten",
+            "summary": "Sie sind für die Sicherheit Ihrer Zugangsdaten verantwortlich.",
+            "fullContent": "Missbrauch, Bots oder Betrugsversuche führen zur sofortigen Sperrung des Kontos."
+        },
+        {
+            "id": "terms-06",
+            "type": "clause",
+            "number": "06",
+            "title": "Geistiges Eigentum",
+            "summary": "Alle Inhalte und Codes gehören FitGO Technologies S.A.S.",
+            "fullContent": "Alle Designs, Grafiken, Quelltexte und Algorithmen sind Eigentum von FitGO Technologies S.A.S."
+        },
+        {
+            "id": "terms-07",
+            "type": "clause",
+            "number": "07",
+            "title": "Kontakt",
+            "summary": "Bei Fragen wenden Sie sich an fitgoenterprise@gmail.com",
+            "fullContent": "Für rechtliche Anfragen zu diesen Bedingungen kontaktieren Sie fitgoenterprise@gmail.com."
+        }
+    ]
+},
+  it: {
+    "company": "FitGO Technologies S.A.S.",
+    "lastUpdatedLabel": "Ultimo aggiornamento",
+    "lastUpdatedDate": "28 maggio 2025",
+    "title": "Termini e Condizioni",
+    "items": [
+        {
+            "id": "terms-01",
+            "type": "clause",
+            "number": "01",
+            "title": "Accettazione e Ambito",
+            "summary": "Questi Termini regolano l'accesso e l'uso dell'applicazione mobile FitGO.",
+            "fullContent": "I presenti Termini e Condizioni d'Uso regolano l'accesso e l'uso dell'applicazione FitGO. Scaricando o utilizzando l'app, accetti questi Termini e la nostra Informativa sulla Privacy."
+        },
+        {
+            "id": "terms-02",
+            "type": "clause",
+            "number": "02",
+            "title": "Descrizione del Servizio",
+            "summary": "FitGO è un'app di salute, nutrizione e fitness con monitoraggio giornaliero e Coach IA.",
+            "fullContent": "FitGO fornisce strumenti intelligenti per il calcolo delle calorie, macronutrienti, idratazione, allenamenti e supporto con intelligenza artificiale."
+        },
+        {
+            "id": "terms-callout-1",
+            "type": "callout",
+            "calloutType": "important",
+            "calloutIcon": "shield",
+            "title": "IMPORTANTE",
+            "fullContent": "Devi avere almeno 16 anni per utilizzare FitGO.\nInstallando o utilizzando l'app, accetti questi Termini."
+        },
+        {
+            "id": "terms-03",
+            "type": "clause",
+            "number": "03",
+            "title": "Natura Informativa",
+            "summary": "FitGO non è un dispositivo medico e non fornisce consulenza medica.",
+            "fullContent": "FitGO non fornisce diagnosi mediche né sostituisce il parere di un medico professionista."
+        },
+        {
+            "id": "terms-callout-2",
+            "type": "callout",
+            "calloutType": "ai",
+            "calloutIcon": "bot",
+            "title": "AVVISO COACH IA",
+            "fullContent": "Le risposte del Coach IA sono orientative e non sostituiscono un nutrizionista qualificato."
+        },
+        {
+            "id": "terms-04",
+            "type": "clause",
+            "number": "04",
+            "title": "Abbonamenti e Fatturazione",
+            "summary": "Le funzionalità Pro richiedono un abbonamento gestito tramite App Store o Google Play.",
+            "fullContent": "Gli abbonamenti si rinnovano automaticamente salvo disdetta almeno 24 ore prima del termine del periodo."
+        },
+        {
+            "id": "terms-05",
+            "type": "clause",
+            "number": "05",
+            "title": "Account Utente",
+            "summary": "L'utente è responsabile della sicurezza delle proprie credenziali di accesso.",
+            "fullContent": "Uso improprio o frodi comporteranno la sospensione immediata dell'account."
+        },
+        {
+            "id": "terms-06",
+            "type": "clause",
+            "number": "06",
+            "title": "Proprietà Intellettuale",
+            "summary": "Tutti i contenuti appartengono a FitGO Technologies S.A.S.",
+            "fullContent": "Grafica, codici, algoritmi e loghi sono di proprietà esclusiva di FitGO Technologies S.A.S."
+        },
+        {
+            "id": "terms-07",
+            "type": "clause",
+            "number": "07",
+            "title": "Contatti",
+            "summary": "Per domande sui Termini, contatta fitgoenterprise@gmail.com",
+            "fullContent": "Per chiarimenti legali, scrivi al nostro team all'indirizzo fitgoenterprise@gmail.com."
+        }
+    ]
+},
+  ru: {
+    "company": "FitGO Technologies S.A.S.",
+    "lastUpdatedLabel": "Последнее обновление",
+    "lastUpdatedDate": "28 мая 2025 г.",
+    "title": "Условия Использования",
+    "items": [
+        {
+            "id": "terms-01",
+            "type": "clause",
+            "number": "01",
+            "title": "Принятие и Область Действия",
+            "summary": "Настоящие Условия регулируют ваш доступ и использование мобильного приложения FitGO.",
+            "fullContent": "Настоящие Условия регулируют использование приложения FitGO. Загружая или используя приложение, вы соглашаетесь с этими Условиями и Политикой конфиденциальности."
+        },
+        {
+            "id": "terms-02",
+            "type": "clause",
+            "number": "02",
+            "title": "Описание Сервиса",
+            "summary": "FitGO — приложение для здоровья, питания и фитнеса с ИИ-тренером и сообществом.",
+            "fullContent": "FitGO предоставляет умные инструменты для подсчета калорий, макронутриентов, водного баланса и консультаций с ИИ-тренером."
+        },
+        {
+            "id": "terms-callout-1",
+            "type": "callout",
+            "calloutType": "important",
+            "calloutIcon": "shield",
+            "title": "ВАЖНО",
+            "fullContent": "Вам должно быть не менее 16 лет для использования FitGO.\nУстанавливая приложение, вы принимаете эти Условия."
+        },
+        {
+            "id": "terms-03",
+            "type": "clause",
+            "number": "03",
+            "title": "Информационный Характер",
+            "summary": "FitGO не является медицинским устройством и не предоставляет медицинских консультаций.",
+            "fullContent": "FitGO предназначен для фитнеса и здорового образа жизни. Всегда консультируйтесь с врачом перед началом интенсивных программ."
+        },
+        {
+            "id": "terms-callout-2",
+            "type": "callout",
+            "calloutType": "ai",
+            "calloutIcon": "bot",
+            "title": "УВЕДОМЛЕНИЕ ОБ ИИ",
+            "fullContent": "Советы ИИ-тренера носят алгоритмический характер и не заменяют консультацию дипломированного диетолога."
+        },
+        {
+            "id": "terms-04",
+            "type": "clause",
+            "number": "04",
+            "title": "Подписки и Оплата",
+            "summary": "Функции FitGO Pro требуют платной подписки через Google Play или App Store.",
+            "fullContent": "Подписки продлеваются автоматически, если не отменены минимум за 24 часа до окончания текущего периода."
+        },
+        {
+            "id": "terms-05",
+            "type": "clause",
+            "number": "05",
+            "title": "Учетные Записи",
+            "summary": "Пользователь несет ответственность за сохранность своих учетных данных.",
+            "fullContent": "Использование ботов или мошенничество приведет к немедленной блокировке аккаунта."
+        },
+        {
+            "id": "terms-06",
+            "type": "clause",
+            "number": "06",
+            "title": "Интеллектуальная Собственность",
+            "summary": "Все элементы FitGO принадлежат FitGO Technologies S.A.S.",
+            "fullContent": "Дизайн, код, логотипы и алгоритмы являются исключительной собственностью FitGO Technologies S.A.S."
+        },
+        {
+            "id": "terms-07",
+            "type": "clause",
+            "number": "07",
+            "title": "Контакты",
+            "summary": "По юридическим вопросам пишите на fitgoenterprise@gmail.com",
+            "fullContent": "По любым вопросам относительно Условий обращайтесь на fitgoenterprise@gmail.com."
+        }
+    ]
+}
 };
 
 export const STRUCTURED_PRIVACY: Record<string, LegalDocument> = {
@@ -372,7 +772,367 @@ export const STRUCTURED_PRIVACY: Record<string, LegalDocument> = {
         fullContent: "Para consultas de privacidad o ejercer tus derechos, comunícate con nuestro Oficial de Protección de Datos a fitgoenterprise@gmail.com. Atendemos todas las solicitudes en un plazo máximo de 30 días."
       }
     ]
-  }
+  },
+  fr: {
+    "company": "FitGO Technologies S.A.S.",
+    "lastUpdatedLabel": "Dernière mise à jour",
+    "lastUpdatedDate": "28 mai 2025",
+    "title": "Politique de Confidentialité",
+    "items": [
+        {
+            "id": "priv-01",
+            "type": "clause",
+            "number": "01",
+            "title": "Introduction et Responsable",
+            "summary": "FitGO Technologies S.A.S. respecte le RGPD pour protéger vos données personnelles.",
+            "fullContent": "Cette Politique de Confidentialité explique comment FitGO recueille, traite et protège vos données personnelles et de santé en pleine conformité avec les réglementations RGPD."
+        },
+        {
+            "id": "priv-02",
+            "type": "clause",
+            "number": "02",
+            "title": "Données Recueillies",
+            "summary": "Informations de compte, mesures de santé, repas enregistrés et interactions IA.",
+            "fullContent": "Nous collectons les données de profil (nom, e-mail), les paramètres physiques (taille, poids, objectifs), les repas enregistrés et les requêtes adressées au Coach IA."
+        },
+        {
+            "id": "priv-callout-1",
+            "type": "callout",
+            "calloutType": "gdpr",
+            "calloutIcon": "shield",
+            "title": "CONSENTEMENT RGPD ET DONNÉES DE SANTÉ",
+            "fullContent": "Vos données de forme physique sont traitées avec votre consentement explicite et protégées selon des normes de sécurité de pointe."
+        },
+        {
+            "id": "priv-03",
+            "type": "clause",
+            "number": "03",
+            "title": "Finalités du Traitement",
+            "summary": "Calculs personnalisés, suivi des repas, classements et optimisation de l'application.",
+            "fullContent": "Vos informations sont strictement utilisées pour calculer vos besoins caloriques, générer des recommandations adaptées et assurer le bon fonctionnement de l'application."
+        },
+        {
+            "id": "priv-callout-2",
+            "type": "callout",
+            "calloutType": "ai",
+            "calloutIcon": "bot",
+            "title": "INFRASTRUCTURE IA ET SÉCURITÉ",
+            "fullContent": "Les requêtes IA sont traitées en toute confidentialité. Vos historiques de conversation ne sont jamais vendus ni utilisés à des fins d'entraînement public."
+        },
+        {
+            "id": "priv-04",
+            "type": "clause",
+            "number": "04",
+            "title": "Fournisseurs Tiers",
+            "summary": "Supabase (base de données), RevenueCat (abonnements) et hébergement sécurisé.",
+            "fullContent": "Nous collaborons avec des partenaires de confiance respectant les normes de sécurité les plus strictes de l'industrie (chiffrement TLS 1.3 et stockage chiffré)."
+        },
+        {
+            "id": "priv-05",
+            "type": "clause",
+            "number": "05",
+            "title": "Vos Droits RGPD",
+            "summary": "Vous pouvez accéder, rectifier, exporter ou supprimer vos données à tout moment.",
+            "fullContent": "Vous disposez d'un droit permanent d'accès, de rectification, de portabilité et de suppression de vos données personnelles directement depuis l'application ou par e-mail."
+        },
+        {
+            "id": "priv-06",
+            "type": "clause",
+            "number": "06",
+            "title": "Contact DPO",
+            "summary": "Pour exercer vos droits, contactez fitgoenterprise@gmail.com",
+            "fullContent": "Pour exercer vos droits ou pour toute question relative à vos données, contactez notre équipe de confidentialité à fitgoenterprise@gmail.com."
+        }
+    ]
+},
+  pt: {
+    "company": "FitGO Technologies S.A.S.",
+    "lastUpdatedLabel": "Última atualização",
+    "lastUpdatedDate": "28 de maio de 2025",
+    "title": "Política de Privacidade",
+    "items": [
+        {
+            "id": "priv-01",
+            "type": "clause",
+            "number": "01",
+            "title": "Introdução e Controlador",
+            "summary": "A FitGO protege seus dados pessoais de acordo com a LGPD e o GDPR.",
+            "fullContent": "Esta Política de Privacidade explica como a FitGO Technologies S.A.S. coleta, armazena e protege seus dados com total transparência e segurança."
+        },
+        {
+            "id": "priv-02",
+            "type": "clause",
+            "number": "02",
+            "title": "Dados Coletados",
+            "summary": "Dados de conta, parâmetros físicos, registros de refeições e interações com a IA.",
+            "fullContent": "Coletamos informações de perfil (nome, e-mail), medidas corporais (altura, peso, objetivos), refeições e consultas ao Coach IA."
+        },
+        {
+            "id": "priv-callout-1",
+            "type": "callout",
+            "calloutType": "gdpr",
+            "calloutIcon": "shield",
+            "title": "CONSENTIMENTO E SEGURANÇA",
+            "fullContent": "Seus dados de saúde são tratados sob consentimento explícito e protegidos com criptografia de ponta a ponta."
+        },
+        {
+            "id": "priv-03",
+            "type": "clause",
+            "number": "03",
+            "title": "Finalidade do Tratamento",
+            "summary": "Cálculos nutricionais, planos personalizados e funcionamento do aplicativo.",
+            "fullContent": "Suas informações são utilizadas estritamente para estimar suas necessidades calóricas e aprimorar sua experiência no aplicativo."
+        },
+        {
+            "id": "priv-callout-2",
+            "type": "callout",
+            "calloutType": "ai",
+            "calloutIcon": "bot",
+            "title": "INFRAESTRUTURA DE IA",
+            "fullContent": "As conversas com a IA são privadas. Seu histórico nunca é vendido ou compartilhado publicamente."
+        },
+        {
+            "id": "priv-04",
+            "type": "clause",
+            "number": "04",
+            "title": "Provedores Terceirizados",
+            "summary": "Supabase, RevenueCat e servidores seguros em conformidade com padrões globais.",
+            "fullContent": "Trabalhamos com parceiros de infraestrutura que seguem os mais rigorosos protocolos de proteção de dados."
+        },
+        {
+            "id": "priv-05",
+            "type": "clause",
+            "number": "05",
+            "title": "Seus Direitos",
+            "summary": "Você tem o direito de acessar, retificar, exportar ou excluir seus dados a qualquer momento.",
+            "fullContent": "Você pode solicitar a qualquer momento a exclusão permanente dos seus dados através das configurações do app."
+        },
+        {
+            "id": "priv-06",
+            "type": "clause",
+            "number": "06",
+            "title": "Contato de Privacidade",
+            "summary": "Contate fitgoenterprise@gmail.com para solicitações de privacidade.",
+            "fullContent": "Para exercer seus direitos de privacidade, entre em contato pelo e-mail fitgoenterprise@gmail.com."
+        }
+    ]
+},
+  de: {
+    "company": "FitGO Technologies S.A.S.",
+    "lastUpdatedLabel": "Zuletzt aktualisiert",
+    "lastUpdatedDate": "28. Mai 2025",
+    "title": "Datenschutzerklärung",
+    "items": [
+        {
+            "id": "priv-01",
+            "type": "clause",
+            "number": "01",
+            "title": "Verantwortlicher & DSGVO",
+            "summary": "FitGO Technologies S.A.S. schützt Ihre Daten gemäß der europäischen DSGVO.",
+            "fullContent": "Diese Datenschutzerklärung informiert transparent über Erhebung, Verarbeitung und Schutz Ihrer Daten nach DSGVO-Standards."
+        },
+        {
+            "id": "priv-02",
+            "type": "clause",
+            "number": "02",
+            "title": "Erhobene Daten",
+            "summary": "Kontodaten, Körpermaße, erfasste Mahlzeiten und Interaktionen mit der KI.",
+            "fullContent": "Wir erfassen Profildaten (Name, E-Mail), Gesundheitswerte (Größe, Gewicht), Mahlzeiten und Trainingsdaten."
+        },
+        {
+            "id": "priv-callout-1",
+            "type": "callout",
+            "calloutType": "gdpr",
+            "calloutIcon": "shield",
+            "title": "DSGVO-EINWILLIGUNG",
+            "fullContent": "Ihre Fitnessdaten werden auf Basis ausdrücklicher Einwilligung und modernster Verschlüsselung verarbeitet."
+        },
+        {
+            "id": "priv-03",
+            "type": "clause",
+            "number": "03",
+            "title": "Zwecke der Verarbeitung",
+            "summary": "Berechnung von Kalorienzielen, personalisierte Trainings und App-Funktionen.",
+            "fullContent": "Ihre Daten dienen ausschließlich der Berechnung Ihres Bedarfs und der Bereitstellung der App-Funktionen."
+        },
+        {
+            "id": "priv-callout-2",
+            "type": "callout",
+            "calloutType": "ai",
+            "calloutIcon": "bot",
+            "title": "KI-INFRASTRUKTUR",
+            "fullContent": "KI-Anfragen werden vertraulich verarbeitet und niemals für öffentliches Modelltraining verwendet."
+        },
+        {
+            "id": "priv-04",
+            "type": "clause",
+            "number": "04",
+            "title": "Drittanbieter",
+            "summary": "Supabase, RevenueCat und sichere Cloud-Dienste.",
+            "fullContent": "Wir arbeiten mit verlässlichen Partnern, die hohe Sicherheits- und Datenschutzstandards gewährleisten."
+        },
+        {
+            "id": "priv-05",
+            "type": "clause",
+            "number": "05",
+            "title": "Ihre Rechte",
+            "summary": "Auskunft, Berichtigung, Datenübertragbarkeit und Löschung jederzeit möglich.",
+            "fullContent": "Sie haben das Recht auf Auskunft, Löschung und Berichtigung Ihrer Daten in den Profileinstellungen."
+        },
+        {
+            "id": "priv-06",
+            "type": "clause",
+            "number": "06",
+            "title": "Datenschutz-Kontakt",
+            "summary": "Kontaktieren Sie uns unter fitgoenterprise@gmail.com",
+            "fullContent": "Bei Fragen zum Datenschutz wenden Sie sich bitte an fitgoenterprise@gmail.com."
+        }
+    ]
+},
+  it: {
+    "company": "FitGO Technologies S.A.S.",
+    "lastUpdatedLabel": "Ultimo aggiornamento",
+    "lastUpdatedDate": "28 maggio 2025",
+    "title": "Informativa sulla Privacy",
+    "items": [
+        {
+            "id": "priv-01",
+            "type": "clause",
+            "number": "01",
+            "title": "Introduzione e Titolare",
+            "summary": "FitGO rispetta il GDPR per la protezione dei tuoi dati personali.",
+            "fullContent": "La presente informativa descrive la raccolta e la protezione dei dati in conformità con gli standard europei GDPR."
+        },
+        {
+            "id": "priv-02",
+            "type": "clause",
+            "number": "02",
+            "title": "Dati Raccolti",
+            "summary": "Dati di profilo, parametri fisici, pasti registrati e consultazioni con la IA.",
+            "fullContent": "Raccogliamo nome, e-mail, altezza, peso, obiettivi e registri delle attività."
+        },
+        {
+            "id": "priv-callout-1",
+            "type": "callout",
+            "calloutType": "gdpr",
+            "calloutIcon": "shield",
+            "title": "CONSENSO GDPR",
+            "fullContent": "I tuoi dati di benessere sono trattati con consenso esplicito e crittografia di livello bancario."
+        },
+        {
+            "id": "priv-03",
+            "type": "clause",
+            "number": "03",
+            "title": "Finalità del Trattamento",
+            "summary": "Calcolo calorico, piani personalizzati e funzionalità dell'app.",
+            "fullContent": "I dati sono utilizzati esclusivamente per calcolare i tuoi fabbisogni e migliorare il servizio."
+        },
+        {
+            "id": "priv-callout-2",
+            "type": "callout",
+            "calloutType": "ai",
+            "calloutIcon": "bot",
+            "title": "INFRASTRUTTURA IA",
+            "fullContent": "Le chat con l'IA sono riservate e non vengono mai vendute o rese pubbliche."
+        },
+        {
+            "id": "priv-04",
+            "type": "clause",
+            "number": "04",
+            "title": "Fornitori Terzi",
+            "summary": "Supabase, RevenueCat e infrastrutture cloud conformi.",
+            "fullContent": "Collaboriamo con fornitori di hosting che rispettano rigorosi protocolli di sicurezza."
+        },
+        {
+            "id": "priv-05",
+            "type": "clause",
+            "number": "05",
+            "title": "I Tuoi Diritti",
+            "summary": "Accesso, rettifica, portabilità e cancellazione dei dati in qualunque momento.",
+            "fullContent": "Puoi richiedere la cancellazione completa del tuo account dalle impostazioni."
+        },
+        {
+            "id": "priv-06",
+            "type": "clause",
+            "number": "06",
+            "title": "Contatto Privacy",
+            "summary": "Scrivi a fitgoenterprise@gmail.com per richieste sui dati personali.",
+            "fullContent": "Per esercitare i tuoi diritti, contattaci all'indirizzo fitgoenterprise@gmail.com."
+        }
+    ]
+},
+  ru: {
+    "company": "FitGO Technologies S.A.S.",
+    "lastUpdatedLabel": "Последнее обновление",
+    "lastUpdatedDate": "28 мая 2025 г.",
+    "title": "Политика Конфиденциальности",
+    "items": [
+        {
+            "id": "priv-01",
+            "type": "clause",
+            "number": "01",
+            "title": "Введение и Оператор Данных",
+            "summary": "FitGO защищает ваши персональные данные в строгом соответствии с GDPR.",
+            "fullContent": "Настоящая Политика описывает порядок сбора, хранения и защиты данных пользователей FitGO."
+        },
+        {
+            "id": "priv-02",
+            "type": "clause",
+            "number": "02",
+            "title": "Собираемые Данные",
+            "summary": "Данные учетной записи, физические параметры, записи питания и запросы к ИИ.",
+            "fullContent": "Мы собираем имя, e-mail, рост, вес, цели и журнал приемов пищи."
+        },
+        {
+            "id": "priv-callout-1",
+            "type": "callout",
+            "calloutType": "gdpr",
+            "calloutIcon": "shield",
+            "title": "СОГЛАСИЕ И БЕЗОПАСНОСТЬ",
+            "fullContent": "Ваши данные о здоровье обрабатываются на основе согласия и защищены сквозным шифрованием."
+        },
+        {
+            "id": "priv-03",
+            "type": "clause",
+            "number": "03",
+            "title": "Цели Обработки",
+            "summary": "Индивидуальный расчет калорий, персонализированные планы и работа приложения.",
+            "fullContent": "Данные используются исключительно для функционирования приложения и формирования рекомендаций."
+        },
+        {
+            "id": "priv-callout-2",
+            "type": "callout",
+            "calloutType": "ai",
+            "calloutIcon": "bot",
+            "title": "ИНФРАСТРУКТУРА ИИ",
+            "fullContent": "История общения с ИИ конфиденциальна и никогда не передается третьим лицам."
+        },
+        {
+            "id": "priv-04",
+            "type": "clause",
+            "number": "04",
+            "title": "Сторонние Сервисы",
+            "summary": "Supabase, RevenueCat и безопасная облачная инфраструктура.",
+            "fullContent": "Мы сотрудничаем с провайдерами, обеспечивающими наивысшие стандарты безопасности данных."
+        },
+        {
+            "id": "priv-05",
+            "type": "clause",
+            "number": "05",
+            "title": "Ваши Права",
+            "summary": "Доступ, исправление, экспорт и удаление данных в любое время.",
+            "fullContent": "Вы можете запросить полное удаление ваших данных в настройках аккаунта."
+        },
+        {
+            "id": "priv-06",
+            "type": "clause",
+            "number": "06",
+            "title": "Контакт по Конфиденциальности",
+            "summary": "Для запросов пишите на fitgoenterprise@gmail.com",
+            "fullContent": "По любым вопросам о защите данных обращайтесь на fitgoenterprise@gmail.com."
+        }
+    ]
+}
 };
 
 // Backward-compatible exports for existing references

@@ -49,7 +49,110 @@ export default function LegalScreen() {
   );
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
 
-  const lang = i18n.language?.startsWith('es') ? 'es' : 'en';
+  const rawLang = (i18n.language || 'en').slice(0, 2);
+  const supportedLangs = ['en', 'es', 'fr', 'pt', 'de', 'it', 'ru'];
+  const lang = supportedLangs.includes(rawLang) ? rawLang : 'en';
+
+  const UI_TEXTS: Record<string, {
+    back: string;
+    terms: string;
+    privacy: string;
+    endTitle: string;
+    endSub: string;
+    accept: string;
+    privacyPrefix: string;
+    privacyLink: string;
+    termsLink: string;
+    privacySuffix: string;
+  }> = {
+    es: {
+      back: 'Volver',
+      terms: 'Términos',
+      privacy: 'Privacidad',
+      endTitle: 'Has llegado al final',
+      endSub: 'Por favor asegúrate de haber revisado los términos antes de continuar.',
+      accept: 'He leído y Acepto',
+      privacyPrefix: 'Tu privacidad es importante para nosotros. Lee nuestra ',
+      privacyLink: 'Política de Privacidad',
+      termsLink: 'Términos de Servicio',
+      privacySuffix: '.',
+    },
+    en: {
+      back: 'Back',
+      terms: 'Terms',
+      privacy: 'Privacy',
+      endTitle: "You've reached the end",
+      endSub: "Please make sure you've reviewed the Terms & Conditions before continuing.",
+      accept: 'I Accept & Understand',
+      privacyPrefix: 'Your privacy is important to us. Read our ',
+      privacyLink: 'Privacy Policy',
+      termsLink: 'Terms & Conditions',
+      privacySuffix: ' to learn more.',
+    },
+    fr: {
+      back: 'Retour',
+      terms: 'Conditions',
+      privacy: 'Confidentialité',
+      endTitle: 'Vous êtes arrivé au bout',
+      endSub: 'Veuillez vous assurer d’avoir lu les conditions avant de continuer.',
+      accept: 'J’accepte et je comprends',
+      privacyPrefix: 'Votre confidentialité est essentielle pour nous. Lisez notre ',
+      privacyLink: 'Politique de Confidentialité',
+      termsLink: 'Conditions d’Utilisation',
+      privacySuffix: ' pour en savoir plus.',
+    },
+    pt: {
+      back: 'Voltar',
+      terms: 'Termos',
+      privacy: 'Privacidade',
+      endTitle: 'Você chegou ao final',
+      endSub: 'Certifique-se de ter lido os termos antes de continuar.',
+      accept: 'Li e Aceito',
+      privacyPrefix: 'Sua privacidade é importante para nós. Leia nossa ',
+      privacyLink: 'Política de Privacidade',
+      termsLink: 'Termos de Serviço',
+      privacySuffix: ' para saber mais.',
+    },
+    de: {
+      back: 'Zurück',
+      terms: 'Bedingungen',
+      privacy: 'Datenschutz',
+      endTitle: 'Ende des Dokuments',
+      endSub: 'Bitte stellen Sie sicher, dass Sie die Bedingungen gelesen haben.',
+      accept: 'Ich akzeptiere und verstehe',
+      privacyPrefix: 'Ihre Privatsphäre ist uns wichtig. Lesen Sie unsere ',
+      privacyLink: 'Datenschutzerklärung',
+      termsLink: 'Nutzungsbedingungen',
+      privacySuffix: ', um mehr zu erfahren.',
+    },
+    it: {
+      back: 'Indietro',
+      terms: 'Termini',
+      privacy: 'Privacy',
+      endTitle: 'Sei arrivato alla fine',
+      endSub: 'Assicurati di aver letto i termini prima di continuare.',
+      accept: 'Accetto e Comprendo',
+      privacyPrefix: 'La tua privacy è importante per noi. Leggi la nostra ',
+      privacyLink: 'Informativa sulla Privacy',
+      termsLink: 'Termini di Servizio',
+      privacySuffix: ' per saperne di più.',
+    },
+    ru: {
+      back: 'Назад',
+      terms: 'Условия',
+      privacy: 'Конфиденциальность',
+      endTitle: 'Вы дошли до конца',
+      endSub: 'Пожалуйста, убедитесь, что вы ознакомились с условиями перед продолжением.',
+      accept: 'Я принимаю и понимаю',
+      privacyPrefix: 'Ваша конфиденциальность важна для нас. Прочитайте нашу ',
+      privacyLink: 'Политику Конфиденциальности',
+      termsLink: 'Условия Обслуживания',
+      privacySuffix: ' для подробностей.',
+    },
+  };
+
+  const ui = UI_TEXTS[lang] || UI_TEXTS.en;
+
   const docData =
     activeTab === 'terms'
       ? STRUCTURED_TERMS[lang] || STRUCTURED_TERMS.en
@@ -237,7 +340,7 @@ export default function LegalScreen() {
         >
           <ChevronLeft color="#C084FC" size={24} />
           <Text style={styles.backBtnText}>
-            {lang === 'es' ? 'Volver' : 'Back'}
+            {ui.back}
           </Text>
         </TouchableOpacity>
 
@@ -285,7 +388,7 @@ export default function LegalScreen() {
                 activeTab === 'terms' ? styles.tabTextActive : styles.tabTextInactive,
               ]}
             >
-              {lang === 'es' ? 'Términos' : 'Terms'}
+              {ui.terms}
             </Text>
           </TouchableOpacity>
 
@@ -311,7 +414,7 @@ export default function LegalScreen() {
                 activeTab === 'privacy' ? styles.tabTextActive : styles.tabTextInactive,
               ]}
             >
-              {lang === 'es' ? 'Privacidad' : 'Privacy'}
+              {ui.privacy}
             </Text>
           </TouchableOpacity>
         </View>
@@ -357,12 +460,10 @@ export default function LegalScreen() {
               </View>
               <View style={styles.completionTexts}>
                 <Text style={styles.completionTitle}>
-                  {lang === 'es' ? 'Has llegado al final' : "You've reached the end"}
+                  {ui.endTitle}
                 </Text>
                 <Text style={styles.completionSub}>
-                  {lang === 'es'
-                    ? 'Por favor asegúrate de haber revisado los términos antes de continuar.'
-                    : "Please make sure you've reviewed the Terms & Conditions before continuing."}
+                  {ui.endSub}
                 </Text>
               </View>
             </View>
@@ -411,7 +512,7 @@ export default function LegalScreen() {
             end={{ x: 1, y: 0 }}
           >
             <Text style={styles.acceptButtonText}>
-              {lang === 'es' ? 'He leído y Acepto' : 'I Accept & Understand'}
+              {ui.accept}
             </Text>
             <ArrowRight color="#FFFFFF" size={20} strokeWidth={2.5} />
           </LinearGradient>
@@ -424,23 +525,11 @@ export default function LegalScreen() {
         >
           <Lock size={14} color="#06B6D4" strokeWidth={2.2} />
           <Text style={styles.subFooterText}>
-            {lang === 'es' ? (
-              <>
-                Tu privacidad es importante para nosotros. Lee nuestra{' '}
-                <Text style={styles.subFooterHighlight}>
-                  {activeTab === 'terms' ? 'Política de Privacidad' : 'Términos de Servicio'}
-                </Text>
-                .
-              </>
-            ) : (
-              <>
-                Your privacy is important to us. Read our{' '}
-                <Text style={styles.subFooterHighlight}>
-                  {activeTab === 'terms' ? 'Privacy Policy' : 'Terms & Conditions'}
-                </Text>{' '}
-                to learn more.
-              </>
-            )}
+            {ui.privacyPrefix}
+            <Text style={styles.subFooterHighlight}>
+              {activeTab === 'terms' ? ui.privacyLink : ui.termsLink}
+            </Text>
+            {ui.privacySuffix}
           </Text>
         </TouchableOpacity>
       </LinearGradient>

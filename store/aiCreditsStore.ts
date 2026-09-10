@@ -108,6 +108,11 @@ export const useAICreditsStore = create<AICreditsState>()(
         lastResetDate: state.lastResetDate,
         totalAdsWatched: state.totalAdsWatched,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state && typeof state.creditsLeft === 'number' && state.creditsLeft < AD_CONFIG.freeAICreditsPerDay && state.totalAdsWatched === 0) {
+          state.creditsLeft = AD_CONFIG.freeAICreditsPerDay;
+        }
+      },
     }
   )
 );

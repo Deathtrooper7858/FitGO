@@ -68,6 +68,30 @@ function checkRateLimit(userId: string): { allowed: boolean; retryAfter: number 
   return { allowed: true, retryAfter: 0 };
 }
 
+const INJECTION_PATTERNS = [
+  /ignore\s+(all\s+)?(previous|prior)\s+(instructions|directives|prompts)/i,
+  /system\s+override/i,
+  /you\s+are\s+now\s+(DAN|jailbroken|unrestricted)/i,
+  /bypass\s+(safety|content)\s+filters/i,
+  /disregard\s+(all\s+)?(rules|instructions)/i,
+  /reveal\s+(your\s+)?(system\s+prompt|hidden\s+instructions)/i,
+];
+
+function checkPromptInjection(messages: any[]): boolean {
+  if (!Array.isArray(messages)) return false;
+  for (const msg of messages) {
+    if (msg.role === "user") {
+      const content = typeof msg.content === "string"
+        ? msg.content
+        : (Array.isArray(msg.content) ? msg.content.map((c: any) => c.text || "").join(" ") : "");
+      for (const pattern of INJECTION_PATTERNS) {
+        if (pattern.test(content)) return true;
+      }
+    }
+  }
+  return false;
+}
+
 function simpleHash(str: string): string {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -195,7 +219,21 @@ Deno.serve(async (req) => {
       );
     }
 
-    const modelsToTry = Array.isArray(parsed?.models) ? parsed.models : (parsed?.model ? [parsed.model] : [undefined]);
+    if (parsed?.messages && checkPromptInjection(parsed.messages)) {
+      console.warn(`[Groq Proxy] Prompt injection detected from user ${user.id}`);
+      return new Response(
+        JSON.stringify({ error: "Security violation: potentially adversarial prompt detected." }),
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
+    const rawModels = Array.isArray(parsed?.models) ? parsed.models : (parsed?.model ? [parsed.model] : [undefined]);
+    const modelsToTry = rawModels.map((m: any) => {
+      if (typeof m !== 'string') return m;
+      if (m === 'qwen-3.6-27b' || m === 'qwen/qwen-3.6-27b') return 'qwen/qwen3.6-27b';
+      if (m === 'qwen-3.8-27b' || m === 'qwen/qwen-3.8-27b') return 'qwen/qwen3.8-27b';
+      return m;
+    });
     const maxKeysToTry = API_KEY_ENV_VARS.length;
     let keysTried = 0;
     
@@ -225,11 +263,17 @@ Deno.serve(async (req) => {
         } else {
             // Some models (e.g. qwen) do not support response_format — strip it to prevent
             // "Failed to validate JSON / failed_generation" errors on those fallback models.
+            // Also Qwen does not support reasoning_effort='low' (only 'none' or 'default').
             const isQwen = typeof model === 'string' && model.toLowerCase().includes('qwen');
             const bodyPayload: Record<string, any> = { ...parsed, models: undefined, model };
-            if (isQwen) delete bodyPayload.response_format;
-            bodyPayload.reasoning_format = bodyPayload.reasoning_format || 'hidden';
-            bodyPayload.reasoning_effort = bodyPayload.reasoning_effort || 'low';
+            if (isQwen) {
+              delete bodyPayload.response_format;
+              delete bodyPayload.reasoning_format;
+              delete bodyPayload.reasoning_effort;
+            } else {
+              bodyPayload.reasoning_format = bodyPayload.reasoning_format || 'hidden';
+              bodyPayload.reasoning_effort = bodyPayload.reasoning_effort || 'low';
+            }
             currentBody = JSON.stringify(bodyPayload);
         }
 
@@ -319,6 +363,7 @@ Deno.serve(async (req) => {
             errMsg.includes('does not exist') ||
             errMsg.includes('decommissioned') ||
             errMsg.includes('model') ||
+            errMsg.includes('reasoning') ||
             errMsg.includes('failed to validate json')
           ))
         ) {

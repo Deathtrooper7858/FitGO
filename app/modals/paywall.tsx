@@ -139,16 +139,16 @@ export default function PaywallModal() {
     }
   };
 
-  const PRO_FEATURES: { icon: any; title: string; desc: string; badge?: string; badgeColor?: string }[] = [
-    { icon: BrainCircuit, title: t('paywall.features.coachTitle', 'Coach IA Ilimitado'), desc: t('paywall.features.coachDesc', 'Nutriólogo, Entrenador y Médico IA sin límites — 24/7'), badge: t('paywall.features.coachBadge', '∞ ILIMITADO'), badgeColor: '#7C5CFC' },
-    { icon: ChefHat, title: t('paywall.features.plannerTitle', 'Planificador Nutricional IA'), desc: t('paywall.features.plannerDesc', 'Genera menús semanales personalizados basados en tus macros'), badge: t('paywall.features.plannerBadge', 'IA'), badgeColor: '#10B981' },
-    { icon: Camera, title: t('paywall.features.scannerTitle', 'Buscador y Escáner de Alimentos'), desc: t('paywall.features.scannerDesc', 'Desbloquea la base de datos y escaneo de códigos de barra'), badge: t('paywall.features.scannerBadge', 'FÁCIL'), badgeColor: '#F59E0B' },
-    { icon: Mic, title: t('paywall.features.voiceTitle', 'Dictado por Voz e IA'), desc: t('paywall.features.voiceDesc', 'Registra comidas y entrenamientos hablando o describiendo libremente'), badge: t('paywall.features.voiceBadge', 'RÁPIDO'), badgeColor: '#3B82F6' },
-    { icon: Activity, title: t('paywall.features.directoryTitle', 'Directorio Muscular Completo'), desc: t('paywall.features.directoryDesc', '500+ ejercicios con guías técnicas y animaciones GIFs sin anuncios'), badge: t('paywall.features.directoryBadge', '500+ EJS'), badgeColor: '#EF4444' },
-    { icon: Star, title: t('paywall.features.colorsTitle', 'Colores de Acento Premium'), desc: t('paywall.features.colorsDesc', 'Personaliza tu perfil y toda la app con 11 colores de diseño exclusivos'), badge: t('paywall.features.colorsBadge', 'ESTILO'), badgeColor: '#EC4899' },
-    { icon: Trophy, title: t('paywall.features.leaguesTitle', 'Ligas Élite y Squads'), desc: t('paywall.features.leaguesDesc', 'Sube de rango en clasificaciones globales y compite en equipo sin límites'), badge: t('paywall.features.leaguesBadge', 'COMPITE'), badgeColor: '#8B5CF6' },
-    { icon: History, title: t('paywall.features.historyTitle', 'Historial y Exportación'), desc: t('paywall.features.historyDesc', 'Historial completo de tu progreso desde el primer día y exportación'), badge: t('paywall.features.historyBadge', 'DATOS'), badgeColor: '#06B6D4' },
-    { icon: ShieldOff, title: t('paywall.features.adsTitle', 'Experiencia Sin Anuncios'), desc: t('paywall.features.adsDesc', 'Disfruta de FitGO al 100% libre de publicidad molesta o interrupciones'), badge: t('paywall.features.adsBadge', 'VIP'), badgeColor: '#10B981' },
+  const PRO_FEATURES: { icon: any; title: string; desc: string; badge?: string; badgeColor: string; gradient: [string, string] }[] = [
+    { icon: BrainCircuit, title: t('paywall.features.coachTitle', 'Coach IA Ilimitado'), desc: t('paywall.features.coachDesc', 'Nutriólogo, Entrenador y Médico IA sin límites — 24/7'), badge: t('paywall.features.coachBadge', '∞ ILIMITADO'), badgeColor: '#8B5CF6', gradient: ['#8B5CF6', '#6366F1'] },
+    { icon: ChefHat, title: t('paywall.features.plannerTitle', 'Planificador Nutricional IA'), desc: t('paywall.features.plannerDesc', 'Genera menús semanales personalizados basados en tus macros'), badge: t('paywall.features.plannerBadge', 'IA'), badgeColor: '#10B981', gradient: ['#10B981', '#059669'] },
+    { icon: Camera, title: t('paywall.features.scannerTitle', 'Buscador y Escáner de Alimentos'), desc: t('paywall.features.scannerDesc', 'Desbloquea la base de datos y escaneo de códigos de barra'), badge: t('paywall.features.scannerBadge', 'FÁCIL'), badgeColor: '#F59E0B', gradient: ['#F59E0B', '#D97706'] },
+    { icon: Mic, title: t('paywall.features.voiceTitle', 'Dictado por Voz e IA'), desc: t('paywall.features.voiceDesc', 'Registra comidas y entrenamientos hablando o describiendo libremente'), badge: t('paywall.features.voiceBadge', 'RÁPIDO'), badgeColor: '#3B82F6', gradient: ['#38BDF8', '#2563EB'] },
+    { icon: Activity, title: t('paywall.features.directoryTitle', 'Directorio Muscular Completo'), desc: t('paywall.features.directoryDesc', '500+ ejercicios con guías técnicas y animaciones GIFs sin anuncios'), badge: t('paywall.features.directoryBadge', '500+ EJS'), badgeColor: '#EF4444', gradient: ['#F43F5E', '#E11D48'] },
+    { icon: Star, title: t('paywall.features.colorsTitle', 'Colores de Acento Premium'), desc: t('paywall.features.colorsDesc', 'Personaliza tu perfil y toda la app con 11 colores de diseño exclusivos'), badge: t('paywall.features.colorsBadge', 'ESTILO'), badgeColor: '#EC4899', gradient: ['#F472B6', '#DB2777'] },
+    { icon: Trophy, title: t('paywall.features.leaguesTitle', 'Ligas Élite y Squads'), desc: t('paywall.features.leaguesDesc', 'Sube de rango en clasificaciones globales y compite en equipo sin límites'), badge: t('paywall.features.leaguesBadge', 'COMPITE'), badgeColor: '#8B5CF6', gradient: ['#A855F7', '#7C3AED'] },
+    { icon: History, title: t('paywall.features.historyTitle', 'Historial y Exportación'), desc: t('paywall.features.historyDesc', 'Historial completo de tu progreso desde el primer día y exportación'), badge: t('paywall.features.historyBadge', 'DATOS'), badgeColor: '#06B6D4', gradient: ['#22D3EE', '#0891B2'] },
+    { icon: ShieldOff, title: t('paywall.features.adsTitle', 'Experiencia Sin Anuncios'), desc: t('paywall.features.adsDesc', 'Disfruta de FitGO al 100% libre de publicidad molesta o interrupciones'), badge: t('paywall.features.adsBadge', 'VIP'), badgeColor: '#10B981', gradient: ['#34D399', '#059669'] },
   ];
 
   const COMPARISON_ROWS = [
@@ -250,68 +250,96 @@ export default function PaywallModal() {
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
-        {/* Close */}
-        <TouchableOpacity style={s.closeBtn} onPress={handleDismiss} hitSlop={12}>
-          <X size={26} color={colors.textSecondary} />
+        {/* Close button with safe-area spacing and frosted glass effect */}
+        <TouchableOpacity 
+          style={[
+            s.closeBtn, 
+            { 
+              top: Math.max(insets.top + 8, 20),
+              backgroundColor: colors.surface,
+              borderColor: colors.border + '50',
+            }
+          ]} 
+          onPress={handleDismiss} 
+          hitSlop={14}
+          activeOpacity={0.8}
+        >
+          <X size={18} color={colors.textPrimary} strokeWidth={2.5} />
         </TouchableOpacity>
 
         {/* Hero */}
         <View style={s.hero}>
-          <LinearGradient colors={['#7C5CFC20', '#7C5CFC05']} style={s.heroGlow} />
-          <View style={[s.crownCircle, { backgroundColor: '#FFB80020' }]}>
-            <Crown size={40} color="#FFB800" />
+          <LinearGradient 
+            colors={[colors.primary + '30', colors.primary + '06', 'transparent']} 
+            style={s.heroGlow} 
+          />
+          
+          {/* Luminous Crown Emblem */}
+          <View style={s.crownContainer}>
+            <View style={[s.crownRingOuter, { borderColor: '#FFB80035', backgroundColor: '#FFB80010' }]}>
+              <View style={[s.crownRingInner, { borderColor: '#FFB80065', backgroundColor: '#FFB80020' }]}>
+                <LinearGradient
+                  colors={['#FFD700', '#FF8C00']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={s.crownGradient}
+                >
+                  <Crown size={32} color="#1E1300" strokeWidth={2.4} />
+                </LinearGradient>
+              </View>
+            </View>
+            <View style={s.crownSparkle}>
+              <Sparkles size={13} color="#FFD700" fill="#FFD700" />
+            </View>
           </View>
+
+          {/* Clean Main Title */}
           <Text style={[s.heroTitle, { color: colors.textPrimary }]}>
             {t('paywall.title').split('FitGO Pro')[0]}<Text style={{ color: colors.primary }}>FitGO Pro</Text>{t('paywall.title').split('FitGO Pro')[1] || ''}
           </Text>
+
           <Text style={[s.heroSub, { color: colors.textSecondary }]}>
-            {t('paywall.subtitle')}
+            {t('paywall.subtitle', 'Tu coach personal de IA. Sin límites. Sin excusas.')}
           </Text>
 
-          {/* Tags */}
-          <View style={s.tagRow}>
+          {/* Social Proof / Rating Banner */}
+          <View style={[s.trustRibbon, { backgroundColor: colors.surface, borderColor: colors.border + '50' }]}>
+            <View style={s.trustStars}>
+              {[1, 2, 3, 4, 5].map(st => (
+                <Star key={st} size={11} color="#FFB800" fill="#FFB800" />
+              ))}
+            </View>
+            <Text style={[s.trustText, { color: colors.textPrimary }]}>
+              <Text style={{ fontWeight: '900' }}>4.9</Text> · +12,400 valoraciones
+            </Text>
+          </View>
+
+          {/* Value Highlights Row */}
+          <View style={s.highlightsRow}>
             {[
-              { icon: Infinity, label: t('paywall.features.coachBadge') },
-              { icon: ShieldOff, label: t('paywall.features.adsBadge') },
-              { icon: Crown, label: t('paywall.pro') },
-              { icon: Star, label: t('paywall.features.colorsBadge') },
-            ].map(({ icon: Icon, label }, i) => (
-              <View key={i} style={[s.tag, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '30' }]}>
-                <Icon size={11} color={colors.primary} />
-                <Text style={[s.tagText, { color: colors.primary }]}>{label}</Text>
+              { icon: Infinity, label: t('paywall.features.coachBadge', 'Coach 24/7'), color: '#8B5CF6' },
+              { icon: ChefHat, label: t('paywall.features.plannerBadge', 'Menús IA'), color: '#10B981' },
+              { icon: ShieldOff, label: t('paywall.features.adsBadge', 'Cero Anuncios'), color: '#3B82F6' },
+              { icon: Crown, label: t('paywall.pro', 'Acceso Total'), color: '#FFB800' },
+            ].map(({ icon: Icon, label, color }, i) => (
+              <View key={i} style={[s.highlightChip, { backgroundColor: color + '12', borderColor: color + '28' }]}>
+                <Icon size={11} color={color} />
+                <Text style={[s.highlightChipText, { color }]}>{label}</Text>
               </View>
             ))}
           </View>
         </View>
 
         {/* ================================================================= */}
-        {/* BENEFICIOS & COMPARATIVA PRO (REFACTORIZADO Y ELEVADO)            */}
+        {/* BENEFICIOS & COMPARATIVA PRO                                      */}
         {/* ================================================================= */}
         <View style={s.sectionWrap}>
-          {/* Section Header */}
-          <View style={s.sectionHeader}>
-            <View style={[s.sectionHeaderBadge, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '35' }]}>
-              <Sparkles size={12} color={colors.primary} />
-              <Text style={[s.sectionHeaderBadgeText, { color: colors.primary }]}>
-                {t('paywall.featuresBadge', 'VENTAJAS & BENEFICIOS PRO')}
-              </Text>
-            </View>
-            <Text style={[s.sectionHeading, { color: colors.textPrimary }]}>
-              {t('paywall.sectionHeading', 'Todo lo que obtienes con Pro')}
-            </Text>
-            <Text style={[s.sectionSubheading, { color: colors.textSecondary }]}>
-              {t('paywall.sectionSubheading', 'Herramientas inteligentes diseñadas para transformar tus resultados')}
-            </Text>
-          </View>
-
           {/* Segmented View Switcher */}
-          <View style={[s.viewTabsContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[s.viewTabsContainer, { backgroundColor: colors.surface, borderColor: colors.border + '40' }]}>
             <TouchableOpacity
               style={[
                 s.viewTab,
-                activeSectionTab === 'benefits'
-                  ? [s.viewTabActive, { backgroundColor: colors.primary }]
-                  : { backgroundColor: 'transparent' }
+                activeSectionTab === 'benefits' && [s.viewTabActive, { backgroundColor: colors.primary }]
               ]}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -330,7 +358,7 @@ export default function PaywallModal() {
               </Text>
               <View style={[
                 s.viewTabCountBadge,
-                { backgroundColor: activeSectionTab === 'benefits' ? 'rgba(255,255,255,0.22)' : colors.border }
+                { backgroundColor: activeSectionTab === 'benefits' ? 'rgba(255,255,255,0.22)' : colors.border + '60' }
               ]}>
                 <Text style={[s.viewTabCountText, { color: activeSectionTab === 'benefits' ? '#fff' : colors.textMuted }]}>
                   {PRO_FEATURES.length}
@@ -341,9 +369,7 @@ export default function PaywallModal() {
             <TouchableOpacity
               style={[
                 s.viewTab,
-                activeSectionTab === 'compare'
-                  ? [s.viewTabActive, { backgroundColor: colors.primary }]
-                  : { backgroundColor: 'transparent' }
+                activeSectionTab === 'compare' && [s.viewTabActive, { backgroundColor: colors.primary }]
               ]}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -368,40 +394,42 @@ export default function PaywallModal() {
             <View style={s.benefitsList}>
               {PRO_FEATURES.map((feat, i) => {
                 const Icon = feat.icon;
-                const color = feat.badgeColor || colors.primary;
+                const color = feat.badgeColor;
                 return (
                   <View
                     key={i}
                     style={[
                       s.benefitCard,
-                      { backgroundColor: colors.surface, borderColor: colors.border }
+                      { backgroundColor: colors.surface, borderColor: colors.border + '35' }
                     ]}
                   >
-                    {/* Accent stripe on left */}
+                    {/* Ambient Glow */}
                     <LinearGradient
-                      colors={[color, color + '40']}
-                      style={s.benefitAccentStripe}
+                      colors={[color + '10', 'transparent']}
                       start={{ x: 0, y: 0 }}
-                      end={{ x: 0, y: 1 }}
+                      end={{ x: 1, y: 1 }}
+                      style={StyleSheet.absoluteFillObject}
+                      pointerEvents="none"
                     />
 
-                    {/* Numbered icon box */}
-                    <View style={s.benefitIconArea}>
-                      <View style={[s.benefitIconBox, { backgroundColor: color + '12', borderColor: color + '25' }]}>
-                        <Icon size={22} color={color} />
-                      </View>
-                      <View style={[s.benefitNumBadge, { backgroundColor: color }]}>
-                        <Text style={s.benefitNumText}>{i + 1}</Text>
-                      </View>
-                    </View>
+                    {/* Gradient Icon Pod */}
+                    <LinearGradient
+                      colors={feat.gradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={[s.benefitIconBox, { shadowColor: color }]}
+                    >
+                      <Icon size={22} color="#FFFFFF" strokeWidth={2.2} />
+                    </LinearGradient>
 
+                    {/* Content */}
                     <View style={s.benefitBody}>
                       <View style={s.benefitTopLine}>
-                        <Text style={[s.benefitCardTitle, { color: colors.textPrimary }]} numberOfLines={2}>
+                        <Text style={[s.benefitCardTitle, { color: colors.textPrimary }]} numberOfLines={1}>
                           {feat.title}
                         </Text>
                         {feat.badge && (
-                          <View style={[s.benefitPill, { backgroundColor: color + '15', borderColor: color + '30' }]}>
+                          <View style={[s.benefitPill, { backgroundColor: color + '18', borderColor: color + '35' }]}>
                             <Text style={[s.benefitPillText, { color }]}>
                               {feat.badge}
                             </Text>
@@ -411,10 +439,6 @@ export default function PaywallModal() {
                       <Text style={[s.benefitCardDesc, { color: colors.textSecondary }]}>
                         {feat.desc}
                       </Text>
-                    </View>
-
-                    <View style={[s.benefitCheckBadge, { backgroundColor: color + '12' }]}>
-                      <CheckCircle2 size={16} color={color} />
                     </View>
                   </View>
                 );
@@ -811,16 +835,19 @@ export default function PaywallModal() {
         )}
 
         {/* Price Card */}
-        <View style={[s.priceCard, { borderColor: colors.primary, backgroundColor: colors.surface }]}>
-          <LinearGradient colors={[colors.primary + '12', 'transparent']} style={StyleSheet.absoluteFillObject} />
+        <View style={[s.priceCard, { borderColor: colors.primary + '50', backgroundColor: colors.surface }]}>
+          <LinearGradient colors={[colors.primary + '15', 'transparent']} style={StyleSheet.absoluteFillObject} />
           <View style={s.bestSellerPill}>
             <Star size={11} color="#000" fill="#000" />
-            <Text style={s.bestSellerText}>{t('paywall.mostPopular')}</Text>
+            <Text style={s.bestSellerText}>{t('paywall.mostPopular', 'MÁS POPULAR')}</Text>
           </View>
           <View style={s.priceCardTop}>
-            <Text style={[s.planName, { color: colors.textPrimary }]}>{t('paywall.accessTotal')}</Text>
+            <View style={{ flex: 1, paddingRight: 8 }}>
+              <Text style={[s.planName, { color: colors.textPrimary }]}>{t('paywall.accessTotal', 'Acceso Total Pro')}</Text>
+              <Text style={[s.planSub, { color: colors.textMuted }]}>{t('paywall.cancelAnytime', 'Cancela en cualquier momento · Sin compromisos')}</Text>
+            </View>
             <LinearGradient colors={colors.gradientPrimary} style={s.ofertaBadge} start={{x:0,y:0}} end={{x:1,y:0}}>
-              <Text style={s.ofertaText}>{t('paywall.launchOffer')}</Text>
+              <Text style={s.ofertaText}>{t('paywall.launchOffer', 'OFERTA ESPECIAL')}</Text>
             </LinearGradient>
           </View>
           <View style={s.priceRow}>
@@ -835,7 +862,19 @@ export default function PaywallModal() {
               </View>
             </View>
           </View>
-          <Text style={[s.cancelText, { color: colors.textMuted }]}>{t('paywall.cancelAnytime')}</Text>
+
+          <View style={[s.priceCheckList, { borderTopColor: colors.border + '35' }]}>
+            {[
+              t('paywall.features.coach', 'Mensajes ilimitados al Coach IA'),
+              t('paywall.features.planner', 'Generación de planes nutricionales por IA'),
+              t('paywall.features.ads', 'Cero anuncios para siempre'),
+            ].map((perk, i) => (
+              <View key={i} style={s.priceCheckRow}>
+                <CheckCircle2 size={13} color="#10B981" />
+                <Text style={[s.priceCheckText, { color: colors.textSecondary }]}>{perk}</Text>
+              </View>
+            ))}
+          </View>
         </View>
 
         <View style={{ height: 160 }} />
@@ -900,64 +939,139 @@ export default function PaywallModal() {
 
 const s = StyleSheet.create({
   container: { flex: 1 },
-  scroll: { padding: Spacing.xl, paddingTop: Platform.OS === 'ios' ? 50 : 28, paddingBottom: 40 },
-  closeBtn: { position: 'absolute', top: Platform.OS === 'ios' ? 50 : 20, right: 20, padding: 8, zIndex: 10 },
+  scroll: { padding: Spacing.xl, paddingTop: Platform.OS === 'ios' ? 44 : 20, paddingBottom: 40 },
+  closeBtn: {
+    position: 'absolute',
+    right: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
+  },
 
   // Hero
-  hero: { alignItems: 'center', marginBottom: 32, paddingTop: 24, position: 'relative' },
-  heroGlow: { position: 'absolute', top: 0, left: -20, right: -20, height: 300, borderRadius: 200 },
-  crownCircle: { width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  heroTitle: { fontSize: 32, fontWeight: '900', letterSpacing: -0.5, textAlign: 'center', marginBottom: 8 },
-  heroSub: { fontSize: 16, textAlign: 'center', lineHeight: 24, marginBottom: 16, paddingHorizontal: 8 },
-  socialProof: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, marginBottom: 20 },
-  stars: { fontSize: 12 },
-  socialText: { fontSize: 13, fontWeight: '600' },
-  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' },
-  tag: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
-  tagText: { fontSize: 11, fontWeight: '800' },
-
-  // Unified Section: Beneficios & Comparativa Pro
-  sectionWrap: {
-    marginBottom: 28,
-  },
-  sectionHeader: {
+  hero: {
     alignItems: 'center',
+    marginBottom: 24,
+    paddingTop: 16,
+    position: 'relative',
+  },
+  heroGlow: {
+    position: 'absolute',
+    top: -30,
+    left: -40,
+    right: -40,
+    height: 320,
+    borderRadius: 200,
+  },
+  crownContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 16,
-    paddingHorizontal: 8,
+    position: 'relative',
   },
-  sectionHeaderBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: Radius.full,
+  crownRingOuter: {
+    width: 92,
+    height: 92,
+    borderRadius: 46,
     borderWidth: 1,
-    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  sectionHeaderBadgeText: {
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 0.8,
+  crownRingInner: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  sectionHeading: {
-    fontSize: 22,
+  crownGradient: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#FFB800',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.45,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  crownSparkle: {
+    position: 'absolute',
+    top: 0,
+    right: 2,
+    backgroundColor: '#1E1300',
+    borderRadius: 10,
+    padding: 3,
+    borderWidth: 1,
+    borderColor: '#FFD700',
+  },
+  heroTitle: {
+    fontSize: 30,
     fontWeight: '900',
-    letterSpacing: -0.3,
+    letterSpacing: -0.6,
     textAlign: 'center',
     marginBottom: 6,
   },
-  sectionSubheading: {
-    fontSize: 13,
-    fontWeight: '500',
+  heroSub: {
+    fontSize: 14,
     textAlign: 'center',
-    lineHeight: 18,
-    paddingHorizontal: 12,
+    lineHeight: 20,
+    marginBottom: 14,
+    paddingHorizontal: 16,
   },
-  sectionLabel: {
-    fontSize: 18,
-    fontWeight: '900',
-    marginBottom: 16,
+  trustRibbon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+    marginBottom: 14,
+  },
+  trustStars: {
+    flexDirection: 'row',
+    gap: 2,
+  },
+  trustText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  highlightsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  highlightChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+  },
+  highlightChipText: {
+    fontSize: 11,
+    fontWeight: '800',
+  },
+
+  // Section: Beneficios & Comparativa Pro
+  sectionWrap: {
+    marginBottom: 28,
   },
 
   // View Switcher Tabs
@@ -1007,7 +1121,6 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 14,
-    paddingLeft: 18,
     borderRadius: Radius.xl,
     borderWidth: 1,
     gap: 14,
@@ -1015,46 +1128,21 @@ const s = StyleSheet.create({
     position: 'relative' as const,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
     elevation: 2,
   },
-  benefitAccentStripe: {
-    position: 'absolute' as const,
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
-    borderTopLeftRadius: Radius.xl,
-    borderBottomLeftRadius: Radius.xl,
-  },
-  benefitIconArea: {
-    position: 'relative' as const,
-    flexShrink: 0,
-  },
   benefitIconBox: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
+    width: 48,
+    height: 48,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 3,
     flexShrink: 0,
-  },
-  benefitNumBadge: {
-    position: 'absolute' as const,
-    top: -4,
-    right: -4,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  benefitNumText: {
-    color: '#fff',
-    fontSize: 9,
-    fontWeight: '900',
   },
   benefitBody: {
     flex: 1,
@@ -1063,29 +1151,28 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 6,
+    gap: 8,
     marginBottom: 4,
-    flexWrap: 'wrap',
   },
   benefitCardTitle: {
-    fontSize: 14.5,
+    fontSize: 15,
     fontWeight: '800',
     flex: 1,
   },
   benefitPill: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 8,
+    borderRadius: Radius.full,
     borderWidth: 1,
   },
   benefitPillText: {
-    fontSize: 9,
+    fontSize: 9.5,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
   benefitCardDesc: {
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 12.5,
+    lineHeight: 18,
     fontWeight: '500',
   },
   benefitCheckBadge: {
@@ -1330,6 +1417,10 @@ const s = StyleSheet.create({
   currencyCode: { fontSize: 11, fontWeight: '900', letterSpacing: 0.5 },
   priceSuffix: { fontSize: 13, fontWeight: '600' },
   cancelText: { fontSize: 13, fontWeight: '500' },
+  planSub: { fontSize: 12, fontWeight: '500', marginTop: 2, lineHeight: 16 },
+  priceCheckList: { borderTopWidth: 1, paddingTop: 14, marginTop: 10, gap: 8 },
+  priceCheckRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  priceCheckText: { fontSize: 12.5, fontWeight: '600', flex: 1 },
 
   // Footer
   footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: Spacing.xl, borderTopWidth: 1, paddingBottom: Platform.OS === 'ios' ? 44 : 36, alignItems: 'center' },

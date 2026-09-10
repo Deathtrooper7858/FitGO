@@ -129,14 +129,14 @@ export default function ShoppingListModal({ visible, onClose, mealPlans, languag
         {loading ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={{ color: colors.textSecondary, marginTop: 12 }}>Generando lista de compras...</Text>
+            <Text style={{ color: colors.textSecondary, marginTop: 12 }}>{t('planner.generatingShoppingList', 'Generando lista de compras...')}</Text>
           </View>
         ) : (
           <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
             <View style={sl.summaryRow}>
               <View style={[sl.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <Text style={[sl.summaryVal, { color: '#F59E0B' }]}>{categories.length}</Text>
-                <Text style={[sl.summaryLbl, { color: colors.textMuted }]}>Categorías</Text>
+                <Text style={[sl.summaryLbl, { color: colors.textMuted }]}>{t('planner.categories', 'Categorías')}</Text>
               </View>
               <View style={[sl.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <Text style={[sl.summaryVal, { color: '#F59E0B' }]}>{totalItems}</Text>

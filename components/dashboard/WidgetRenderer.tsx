@@ -1,5 +1,17 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+import {
+  Scale,
+  Moon,
+  Zap,
+  Flame,
+  Ruler,
+  Camera,
+  UtensilsCrossed,
+  Dumbbell,
+  Sparkles,
+  Lock,
+} from 'lucide-react-native';
 import { WidgetCard, w } from './WidgetCard';
 
 export interface WidgetRendererProps {
@@ -19,6 +31,7 @@ export interface WidgetRendererProps {
   totalsData: any;
   isPro: boolean;
   colors: any;
+  massUnit?: string;
   t: (key: string, ...args: any[]) => string;
   router: any;
   hasPremiumAdAccess: (featureId: string) => boolean;
@@ -28,7 +41,7 @@ export interface WidgetRendererProps {
 export function renderDashboardWidget(props: WidgetRendererProps) {
   const {
     id, index, isEditing, canMoveLeft, canMoveRight, onMoveLeft, onMoveRight, onLongPress,
-    currentWeight, sleepHours, calories, bodyFat, isPro, colors, t, router,
+    currentWeight, sleepHours, calories, bodyFat, isPro, colors, massUnit = 'kg', t, router,
     hasPremiumAdAccess, handlePremiumFeaturePress
   } = props;
 
@@ -42,74 +55,140 @@ export function renderDashboardWidget(props: WidgetRendererProps) {
     canMoveRight
   };
 
+  const isLbs = massUnit === 'lb';
+  const displayWeight = isLbs ? (currentWeight * 2.20462).toFixed(1) : currentWeight.toFixed(1);
+
   switch (id) {
     case 'weight':
       return (
-        <WidgetCard key={id} {...commonProps} title={t('dashboard.weightWidget')} icon="⚖️"
-          value={`${currentWeight} kg`} subValue={t('dashboard.tapToUpdate')}
+        <WidgetCard
+          key={id}
+          {...commonProps}
+          title={t('dashboard.weightWidget', 'Peso')}
+          icon={<Scale size={18} color="#8B5CF6" />}
+          iconColor="#8B5CF6"
+          value={`${displayWeight} ${massUnit}`}
+          subValue={t('dashboard.tapToUpdate', 'Toca para actualizar')}
           onPress={() => router.push('/modals/body-measurements')}
         />
       );
-    case 'sleep':
+
+    case 'sleep': {
+      const isGoodSleep = sleepHours >= 7;
+      const sleepColor = sleepHours > 0 ? (isGoodSleep ? '#10B981' : '#F59E0B') : '#6366F1';
       return (
-        <WidgetCard key={id} {...commonProps} title={t('dashboard.sleepWidget')} icon="🌙"
+        <WidgetCard
+          key={id}
+          {...commonProps}
+          title={t('dashboard.sleepWidget', 'Sueño')}
+          icon={<Moon size={18} color={sleepColor} />}
+          iconColor={sleepColor}
+          badge={sleepHours > 0 ? (isGoodSleep ? 'Óptimo' : 'Mejorable') : undefined}
+          badgeColor={sleepColor}
           customContent={
             <View style={w.content}>
-               <Text style={[w.value, { color: colors.textPrimary }]}>{sleepHours > 0 ? `${sleepHours}h` : '--'}</Text>
-               <Text style={[w.subValue, { color: colors.textSecondary }]}>{sleepHours > 0 ? t('dashboard.loggedToday') : t('dashboard.tapToAdd')}</Text>
+              <Text style={[w.value, { color: colors.textPrimary }]}>
+                {sleepHours > 0 ? `${sleepHours}h` : '--'}
+              </Text>
+              <Text style={[w.subValue, { color: colors.textSecondary }]}>
+                {sleepHours > 0 ? t('dashboard.loggedToday', 'Registrado hoy') : t('dashboard.tapToAdd', 'Toca para añadir')}
+              </Text>
             </View>
           }
           onPress={() => router.push('/modals/sleep' as any)}
         />
       );
+    }
+
     case 'calories':
       return (
-        <WidgetCard key={id} {...commonProps} title={t('dashboard.caloriesWidget')} icon="⚡"
+        <WidgetCard
+          key={id}
+          {...commonProps}
+          title={t('dashboard.caloriesWidget', 'Calorías')}
+          icon={<Zap size={18} color="#F59E0B" />}
+          iconColor="#F59E0B"
           customContent={
             <View style={w.content}>
-              <Text style={{fontSize: 24, fontWeight: '800', color: colors.textPrimary}}>{calories}</Text>
-              <Text style={[w.subValue, { color: colors.textSecondary }]}>{t('dashboard.logFood')}</Text>
+              <Text style={[w.value, { color: colors.textPrimary }]}>{calories}</Text>
+              <Text style={[w.subValue, { color: colors.textSecondary }]}>
+                {t('dashboard.logFood', 'Ver desglose')}
+              </Text>
             </View>
           }
           onPress={() => router.push('/(tabs)/tracker')}
         />
       );
-    case 'bodyFat':
+
+    case 'bodyFat': {
+      const fatColor = '#EC4899';
       return (
-        <WidgetCard key={id} {...commonProps} title={t('dashboard.bodyFatWidget')} icon="🔥"
-          value={bodyFat ? `${bodyFat}%` : '--'} subValue={t('dashboard.tapToUpdate')}
+        <WidgetCard
+          key={id}
+          {...commonProps}
+          title={t('dashboard.bodyFatWidget', 'Grasa')}
+          icon={<Flame size={18} color={fatColor} />}
+          iconColor={fatColor}
+          value={bodyFat ? `${bodyFat}%` : '--'}
+          subValue={t('dashboard.tapToUpdate', 'Toca para actualizar')}
           onPress={() => router.push('/modals/body-measurements')}
         />
       );
-    // 'macros' widget has been removed permanently
+    }
+
     case 'measurements':
       return (
-        <WidgetCard key={id} {...commonProps} title={t('dashboard.measurementsWidget')} icon="📏"
-          value={t('dashboard.seeHistory', 'Ver historial')} subValue={t('dashboard.measurementsSub', 'Cintura, pecho, etc.')}
+        <WidgetCard
+          key={id}
+          {...commonProps}
+          title={t('dashboard.measurementsWidget', 'Medidas')}
+          icon={<Ruler size={18} color="#10B981" />}
+          iconColor="#10B981"
+          value={t('dashboard.seeHistory', 'Historial')}
+          subValue={t('dashboard.measurementsSub', 'Cintura, pecho, etc.')}
           onPress={() => router.push('/modals/body-measurements')}
         />
       );
-    case 'photos':
+
+    case 'photos': {
+      const hasPhotoAccess = isPro || hasPremiumAdAccess('evaluation');
       return (
-        <WidgetCard key={id} {...commonProps} title={t('dashboard.evaluationWidget', 'Evaluación IA')} icon="🤖"
+        <WidgetCard
+          key={id}
+          {...commonProps}
+          title={t('dashboard.evaluationWidget', 'Evaluación IA')}
+          icon={<Camera size={18} color="#A855F7" />}
+          iconColor="#A855F7"
+          badge={hasPhotoAccess ? 'IA' : 'PRO'}
+          badgeColor="#A855F7"
           adTimerFeatureId="evaluation"
           customContent={
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <View style={{ position: 'relative' }}>
-                <Text style={{ fontSize: 32, color: colors.textSecondary }}>📷</Text>
-                {!isPro && !hasPremiumAdAccess('evaluation') && (
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 6 }}>
+              <View style={{ position: 'relative', marginBottom: 6 }}>
+                <View style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 14,
+                  backgroundColor: '#A855F71A',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: '#A855F733',
+                }}>
+                  <Sparkles size={22} color="#A855F7" />
+                </View>
+                {!hasPhotoAccess && (
                   <View style={[w.lockOverlay, { borderColor: colors.primary }]}>
-                    <Text style={w.lockIcon}>🔒</Text>
+                    <Lock size={10} color="#FFF" />
                   </View>
                 )}
               </View>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginTop: 8 }}>{t('dashboard.evaluatePhysique', 'Evaluar Físico')}</Text>
-              <Text style={[w.subValue, { color: colors.textSecondary }]}>{t('dashboard.getAIFeedback', 'Recibe feedback IA')}</Text>
-              {!isPro && !hasPremiumAdAccess('evaluation') && (
-                <View style={[w.premiumTag, { backgroundColor: colors.primary + '2E', borderColor: colors.primary + '66' }]}>
-                  <Text style={[w.premiumTagText, { color: colors.primary }]}>👑 Premium</Text>
-                </View>
-              )}
+              <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textPrimary, textAlign: 'center' }}>
+                {t('dashboard.evaluatePhysique', 'Evaluar Físico')}
+              </Text>
+              <Text style={[w.subValue, { color: colors.textSecondary, marginTop: 1 }]} numberOfLines={1}>
+                {t('dashboard.getAIFeedback', 'Análisis inteligente')}
+              </Text>
             </View>
           }
           onPress={() => handlePremiumFeaturePress(
@@ -120,29 +199,47 @@ export function renderDashboardWidget(props: WidgetRendererProps) {
           )}
         />
       );
-    case 'achievements':
-      return null;
-    case 'recipe_search':
+    }
+
+    case 'recipe_search': {
+      const hasRecipeAccess = isPro || hasPremiumAdAccess('recipes');
       return (
-        <WidgetCard key={id} {...commonProps} title={t('dashboard.recipeSearchWidget', 'Buscar Recetas')} icon="🍳"
+        <WidgetCard
+          key={id}
+          {...commonProps}
+          title={t('dashboard.recipeSearchWidget', 'Recetas IA')}
+          icon={<UtensilsCrossed size={18} color="#14B8A6" />}
+          iconColor="#14B8A6"
+          badge={hasRecipeAccess ? 'IA' : 'PRO'}
+          badgeColor="#14B8A6"
           adTimerFeatureId="recipes"
           customContent={
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <View style={{ position: 'relative' }}>
-                <Text style={{ fontSize: 32, color: colors.textSecondary }}>🥗</Text>
-                {!isPro && !hasPremiumAdAccess('recipes') && (
-                  <View style={[w.lockOverlay, { borderColor: colors.primary }]}>
-                    <Text style={w.lockIcon}>🔒</Text>
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 6 }}>
+              <View style={{ position: 'relative', marginBottom: 6 }}>
+                <View style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 14,
+                  backgroundColor: '#14B8A61A',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: '#14B8A633',
+                }}>
+                  <UtensilsCrossed size={22} color="#14B8A6" />
+                </View>
+                {!hasRecipeAccess && (
+                  <View style={[w.lockOverlay, { borderColor: '#14B8A6' }]}>
+                    <Lock size={10} color="#FFF" />
                   </View>
                 )}
               </View>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginTop: 8 }}>{t('dashboard.recipeSearchWidget', 'Buscar Recetas')}</Text>
-              <Text style={[w.subValue, { color: colors.textSecondary }]}>{t('dashboard.withAI', 'Con IA')}</Text>
-              {!isPro && !hasPremiumAdAccess('recipes') && (
-                <View style={[w.premiumTag, { backgroundColor: colors.primary + '2E', borderColor: colors.primary + '66' }]}>
-                  <Text style={[w.premiumTagText, { color: colors.primary }]}>👑 Premium</Text>
-                </View>
-              )}
+              <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textPrimary, textAlign: 'center' }}>
+                {t('dashboard.recipeSearchWidget', 'Buscar Recetas')}
+              </Text>
+              <Text style={[w.subValue, { color: colors.textSecondary, marginTop: 1 }]} numberOfLines={1}>
+                {t('dashboard.withAI', 'Crear con IA')}
+              </Text>
             </View>
           }
           onPress={() => handlePremiumFeaturePress(
@@ -153,27 +250,47 @@ export function renderDashboardWidget(props: WidgetRendererProps) {
           )}
         />
       );
-    case 'muscle_directory':
+    }
+
+    case 'muscle_directory': {
+      const hasDirAccess = isPro || hasPremiumAdAccess('directory');
       return (
-        <WidgetCard key={id} {...commonProps} title={t('dashboard.muscleDirWidget', 'Ejercicios')} icon="💪"
+        <WidgetCard
+          key={id}
+          {...commonProps}
+          title={t('dashboard.muscleDirWidget', 'Ejercicios')}
+          icon={<Dumbbell size={18} color="#06B6D4" />}
+          iconColor="#06B6D4"
+          badge="Guía"
+          badgeColor="#06B6D4"
           adTimerFeatureId="directory"
           customContent={
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <View style={{ position: 'relative' }}>
-                <Text style={{ fontSize: 32, color: colors.textSecondary }}>📖</Text>
-                {!isPro && !hasPremiumAdAccess('directory') && (
-                  <View style={[w.lockOverlay, { borderColor: colors.primary }]}>
-                    <Text style={w.lockIcon}>🔒</Text>
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 6 }}>
+              <View style={{ position: 'relative', marginBottom: 6 }}>
+                <View style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 14,
+                  backgroundColor: '#06B6D41A',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: '#06B6D433',
+                }}>
+                  <Dumbbell size={22} color="#06B6D4" />
+                </View>
+                {!hasDirAccess && (
+                  <View style={[w.lockOverlay, { borderColor: '#06B6D4' }]}>
+                    <Lock size={10} color="#FFF" />
                   </View>
                 )}
               </View>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary, marginTop: 8 }}>{t('dashboard.muscleDirTitle', 'Directorio')}</Text>
-              <Text style={[w.subValue, { color: colors.textSecondary }]}>{t('dashboard.muscleDirSub', 'Por músculos')}</Text>
-              {!isPro && !hasPremiumAdAccess('directory') && (
-                <View style={[w.premiumTag, { backgroundColor: colors.primary + '2E', borderColor: colors.primary + '66' }]}>
-                  <Text style={[w.premiumTagText, { color: colors.primary }]}>👑 Premium</Text>
-                </View>
-              )}
+              <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textPrimary, textAlign: 'center' }}>
+                {t('dashboard.muscleDirTitle', 'Directorio')}
+              </Text>
+              <Text style={[w.subValue, { color: colors.textSecondary, marginTop: 1 }]} numberOfLines={1}>
+                {t('dashboard.muscleDirSub', 'Por músculos')}
+              </Text>
             </View>
           }
           onPress={() => handlePremiumFeaturePress(
@@ -184,6 +301,9 @@ export function renderDashboardWidget(props: WidgetRendererProps) {
           )}
         />
       );
-    default: return null;
+    }
+
+    default:
+      return null;
   }
 }

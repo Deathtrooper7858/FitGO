@@ -6,6 +6,7 @@ import { useTheme } from '../hooks/useTheme';
 import { Radius, Spacing, Shadow } from '../constants';
 import { useSettingsStore } from '../store';
 import { useIsPro } from '../hooks/useIsPro';
+import { getSafeColor, isValidPremiumColor, hexToRgba } from '../utils/styles';
 
 export type AlertType = 'success' | 'error' | 'warning' | 'info' | 'confirm';
 
@@ -46,7 +47,8 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
 
   const { premiumColor } = useSettingsStore();
   const isProActually = useIsPro();
-  const isPremiumCustom = isProActually && premiumColor && premiumColor.startsWith('#');
+  const isPremiumCustom = isProActually && isValidPremiumColor(premiumColor);
+  const safePremiumColor = getSafeColor(premiumColor, colors.primary);
 
   useEffect(() => {
     if (visible) {
@@ -93,12 +95,16 @@ export const CustomAlert: React.FC<CustomAlertProps> = ({
   const getColors = (): [string, string] => {
     // For success/error/warning we keep their semantic colors.
     // For confirm and info we apply the premium color if available.
+    const customGrad: [string, string] = premiumColor === 'admin_glow'
+      ? ['#00F0FF', '#0088FF']
+      : [safePremiumColor, hexToRgba(safePremiumColor, 0.8)];
+
     switch (type) {
       case 'success': return ['#10B981', '#059669'];
       case 'error':   return ['#EF4444', '#B91C1C'];
       case 'warning': return ['#F59E0B', '#D97706'];
-      case 'confirm': return isPremiumCustom ? [premiumColor, premiumColor + 'CC'] : ['#7C5CFC', '#4338CA'];
-      default:        return isPremiumCustom ? [premiumColor, premiumColor + 'CC'] : ['#3B82F6', '#1E40AF'];
+      case 'confirm': return isPremiumCustom ? customGrad : ['#7C5CFC', '#4338CA'];
+      default:        return isPremiumCustom ? customGrad : ['#3B82F6', '#1E40AF'];
     }
   };
 

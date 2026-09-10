@@ -3,7 +3,9 @@ import { StyleSheet } from 'react-native';
 export const STEPS = [
   'goal', 'stats', 'activity', 'lifestyle',
   'dietaryRestrictions', 'medicalConditions', 'medications',
-  'dietType', 'diet', 'personalization', 'terms', 'projection'
+  'dietType', 'diet', 'personalization',
+  'secondaryGoals', 'socialProof', 'experienceRating',
+  'terms', 'projection'
 ] as const;
 
 export type Step = typeof STEPS[number];
@@ -27,6 +29,8 @@ export interface OnboardingData {
   weightUnit:   'kg' | 'lbs';
   heightUnit:   'cm' | 'ft';
   termsAccepted?: boolean;
+  secondaryGoals?: string[];
+  experienceRating?: number;
 }
 
 export interface StepProps {
@@ -35,6 +39,7 @@ export interface StepProps {
   colors?: any;
   t?: any;
   profile?: any;
+  onNext?: () => void;
 }
 
 export const FOOD_CATEGORIES = [

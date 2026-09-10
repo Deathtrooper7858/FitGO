@@ -25,7 +25,9 @@ import { CustomAlert, AlertType } from '../components/CustomAlert';
 import {
   GoalStep, StatsStep, ActivityStep, LifestyleStep,
   DietaryRestrictionsStep, MedicalConditionsStep, MedicationsStep,
-  DietTypeStep, DietStep, PersonalizationStep, TermsStep, ProjectionStep
+  DietTypeStep, DietStep, PersonalizationStep,
+  SecondaryGoalsStep, SocialProofStep, ExperienceRatingStep,
+  TermsStep, ProjectionStep
 } from '../components/onboarding';
 import { STEPS, OnboardingData, FOOD_CATEGORIES } from '../components/onboarding/constants';
 
@@ -43,7 +45,8 @@ export default function OnboardingScreen() {
     targetWeight: 65,
     velocity: 'moderate',
     weightUnit: 'kg',
-    heightUnit: 'cm'
+    heightUnit: 'cm',
+    secondaryGoals: [],
   });
   const [saving, setSaving]           = useState(false);
   const [error, setError]             = useState<string | null>(null);
@@ -117,6 +120,10 @@ export default function OnboardingScreen() {
     setData((prev) => ({ ...prev, ...partial }));
   }, []);
 
+  const handleNextStep = useCallback(() => {
+    setCurrentStep((s) => s + 1);
+  }, []);
+
   const canProceed = () => {
     if (stepId === 'goal')     return !!data.goal;
     if (stepId === 'stats') {
@@ -138,6 +145,9 @@ export default function OnboardingScreen() {
       return true;
     }
     if (stepId === 'personalization') return !!data.targetWeight && !!data.velocity;
+    if (stepId === 'secondaryGoals') return (data.secondaryGoals?.length ?? 0) > 0;
+    if (stepId === 'socialProof') return true;
+    if (stepId === 'experienceRating') return true;
     if (stepId === 'terms') return !!data.termsAccepted;
     return true;
   };
@@ -241,9 +251,12 @@ export default function OnboardingScreen() {
         medicationsSupplements: d.medicationsSupplements ?? [],
         lifestyle:      d.lifestyle,
         customGender:   d.customGender,
+        secondaryGoals: d.secondaryGoals ?? [],
       };
 
-      const { error: upsertError } = await supabase.from('users').upsert({
+      let upsertError: any = null;
+
+      const payload: any = {
         id:               profileData.id,
         email:            profileData.email,
         name:             profileData.name,
@@ -267,8 +280,52 @@ export default function OnboardingScreen() {
         medications_supplements: profileData.medicationsSupplements,
         lifestyle:        profileData.lifestyle,
         lifestyle_level:  profileData.lifestyle,
+        secondary_goals:  d.secondaryGoals ?? [],
         updated_at:       new Date().toISOString(),
-      });
+      };
+
+      const res = await supabase.from('users').upsert(payload);
+      upsertError = res.error;
+
+      // Resilient fallback: Try update or core fields if full upsert failed
+      if (upsertError) {
+        console.warn('[Onboarding] Full upsert failed, trying update/core fallback:', upsertError.message);
+        
+        // Fallback 1: Direct update on existing user row
+        const updateRes = await supabase.from('users').update(payload).eq('id', profileData.id);
+        if (!updateRes.error) {
+          upsertError = null;
+        } else {
+          // Fallback 2: Core fields only (in case custom columns like secondary_goals aren't migrated in DB)
+          const corePayload = {
+            id:              profileData.id,
+            email:           profileData.email,
+            name:            profileData.name,
+            sex:             profileData.sex,
+            age:             profileData.age,
+            weight:          profileData.weight,
+            height:          profileData.height,
+            activity_level:  profileData.activityLevel,
+            goal:            profileData.goal,
+            target_weight:   profileData.targetWeight,
+            tdee:            profileData.tdee,
+            target_calories: profileData.targetCalories,
+            macros:          profileData.macros,
+            onboarding_done: true,
+            updated_at:      new Date().toISOString(),
+          };
+
+          const coreUpdate = await supabase.from('users').update(corePayload).eq('id', profileData.id);
+          if (!coreUpdate.error) {
+            upsertError = null;
+          } else {
+            const coreUpsert = await supabase.from('users').upsert(corePayload);
+            if (!coreUpsert.error) {
+              upsertError = null;
+            }
+          }
+        }
+      }
 
       if (upsertError) throw upsertError;
 
@@ -294,15 +351,16 @@ export default function OnboardingScreen() {
       }
 
       router.replace('/(tabs)/tracker');
-    } catch (err) {
+    } catch (err: any) {
       console.error('[Onboarding] Error:', err);
-      Alert.alert(t('common.error'), t('profile.updateFailed'));
+      const detailMsg = err?.message ? ` (${err.message})` : '';
+      Alert.alert(t('common.error'), `${t('profile.updateFailed')}${detailMsg}`);
     } finally {
       setSaving(false);
     }
   };
 
-  // Only render the ACTIVE step — never instantiate all 12 at once
+  // Only render the ACTIVE step — never instantiate all at once
   const activeStepComponent = useMemo(() => {
     const props = { value: data, onChange: updateData };
     switch (stepId) {
@@ -316,11 +374,14 @@ export default function OnboardingScreen() {
       case 'dietType':             return <DietTypeStep            {...props} />;
       case 'diet':                 return <DietStep                {...props} />;
       case 'personalization':      return <PersonalizationStep     {...props} />;
+      case 'secondaryGoals':       return <SecondaryGoalsStep      {...props} />;
+      case 'socialProof':          return <SocialProofStep         {...props} />;
+      case 'experienceRating':     return <ExperienceRatingStep    {...props} onNext={handleNextStep} />;
       case 'terms':                return <TermsStep               {...props} />;
       case 'projection':           return <ProjectionStep          {...props} />;
       default:                     return null;
     }
-  }, [stepId, data, updateData]);
+  }, [stepId, data, updateData, handleNextStep]);
 
   const getFooterSecurityText = () => {
     if (currentStep === 0) {
@@ -387,7 +448,7 @@ export default function OnboardingScreen() {
           </View>
 
           <Text style={s.stepCountText}>
-            {`${currentStep + 1} of ${STEPS.length}`}
+            {`${currentStep + 1} ${t('common.of', 'de')} ${STEPS.length}`}
           </Text>
 
           <TouchableOpacity
