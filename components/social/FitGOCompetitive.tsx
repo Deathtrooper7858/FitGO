@@ -808,9 +808,14 @@ export default function FitGOCompetitive({
                 style={StyleSheet.absoluteFill}
               />
             )}
-            <Trophy size={15} color={activeSection === 'ranking' ? '#fff' : colors.textSecondary} />
-            <Text style={{ fontSize: 13, fontWeight: '800', color: activeSection === 'ranking' ? '#fff' : colors.textSecondary }}>
-              {t('social.ranking.globalRanking', 'Rankings')}
+            <Trophy size={14} color={activeSection === 'ranking' ? '#fff' : colors.textSecondary} />
+            <Text
+              style={{ fontSize: 13, fontWeight: '800', color: activeSection === 'ranking' ? '#fff' : colors.textSecondary }}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+            >
+              {t('competitive.tabs.ranking', 'Ranking')}
             </Text>
           </TouchableOpacity>
 
@@ -820,7 +825,7 @@ export default function FitGOCompetitive({
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 6,
+              gap: 5,
               paddingVertical: 9,
               borderRadius: Radius.full,
               overflow: 'hidden',
@@ -840,8 +845,13 @@ export default function FitGOCompetitive({
                 style={StyleSheet.absoluteFill}
               />
             )}
-            <Shield size={15} color={activeSection === 'my-squad' ? '#fff' : colors.textSecondary} />
-            <Text style={{ fontSize: 13, fontWeight: '800', color: activeSection === 'my-squad' ? '#fff' : colors.textSecondary }}>
+            <Shield size={14} color={activeSection === 'my-squad' ? '#fff' : colors.textSecondary} />
+            <Text
+              style={{ fontSize: 13, fontWeight: '800', color: activeSection === 'my-squad' ? '#fff' : colors.textSecondary }}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+            >
               {t('competitive.mySquad', 'Mi Squad')}
             </Text>
           </TouchableOpacity>
@@ -852,7 +862,7 @@ export default function FitGOCompetitive({
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 6,
+              gap: 5,
               paddingVertical: 9,
               borderRadius: Radius.full,
               overflow: 'hidden',
@@ -872,9 +882,14 @@ export default function FitGOCompetitive({
                 style={StyleSheet.absoluteFill}
               />
             )}
-            <Sword size={15} color={activeSection === 'challenges' ? '#fff' : colors.textSecondary} />
-            <Text style={{ fontSize: 13, fontWeight: '800', color: activeSection === 'challenges' ? '#fff' : colors.textSecondary }}>
-              {t('social.challenges.fitgoChallenges', 'Retos')}
+            <Sword size={14} color={activeSection === 'challenges' ? '#fff' : colors.textSecondary} />
+            <Text
+              style={{ fontSize: 13, fontWeight: '800', color: activeSection === 'challenges' ? '#fff' : colors.textSecondary }}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+            >
+              {t('social.challenges.tabTitle', 'Retos')}
             </Text>
           </TouchableOpacity>
         </View>

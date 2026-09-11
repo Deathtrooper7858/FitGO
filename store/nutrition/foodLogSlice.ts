@@ -77,7 +77,7 @@ export interface FoodLogSlice {
 
 export const initialFoodLogState = {
   todayLogs: [] as FoodLog[],
-  selectedDate: new Date().toLocaleDateString('en-CA'),
+  selectedDate: getLocalDateString(),
   favoriteFoods: [] as FoodItem[],
 };
 

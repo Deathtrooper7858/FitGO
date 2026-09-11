@@ -1,3 +1,4 @@
+import { getCuratedRecipes } from '../recipes/curatedRecipes';
 import { getLang, fetchGroq, CHAT_MODEL, FAST_MODEL } from './core';
 
 // ─── Weekly analysis ───────────────────────────────────────────────────────────
@@ -31,50 +32,110 @@ Give 2-3 specific, actionable tips for next week. Be encouraging.`;
 }
 
 // ─── Generate Recipes ─────────────────────────────────────────────────────────
-export async function generateRecipes(userGoal: string, language: string = 'en', count: number = 3, foodName?: string): Promise<any[]> {
+function extractRecipesFromJson(text: string): any[] | null {
+  if (!text) return null;
+  // Clean markdown backticks
+  const clean = text.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+
+  // Try extracting array directly
+  const start = clean.indexOf('[');
+  const end = clean.lastIndexOf(']');
+
+  if (start !== -1 && end !== -1 && end > start) {
+    const arrayStr = clean.slice(start, end + 1);
+    try {
+      const parsed = JSON.parse(arrayStr);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch {
+      // Partial JSON repair: LLM may have been truncated near token limit
+      const items: any[] = [];
+      const objectRegex = /\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g;
+      let match;
+      while ((match = objectRegex.exec(arrayStr)) !== null) {
+        try {
+          const item = JSON.parse(match[0]);
+          if (item && (item.name || item.title)) items.push(item);
+        } catch {}
+      }
+      if (items.length > 0) return items;
+    }
+  }
+
+  // Check if wrapped in object { "recipes": [...] } or { "items": [...] }
+  const objStart = clean.indexOf('{');
+  const objEnd = clean.lastIndexOf('}');
+  if (objStart !== -1 && objEnd !== -1 && objEnd > objStart) {
+    try {
+      const parsed = JSON.parse(clean.slice(objStart, objEnd + 1));
+      if (Array.isArray(parsed.recipes) && parsed.recipes.length > 0) return parsed.recipes;
+      if (Array.isArray(parsed.items) && parsed.items.length > 0) return parsed.items;
+    } catch {}
+  }
+
+  return null;
+}
+
+export async function generateRecipes(userGoal: string, language: string = 'en', count: number = 6, foodName?: string): Promise<any[]> {
   const targetLang = getLang(language);
+  const safeCount = Math.min(Math.max(count, 3), 6); // Keep reasonable count to prevent token truncation
 
   const context = foodName 
     ? `based on the query/ingredient: "${foodName}". Identify what food this is (it could be in any language), find the best standard recipes for it, and then output them for someone with the goal: ${userGoal}`
     : `for someone with the goal: ${userGoal}`;
 
-  const prompt = `Generate ${count} healthy recipe ideas ${context}.
+  const prompt = `Generate ${safeCount} healthy, delicious recipe ideas ${context}.
 IMPORTANT: You MUST understand the search query regardless of the language it is written in. The final output (recipe names, descriptions, and instructions) MUST be completely translated to ${targetLang}.
-Return ONLY valid JSON (no markdown). Structure:
+Return ONLY valid JSON (no conversational text, no markdown). Structure:
 [
   {
     "id": "unique_id",
     "name": "Recipe Name",
-    "description": "Short description",
-    "calories": 400,
-    "protein": 30,
+    "description": "Short appetizing description",
+    "calories": 420,
+    "protein": 35,
     "carbs": 40,
     "fat": 12,
-    "ingredients": ["item 1", "item 2"],
-    "instructions": ["step 1", "step 2"],
+    "ingredients": ["150g ingredient 1", "50g ingredient 2"],
+    "instructions": ["Step 1 description", "Step 2 description"],
     "prepTime": 20,
     "goal": "${userGoal}"
   }
 ]
 IMPORTANT: All text MUST be in ${targetLang}.`;
 
-  const data = await fetchGroq({
-    model: FAST_MODEL,
-    messages: [{ role: 'user', content: prompt }],
-    max_tokens: 1800,
-    temperature: 0.7,
-  });
-
-  let text = (data.choices[0]?.message?.content ?? '').trim();
-  // Strip markdown if present
-  text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
-
   try {
-    const parsed = JSON.parse(text);
-    return Array.isArray(parsed) ? parsed : (parsed.recipes || []);
+    const data = await fetchGroq({
+      model: FAST_MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 2800,
+      temperature: 0.7,
+    });
+
+    const text = (data.choices[0]?.message?.content ?? '').trim();
+    const rawRecipes = extractRecipesFromJson(text);
+
+    if (rawRecipes && rawRecipes.length > 0) {
+      return rawRecipes.map((r, i) => ({
+        id: r.id || `recipe_${Date.now()}_${i}`,
+        name: r.name || r.title || 'Receta Fit',
+        description: r.description || '',
+        calories: Math.round(Number(r.calories) || 400),
+        protein: Math.round(Number(r.protein) || 30),
+        carbs: Math.round(Number(r.carbs) || 35),
+        fat: Math.round(Number(r.fat) || 12),
+        ingredients: Array.isArray(r.ingredients) ? r.ingredients : [],
+        instructions: Array.isArray(r.instructions) ? r.instructions : [],
+        prepTime: Math.round(Number(r.prepTime) || 20),
+        goal: (r.goal === 'lose' || r.goal === 'gain' || r.goal === 'maintain') ? r.goal : (userGoal as any || 'maintain'),
+        isFavorite: false,
+      }));
+    }
+
+    console.warn('[Groq] generateRecipes returned empty or unparseable JSON. Falling back to curated catalog.');
+    return getCuratedRecipes(foodName, userGoal, language);
   } catch (err) {
-    console.warn('[Groq] generateRecipes parse error:', err);
-    return [];
+    console.warn('[Groq] generateRecipes network or proxy error, falling back to curated recipes:', err);
+    return getCuratedRecipes(foodName, userGoal, language);
   }
 }
 

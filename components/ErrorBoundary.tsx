@@ -1,6 +1,8 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import { logger } from '../utils/logger';
+import i18n from '../i18n';
 
 interface Props {
   children: ReactNode;
@@ -24,6 +26,13 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     logger.error('[ErrorBoundary] Uncaught error:', error, errorInfo.componentStack);
+    try {
+      Sentry.captureException(error, {
+        extra: { componentStack: errorInfo.componentStack },
+      });
+    } catch {
+      // Sentry error capture fallback
+    }
   }
 
   handleRetry = () => {
@@ -34,14 +43,17 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback;
 
+      const title = i18n.t('common.errorOccurred', 'Ha ocurrido un error inesperado');
+      const retryText = i18n.t('common.retry', 'Reintentar');
+
       return (
         <View style={styles.container}>
-          <Text style={styles.title}>Something went wrong</Text>
+          <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>
-            {this.state.error?.message || 'An unexpected error occurred'}
+            {this.state.error?.message || i18n.t('common.unexpectedError', 'An unexpected error occurred')}
           </Text>
-          <TouchableOpacity style={styles.button} onPress={this.handleRetry}>
-            <Text style={styles.buttonText}>Try Again</Text>
+          <TouchableOpacity style={styles.button} onPress={this.handleRetry} activeOpacity={0.8}>
+            <Text style={styles.buttonText}>{retryText}</Text>
           </TouchableOpacity>
         </View>
       );

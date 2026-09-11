@@ -7,12 +7,25 @@ interface SocialBadgeProps {
   badgeCount: number;
   onPress: () => void;
   colors: any;
+  size?: number;
 }
 
-export function SocialBadge({ badgeCount, onPress, colors }: SocialBadgeProps) {
+export function SocialBadge({ badgeCount, onPress, colors, size = 34 }: SocialBadgeProps) {
+  const iconSize = size >= 40 ? 20 : 17;
+  const radius = size / 2;
+
   return (
     <TouchableOpacity
-      style={[s.socialBtn, { backgroundColor: colors.surface, borderColor: colors.border, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 }]}
+      style={[
+        s.socialBtn,
+        {
+          width: size,
+          height: size,
+          borderRadius: radius,
+          backgroundColor: colors.surfaceAlt + '60',
+          borderColor: colors.border + '35',
+        },
+      ]}
       activeOpacity={0.7}
       onPress={onPress}
     >
@@ -21,9 +34,9 @@ export function SocialBadge({ badgeCount, onPress, colors }: SocialBadgeProps) {
           colors={[colors.primary, colors.secondary || '#A855F7']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={s.socialGradient}
+          style={[s.socialGradient, { width: size, height: size, borderRadius: radius }]}
         >
-          <Users size={20} color="#fff" />
+          <Users size={iconSize} color="#fff" />
           <View style={[s.badge, { borderColor: colors.background }]}>
             <Text style={s.badgeText}>
               {badgeCount > 9 ? '+9' : `+${badgeCount}`}
@@ -31,8 +44,8 @@ export function SocialBadge({ badgeCount, onPress, colors }: SocialBadgeProps) {
           </View>
         </LinearGradient>
       ) : (
-        <View style={s.socialIconWrap}>
-          <Users size={22} color={colors.textPrimary} />
+        <View style={[s.socialIconWrap, { width: size, height: size, borderRadius: radius }]}>
+          <Users size={iconSize} color={colors.textPrimary} />
         </View>
       )}
     </TouchableOpacity>

@@ -25,7 +25,7 @@ import { CustomAlert, AlertType } from '../components/CustomAlert';
 import {
   GoalStep, StatsStep, ActivityStep, LifestyleStep,
   DietaryRestrictionsStep, MedicalConditionsStep, MedicationsStep,
-  DietTypeStep, DietStep, PersonalizationStep,
+  DietTypeStep, DietStep, PersonalizationStep, ExperienceModeStep,
   SecondaryGoalsStep, SocialProofStep, ExperienceRatingStep,
   TermsStep, ProjectionStep
 } from '../components/onboarding';
@@ -47,15 +47,12 @@ export default function OnboardingScreen() {
     weightUnit: 'kg',
     heightUnit: 'cm',
     secondaryGoals: [],
+    appMode: 'simple',
   });
   const [saving, setSaving]           = useState(false);
   const [error, setError]             = useState<string | null>(null);
   const { setProfile }              = useAuthStore();
-  const { setMassUnit, setLengthUnit, setPremiumColor } = useSettingsStore();
-
-  useEffect(() => {
-    setPremiumColor(null);
-  }, [setPremiumColor]);
+  const { setMassUnit, setLengthUnit } = useSettingsStore();
 
   const [alert, setAlert] = useState<{
     visible: boolean;
@@ -252,6 +249,7 @@ export default function OnboardingScreen() {
         lifestyle:      d.lifestyle,
         customGender:   d.customGender,
         secondaryGoals: d.secondaryGoals ?? [],
+        appMode:        (d.appMode || 'simple') as any,
       };
 
       let upsertError: any = null;
@@ -331,6 +329,9 @@ export default function OnboardingScreen() {
 
       setMassUnit(isLbs ? 'lb' : 'kg');
       setLengthUnit(isFt ? 'ft' : 'cm');
+      const chosenMode = d.appMode || 'simple';
+      useSettingsStore.getState().setAppMode(chosenMode);
+      supabase.auth.updateUser({ data: { app_mode: chosenMode } }).catch(() => {});
 
       setProfile(profileData);
 
@@ -374,6 +375,7 @@ export default function OnboardingScreen() {
       case 'dietType':             return <DietTypeStep            {...props} />;
       case 'diet':                 return <DietStep                {...props} />;
       case 'personalization':      return <PersonalizationStep     {...props} />;
+      case 'experienceMode':       return <ExperienceModeStep      {...props} />;
       case 'secondaryGoals':       return <SecondaryGoalsStep      {...props} />;
       case 'socialProof':          return <SocialProofStep         {...props} />;
       case 'experienceRating':     return <ExperienceRatingStep    {...props} onNext={handleNextStep} />;
@@ -502,7 +504,7 @@ export default function OnboardingScreen() {
             ) : (
               <View style={s.nextContent}>
                 <Text style={s.nextText}>
-                  {currentStep === STEPS.length - 1 ? t('onboarding.createPlan') : t('onboarding.continue', 'Continue')}
+                  {currentStep === STEPS.length - 1 ? t('onboarding.startExperience', 'Comenzar mi experiencia') : t('onboarding.continue', 'Continue')}
                 </Text>
                 <ArrowRight size={20} color="#FFF" strokeWidth={2.5} />
               </View>

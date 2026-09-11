@@ -3,13 +3,14 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../services/supabase';
 import i18n from '../i18n';
-import { ThemeMode, AppLanguage, MassUnit, VolumeUnit, LengthUnit, EnergyUnit, TempUnit, Reminder } from './types';
+import { ThemeMode, AppLanguage, AppExperienceMode, MassUnit, VolumeUnit, LengthUnit, EnergyUnit, TempUnit, Reminder } from './types';
 import { useRecipesStore } from './recipesStore';
 import { useAuthStore } from './authStore';
 
 interface SettingsState {
   theme: ThemeMode;
   language: AppLanguage;
+  appMode: AppExperienceMode;
   massUnit: MassUnit;
   volumeUnit: VolumeUnit;
   lengthUnit: LengthUnit;
@@ -18,6 +19,7 @@ interface SettingsState {
   reminders: Reminder[];
   premiumColor: string | null;
   setTheme: (theme: ThemeMode) => void;
+  setAppMode: (mode: AppExperienceMode) => void;
   setPremiumColor: (color: string | null) => void;
   setLanguage: (lang: AppLanguage) => void;
   setMassUnit: (unit: MassUnit) => void;
@@ -64,6 +66,7 @@ export const useSettingsStore = create<SettingsState>()(
     (set, get) => ({
       theme: 'dark',
       language: 'en',
+      appMode: 'advanced',
       massUnit: 'kg',
       volumeUnit: 'ml',
       lengthUnit: 'cm',
@@ -72,6 +75,14 @@ export const useSettingsStore = create<SettingsState>()(
       reminders: DEFAULT_REMINDERS,
       premiumColor: null,
       setTheme: (theme) => set({ theme }),
+      setAppMode: (appMode) => {
+        if (get().appMode === appMode) return;
+        set({ appMode });
+        const profile = useAuthStore.getState().profile;
+        if (profile?.id) {
+          supabase.auth.updateUser({ data: { app_mode: appMode } }).catch(() => {});
+        }
+      },
       setPremiumColor: (premiumColor) => {
         if (get().premiumColor === premiumColor) return;
         set({ premiumColor });

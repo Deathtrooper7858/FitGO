@@ -2,6 +2,7 @@ import type { FoodItem } from '../services/foodDatabase';
 
 export type ThemeMode = 'light' | 'dark';
 export type AppLanguage = 'en' | 'es' | 'fr' | 'pt' | 'it' | 'de' | 'ru';
+export type AppExperienceMode = 'simple' | 'advanced';
 
 export type MassUnit = 'g' | 'kg' | 'lb';
 export type VolumeUnit = 'oz' | 'l' | 'ml';
@@ -52,6 +53,8 @@ export interface UserProfile extends HealthProfile {
   proExpiresAt?:   string | null;
   proWillRenew?:   boolean | null;
   onboardingDone:  boolean;
+  appMode?:        AppExperienceMode;
+  app_mode?:       AppExperienceMode;
   widgetsOrder?:   string[];
   lifestyle?:      'seated' | 'standing_sometimes' | 'standing_mostly' | 'moving' | 'physical_work';
   extraSnacks?:    number;

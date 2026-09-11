@@ -36,6 +36,7 @@ import { useAdStore } from '../../store/adStore';
 import { AdTimerOverlay } from '../../components/AdTimerOverlay';
 import { RewardedAdGate } from '../../components/RewardedAdGate';
 import { generateRecipes } from '../../services/groq';
+import { getCuratedRecipes } from '../../services/recipes/curatedRecipes';
 import { useTheme } from '../../hooks/useTheme';
 import { useIsPro } from '../../hooks/useIsPro';
 
@@ -80,14 +81,21 @@ export default function RecipesModal() {
   const hasAccess = isPro || hasPremiumAdAccess(featureId);
 
   const loadRecipes = useCallback(
-    async (foodName?: string) => {
+    async (foodName?: string, isExplicitUserAction: boolean = false) => {
       if (!hasAccess) return;
       setLoading(true);
       try {
-        const newRecipes = await generateRecipes(profile?.goal ?? 'maintain', language, 8, foodName);
-        setRecipes(newRecipes);
+        const newRecipes = await generateRecipes(profile?.goal ?? 'maintain', language, 6, foodName);
+        if (newRecipes && newRecipes.length > 0) {
+          setRecipes(newRecipes);
+        } else {
+          const fallback = getCuratedRecipes(foodName, profile?.goal ?? 'maintain', language);
+          setRecipes(fallback);
+        }
       } catch (err) {
         console.error('Failed to load recipes', err);
+        const fallback = getCuratedRecipes(foodName, profile?.goal ?? 'maintain', language);
+        setRecipes(fallback);
       } finally {
         setLoading(false);
       }
@@ -102,23 +110,47 @@ export default function RecipesModal() {
     if (prevLang.current !== language) {
       prevLang.current = language;
       if (hasAccess && activeTab === 'search') {
-        setRecipes([]);
-        setTimeout(() => loadRecipes(), 100);
+        const refreshed = getCuratedRecipes(searchQuery || undefined, profile?.goal ?? 'maintain', language);
+        setRecipes(refreshed);
+        loadRecipes(searchQuery || undefined);
       }
     }
-  }, [language, hasAccess, activeTab, loadRecipes, setRecipes]);
+  }, [language, hasAccess, activeTab, loadRecipes, setRecipes, profile?.goal, searchQuery]);
 
-  // Initial load if empty
+  // Initial load if empty: immediately populate curated recipes then enrich with AI
   useEffect(() => {
     if (recipes.length === 0 && hasAccess && activeTab === 'search') {
+      const initial = getCuratedRecipes(undefined, profile?.goal ?? 'maintain', language);
+      if (initial.length > 0) {
+        setRecipes(initial);
+      }
       loadRecipes();
     }
-  }, [hasAccess, recipes.length, activeTab, loadRecipes]);
+  }, [hasAccess, recipes.length, activeTab, loadRecipes, profile?.goal, language, setRecipes]);
 
   const handleSuggestionPress = (query: string) => {
     triggerHaptic();
     setSearchQuery(query);
-    loadRecipes(query);
+    const instant = getCuratedRecipes(query, profile?.goal ?? 'maintain', language);
+    if (instant.length > 0) {
+      setRecipes(instant);
+    }
+    loadRecipes(query, true);
+  };
+
+  const handleSearchSubmit = (query: string) => {
+    triggerHaptic();
+    const trimmed = query.trim();
+    if (!trimmed) {
+      const all = getCuratedRecipes(undefined, profile?.goal ?? 'maintain', language);
+      setRecipes(all);
+      return;
+    }
+    const instant = getCuratedRecipes(trimmed, profile?.goal ?? 'maintain', language);
+    if (instant.length > 0) {
+      setRecipes(instant);
+    }
+    loadRecipes(trimmed, true);
   };
 
   const handleTogglePin = (recipe: Recipe) => {
@@ -149,8 +181,18 @@ export default function RecipesModal() {
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 0.8 }}
         />
+        <View style={s.paywallHeader}>
+          <TouchableOpacity
+            style={[s.backBtn, { backgroundColor: colors.surfaceAlt + '90' }]}
+            onPress={() => router.back()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <ArrowLeft size={20} color={colors.textPrimary} />
+          </TouchableOpacity>
+        </View>
+
         <View style={s.paywallContainer}>
-          <View style={s.paywallEmojiBox}>
+          <View style={[s.paywallEmojiBox, { backgroundColor: `${colors.primary}20` }]}>
             <Text style={s.paywallEmoji}>🍳</Text>
           </View>
           <Text style={[s.paywallTitle, { color: colors.textPrimary }]}>
@@ -178,7 +220,7 @@ export default function RecipesModal() {
             onPress={() => router.push('/modals/paywall')}
             activeOpacity={0.85}
           >
-            <LinearGradient colors={['#8B5CF6', '#6D28D9']} style={s.proGrad}>
+            <LinearGradient colors={[colors.primary, colors.primaryDark || '#6D28D9']} style={s.proGrad}>
               <Text style={s.proText}>{t('recipes.unlockNow', 'Desbloquear con Pro')}</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -203,7 +245,7 @@ export default function RecipesModal() {
   const currentData = activeTab === 'search' ? recipes : pinnedRecipes;
 
   const renderContent = () => {
-    if (loading) {
+    if (loading && currentData.length === 0) {
       return (
         <View style={s.loadingBox}>
           <View style={[s.loadingIconCircle, { backgroundColor: `${colors.primary}20` }]}>
@@ -259,11 +301,15 @@ export default function RecipesModal() {
           </Text>
           <TouchableOpacity
             style={[s.exploreBtn, { backgroundColor: colors.primary }]}
-            onPress={() => loadRecipes()}
+            onPress={() => {
+              setSearchQuery('');
+              const all = getCuratedRecipes(undefined, profile?.goal ?? 'maintain', language);
+              setRecipes(all);
+            }}
           >
             <Sparkles size={16} color="#FFF" />
             <Text style={s.exploreBtnText}>
-              {t('recipes.generateSurprise', 'Generar Recetas del Día')}
+              {t('recipes.seeAll', 'Ver Todas las Recetas')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -271,23 +317,33 @@ export default function RecipesModal() {
     }
 
     return (
-      <FlashList
-        data={currentData}
-        renderItem={({ item: recipe, index }) => (
-          <RecipeCard
-            recipe={recipe}
-            isFav={pinnedRecipes.some(r => r.id === recipe.id)}
-            onFav={() => handleTogglePin(recipe)}
-            onOpenDetail={() => handleOpenDetail(recipe)}
-            index={index}
-          />
+      <View style={{ flex: 1 }}>
+        {loading && activeTab === 'search' && (
+          <View style={[s.loadingBar, { backgroundColor: `${colors.primary}18`, borderColor: `${colors.primary}35` }]}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <Text style={[s.loadingBarText, { color: colors.primary }]}>
+              {t('recipes.aiGenerating', 'Chef IA preparando nuevas sugerencias...')}
+            </Text>
+          </View>
         )}
-        keyExtractor={item => item.id}
-        // @ts-ignore
-        estimatedItemSize={280}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={s.listContent}
-      />
+        <FlashList
+          data={currentData}
+          renderItem={({ item: recipe, index }) => (
+            <RecipeCard
+              recipe={recipe}
+              isFav={pinnedRecipes.some(r => r.id === recipe.id)}
+              onFav={() => handleTogglePin(recipe)}
+              onOpenDetail={() => handleOpenDetail(recipe)}
+              index={index}
+            />
+          )}
+          keyExtractor={item => item.id}
+          // @ts-ignore
+          estimatedItemSize={280}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={s.listContent}
+        />
+      </View>
     );
   };
 
@@ -381,12 +437,16 @@ export default function RecipesModal() {
               placeholderTextColor={colors.textMuted}
               value={searchQuery}
               onChangeText={setSearchQuery}
-              onSubmitEditing={() => loadRecipes(searchQuery)}
+              onSubmitEditing={() => handleSearchSubmit(searchQuery)}
               returnKeyType="search"
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity
-                onPress={() => setSearchQuery('')}
+                onPress={() => {
+                  setSearchQuery('');
+                  const all = getCuratedRecipes(undefined, profile?.goal ?? 'maintain', language);
+                  setRecipes(all);
+                }}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 style={{ padding: 4 }}
               >
@@ -396,12 +456,12 @@ export default function RecipesModal() {
             <TouchableOpacity
               onPress={() => {
                 triggerHaptic();
-                loadRecipes(searchQuery);
+                handleSearchSubmit(searchQuery);
               }}
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={[colors.primary, '#6D28D9']}
+                colors={[colors.primary, colors.primaryDark || '#6D28D9']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={s.searchBtn}
@@ -1142,7 +1202,31 @@ const s = StyleSheet.create({
     fontWeight: '700',
   },
 
+  // Loading Bar
+  loadingBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginHorizontal: Spacing.lg,
+    marginBottom: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+  },
+  loadingBarText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+
   // Paywall
+  paywallHeader: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: 8,
+    alignItems: 'flex-start',
+    width: '100%',
+  },
   paywallContainer: {
     flex: 1,
     alignItems: 'center',

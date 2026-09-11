@@ -173,30 +173,34 @@ function FitGoWaterWidget({ waterMl, waterTarget }: { waterMl: number; waterTarg
 // Task Handler — Android calls this even when app is closed
 // ─────────────────────────────────────────────────────────
 export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
-  const data = await loadWidgetData();
+  try {
+    const data = await loadWidgetData();
 
-  switch (props.widgetAction) {
-    case 'WIDGET_ADDED':
-    case 'WIDGET_UPDATE':
-    case 'WIDGET_RESIZED': {
-      const widgetName = props.widgetInfo.widgetName;
+    switch (props.widgetAction) {
+      case 'WIDGET_ADDED':
+      case 'WIDGET_UPDATE':
+      case 'WIDGET_RESIZED': {
+        const widgetName = props.widgetInfo.widgetName;
 
-      if (widgetName === 'FitGoStreakWidget') {
-        props.renderWidget(<FitGoStreakWidget streak={data.streak} name={data.userName} />);
-      } else if (widgetName === 'FitGoWaterWidget') {
-        props.renderWidget(<FitGoWaterWidget waterMl={data.waterMl} waterTarget={data.waterTarget} />);
-      } else {
-        // Default: FitGoMainWidget
-        props.renderWidget(<FitGoMainWidget data={data} />);
+        if (widgetName === 'FitGoStreakWidget') {
+          props.renderWidget(<FitGoStreakWidget streak={data.streak} name={data.userName} />);
+        } else if (widgetName === 'FitGoWaterWidget') {
+          props.renderWidget(<FitGoWaterWidget waterMl={data.waterMl} waterTarget={data.waterTarget} />);
+        } else {
+          // Default: FitGoMainWidget
+          props.renderWidget(<FitGoMainWidget data={data} />);
+        }
+        break;
       }
-      break;
+
+      case 'WIDGET_CLICK':
+        // All clicks open the app at the dashboard
+        break;
+
+      default:
+        break;
     }
-
-    case 'WIDGET_CLICK':
-      // All clicks open the app at the dashboard
-      break;
-
-    default:
-      break;
+  } catch (error) {
+    console.warn('[WidgetTaskHandler] Error updating widget:', error);
   }
 }

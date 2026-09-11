@@ -69,8 +69,8 @@ preventAutoHideAsync();
 // ─── Navigation Guard ─────────────────────────────────────────────────────────
 function NavigationGuard() {
   const session = useAuthStore(s => s.session);
-  const profileId = useAuthStore(s => s.profile?.id);
-  const onboardingDone = useAuthStore(s => s.profile?.onboardingDone);
+  const profile = useAuthStore(s => s.profile);
+  const profileId = profile?.id;
   const isLoading = useAuthStore(s => s.isLoading);
   const segmentsKey = useSegments().join('/');
   // Wait for the root navigator to finish mounting before any navigation.
@@ -85,17 +85,24 @@ function NavigationGuard() {
     // ── Auth still resolving — never navigate while loading to prevent flashes
     if (isLoading) return;
 
+    // If session exists but profile is still null / fetching, wait until profile is resolved.
+    // Making decisions without profile causes false redirects to /onboarding.
+    if (session && !profile) return;
+
     const seg0 = segmentsKey.split('/')[0] || '';
     const inAuthGroup   = seg0 === '(auth)' || seg0 === 'auth';
     const inOnboarding  = seg0 === 'onboarding';
     const isTermsModal  = segmentsKey === 'modals/terms' || segmentsKey === '(auth)/terms';
+    const isUpdatePassword = segmentsKey === '(auth)/update-password';
 
-    if (!session) {
-      if (!inAuthGroup) {
+    const isAuthenticated = !!(session || profileId);
+    const onboardingDone = Boolean(profile?.onboardingDone || profile?.goal || profile?.weight || profile?.tdee);
+
+    if (!isAuthenticated) {
+      if (!inAuthGroup && !isTermsModal) {
         router.replace('/(auth)/welcome');
       }
-    } else if (!profileId || !onboardingDone) {
-      // Session exists but profile is invalid or incomplete → onboarding
+    } else if (!onboardingDone) {
       if (!inOnboarding && !isTermsModal) {
         if (seg0 === 'auth' && router.canGoBack()) {
           router.back();
@@ -103,17 +110,18 @@ function NavigationGuard() {
         router.replace('/onboarding');
       }
     } else {
-      const isUpdatePassword = segmentsKey === '(auth)/update-password';
       if (isUpdatePassword) return; // Stay on the screen to type new password
 
-      if (inAuthGroup || inOnboarding || !segmentsKey) {
+      // If user is authenticated with completed onboarding and starts the app (on index, in auth group, or onboarding):
+      // Go directly to the main tab!
+      if (inAuthGroup || inOnboarding || !segmentsKey || seg0 === 'index') {
         if (seg0 === 'auth' && router.canGoBack()) {
           router.back();
         }
         router.replace('/(tabs)/tracker');
       }
     }
-  }, [navigationState?.key, session, profileId, onboardingDone, isLoading, segmentsKey]);
+  }, [navigationState?.key, session, profile, profileId, isLoading, segmentsKey]);
 
   return null;
 }
@@ -196,13 +204,13 @@ function RootLayout() {
     let authCallVersion = 0;
     let previousUserId: string | null = null;
 
-    const handleAuthStateChange = async (newSession: any) => {
+    const handleAuthStateChange = async (newSession: any, event?: string) => {
       const thisCall = ++authCallVersion;
       
       const currentProfile = useAuthStore.getState().profile;
-      const userIdChanged = newSession?.user?.id && currentProfile?.id !== newSession.user.id;
-      // isInitialLoading: must fetch profile from network only if we don't already have a valid complete profile
-      const isInitialLoading = !currentProfile?.id || !newSession || userIdChanged || !currentProfile.onboardingDone;
+      const userIdChanged = Boolean(newSession?.user?.id && currentProfile?.id !== newSession.user.id);
+      // isInitialLoading: must fetch profile from network only if we don't have a profile in memory or user changed
+      const isInitialLoading = (!currentProfile?.id || userIdChanged) && !!newSession?.user?.id;
       
       // Always set loading=true upfront only if we don't have a ready profile
       if (isInitialLoading) {
@@ -210,8 +218,8 @@ function RootLayout() {
       }
 
       try {
-        useAuthStore.getState().setSession(newSession);
         if (newSession?.user) {
+          useAuthStore.getState().setSession(newSession);
           const newUserId = newSession.user.id;
           if (previousUserId && previousUserId !== newUserId) {
             useSettingsStore.getState().setPremiumColor(null);
@@ -250,13 +258,21 @@ function RootLayout() {
           }).catch(err => console.error('Background fetch error:', err));
 
           useAICreditsStore.getState().resetIfNewDay();
-        } else {
-          useAuthStore.getState().clearAuth();
+        } else if (event === 'SIGNED_OUT') {
+          // Explicit sign out
+          await useAuthStore.getState().clearAuth();
           useSettingsStore.getState().setPremiumColor(null);
           previousUserId = null;
           useSocialStore.getState().reset();
           useAICreditsStore.getState().setIsProUser(false);
           usePlannerStore.getState().clearPlans();
+        } else {
+          // Session is null from startup or network glitch.
+          // Do NOT clear auth if we already have a cached profile or session!
+          const currentStore = useAuthStore.getState();
+          if (!currentStore.session && !currentStore.profile) {
+            useAuthStore.getState().setSession(null);
+          }
         }
       } catch (err) {
         console.error('Error in auth state change:', err);
@@ -285,17 +301,20 @@ function RootLayout() {
 
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        handleAuthStateChange(session);
+        if (session) {
+          await handleAuthStateChange(session, 'INITIAL_SESSION');
+        } else {
+          useAuthStore.getState().setLoading(false);
+        }
       } catch {
         useAuthStore.getState().setLoading(false);
       }
     })();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // Ignore INITIAL_SESSION here because getSession() already handles initial startup.
       // Ignore USER_UPDATED to avoid cyclic re-fetching when user metadata is synced.
-      if (event === 'INITIAL_SESSION' || event === 'USER_UPDATED') return;
-      handleAuthStateChange(session);
+      if (event === 'USER_UPDATED') return;
+      handleAuthStateChange(session, event);
     });
 
     return () => {
@@ -358,6 +377,10 @@ function RootLayout() {
           />
           <Stack.Screen
             name="modals/calendar"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="modals/app-guide"
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />
 

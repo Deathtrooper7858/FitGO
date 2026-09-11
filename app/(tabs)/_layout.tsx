@@ -163,18 +163,18 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="tracker/index"
           options={{
-            title: t('tabs.tracker', 'Tracker'),
+            title: t('tabs.tracker', 'Principal'),
             tabBarIcon: ({ focused }: { focused: boolean }) => (
-              <TabIcon Icon={FileText} label={t('tabs.tracker', 'Tracker')} focused={focused} />
+              <TabIcon Icon={FileText} label={t('tabs.tracker', 'Principal')} focused={focused} />
             ),
           }}
         />
         <Tabs.Screen
           name="dashboard/index"
           options={{
-            title: t('tabs.dashboard', 'Dashboard'),
+            title: t('tabs.dashboard', 'Progreso'),
             tabBarIcon: ({ focused }: { focused: boolean }) => (
-              <TabIcon Icon={BarChart2} label={t('tabs.dashboard', 'Dashboard')} focused={focused} />
+              <TabIcon Icon={BarChart2} label={t('tabs.dashboard', 'Progreso')} focused={focused} />
             ),
           }}
         />
@@ -190,9 +190,9 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="planner/index"
           options={{
-            title: t('tabs.planner', 'Planner'),
+            title: t('tabs.planner', 'Planificador'),
             tabBarIcon: ({ focused }: { focused: boolean }) => (
-              <TabIcon Icon={Calendar} label={t('tabs.planner', 'Planner')} focused={focused} />
+              <TabIcon Icon={Calendar} label={t('tabs.planner', 'Planificador')} focused={focused} />
             ),
           }}
           listeners={{ tabPress: plannerTabPress }}
@@ -200,11 +200,11 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="social/index"
           options={{
-            title: t('tabs.social', 'Social'),
+            title: t('tabs.social', 'Comunidad'),
             tabBarIcon: ({ focused }: { focused: boolean }) => (
               <TabIcon
                 Icon={Users}
-                label={t('tabs.social', 'Social')}
+                label={t('tabs.social', 'Comunidad')}
                 focused={focused}
                 badgeCount={socialBadgeCount}
               />

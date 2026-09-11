@@ -19,9 +19,9 @@ export function TermsStep({ value: data, onChange }: StepProps) {
     <View style={step.container}>
       <View style={step.headerSection}>
         <FloatingHeroIcon
-          icon={<Check size={44} color="#8B5CF6" strokeWidth={3} />}
-          color="#8B5CF6"
-          glowColor="#7C5CFC"
+          icon={<Check size={44} color={colors.primary} strokeWidth={3} />}
+          color={colors.primary}
+          glowColor={colors.primaryLight || colors.primary}
         />
         <Text style={[step.title, { color: colors.textPrimary }]}>
           {t('onboarding.termsTitle', 'Terms & Conditions')}
@@ -94,8 +94,8 @@ export function TermsStep({ value: data, onChange }: StepProps) {
 
             {/* Privacy Security Row */}
             <View style={styles.privacyRow}>
-              <View style={[styles.shieldIconWrap, { backgroundColor: '#8B5CF618' }]}>
-                <ShieldCheck size={22} color="#8B5CF6" />
+              <View style={[styles.shieldIconWrap, { backgroundColor: colors.primary + '18' }]}>
+                <ShieldCheck size={22} color={colors.primary} />
               </View>
               <Text style={[styles.privacyText, { color: colors.textSecondary }]}>
                 {t(

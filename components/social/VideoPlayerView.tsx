@@ -8,9 +8,21 @@ interface VideoPlayerViewProps {
 }
 
 export function VideoPlayerView({ videoUrl, style }: VideoPlayerViewProps) {
+  if (!videoUrl) {
+    return <View style={[styles.container, style]} />;
+  }
+
+  return <VideoPlayerInner videoUrl={videoUrl} style={style} />;
+}
+
+function VideoPlayerInner({ videoUrl, style }: VideoPlayerViewProps) {
   const player = useVideoPlayer(videoUrl, (p) => {
-    p.loop = true;
-    p.muted = false;
+    try {
+      p.loop = true;
+      p.muted = false;
+    } catch (e) {
+      console.warn('[VideoPlayerInner] player setup error:', e);
+    }
   });
 
   return (

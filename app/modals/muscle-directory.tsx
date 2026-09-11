@@ -40,6 +40,10 @@ import { useIsPro } from '../../hooks/useIsPro';
 import { useAdStore } from '../../store/adStore';
 import { AdTimerOverlay } from '../../components/AdTimerOverlay';
 import exercisesData from '../../excercise/exercises.json';
+const instructionsEs: Record<string, string[]> = require('../../excercise/instructions_es.json');
+
+// In-memory cache for ultra-fast instant lookups across exercise selections
+const INSTRUCTION_MEMORY_CACHE: Record<string, { name: string; instructions: string[] }> = {};
 
 const Body = React.lazy(() =>
   import('react-native-body-highlighter').then(m => ({ default: m.default }))
@@ -272,13 +276,20 @@ export default function MuscleDirectoryModal() {
     return exercisesData
       .filter(ex => {
         const name = (ex.name || '').toLowerCase();
+        const translatedName = (t(`exerciseNames.${ex.name}`, '') || '').toLowerCase();
         const bp = (ex.bodyParts?.[0] || '').toLowerCase();
         const eq = (ex.equipments?.[0] || '').toLowerCase();
         const tm = (ex.targetMuscles || []).join(' ').toLowerCase();
-        return name.includes(q) || bp.includes(q) || eq.includes(q) || tm.includes(q);
+        return (
+          name.includes(q) ||
+          translatedName.includes(q) ||
+          bp.includes(q) ||
+          eq.includes(q) ||
+          tm.includes(q)
+        );
       })
       .slice(0, 50); // limit to 50 for smooth render
-  }, [searchQuery]);
+  }, [searchQuery, t]);
 
   // Muscle group translation helper - supports all 7 languages
   const getGroupName = (id: string) => {
@@ -339,37 +350,70 @@ export default function MuscleDirectoryModal() {
     }
   }, []);
 
-  const handleSelectExercise = useCallback(async (exercise: any) => {
-    triggerHaptic();
-    setSelectedExercise(exercise);
-    setTranslatedData(null);
+  const handleSelectExercise = useCallback(
+    async (exercise: any) => {
+      triggerHaptic();
+      setSelectedExercise(exercise);
 
-    const currentLang = i18n.language || 'en';
-    if (currentLang.startsWith('en')) {
-      setTranslatedData({ name: exercise.name, instructions: exercise.instructions || [] });
-      return;
-    }
+      const currentLang = i18n.language || 'en';
+      const localizedName = capitalize(String(t(`exerciseNames.${exercise.name}`, exercise.name)));
 
-    setIsTranslating(true);
-    const cacheKey = `ex_trans_${exercise.exerciseId || exercise.name}_${currentLang}`;
-    try {
-      const cached = await AsyncStorage.getItem(cacheKey);
-      if (cached) {
-        setTranslatedData(JSON.parse(cached));
+      // 1. English: display original instructions immediately (0ms)
+      if (currentLang.startsWith('en')) {
+        setTranslatedData({ name: exercise.name, instructions: exercise.instructions || [] });
         setIsTranslating(false);
         return;
       }
 
-      const res = await translateExerciseDetails(exercise.name, exercise.instructions || [], currentLang);
-      setTranslatedData(res);
-      await AsyncStorage.setItem(cacheKey, JSON.stringify(res));
-    } catch (err) {
-      console.warn('Translation error, falling back to original:', err);
-      setTranslatedData({ name: exercise.name, instructions: exercise.instructions || [] });
-    } finally {
-      setIsTranslating(false);
-    }
-  }, [i18n.language]);
+      // 2. Spanish: instant lookup from pre-translated offline dictionary (0ms)
+      if (currentLang.startsWith('es')) {
+        const pretranslated = (instructionsEs as Record<string, string[]>)[exercise.exerciseId];
+        if (pretranslated && pretranslated.length > 0) {
+          setTranslatedData({ name: localizedName, instructions: pretranslated });
+          setIsTranslating(false);
+          return;
+        }
+      }
+
+      // 3. Fast In-Memory Cache check (0ms)
+      const cacheKey = `ex_trans_${exercise.exerciseId || exercise.name}_${currentLang}`;
+      if (INSTRUCTION_MEMORY_CACHE[cacheKey]) {
+        setTranslatedData(INSTRUCTION_MEMORY_CACHE[cacheKey]);
+        setIsTranslating(false);
+        return;
+      }
+
+      // 4. AsyncStorage Cache check
+      try {
+        const cached = await AsyncStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          INSTRUCTION_MEMORY_CACHE[cacheKey] = parsed;
+          setTranslatedData(parsed);
+          setIsTranslating(false);
+          return;
+        }
+      } catch {
+        // ignore cache read error
+      }
+
+      // 5. Fallback for other languages: show current instructions immediately without blocking the UI
+      setTranslatedData({ name: localizedName, instructions: exercise.instructions || [] });
+      setIsTranslating(true);
+
+      try {
+        const res = await translateExerciseDetails(exercise.name, exercise.instructions || [], currentLang);
+        setTranslatedData(res);
+        INSTRUCTION_MEMORY_CACHE[cacheKey] = res;
+        await AsyncStorage.setItem(cacheKey, JSON.stringify(res));
+      } catch (err) {
+        console.warn('Translation error, falling back to original:', err);
+      } finally {
+        setIsTranslating(false);
+      }
+    },
+    [i18n.language, t]
+  );
 
   // Paywall guard
   if (!hasAccess) {
@@ -994,7 +1038,10 @@ export default function MuscleDirectoryModal() {
 
                 {/* Exercise Title */}
                 <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
-                  {capitalize(translatedData?.name || selectedExercise.name)}
+                  {capitalize(
+                    translatedData?.name ||
+                    t(`exerciseNames.${selectedExercise.name}`, selectedExercise.name)
+                  )}
                 </Text>
 
                 {/* GIF Animation Frame */}
@@ -1038,47 +1085,48 @@ export default function MuscleDirectoryModal() {
                 {/* Step-by-step Instructions */}
                 <View style={styles.instructionsContainer}>
                   <View style={styles.instructionsHeaderRow}>
-                    <CheckCircle2 size={16} color={colors.primary} />
-                    <Text style={[styles.instructionsTitle, { color: colors.textPrimary }]}>
-                      {t('muscleDirectory.instructions', 'Instrucciones')}
-                    </Text>
-                  </View>
-
-                  {isTranslating ? (
-                    <View style={styles.translatingBox}>
-                      <ActivityIndicator size="small" color={colors.primary} />
-                      <Text style={[styles.translatingText, { color: colors.textSecondary }]}>
-                        {t('muscleDirectory.translatingInstructions', 'Traduciendo instrucciones...')}
+                    <View style={styles.instructionsTitleRow}>
+                      <CheckCircle2 size={16} color={colors.primary} />
+                      <Text style={[styles.instructionsTitle, { color: colors.textPrimary }]}>
+                        {t('muscleDirectory.instructions', 'Instrucciones')}
                       </Text>
                     </View>
-                  ) : (
-                    <View style={styles.instructionStepsList}>
-                      {(translatedData?.instructions || selectedExercise.instructions || []).map(
-                        (rawStep: string, idx: number) => {
-                          // Clean "Step:1 " prefix if present
-                          const cleanStep = rawStep.replace(/^Step:\s*\d+\s*/i, '');
-                          return (
-                            <View
-                              key={idx}
-                              style={[
-                                styles.instructionStepCard,
-                                { backgroundColor: colors.surfaceAlt + '60', borderColor: colors.border + '30' },
-                              ]}
-                            >
-                              <View style={[styles.stepNumberBadge, { backgroundColor: `${colors.primary}20` }]}>
-                                <Text style={[styles.stepNumberText, { color: colors.primary }]}>
-                                  {idx + 1}
-                                </Text>
-                              </View>
-                              <Text style={[styles.instructionStepText, { color: colors.textSecondary }]}>
-                                {cleanStep}
+                    {isTranslating && (
+                      <View style={[styles.translatingBadge, { backgroundColor: `${colors.primary}15` }]}>
+                        <ActivityIndicator size="small" color={colors.primary} />
+                        <Text style={[styles.translatingBadgeText, { color: colors.primary }]}>
+                          {t('muscleDirectory.translatingInstructions', 'Traduciendo...')}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+
+                  <View style={styles.instructionStepsList}>
+                    {(translatedData?.instructions || selectedExercise.instructions || []).map(
+                      (rawStep: string, idx: number) => {
+                        // Clean "Step:1 " prefix if present
+                        const cleanStep = rawStep.replace(/^Step:\s*\d+\s*/i, '');
+                        return (
+                          <View
+                            key={idx}
+                            style={[
+                              styles.instructionStepCard,
+                              { backgroundColor: colors.surfaceAlt + '60', borderColor: colors.border + '30' },
+                            ]}
+                          >
+                            <View style={[styles.stepNumberBadge, { backgroundColor: `${colors.primary}20` }]}>
+                              <Text style={[styles.stepNumberText, { color: colors.primary }]}>
+                                {idx + 1}
                               </Text>
                             </View>
-                          );
-                        }
-                      )}
-                    </View>
-                  )}
+                            <Text style={[styles.instructionStepText, { color: colors.textSecondary }]}>
+                              {cleanStep}
+                            </Text>
+                          </View>
+                        );
+                      }
+                    )}
+                  </View>
                 </View>
 
                 {/* Bottom Close Button */}
@@ -1608,21 +1656,28 @@ const styles = StyleSheet.create({
   instructionsHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  instructionsTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
   },
   instructionsTitle: {
     fontSize: 15,
     fontWeight: '700',
   },
-  translatingBox: {
+  translatingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    padding: 12,
+    gap: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: Radius.full,
   },
-  translatingText: {
-    fontSize: 13,
-    fontWeight: '500',
+  translatingBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
   instructionStepsList: {
     gap: 8,

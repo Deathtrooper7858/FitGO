@@ -9,7 +9,8 @@ import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BarChart } from 'react-native-gifted-charts';
-import { Calendar, Flame, ChevronRight, Plus, Lock } from 'lucide-react-native';
+import { Calendar, Flame, ChevronRight, Plus, Lock, BookOpen, Sparkles, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Radius } from '../../../constants';
 import { useAuthStore, useNutritionStore, selectDailyTotals, useSettingsStore, useSocialStore } from '../../../store';
 import { useTheme } from '../../../hooks/useTheme';
@@ -30,6 +31,8 @@ import { StepsWidget } from '../../../components/tracker/StepsWidget';
 import { ConsistencyHeatmap } from '../../../components/tracker/ConsistencyHeatmap';
 import { DateNavigator } from '../../../components/tracker/DateNavigator';
 import { SocialBadge } from '../../../components/tracker/SocialBadge';
+import { AppGuideBanner } from '../../../components/tracker/AppGuideBanner';
+import { AppModeModal } from '../../../components/profile/AppModeModal';
 import { useIsPro } from '../../../hooks/useIsPro';
 
 const MEALS = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
@@ -51,7 +54,10 @@ export default function TrackerScreen() {
     snack: '#F59E0B',
   }), [colors.primary]);
 
-  const { language, energyUnit, volumeUnit } = useSettingsStore();
+  const { language, energyUnit, volumeUnit, appMode, setAppMode } = useSettingsStore();
+  const isSimple = appMode === 'simple';
+  const [appModeModalVisible, setAppModeModalVisible] = useState(false);
+  const [showAdvancedWidgets, setShowAdvancedWidgets] = useState(false);
   const { profile } = useAuthStore();
   const { width } = useWindowDimensions();
   const todayLogs = useNutritionStore(s => s.todayLogs);
@@ -211,9 +217,53 @@ export default function TrackerScreen() {
     });
   };
 
+  // ─── 2-Month Interactive Guide Banner Logic ──────────────────────────────
+  const [showGuideBanner, setShowGuideBanner] = useState(true);
+  const [guideDayNumber, setGuideDayNumber] = useState(1);
+  const [isWithinTwoMonths, setIsWithinTwoMonths] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const storedDismissed = await AsyncStorage.getItem('fitgo_guide_banner_dismissed_date');
+        const today = getLocalDateString(new Date());
+        if (storedDismissed === today && mounted) {
+          setShowGuideBanner(false);
+        }
+
+        let firstLaunch = await AsyncStorage.getItem('fitgo_first_launch_timestamp');
+        if (!firstLaunch) {
+          firstLaunch = new Date().toISOString();
+          await AsyncStorage.setItem('fitgo_first_launch_timestamp', firstLaunch);
+        }
+
+        const diffTime = Date.now() - new Date(firstLaunch).getTime();
+        const diffDays = Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1);
+
+        if (mounted) {
+          setGuideDayNumber(diffDays);
+          setIsWithinTwoMonths(diffDays <= 60);
+        }
+      } catch (err) {
+        console.warn('[Tracker] Error loading guide launch date:', err);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const handleDismissGuideBanner = React.useCallback(async () => {
+    try {
+      setShowGuideBanner(false);
+      const today = getLocalDateString(new Date());
+      await AsyncStorage.setItem('fitgo_guide_banner_dismissed_date', today);
+    } catch {}
+  }, []);
+
   // Selection state
   const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set());
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const carouselRef = React.useRef<ScrollView>(null);
   const [isFetching, setIsFetching] = useState(false);
 
   // Effects
@@ -302,6 +352,70 @@ export default function TrackerScreen() {
     });
   }, [todayLogs, language, colors, mealColors]);
 
+  const macroRadarCard = useMemo(() => (
+    <GlassCard noPadding showStripe accentColor={colors.primary}>
+      <View style={[s.card, { borderWidth: 0, overflow: 'hidden' }]}>
+        <View style={[s.cardHeader, { marginBottom: 0 }]}>
+          <View>
+            <Text style={[s.cardTitle, { color: colors.textPrimary }]}>
+              ⬡ {t('tracker.macroBalance', 'Macro Balance')}
+            </Text>
+            <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2 }}>
+              {t('tracker.vsGoals', 'vs. daily goals')}
+            </Text>
+          </View>
+          <View style={{ backgroundColor: colors.primary + '20', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: colors.primary + '40' }}>
+            <Text style={{ color: colors.primary, fontSize: 10, fontWeight: '800', letterSpacing: 1 }}>
+              {t('tracker.today').toUpperCase()}
+            </Text>
+          </View>
+        </View>
+
+        <View style={{ alignItems: 'center', paddingVertical: 4 }}>
+          <Svg width={260} height={240}>
+            {[0.25, 0.5, 0.75].map((scale, gi) => {
+              const cx = 130, cy = 120, r = 95 * scale;
+              const pts = radarData.map((_, i) => { const a = (Math.PI * 2 * i) / radarData.length - Math.PI / 2; return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`; }).join(' ');
+              return <Polygon key={gi} points={pts} fill="none" stroke={colors.border} strokeWidth={gi === 2 ? 1.5 : 1} strokeOpacity={gi === 2 ? 0.6 : 0.35} strokeDasharray={gi === 0 ? '3,4' : gi === 1 ? '4,4' : '5,4'} />;
+            })}
+            {(() => { const cx = 130, cy = 120, r = 95; const pts = radarData.map((_, i) => { const a = (Math.PI * 2 * i) / radarData.length - Math.PI / 2; return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`; }).join(' '); return <Polygon points={pts} fill={colors.border + '0A'} stroke={colors.border + 'CC'} strokeWidth={1.5} />; })()}
+            {radarData.map((d, i) => { const cx = 130, cy = 120, r = 95; const a = (Math.PI * 2 * i) / radarData.length - Math.PI / 2; return <Line key={i} x1={cx} y1={cy} x2={cx + r * Math.cos(a)} y2={cy + r * Math.sin(a)} stroke={colors.border} strokeWidth={1} strokeOpacity={0.5} />; })}
+            <Polygon points={radarData.map((d, i) => { const cx = 130, cy = 120, r = 95 * Math.max(d.pct, 0.03); const a = (Math.PI * 2 * i) / radarData.length - Math.PI / 2; return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`; }).join(' ')} fill={colors.primary + '18'} stroke="none" />
+            <Polygon points={radarData.map((d, i) => { const cx = 130, cy = 120, r = 95 * Math.max(d.pct, 0.03); const a = (Math.PI * 2 * i) / radarData.length - Math.PI / 2; return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`; }).join(' ')} fill="none" stroke={colors.primary + 'CC'} strokeWidth={2} strokeLinejoin="round" />
+            {radarData.map((d, i) => { const cx = 130, cy = 120; const r = 95 * Math.max(d.pct, 0.03); const rOuter = 95; const a = (Math.PI * 2 * i) / radarData.length - Math.PI / 2; const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a); const lx = cx + (rOuter + 18) * Math.cos(a), ly = cy + (rOuter + 18) * Math.sin(a); return (
+              <G key={i}>
+                <Circle cx={x} cy={y} r={9} fill={d.color} fillOpacity={0.2} />
+                <Circle cx={x} cy={y} r={5} fill={d.color} />
+                <Circle cx={x} cy={y} r={2} fill="#FFFFFF" fillOpacity={0.9} />
+                <SvgText x={lx} y={ly - 5} fill={colors.textSecondary} fontSize={8.5} fontWeight="700" textAnchor="middle" alignmentBaseline="middle">{d.label.toUpperCase()}</SvgText>
+                <SvgText x={lx} y={ly + 6} fill={d.color} fontSize={9} fontWeight="800" textAnchor="middle" alignmentBaseline="middle">{Math.round(d.pct * 100)}%</SvgText>
+              </G>
+            ); })}
+          </Svg>
+        </View>
+        <View style={{ height: 1, backgroundColor: colors.border + '40', marginHorizontal: -20, marginBottom: 14 }} />
+        <View style={{ gap: 8 }}>
+          {radarData.map(d => {
+            const pctClamped = Math.min(d.pct * 100, 100);
+            return (
+              <View key={d.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: d.color }} />
+                <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', width: 56, textTransform: 'uppercase', letterSpacing: 0.3 }}>{d.label}</Text>
+                <View style={{ flex: 1, height: 5, borderRadius: 3, backgroundColor: colors.border + '50', overflow: 'hidden' }}>
+                  <View style={[{ height: '100%', borderRadius: 3, backgroundColor: d.color, width: `${pctClamped}%` }]} />
+                </View>
+                <Text style={{ color: colors.textPrimary, fontSize: 11, fontWeight: '700', minWidth: 70, textAlign: 'right' }}>
+                  <Text style={{ color: d.color }}>{Math.round(d.current)}</Text>
+                  <Text style={{ color: colors.textMuted, fontWeight: '400' }}>/{d.target}g</Text>
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+      </View>
+    </GlassCard>
+  ), [colors, radarData, t]);
+
   return (
     <View style={{ flex: 1 }}>
       <GlobalBackground />
@@ -342,28 +456,30 @@ export default function TrackerScreen() {
                 <Text style={[s.greetingText, { color: colors.textSecondary }]} numberOfLines={1}>
                   {greeting},
                 </Text>
-                <Text style={[s.nameText, { color: colors.textPrimary }]} numberOfLines={1}>
+                <Text style={[s.nameText, { color: colors.textPrimary }]} numberOfLines={1} ellipsizeMode="tail">
                   {firstName} 👋
                 </Text>
               </View>
             </TouchableOpacity>
 
-            {/* Centro: Día y Racha centrados */}
-            <View style={s.headerCenter}>
+            {/* Acciones Rápidas Unificadas */}
+            <View style={s.headerActions}>
               <TouchableOpacity
                 onPress={() => {
                   Haptics.selectionAsync();
                   router.push('/modals/calendar' as any);
                 }}
-                style={[s.calendarBtn, { backgroundColor: colors.surfaceAlt + '60', borderColor: colors.border + '35' }]}
+                style={[
+                  s.streakPill,
+                  {
+                    backgroundColor: colors.surfaceAlt + '60',
+                    borderColor: streakDays >= 3 ? '#FF6B00' + '60' : colors.border + '35',
+                  },
+                ]}
                 activeOpacity={0.75}
+                accessibilityLabel={t('tracker.streak', 'Racha')}
               >
-                <Calendar size={13} color={colors.primary} />
-                <Text style={[s.calendarBtnText, { color: colors.textPrimary }]}>
-                  {selectedDate === getLocalDateString()
-                    ? t('tracker.today', 'Hoy')
-                    : new Date(selectedDate + 'T12:00:00').toLocaleDateString(t('common.locale', 'es'), { month: 'short', day: 'numeric' })}
-                </Text>
+                <FireStreakBadge streakDays={streakDays} size="small" style={{ paddingHorizontal: 3, paddingVertical: 0 }} />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -371,15 +487,42 @@ export default function TrackerScreen() {
                   Haptics.selectionAsync();
                   router.push('/modals/calendar' as any);
                 }}
+                style={[
+                  s.headerIconBtn,
+                  {
+                    backgroundColor: colors.surfaceAlt + '60',
+                    borderColor: colors.border + '35',
+                  },
+                ]}
                 activeOpacity={0.75}
+                accessibilityLabel={t('tracker.calendar', 'Calendario')}
               >
-                <FireStreakBadge streakDays={streakDays} />
+                <Calendar size={16} color={selectedDate === getLocalDateString() ? colors.textPrimary : colors.primary} />
+                {selectedDate !== getLocalDateString() && (
+                  <View style={[s.activeDot, { backgroundColor: colors.primary }]} />
+                )}
               </TouchableOpacity>
-            </View>
 
-            {/* Derecha: Red Social */}
-            <View style={s.headerRight}>
+              <TouchableOpacity
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push('/modals/app-guide' as any);
+                }}
+                style={[
+                  s.headerIconBtn,
+                  {
+                    backgroundColor: colors.primary + '20',
+                    borderColor: colors.primary + '45',
+                  },
+                ]}
+                activeOpacity={0.75}
+                accessibilityLabel={t('guide.openGuide', 'Guía de inicio')}
+              >
+                <BookOpen size={16} color={colors.primary} />
+              </TouchableOpacity>
+
               <SocialBadge
+                size={34}
                 badgeCount={socialNotificationCount}
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -401,8 +544,52 @@ export default function TrackerScreen() {
                 language={language}
               />
 
+              {/* Banner Interactivo de 2 Meses (60 días) */}
+              {isWithinTwoMonths && showGuideBanner && (
+                <AppGuideBanner
+                  dayNumber={guideDayNumber}
+                  totalDays={60}
+                  onOpenGuide={() => router.push('/modals/app-guide' as any)}
+                  onDismiss={handleDismissGuideBanner}
+                  colors={colors}
+                  t={t}
+                />
+              )}
+
+              {/* Píldora de Modo Simplificado */}
+              {isSimple && (
+                <TouchableOpacity
+                  style={[s.simpleModeBanner, { backgroundColor: '#10B98115', borderColor: '#10B98140' }]}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    setAppModeModalVisible(true);
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <View style={s.simpleModeBannerLeft}>
+                    <View style={[s.simpleModeIconWrap, { backgroundColor: '#10B98125' }]}>
+                      <Sparkles size={14} color="#10B981" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[s.simpleModeBannerTitle, { color: colors.textPrimary }]}>
+                        {t('tracker.simpleModeBadge', 'Versión Simplificada')}
+                      </Text>
+                      <Text style={[s.simpleModeBannerSub, { color: colors.textSecondary }]} numberOfLines={1}>
+                        {t('tracker.simpleModeSub', 'Interfaz intuitiva • Toca para cambiar a Avanzada')}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={[s.simpleModeBadgeTag, { backgroundColor: '#10B98122' }]}>
+                    <Text style={{ color: '#10B981', fontSize: 11, fontWeight: '800' }}>
+                      {t('common.change', 'Cambiar')} ›
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+
               {/* Widgets Carousel (Hero Anillo + Macros, Micronutrientes, Resumen) */}
               <ScrollView
+                ref={carouselRef}
                 horizontal
                 pagingEnabled
                 showsHorizontalScrollIndicator={false}
@@ -410,143 +597,149 @@ export default function TrackerScreen() {
                 contentContainerStyle={s.carouselContent}
                 onMomentumScrollEnd={(e) => setCarouselIndex(Math.round(e.nativeEvent.contentOffset.x / (width - 32)))}
               >
-                {/* Slide 1: Anillo de Calorías y Barras de Macros */}
-                <View style={{ width: width - 32 }}>
-                  <GlassCard showStripe accentColor={colors.primary} noPadding style={{ borderRadius: 24 }}>
-                    <View style={[s.card, { borderWidth: 0, paddingVertical: 20 }]}>
-                      <CalorieArc
-                        consumed={calories}
-                        target={target}
-                        burned={totalBurned}
-                        energyLabel={energyLabel}
-                        colors={colors}
-                        t={t}
-                      />
-                      <MacroBars
-                        macros={{ protein, carbs, fat }}
-                        targets={macros}
-                        colors={colors}
-                        t={t}
-                      />
-                    </View>
-                  </GlassCard>
-                </View>
-
-                {/* Slide 2: Micronutrientes en Rejilla Visual */}
-                <View style={{ width: width - 32 }}>
-                  <GlassCard noPadding showStripe accentColor="#06B6D4">
-                    <View style={[s.card, { borderWidth: 0, paddingVertical: 18 }]}>
-                      <View style={s.cardHeader}>
-                        <View>
-                          <Text style={[s.cardTitle, { color: colors.textPrimary }]}>
-                            {t('tracker.otherNutrients', 'Micronutrientes')}
-                          </Text>
-                          <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2 }}>
-                            {t('tracker.dailySummary', 'Valores de ingesta diaria')}
-                          </Text>
+                    {/* Slide 1: Anillo de Calorías y Barras de Macros */}
+                    <View style={{ width: width - 32 }}>
+                      <GlassCard showStripe accentColor={colors.primary} noPadding style={{ borderRadius: 24 }}>
+                        <View style={[s.card, { borderWidth: 0, paddingVertical: 20 }]}>
+                          <CalorieArc
+                            consumed={calories}
+                            target={target}
+                            burned={totalBurned}
+                            energyLabel={energyLabel}
+                            colors={colors}
+                            t={t}
+                          />
+                          <MacroBars
+                            macros={{ protein, carbs, fat }}
+                            targets={macros}
+                            colors={colors}
+                            t={t}
+                          />
                         </View>
-                        {!isPro && (
-                          <TouchableOpacity
-                            style={[s.proBadgePill, { backgroundColor: colors.secondary + '20', borderColor: colors.secondary + '45' }]}
-                            onPress={() => router.push('/modals/paywall')}
-                          >
-                            <Lock size={11} color={colors.secondary} />
-                            <Text style={[s.proBadgeText, { color: colors.secondary }]}>PRO</Text>
-                          </TouchableOpacity>
-                        )}
-                      </View>
+                      </GlassCard>
+                    </View>
 
-                      <View style={s.nutrientsGrid}>
-                        {[
-                          { emoji: '🌾', label: t('tracker.fiber', 'Fibra'), val: `${Math.round(fiber)} g`, ref: '30 g' },
-                          { emoji: '🍭', label: t('tracker.sugar', 'Azúcar'), val: `${Math.round(sugar)} g`, ref: '< 50 g' },
-                          { emoji: '🥑', label: t('tracker.saturatedFat', 'Grasas Sat.'), val: `${Math.round(saturatedFat)} g`, ref: '< 20 g' },
-                          { emoji: '🧂', label: t('tracker.sodium', 'Sodio'), val: `${Math.round(sodium)} mg`, ref: '< 2300 mg' },
-                          { emoji: '🥩', label: t('tracker.iron', 'Hierro'), val: `${Math.round(iron)} mg`, ref: '18 mg' },
-                          { emoji: '🥛', label: t('tracker.calcium', 'Calcio'), val: `${Math.round(calcium)} mg`, ref: '1000 mg' },
-                        ].map((nut) => (
-                          <View
-                            key={nut.label}
-                            style={[
-                              s.nutrientGridCard,
-                              { backgroundColor: colors.surfaceAlt + '45', borderColor: colors.border + '30' }
-                            ]}
-                          >
-                            <View style={s.nutrientCardHeader}>
-                              <Text style={{ fontSize: 14 }}>{nut.emoji}</Text>
-                              <Text style={[s.nutrientCardLabel, { color: colors.textSecondary }]} numberOfLines={1}>
-                                {nut.label}
+                    {/* Slide 2: Micronutrientes en Rejilla Visual */}
+                    <View style={{ width: width - 32 }}>
+                      <GlassCard noPadding showStripe accentColor="#06B6D4">
+                        <View style={[s.card, { borderWidth: 0, paddingVertical: 18 }]}>
+                          <View style={s.cardHeader}>
+                            <View>
+                              <Text style={[s.cardTitle, { color: colors.textPrimary }]}>
+                                {t('tracker.otherNutrients', 'Micronutrientes')}
+                              </Text>
+                              <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2 }}>
+                                {t('tracker.dailySummary', 'Valores de ingesta diaria')}
                               </Text>
                             </View>
-                            <Text style={[s.nutrientCardVal, { color: colors.textPrimary }]}>
-                              {isPro ? nut.val : '🔒 Pro'}
-                            </Text>
-                            <Text style={[s.nutrientCardRef, { color: colors.textMuted }]}>
-                              meta: {nut.ref}
-                            </Text>
+                            {!isPro && (
+                              <TouchableOpacity
+                                style={[s.proBadgePill, { backgroundColor: colors.secondary + '20', borderColor: colors.secondary + '45' }]}
+                                onPress={() => router.push('/modals/paywall')}
+                              >
+                                <Lock size={11} color={colors.secondary} />
+                                <Text style={[s.proBadgeText, { color: colors.secondary }]}>PRO</Text>
+                              </TouchableOpacity>
+                            )}
                           </View>
-                        ))}
-                      </View>
-                    </View>
-                  </GlassCard>
-                </View>
 
-                {/* Slide 3: Resumen Semanal */}
-                <View style={{ width: width - 32 }}>
-                  <GlassCard noPadding showStripe accentColor={colors.carbs}>
-                    <View style={[s.card, { borderWidth: 0, paddingBottom: 14 }]}>
-                      <View style={s.cardHeader}>
-                        <View>
-                          <Text style={[s.cardTitle, { color: colors.textPrimary }]}>
-                            {t('dashboard.weeklyAvg', 'Resumen Semanal')}
-                          </Text>
-                          <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2 }}>
-                            {t('tracker.dailySummary', 'Comidas de los últimos 7 días')}
-                          </Text>
-                        </View>
-                        <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: '700' }}>{energyLabel}</Text>
-                      </View>
-                      <View style={{ alignItems: 'center', marginTop: 10 }}>
-                        <BarChart
-                          stackData={stackData}
-                          barWidth={22}
-                          spacing={18}
-                          roundedTop
-                          roundedBottom
-                          hideRules
-                          xAxisThickness={0}
-                          yAxisThickness={0}
-                          yAxisTextStyle={{ color: colors.textMuted, fontSize: 10 }}
-                          noOfSections={4}
-                          maxValue={Number.isFinite(target) && target > 0 ? target * 1.2 : 2400}
-                          isAnimated
-                          animationDuration={800}
-                        />
-                      </View>
-                      <View style={s.chartLegend}>
-                        {MEALS.map(m => (
-                          <View key={m} style={s.legendItem}>
-                            <View style={[s.legendDot, { backgroundColor: mealColors[m] }]} />
-                            <Text style={[s.legendText, { color: colors.textSecondary }]}>{t(`tracker.${m}`)}</Text>
+                          <View style={s.nutrientsGrid}>
+                            {[
+                              { emoji: '🌾', label: t('tracker.fiber', 'Fibra'), val: `${Math.round(fiber)} g`, ref: '30 g' },
+                              { emoji: '🍭', label: t('tracker.sugar', 'Azúcar'), val: `${Math.round(sugar)} g`, ref: '< 50 g' },
+                              { emoji: '🥑', label: t('tracker.saturatedFat', 'Grasas Sat.'), val: `${Math.round(saturatedFat)} g`, ref: '< 20 g' },
+                              { emoji: '🧂', label: t('tracker.sodium', 'Sodio'), val: `${Math.round(sodium)} mg`, ref: '< 2300 mg' },
+                              { emoji: '🥩', label: t('tracker.iron', 'Hierro'), val: `${Math.round(iron)} mg`, ref: '18 mg' },
+                              { emoji: '🥛', label: t('tracker.calcium', 'Calcio'), val: `${Math.round(calcium)} mg`, ref: '1000 mg' },
+                            ].map((nut) => (
+                              <View
+                                key={nut.label}
+                                style={[
+                                  s.nutrientGridCard,
+                                  { backgroundColor: colors.surfaceAlt + '45', borderColor: colors.border + '30' }
+                                ]}
+                              >
+                                <View style={s.nutrientCardHeader}>
+                                  <Text style={{ fontSize: 14 }}>{nut.emoji}</Text>
+                                  <Text style={[s.nutrientCardLabel, { color: colors.textSecondary }]} numberOfLines={1}>
+                                    {nut.label}
+                                  </Text>
+                                </View>
+                                <Text style={[s.nutrientCardVal, { color: colors.textPrimary }]}>
+                                  {isPro ? nut.val : '🔒 Pro'}
+                                </Text>
+                                <Text style={[s.nutrientCardRef, { color: colors.textMuted }]}>
+                                  meta: {nut.ref}
+                                </Text>
+                              </View>
+                            ))}
                           </View>
-                        ))}
-                      </View>
+                        </View>
+                      </GlassCard>
                     </View>
-                  </GlassCard>
-                </View>
+
+                    {/* Slide 3: Resumen Semanal */}
+                    <View style={{ width: width - 32 }}>
+                      <GlassCard noPadding showStripe accentColor={colors.carbs}>
+                        <View style={[s.card, { borderWidth: 0, paddingBottom: 14 }]}>
+                          <View style={s.cardHeader}>
+                            <View>
+                              <Text style={[s.cardTitle, { color: colors.textPrimary }]}>
+                                {t('dashboard.weeklyAvg', 'Resumen Semanal')}
+                              </Text>
+                              <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2 }}>
+                                {t('tracker.dailySummary', 'Comidas de los últimos 7 días')}
+                              </Text>
+                            </View>
+                            <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: '700' }}>{energyLabel}</Text>
+                          </View>
+                          <View style={{ alignItems: 'center', marginTop: 10 }}>
+                            <BarChart
+                              stackData={stackData}
+                              barWidth={22}
+                              spacing={18}
+                              roundedTop
+                              roundedBottom
+                              hideRules
+                              xAxisThickness={0}
+                              yAxisThickness={0}
+                              yAxisTextStyle={{ color: colors.textMuted, fontSize: 10 }}
+                              noOfSections={4}
+                              maxValue={Number.isFinite(target) && target > 0 ? target * 1.2 : 2400}
+                              isAnimated
+                              animationDuration={800}
+                            />
+                          </View>
+                          <View style={s.chartLegend}>
+                            {MEALS.map(m => (
+                              <View key={m} style={s.legendItem}>
+                                <View style={[s.legendDot, { backgroundColor: mealColors[m] }]} />
+                                <Text style={[s.legendText, { color: colors.textSecondary }]}>{t(`tracker.${m}`)}</Text>
+                              </View>
+                            ))}
+                          </View>
+                        </View>
+                      </GlassCard>
+                    </View>
               </ScrollView>
 
               <View style={s.dotsRow}>
                 {[0, 1, 2].map(i => (
-                  <View
+                  <TouchableOpacity
                     key={i}
+                    onPress={() => {
+                      Haptics.selectionAsync();
+                      carouselRef.current?.scrollTo({ x: i * (width - 32), animated: true });
+                      setCarouselIndex(i);
+                    }}
                     style={[
                       s.dotIndicator,
                       {
                         backgroundColor: carouselIndex === i ? colors.primary : colors.border + '50',
-                        width: carouselIndex === i ? 20 : 8,
+                        width: carouselIndex === i ? 22 : 7,
                       },
                     ]}
+                    activeOpacity={0.7}
                   />
                 ))}
               </View>
@@ -740,95 +933,119 @@ export default function TrackerScreen() {
                 </View>
               </GlassCard>
 
-              {/* Radar de Balance de Macros */}
-              <GlassCard noPadding showStripe accentColor={colors.primary}>
-                <View style={[s.card, { borderWidth: 0, overflow: 'hidden' }]}>
-                  <View style={[s.cardHeader, { marginBottom: 0 }]}>
-                    <View>
-                      <Text style={[s.cardTitle, { color: colors.textPrimary }]}>
-                        ⬡ {t('tracker.macroBalance', 'Macro Balance')}
-                      </Text>
-                      <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2 }}>
-                        {t('tracker.vsGoals', 'vs. daily goals')}
-                      </Text>
-                    </View>
-                    <View style={{ backgroundColor: colors.primary + '20', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: colors.primary + '40' }}>
-                      <Text style={{ color: colors.primary, fontSize: 10, fontWeight: '800', letterSpacing: 1 }}>
-                        {t('tracker.today').toUpperCase()}
-                      </Text>
-                    </View>
-                  </View>
+              {/* Widgets de Consistencia, Hidratación, Ayuno y Pasos */}
+              {isSimple ? (
+                <>
+                  <WaterTracker
+                    waterMl={rawWater}
+                    onAddWater={addWater}
+                    onCustomWaterPress={handleCustomWater}
+                    colors={colors}
+                    t={t}
+                    volumeUnit={volumeUnit}
+                  />
+                  <StepsWidget
+                    steps={currentSteps}
+                    onAddSteps={addSteps}
+                    colors={colors}
+                    t={t}
+                  />
 
-                  <View style={{ alignItems: 'center', paddingVertical: 4 }}>
-                    <Svg width={260} height={240}>
-                      {[0.25, 0.5, 0.75].map((scale, gi) => {
-                        const cx = 130, cy = 120, r = 95 * scale;
-                        const pts = radarData.map((_, i) => { const a = (Math.PI * 2 * i) / radarData.length - Math.PI / 2; return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`; }).join(' ');
-                        return <Polygon key={gi} points={pts} fill="none" stroke={colors.border} strokeWidth={gi === 2 ? 1.5 : 1} strokeOpacity={gi === 2 ? 0.6 : 0.35} strokeDasharray={gi === 0 ? '3,4' : gi === 1 ? '4,4' : '5,4'} />;
-                      })}
-                      {(() => { const cx = 130, cy = 120, r = 95; const pts = radarData.map((_, i) => { const a = (Math.PI * 2 * i) / radarData.length - Math.PI / 2; return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`; }).join(' '); return <Polygon points={pts} fill={colors.border + '0A'} stroke={colors.border + 'CC'} strokeWidth={1.5} />; })()}
-                      {radarData.map((d, i) => { const cx = 130, cy = 120, r = 95; const a = (Math.PI * 2 * i) / radarData.length - Math.PI / 2; return <Line key={i} x1={cx} y1={cy} x2={cx + r * Math.cos(a)} y2={cy + r * Math.sin(a)} stroke={colors.border} strokeWidth={1} strokeOpacity={0.5} />; })}
-                      <Polygon points={radarData.map((d, i) => { const cx = 130, cy = 120, r = 95 * Math.max(d.pct, 0.03); const a = (Math.PI * 2 * i) / radarData.length - Math.PI / 2; return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`; }).join(' ')} fill={colors.primary + '18'} stroke="none" />
-                      <Polygon points={radarData.map((d, i) => { const cx = 130, cy = 120, r = 95 * Math.max(d.pct, 0.03); const a = (Math.PI * 2 * i) / radarData.length - Math.PI / 2; return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`; }).join(' ')} fill="none" stroke={colors.primary + 'CC'} strokeWidth={2} strokeLinejoin="round" />
-                      {radarData.map((d, i) => { const cx = 130, cy = 120; const r = 95 * Math.max(d.pct, 0.03); const rOuter = 95; const a = (Math.PI * 2 * i) / radarData.length - Math.PI / 2; const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a); const lx = cx + (rOuter + 18) * Math.cos(a), ly = cy + (rOuter + 18) * Math.sin(a); return (
-                        <G key={i}>
-                          <Circle cx={x} cy={y} r={9} fill={d.color} fillOpacity={0.2} />
-                          <Circle cx={x} cy={y} r={5} fill={d.color} />
-                          <Circle cx={x} cy={y} r={2} fill="#FFFFFF" fillOpacity={0.9} />
-                          <SvgText x={lx} y={ly - 5} fill={colors.textSecondary} fontSize={8.5} fontWeight="700" textAnchor="middle" alignmentBaseline="middle">{d.label.toUpperCase()}</SvgText>
-                          <SvgText x={lx} y={ly + 6} fill={d.color} fontSize={9} fontWeight="800" textAnchor="middle" alignmentBaseline="middle">{Math.round(d.pct * 100)}%</SvgText>
-                        </G>
-                      ); })}
-                    </Svg>
-                  </View>
-                  <View style={{ height: 1, backgroundColor: colors.border + '40', marginHorizontal: -20, marginBottom: 14 }} />
-                  <View style={{ gap: 8 }}>
-                    {radarData.map(d => {
-                      const pctClamped = Math.min(d.pct * 100, 100);
-                      return (
-                        <View key={d.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: d.color }} />
-                          <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', width: 56, textTransform: 'uppercase', letterSpacing: 0.3 }}>{d.label}</Text>
-                          <View style={{ flex: 1, height: 5, borderRadius: 3, backgroundColor: colors.border + '50', overflow: 'hidden' }}>
-                            <View style={[{ height: '100%', borderRadius: 3, backgroundColor: d.color, width: `${pctClamped}%` }]} />
-                          </View>
-                          <Text style={{ color: colors.textPrimary, fontSize: 11, fontWeight: '700', minWidth: 70, textAlign: 'right' }}>
-                            <Text style={{ color: d.color }}>{Math.round(d.current)}</Text>
-                            <Text style={{ color: colors.textMuted, fontWeight: '400' }}>/{d.target}g</Text>
+                  {/* Herramientas Adicionales Colapsables (Sin perder ninguna función) */}
+                  <View style={s.toolsAccordionCard}>
+                    <TouchableOpacity
+                      style={[
+                        s.toolsAccordionHeader,
+                        {
+                          backgroundColor: colors.surfaceAlt + '65',
+                          borderColor: colors.border + '40',
+                        },
+                      ]}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setShowAdvancedWidgets(!showAdvancedWidgets);
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                        <View style={[s.toolsIconBadge, { backgroundColor: '#8B5CF622' }]}>
+                          <SlidersHorizontal size={16} color="#8B5CF6" />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[s.toolsAccordionTitle, { color: colors.textPrimary }]}>
+                            {t('tracker.moreTools', 'Más herramientas')}
+                          </Text>
+                          <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 1 }} numberOfLines={1}>
+                            {showAdvancedWidgets
+                              ? t('common.tapToHide', 'Toca para contraer')
+                              : t('tracker.moreToolsDesc', 'Ayuno, Radar de Macros y Consistencia')}
                           </Text>
                         </View>
-                      );
-                    })}
-                  </View>
-                </View>
-              </GlassCard>
+                      </View>
+                      <View style={[s.toolsChevronWrap, { backgroundColor: colors.surface }]}>
+                        {showAdvancedWidgets ? (
+                          <ChevronUp size={16} color={colors.textSecondary} />
+                        ) : (
+                          <ChevronDown size={16} color={colors.textSecondary} />
+                        )}
+                      </View>
+                    </TouchableOpacity>
 
-              {/* Widgets de Consistencia, Hidratación, Ayuno y Pasos */}
-              <ConsistencyHeatmap
-                heatmapDays={heatmapDays}
-                isPro={isPro}
-                onUpgrade={() => router.push('/modals/paywall')}
-                colors={colors}
-                t={t}
-              />
-              <WaterTracker
-                waterMl={rawWater}
-                onAddWater={addWater}
-                onCustomWaterPress={handleCustomWater}
-                colors={colors}
-                t={t}
-                volumeUnit={volumeUnit}
-              />
-              <FastingWidget colors={colors} t={t} />
-              <StepsWidget
-                steps={currentSteps}
-                onAddSteps={addSteps}
-                colors={colors}
-                t={t}
-              />
+                    {showAdvancedWidgets && (
+                      <View style={{ gap: 14, marginTop: 12 }}>
+                        {macroRadarCard}
+                        <FastingWidget colors={colors} t={t} />
+                        <ConsistencyHeatmap
+                          heatmapDays={heatmapDays}
+                          isPro={isPro}
+                          onUpgrade={() => router.push('/modals/paywall')}
+                          colors={colors}
+                          t={t}
+                        />
+                      </View>
+                    )}
+                  </View>
+                </>
+              ) : (
+                <>
+                  {macroRadarCard}
+                  <ConsistencyHeatmap
+                    heatmapDays={heatmapDays}
+                    isPro={isPro}
+                    onUpgrade={() => router.push('/modals/paywall')}
+                    colors={colors}
+                    t={t}
+                  />
+                  <WaterTracker
+                    waterMl={rawWater}
+                    onAddWater={addWater}
+                    onCustomWaterPress={handleCustomWater}
+                    colors={colors}
+                    t={t}
+                    volumeUnit={volumeUnit}
+                  />
+                  <FastingWidget colors={colors} t={t} />
+                  <StepsWidget
+                    steps={currentSteps}
+                    onAddSteps={addSteps}
+                    colors={colors}
+                    t={t}
+                  />
+                </>
+              )}
             </ScrollView>
           </View>
         </View>
+
+        <AppModeModal
+          visible={appModeModalVisible}
+          currentMode={appMode}
+          onSelect={(mode) => {
+            setAppMode(mode);
+            if (profile) useAuthStore.getState().setProfile({ ...profile, appMode: mode });
+          }}
+          onClose={() => setAppModeModalVisible(false)}
+        />
       </SafeAreaView>
     </View>
   );
@@ -846,18 +1063,18 @@ const s = StyleSheet.create({
     paddingVertical: 10,
   },
   headerUser: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    flexShrink: 0,
-    maxWidth: '46%',
+    marginRight: 8,
   },
   avatarWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     overflow: 'hidden',
-    borderWidth: 2,
+    borderWidth: 1.5,
   },
   avatarImage: {
     width: '100%',
@@ -870,48 +1087,52 @@ const s = StyleSheet.create({
   },
   avatarText: {
     fontWeight: '800',
-    fontSize: 17,
+    fontSize: 16,
   },
   greetingCol: {
+    flex: 1,
     justifyContent: 'center',
   },
   greetingText: {
     fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
   nameText: {
     fontSize: 15,
-    fontWeight: '900',
+    fontWeight: '800',
     letterSpacing: -0.3,
     marginTop: 1,
   },
-  headerCenter: {
-    flex: 1,
+  headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: 10,
-    paddingRight: 10,
+    gap: 6,
   },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    flexShrink: 0,
-  },
-  calendarBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
+  streakPill: {
+    height: 34,
+    paddingHorizontal: 7,
+    borderRadius: 17,
     borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  calendarBtnText: {
-    fontSize: 12,
-    fontWeight: '700',
+  headerIconBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  activeDot: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   scrollContent: {
     padding: 16,
@@ -1108,5 +1329,75 @@ const s = StyleSheet.create({
   legendText: {
     fontSize: 10,
     fontWeight: '700',
+  },
+  simpleModeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    marginBottom: 10,
+    gap: 10,
+  },
+  simpleModeBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  simpleModeIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  simpleModeBannerTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  simpleModeBannerSub: {
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 1,
+  },
+  simpleModeBadgeTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  toolsAccordionCard: {
+    marginTop: 6,
+    gap: 10,
+  },
+  toolsAccordionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+  },
+  toolsIconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  toolsAccordionTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  toolsChevronWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

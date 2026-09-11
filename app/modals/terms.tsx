@@ -33,6 +33,8 @@ import {
   STRUCTURED_PRIVACY,
   LegalItem,
 } from '../../constants/legalData';
+import { useTheme } from '../../hooks/useTheme';
+import { hexToRgba } from '../../utils/styles';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -43,6 +45,10 @@ export default function LegalScreen() {
   const { i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
+  const colors = useTheme();
+  const primary = colors.primary || '#7C5CFC';
+  const primaryLight = colors.primaryLight || colors.primary || '#C084FC';
+  const primaryDark = colors.primaryDark || colors.primary || '#7C3AED';
 
   const [activeTab, setActiveTab] = useState<'terms' | 'privacy'>(
     tab === 'privacy' ? 'privacy' : 'terms'
@@ -105,46 +111,46 @@ export default function LegalScreen() {
       back: 'Voltar',
       terms: 'Termos',
       privacy: 'Privacidade',
-      endTitle: 'Você chegou ao final',
-      endSub: 'Certifique-se de ter lido os termos antes de continuar.',
+      endTitle: 'Chegou ao fim',
+      endSub: 'Certifique-se de que reviu os Termos e Condições antes de continuar.',
       accept: 'Li e Aceito',
-      privacyPrefix: 'Sua privacidade é importante para nós. Leia nossa ',
+      privacyPrefix: 'A sua privacidade é importante para nós. Leia a nossa ',
       privacyLink: 'Política de Privacidade',
       termsLink: 'Termos de Serviço',
-      privacySuffix: ' para saber mais.',
+      privacySuffix: '.',
     },
     de: {
       back: 'Zurück',
       terms: 'Bedingungen',
       privacy: 'Datenschutz',
-      endTitle: 'Ende des Dokuments',
-      endSub: 'Bitte stellen Sie sicher, dass Sie die Bedingungen gelesen haben.',
-      accept: 'Ich akzeptiere und verstehe',
+      endTitle: 'Sie haben das Ende erreicht',
+      endSub: 'Bitte stellen Sie sicher, dass Sie die Bedingungen vor dem Fortfahren geprüft haben.',
+      accept: 'Gelesen & Akzeptiert',
       privacyPrefix: 'Ihre Privatsphäre ist uns wichtig. Lesen Sie unsere ',
       privacyLink: 'Datenschutzerklärung',
       termsLink: 'Nutzungsbedingungen',
-      privacySuffix: ', um mehr zu erfahren.',
+      privacySuffix: '.',
     },
     it: {
       back: 'Indietro',
       terms: 'Termini',
       privacy: 'Privacy',
       endTitle: 'Sei arrivato alla fine',
-      endSub: 'Assicurati di aver letto i termini prima di continuare.',
-      accept: 'Accetto e Comprendo',
-      privacyPrefix: 'La tua privacy è importante per noi. Leggi la nostra ',
+      endSub: 'Assicurati di aver letto i Termini e Condizioni prima di continuare.',
+      accept: 'Ho letto e Accetto',
+      privacyPrefix: 'La tua privacy è fondamentale per noi. Leggi la nostra ',
       privacyLink: 'Informativa sulla Privacy',
       termsLink: 'Termini di Servizio',
-      privacySuffix: ' per saperne di più.',
+      privacySuffix: '.',
     },
     ru: {
       back: 'Назад',
       terms: 'Условия',
       privacy: 'Конфиденциальность',
       endTitle: 'Вы дошли до конца',
-      endSub: 'Пожалуйста, убедитесь, что вы ознакомились с условиями перед продолжением.',
-      accept: 'Я принимаю и понимаю',
-      privacyPrefix: 'Ваша конфиденциальность важна для нас. Прочитайте нашу ',
+      endSub: 'Пожалуйста, ознакомьтесь с условиями перед продолжением.',
+      accept: 'Прочитано и Принято',
+      privacyPrefix: 'Ваша конфиденциальность важна для нас. Прочтите нашу ',
       privacyLink: 'Политику Конфиденциальности',
       termsLink: 'Условия Обслуживания',
       privacySuffix: ' для подробностей.',
@@ -198,7 +204,7 @@ export default function LegalScreen() {
             return (
               <Text
                 key={i}
-                style={styles.inlineLink}
+                style={[styles.inlineLink, { color: primaryLight }]}
                 onPress={() => Linking.openURL(part)}
               >
                 {part}
@@ -208,7 +214,7 @@ export default function LegalScreen() {
             return (
               <Text
                 key={i}
-                style={styles.inlineLink}
+                style={[styles.inlineLink, { color: primaryLight }]}
                 onPress={() => Linking.openURL(`mailto:${part}`)}
               >
                 {part}
@@ -228,9 +234,9 @@ export default function LegalScreen() {
     let IconComponent = ShieldCheck;
 
     if (item.calloutType === 'ai') {
-      borderColor = 'rgba(139, 92, 246, 0.5)';
-      bgColor = 'rgba(139, 92, 246, 0.08)';
-      iconColor = '#A855F7';
+      borderColor = hexToRgba(primary, 0.5);
+      bgColor = hexToRgba(primary, 0.08);
+      iconColor = primary;
       IconComponent = Bot;
     } else if (item.calloutType === 'billing') {
       borderColor = 'rgba(245, 158, 11, 0.5)';
@@ -280,21 +286,32 @@ export default function LegalScreen() {
         onPress={() => toggleExpand(item.id)}
         style={[
           styles.clauseCard,
-          isExpanded && styles.clauseCardExpanded,
+          isExpanded && {
+            borderColor: hexToRgba(primary, 0.4),
+            backgroundColor: '#141A2D',
+          },
         ]}
       >
         <View style={styles.clauseHeader}>
-          <View style={styles.clauseNumberBadge}>
-            <Text style={styles.clauseNumberText}>{item.number}</Text>
+          <View
+            style={[
+              styles.clauseNumberBadge,
+              {
+                backgroundColor: hexToRgba(primary, 0.15),
+                borderColor: hexToRgba(primary, 0.3),
+              },
+            ]}
+          >
+            <Text style={[styles.clauseNumberText, { color: primaryLight }]}>{item.number}</Text>
           </View>
           <View style={styles.clauseTitleWrap}>
             <Text style={styles.clauseTitle}>{item.title}</Text>
           </View>
           <View style={styles.clauseChevronWrap}>
             {isExpanded ? (
-              <ChevronDown size={20} color="#A855F7" />
+              <ChevronDown size={20} color={primary} />
             ) : (
-              <ChevronRight size={20} color="#7C3AED" />
+              <ChevronRight size={20} color={primaryDark} />
             )}
           </View>
         </View>
@@ -319,12 +336,12 @@ export default function LegalScreen() {
     <View style={[styles.container, { backgroundColor: '#0B0E17' }]}>
       {/* Background glow ambiance */}
       <LinearGradient
-        colors={['#1E103A', '#0B0E17', '#080A11']}
+        colors={[hexToRgba(primary, 0.22), '#0B0E17', '#080A11']}
         style={StyleSheet.absoluteFillObject}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 0.4 }}
       />
-      <View style={styles.topAmbientGlow} />
+      <View style={[styles.topAmbientGlow, { backgroundColor: primaryDark }]} />
 
       {/* Header Bar */}
       <View
@@ -338,22 +355,30 @@ export default function LegalScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
         >
-          <ChevronLeft color="#C084FC" size={24} />
-          <Text style={styles.backBtnText}>
+          <ChevronLeft color={primaryLight} size={24} />
+          <Text style={[styles.backBtnText, { color: primaryLight }]}>
             {ui.back}
           </Text>
         </TouchableOpacity>
 
         <View style={styles.titleSection}>
-          <View style={styles.shieldIconContainer}>
+          <View
+            style={[
+              styles.shieldIconContainer,
+              {
+                borderColor: hexToRgba(primary, 0.4),
+                shadowColor: primary,
+              },
+            ]}
+          >
             <LinearGradient
-              colors={['#2D1B54', '#17112E']}
+              colors={[hexToRgba(primary, 0.35), '#17112E']}
               style={styles.shieldGradient}
             >
               {activeTab === 'terms' ? (
-                <ShieldCheck color="#A855F7" size={32} strokeWidth={2.4} />
+                <ShieldCheck color={primary} size={32} strokeWidth={2.4} />
               ) : (
-                <Lock color="#A855F7" size={30} strokeWidth={2.4} />
+                <Lock color={primary} size={30} strokeWidth={2.4} />
               )}
             </LinearGradient>
           </View>
@@ -369,14 +394,14 @@ export default function LegalScreen() {
           <TouchableOpacity
             style={[
               styles.tabItem,
-              activeTab === 'terms' && styles.activeTabItem,
+              activeTab === 'terms' && [styles.activeTabItem, { shadowColor: primary }],
             ]}
             onPress={() => handleTabChange('terms')}
             activeOpacity={0.85}
           >
             {activeTab === 'terms' && (
               <LinearGradient
-                colors={['#8B5CF6', '#7C3AED']}
+                colors={[primary, primaryDark]}
                 style={StyleSheet.absoluteFillObject}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -395,14 +420,14 @@ export default function LegalScreen() {
           <TouchableOpacity
             style={[
               styles.tabItem,
-              activeTab === 'privacy' && styles.activeTabItem,
+              activeTab === 'privacy' && [styles.activeTabItem, { shadowColor: primary }],
             ]}
             onPress={() => handleTabChange('privacy')}
             activeOpacity={0.85}
           >
             {activeTab === 'privacy' && (
               <LinearGradient
-                colors={['#8B5CF6', '#7C3AED']}
+                colors={[primary, primaryDark]}
                 style={StyleSheet.absoluteFillObject}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -431,8 +456,16 @@ export default function LegalScreen() {
       >
         {/* Last Updated Date Card */}
         <View style={styles.metaCard}>
-          <View style={styles.calendarBadge}>
-            <Calendar color="#A855F7" size={20} strokeWidth={2.2} />
+          <View
+            style={[
+              styles.calendarBadge,
+              {
+                backgroundColor: hexToRgba(primary, 0.15),
+                borderColor: hexToRgba(primary, 0.3),
+              },
+            ]}
+          >
+            <Calendar color={primary} size={20} strokeWidth={2.2} />
           </View>
           <View style={styles.metaTexts}>
             <Text style={styles.metaLabel}>{docData.lastUpdatedLabel}</Text>
@@ -449,14 +482,19 @@ export default function LegalScreen() {
         })}
 
         {/* Completion Celebration Card */}
-        <View style={styles.completionCard}>
+        <View style={[styles.completionCard, { borderColor: hexToRgba(primary, 0.3) }]}>
           <LinearGradient
             colors={['#16132D', '#0F1122']}
             style={styles.completionGradient}
           >
             <View style={styles.completionLeft}>
-              <View style={styles.completionIconBadge}>
-                <CheckCircle2 color="#A855F7" size={22} strokeWidth={2.2} />
+              <View
+                style={[
+                  styles.completionIconBadge,
+                  { backgroundColor: hexToRgba(primary, 0.15) },
+                ]}
+              >
+                <CheckCircle2 color={primary} size={22} strokeWidth={2.2} />
               </View>
               <View style={styles.completionTexts}>
                 <Text style={styles.completionTitle}>
@@ -471,7 +509,7 @@ export default function LegalScreen() {
             {/* Stylized Document Illustration Badge */}
             <View style={styles.docIllustrationWrap}>
               <View style={styles.docMiniPaper}>
-                <View style={styles.docMiniShield}>
+                <View style={[styles.docMiniShield, { backgroundColor: primary }]}>
                   <ShieldCheck size={13} color="#FFFFFF" strokeWidth={2.5} />
                 </View>
                 <View style={styles.docMiniLine1} />
@@ -479,12 +517,12 @@ export default function LegalScreen() {
               </View>
               <Sparkles
                 size={14}
-                color="#C084FC"
+                color={primaryLight}
                 style={styles.sparkleTop}
               />
               <Sparkles
                 size={10}
-                color="#818CF8"
+                color={primaryDark}
                 style={styles.sparkleBottom}
               />
             </View>
@@ -501,12 +539,12 @@ export default function LegalScreen() {
         ]}
       >
         <TouchableOpacity
-          style={styles.acceptButton}
+          style={[styles.acceptButton, { shadowColor: primary }]}
           onPress={handleAccept}
           activeOpacity={0.88}
         >
           <LinearGradient
-            colors={['#8B5CF6', '#6D28D9']}
+            colors={[primary, primaryDark]}
             style={styles.acceptButtonGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
@@ -523,10 +561,10 @@ export default function LegalScreen() {
           activeOpacity={0.7}
           onPress={() => handleTabChange(activeTab === 'terms' ? 'privacy' : 'terms')}
         >
-          <Lock size={14} color="#06B6D4" strokeWidth={2.2} />
+          <Lock size={14} color={primary} strokeWidth={2.2} />
           <Text style={styles.subFooterText}>
             {ui.privacyPrefix}
-            <Text style={styles.subFooterHighlight}>
+            <Text style={[styles.subFooterHighlight, { color: primary }]}>
               {activeTab === 'terms' ? ui.privacyLink : ui.termsLink}
             </Text>
             {ui.privacySuffix}

@@ -2,16 +2,14 @@ import { useMemo } from 'react';
 import { useSettingsStore } from '../store';
 import { Colors } from '../constants/Colors';
 import { getSafeColor, lightenColor, darkenColor, hexToRgba } from '../utils/styles';
-import { useIsPro } from './useIsPro';
 
 export function useTheme() {
   const theme = useSettingsStore((state) => state.theme);
   const premiumColor = useSettingsStore((state) => state.premiumColor);
-  const isPro = useIsPro();
 
   return useMemo(() => {
     const colors = Colors[theme] || Colors.dark;
-    if (premiumColor && isPro) {
+    if (premiumColor) {
       const safeColor = getSafeColor(premiumColor);
       const light = lightenColor(safeColor, 0.25);
       const dark = darkenColor(safeColor, 0.25);
@@ -35,5 +33,5 @@ export function useTheme() {
       };
     }
     return { ...colors, theme };
-  }, [theme, premiumColor, isPro]);
+  }, [theme, premiumColor]);
 }

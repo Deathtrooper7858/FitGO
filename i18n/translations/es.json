@@ -106,7 +106,7 @@
     "greeting": "Hola",
     "warning": "Advertencia",
     "understood": "Entendido 👊",
-    "tapToHide": "Toca para ocultar",
+    "tapToHide": "Toca para contraer",
     "tapToView": "Toca para ver los logros",
     "accept": "Aceptar",
     "invalid": "Inválido",
@@ -170,7 +170,11 @@
     "notNow": "Ahora no",
     "goToProNoAds": "Ir a Pro · Sin anuncios",
     "watchAdUnlock": "▶ Ver video · Desbloquear gratis",
-    "sugar": "Azúcar"
+    "sugar": "Azúcar",
+    "simple": "Simplificada",
+    "advanced": "Avanzada",
+    "activeBadge": "ACTUAL",
+    "change": "Cambiar"
   },
   "welcome": {
     "motto": "Fit-Go: Tu mejor versión",
@@ -308,7 +312,9 @@
     "planner": "Planificador",
     "profile": "Perfil",
     "coach": "Coach",
-    "social": "Comunidad"
+    "social": "Comunidad",
+    "today": "Hoy",
+    "progress": "Progreso"
   },
   "dashboard": {
     "greetingMorning": "Buen día",
@@ -420,7 +426,12 @@
     "bodyScanner": "Explorador Anatómico",
     "burnedToday": "Quemadas en actividad",
     "refreshError": "No se pudieron actualizar los datos.",
-    "reorder": "Reordenar"
+    "reorder": "Reordenar",
+    "simpleModeBadge": "Versión Simplificada",
+    "simpleModeSub": "Métricas esenciales • Toca para cambiar a Avanzada",
+    "quickStats": "Estadísticas Rápidas",
+    "advancedAnalytics": "Análisis detallado y Simetría",
+    "advancedAnalyticsDesc": "Consistencia semanal, simetría muscular y más"
   },
   "tracker": {
     "title": "Registro",
@@ -498,7 +509,7 @@
     "meal": "Comida",
     "protein": "Proteínas",
     "sleep": "Sueño (h)",
-    "target": "Objetivo Calorías",
+    "target": "Objetivo",
     "yesterday": "Ayer",
     "macroProgressToday": "Progreso de Macros (Hoy)",
     "waterToday": "Agua (Hoy)",
@@ -535,7 +546,14 @@
     "totalBurnedToday": "Total quemado hoy",
     "goal": "Meta",
     "endFast": "Terminar Ayuno",
-    "logWorkoutSession": "Registrar sesión de ejercicio"
+    "logWorkoutSession": "Registrar sesión de ejercicio",
+    "simpleModeActiveTitle": "Modo Simplificado activo",
+    "simpleModeActiveDesc": "Enfocado en lo que importa: calorías, macros, agua y pasos diarios.",
+    "viewInProfile": "Ver en Perfil",
+    "simpleModeBadge": "Versión Simplificada",
+    "simpleModeSub": "Interfaz intuitiva • Toca para cambiar a Avanzada",
+    "moreTools": "Más herramientas",
+    "moreToolsDesc": "Ayuno, Radar de Macros y Consistencia"
   },
   "planner": {
     "title": "Planificador",
@@ -738,7 +756,9 @@
     "pdfRoutine": "PDF Rutina",
     "mealsCount": "comidas",
     "exercisesPlanned": "ejercicios planificados",
-    "generatingShoppingList": "Generando lista de compras..."
+    "generatingShoppingList": "Generando lista de compras...",
+    "simpleModeBadge": "Versión Simplificada",
+    "simpleModeSub": "Planes guiados y claros • Toca para cambiar a Avanzada"
   },
   "profile": {
     "title": "Perfil",
@@ -1026,7 +1046,14 @@
     "femaleDesc": "Estimación metabólica femenina",
     "otherDesc": "Personalizado / No binario",
     "specifyOther": "Especifica tu opción:",
-    "specifyPlaceholder": "Ej: No binario, etc."
+    "specifyPlaceholder": "Ej: No binario, etc.",
+    "appExperienceMode": "Versión de la App",
+    "appModeTitle": "Versión de FitGO",
+    "appModeSubtitle": "Elige cómo quieres organizar y experimentar tu aplicación.",
+    "modeSimpleShort": "Versión Simplificada (Fácil y Rápida)",
+    "modeAdvancedShort": "Versión Avanzada (Completa y Pro)",
+    "modeSwitchedToSimple": "Modo Simplificado activado ✨",
+    "modeSwitchedToAdvanced": "Modo Avanzado activado 🚀"
   },
   "recipes": {
     "title": "Recetas",
@@ -1218,7 +1245,9 @@
     "inputPlaceholderNew": "Pregúntame algo...",
     "disclaimer": "FitGO IA puede cometer errores. Verifica siempre la información de salud importante.",
     "hidePlan": "Ocultar detalles",
-    "viewFullPlan": "Ver plan completo"
+    "viewFullPlan": "Ver plan completo",
+    "simpleModeBadge": "Versión Simplificada",
+    "simpleModeSub": "Asistente guiado • Toca para cambiar a Avanzada"
   },
   "onboarding": {
     "goalTitle": "¿Cuál es tu objetivo?",
@@ -1749,7 +1778,24 @@
       "prescription": "PRESCRIPTION MEDICATIONS",
       "supplements": "SUPPLEMENTS & FITNESS"
     },
-    "noMedicationsSupplements": "I don"
+    "noMedicationsSupplements": "I don",
+    "experienceModeTitle": "¿Cómo prefieres usar FitGO?",
+    "experienceModeSub": "Elige la interfaz que mejor se adapte a tu nivel y estilo de vida. Puedes cambiarla en cualquier momento desde tu Perfil.",
+    "simpleBadge": "Recomendado para empezar",
+    "simpleTitle": "Versión Simplificada",
+    "simpleQuote": "\"Perfecta para un público novato que se quiere adentrar en este increíble mundo\"",
+    "simpleBullet1": "Solo 3 pestañas esenciales: Hoy, Progreso y Coach.",
+    "simpleBullet2": "Control visual e intuitivo de calorías, macros, agua y pasos.",
+    "simpleBullet3": "Sin gráficos abrumadores ni configuraciones complejas.",
+    "simpleBullet4": "Registro ultra rápido de comidas con escáner IA.",
+    "advancedBadge": "Todo el poder de FitGO",
+    "advancedTitle": "Versión Avanzada",
+    "advancedQuote": "\"La opción con todo lo que necesitas si ya tienes un poco de experiencia en este mundo y con la aplicación\"",
+    "advancedBullet1": "Acceso completo a las 5 pestañas: Tracker, Dashboard, Coach, Planificador y Comunidad.",
+    "advancedBullet2": "Balance avanzado de micronutrientes, balance de radar y ayuno intermitente.",
+    "advancedBullet3": "Simetría muscular, mapa de calor de consistencia y widgets personalizables.",
+    "advancedBullet4": "Rutinas completas, registros de RPE y ligas competitivas.",
+    "modeSwitchNotice": "Puedes alternar entre ambas versiones cuando quieras desde tu Perfil."
   },
   "scan": {
     "title": "Escanear Alimento",
@@ -3888,10 +3934,10 @@
       "audioDesc": "Selecciona un archivo MP3 u otro audio"
     },
     "headers": {
-      "socialSubtitle": "Connect with your community",
-      "compSubtitle": "Compete and climb the ranking",
+      "socialSubtitle": "Conecta con tu comunidad",
+      "compSubtitle": "Compite y sube en el ranking",
       "socialTab": "Social",
-      "compTab": "Competitive"
+      "compTab": "Competitivo"
     },
     "posts": "Publicaciones",
     "noPostsMe": "Aún no has publicado nada.",
@@ -3933,7 +3979,9 @@
     "pendingRequest": "Solicitud Pendiente",
     "alreadyFriends": "Son Amigos",
     "addFriend": "Añadir Amigo",
-    "removeFriend": "Eliminar Amigo"
+    "removeFriend": "Eliminar Amigo",
+    "simpleModeBadge": "Versión Simplificada",
+    "simpleModeSub": "Comunidad y amigos • Toca para cambiar a Avanzada"
   },
   "terms": {
     "titleTerms": "Términos y Condiciones",
@@ -5504,5 +5552,55 @@
     "recharge": "Recargar ⚡",
     "energyToday": "Energía IA de hoy",
     "watchAdEarn": "Ver video y ganar +2 ⚡"
+  },
+  "guide": {
+    "badgeTitle": "INSTRUCTIVO FITGO",
+    "dayCounter": "Día {{day}} de {{total}}",
+    "dayCount": "Día {{day}} de {{total}}",
+    "bannerMiniTitle": "Guía de inicio",
+    "openGuide": "Ver Guía",
+    "minimize": "Minimizar",
+    "expand": "Desplegar",
+    "collapse": "Plegar",
+    "bannerCompactSubtitle": "Aprende a escanear comidas con IA, macros y coach",
+    "bannerTitle": "¿Cómo sacarle el máximo provecho a FitGo? 🚀",
+    "bannerSubtitle": "Aprende qué hace cada botón, cómo escanear tus comidas con IA, entender tus macros y moverte por la app con total facilidad.",
+    "featureScan": "Escáner con IA",
+    "featureMacros": "Anillo y Macros",
+    "featureCoach": "Coach Inteligente",
+    "ctaButton": "Abrir Instructivo Detallado",
+    "modalTitle": "Instructivo y Manual",
+    "modalSub": "Domina FitGo paso a paso",
+    "heroBadge": "GUÍA DE INICIO RÁPIDO",
+    "heroTitle": "Tu Centro de Mando Fitness",
+    "heroDesc": "Todo lo que necesitas saber para registrar tus comidas con IA, entender tus métricas y alcanzar tus metas sin complicaciones.",
+    "searchPlaceholder": "Buscar duda, botón o función (ej. escanear, macros)...",
+    "catAll": "Todo",
+    "catTracker": "Tracker y Botones",
+    "catDashboard": "Métricas & Panel",
+    "catCoach": "Coach IA",
+    "catPlanner": "Planificador",
+    "catSocial": "Comunidad & Retos",
+    "catSettings": "Perfil & Metas",
+    "allTopics": "Todos los Temas y Botones",
+    "topicsCount": "guías",
+    "noResultsTitle": "No encontramos coincidencias",
+    "noResultsDesc": "Intenta buscar con otros términos como 'agua', 'escanear', 'calorías' o 'coach'.",
+    "clearSearch": "Ver todas las guías",
+    "howToHeader": "¿Cómo utilizarlo?",
+    "actionTryScan": "Probar Escáner IA",
+    "actionTryBarcode": "Abrir Lector de Barras",
+    "actionGoTracker": "Ver en Tracker",
+    "actionOpenCalendar": "Ver Calendario",
+    "actionGoDashboard": "Ir al Dashboard",
+    "actionGoBody": "Ver Directorio Muscular",
+    "actionGoCoach": "Chatear con el Coach",
+    "actionGoPlanner": "Abrir Planificador",
+    "actionGoSocial": "Ver Comunidad",
+    "actionGoProfile": "Ir a Mi Perfil",
+    "proTipsTitle": "Consejos Clave para tus Primeros 60 Días",
+    "proTip1": "La consistencia supera a la perfección: Es mejor registrar un plato aproximado que dejar de registrar por un día entero.",
+    "proTip2": "Prioriza tu proteína: Llegar a tu meta de proteína mantendrá tu masa muscular y te mantendrá saciado durante el día.",
+    "proTip3": "Activa los recordatorios en Perfil para no olvidar registrar tus comidas y tomar agua en tus horarios habituales."
   }
 }

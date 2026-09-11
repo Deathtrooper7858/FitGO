@@ -286,7 +286,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
             const content = payload.new.content;
             
             supabase
-              .from('profiles')
+              .from('users')
               .select('name')
               .eq('id', senderId)
               .single()
@@ -405,7 +405,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
           if (payload.new && payload.new.user_id_2 === userId && payload.new.status === 'pending') {
             const senderId = payload.new.user_id_1;
             supabase
-              .from('profiles')
+              .from('users')
               .select('name')
               .eq('id', senderId)
               .single()
@@ -424,7 +424,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
             if (payload.new.user_id_1 === userId) {
               const friendId = payload.new.user_id_2;
               supabase
-                .from('profiles')
+                .from('users')
                 .select('name')
                 .eq('id', friendId)
                 .single()
@@ -543,29 +543,35 @@ export const useSocialStore = create<SocialState>((set, get) => ({
   fetchChallenges: async (userId: string) => {
     set({ isChallengesLoading: true });
     try {
-      const { data: partData, error: partErr } = await supabase
-        .from('challenge_participants')
-        .select('challenge_id, status')
-        .eq('user_id', userId);
-      
-      if (partErr) throw partErr;
+      const [partRes, createdRes] = await Promise.all([
+        supabase
+          .from('challenge_participants')
+          .select('challenge_id, status')
+          .eq('user_id', userId),
+        supabase
+          .from('challenges')
+          .select('id')
+          .eq('creator_id', userId)
+      ]);
 
-      const challengeIds = (partData || []).map(p => p.challenge_id);
-      
+      const partChallengeIds = (partRes.data || []).map(p => p.challenge_id);
+      const createdChallengeIds = (createdRes.data || []).map(c => c.id);
+      const allUniqueIds = Array.from(new Set([...partChallengeIds, ...createdChallengeIds]));
+
       let allChallenges: any[] = [];
-      if (challengeIds.length > 0) {
+      if (allUniqueIds.length > 0) {
         const { data, error } = await supabase
           .from('challenges')
           .select('*')
-          .in('id', challengeIds);
+          .in('id', allUniqueIds)
+          .order('created_at', { ascending: false });
         if (error) throw error;
-        
-        // Attach user's participant status to the challenge object
+
         allChallenges = (data || []).map(challenge => {
-          const participantInfo = partData?.find(p => p.challenge_id === challenge.id);
+          const participantInfo = partRes.data?.find(p => p.challenge_id === challenge.id);
           return {
             ...challenge,
-            my_status: participantInfo?.status || 'pending'
+            my_status: participantInfo?.status || (challenge.creator_id === userId ? 'active' : 'pending')
           };
         });
       }
@@ -592,7 +598,10 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         await supabase.from('challenge_participants').insert(participants);
       }
       
-      // Real-time subscription handles re-fetch via debounce
+      // Immediately refresh challenges for instant local feedback
+      if (challenge.creator_id) {
+        await get().fetchChallenges(challenge.creator_id);
+      }
     } catch (err) {
       console.warn('[SocialStore] Error creating challenge:', err);
     }

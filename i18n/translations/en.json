@@ -123,7 +123,7 @@
     "greeting": "Hello",
     "warning": "Warning",
     "understood": "Got it 👊",
-    "tapToHide": "Tap to hide",
+    "tapToHide": "Tap to collapse",
     "tapToView": "Tap to view achievements",
     "accept": "Accept",
     "invalid": "Invalid",
@@ -187,7 +187,11 @@
     "notNow": "Not now",
     "goToProNoAds": "Go Pro · No ads",
     "watchAdUnlock": "▶ Watch video · Unlock for free",
-    "sugar": "Sugar"
+    "sugar": "Sugar",
+    "simple": "Simplified",
+    "advanced": "Advanced",
+    "activeBadge": "CURRENT",
+    "change": "Change"
   },
   "welcome": {
     "motto": "Fit-Go: Your best version",
@@ -308,7 +312,9 @@
     "doctor": "Doctor",
     "planner": "Planner",
     "profile": "Profile",
-    "social": "Community"
+    "social": "Community",
+    "today": "Today",
+    "progress": "Progress"
   },
   "dashboard": {
     "greetingMorning": "Good morning",
@@ -420,7 +426,12 @@
     "bodyScanner": "Anatomical Explorer",
     "burnedToday": "Burned in activity",
     "refreshError": "Data could not be updated.",
-    "reorder": "Reorder"
+    "reorder": "Reorder",
+    "simpleModeBadge": "Simplified Version",
+    "simpleModeSub": "Essential metrics • Tap to switch to Advanced",
+    "quickStats": "Quick Stats",
+    "advancedAnalytics": "Detailed Analytics & Symmetry",
+    "advancedAnalyticsDesc": "Weekly consistency, muscle symmetry, and more"
   },
   "tracker": {
     "title": "Tracker",
@@ -535,7 +546,14 @@
     "totalBurnedToday": "Total burned today",
     "goal": "Goal",
     "endFast": "End Fast",
-    "logWorkoutSession": "Log workout session"
+    "logWorkoutSession": "Log workout session",
+    "simpleModeActiveTitle": "Simplified Mode active",
+    "simpleModeActiveDesc": "Focused on what matters: calories, macros, water, and daily steps.",
+    "viewInProfile": "View in Profile",
+    "simpleModeBadge": "Simplified Version",
+    "simpleModeSub": "Intuitive interface • Tap to switch to Advanced",
+    "moreTools": "More tools",
+    "moreToolsDesc": "Fasting, Macro Radar, and Consistency"
   },
   "planner": {
     "title": "Meal Planner",
@@ -738,7 +756,9 @@
     "pdfRoutine": "PDF Routine",
     "mealsCount": "meals",
     "exercisesPlanned": "planned exercises",
-    "generatingShoppingList": "Generating shopping list..."
+    "generatingShoppingList": "Generating shopping list...",
+    "simpleModeBadge": "Simplified Version",
+    "simpleModeSub": "Clear guided plans • Tap to switch to Advanced"
   },
   "profile": {
     "title": "Profile",
@@ -1026,7 +1046,14 @@
     "femaleDesc": "Female metabolic estimate",
     "otherDesc": "Custom / Non-binary",
     "specifyOther": "Specify your option:",
-    "specifyPlaceholder": "Ex: Non-binary, etc."
+    "specifyPlaceholder": "Ex: Non-binary, etc.",
+    "appExperienceMode": "App Version",
+    "appModeTitle": "FitGO Experience Version",
+    "appModeSubtitle": "Choose how you want to organize and experience your app.",
+    "modeSimpleShort": "Simplified Version (Easy & Fast)",
+    "modeAdvancedShort": "Advanced Version (Complete & Pro)",
+    "modeSwitchedToSimple": "Simplified Mode enabled ✨",
+    "modeSwitchedToAdvanced": "Advanced Mode enabled 🚀"
   },
   "recipes": {
     "title": "Recipes",
@@ -1218,7 +1245,9 @@
     "inputPlaceholderNew": "Ask me anything...",
     "disclaimer": "FitGO AI can make mistakes. Always verify important health information.",
     "hidePlan": "Hide details",
-    "viewFullPlan": "See full plan"
+    "viewFullPlan": "See full plan",
+    "simpleModeBadge": "Simplified Version",
+    "simpleModeSub": "Guided assistant • Tap to switch to Advanced"
   },
   "onboarding": {
     "goalTitle": "What's your main goal?",
@@ -1749,7 +1778,24 @@
       "prescription": "PRESCRIPTION MEDICATIONS",
       "supplements": "SUPPLEMENTS & FITNESS"
     },
-    "noMedicationsSupplements": "I don"
+    "noMedicationsSupplements": "I don",
+    "experienceModeTitle": "How would you like to use FitGO?",
+    "experienceModeSub": "Choose the interface that best fits your experience level and lifestyle. You can switch anytime in Profile.",
+    "simpleBadge": "Recommended for beginners",
+    "simpleTitle": "Simplified Version",
+    "simpleQuote": "\"Perfect for beginners who want to step into this incredible fitness world\"",
+    "simpleBullet1": "Only 3 essential tabs: Today, Progress, and Coach.",
+    "simpleBullet2": "Visual and intuitive control of calories, macros, water, and steps.",
+    "simpleBullet3": "Clean experience without overwhelming charts or complex settings.",
+    "simpleBullet4": "Lightning-fast meal logging with AI scanner.",
+    "advancedBadge": "Full FitGO Power",
+    "advancedTitle": "Advanced Version",
+    "advancedQuote": "\"The option with everything you need if you already have experience in fitness and with the app\"",
+    "advancedBullet1": "Full access to all 5 tabs: Tracker, Dashboard, Coach, Planner, and Community.",
+    "advancedBullet2": "Deep micronutrient balance, radar macro chart, and intermittent fasting.",
+    "advancedBullet3": "Muscle symmetry analysis, consistency heatmap, and customizable widgets.",
+    "advancedBullet4": "Full routines with RPE tracking and competitive leaderboards.",
+    "modeSwitchNotice": "You can switch between both versions anytime from your Profile."
   },
   "scan": {
     "title": "Scan Food",
@@ -2404,7 +2450,9 @@
     "pendingRequest": "Pending Request",
     "alreadyFriends": "They are Friends",
     "addFriend": "Add Friend",
-    "removeFriend": "Delete Friend"
+    "removeFriend": "Delete Friend",
+    "simpleModeBadge": "Simplified Version",
+    "simpleModeSub": "Community & friends • Tap to switch to Advanced"
   },
   "exerciseNames": {
     "band shrug": "band shrug",
@@ -5504,5 +5552,55 @@
     "recharge": "Recharge ⚡",
     "energyToday": "Today's AI Energy",
     "watchAdEarn": "Watch video and get +2 ⚡"
+  },
+  "guide": {
+    "badgeTitle": "FITGO GUIDE",
+    "dayCounter": "Day {{day}} of {{total}}",
+    "dayCount": "Day {{day}} of {{total}}",
+    "bannerMiniTitle": "Starter guide",
+    "openGuide": "View Guide",
+    "minimize": "Minimize",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "bannerCompactSubtitle": "Learn how to scan meals with AI, macros, and coach",
+    "bannerTitle": "How to get the most out of FitGo? 🚀",
+    "bannerSubtitle": "Learn what each button does, how to scan meals with AI, understand your macros, and navigate easily.",
+    "featureScan": "AI Scanner",
+    "featureMacros": "Ring & Macros",
+    "featureCoach": "Smart Coach",
+    "ctaButton": "Open Step-by-Step Guide",
+    "modalTitle": "User Guide & Manual",
+    "modalSub": "Master FitGo step by step",
+    "heroBadge": "QUICK START GUIDE",
+    "heroTitle": "Your Fitness Command Center",
+    "heroDesc": "Everything you need to know to log meals with AI, understand metrics, and reach your goals easily.",
+    "searchPlaceholder": "Search feature, button, or tip (e.g., scan, macros)...",
+    "catAll": "All",
+    "catTracker": "Tracker & Buttons",
+    "catDashboard": "Metrics & Dashboard",
+    "catCoach": "AI Coach",
+    "catPlanner": "Planner",
+    "catSocial": "Community & Leagues",
+    "catSettings": "Profile & Goals",
+    "allTopics": "All Topics & Buttons",
+    "topicsCount": "guides",
+    "noResultsTitle": "No matches found",
+    "noResultsDesc": "Try searching for terms like 'water', 'scan', 'calories', or 'coach'.",
+    "clearSearch": "View all guides",
+    "howToHeader": "How to use it?",
+    "actionTryScan": "Try AI Scanner",
+    "actionTryBarcode": "Open Barcode Scanner",
+    "actionGoTracker": "View in Tracker",
+    "actionOpenCalendar": "View Calendar",
+    "actionGoDashboard": "Go to Dashboard",
+    "actionGoBody": "View Muscle Directory",
+    "actionGoCoach": "Chat with Coach",
+    "actionGoPlanner": "Open Planner",
+    "actionGoSocial": "View Community",
+    "actionGoProfile": "Go to My Profile",
+    "proTipsTitle": "Key Tips for Your First 60 Days",
+    "proTip1": "Consistency beats perfection: An approximate meal entry is better than skipping an entire day.",
+    "proTip2": "Prioritize protein: Hitting your protein goal preserves lean mass and keeps you full throughout the day.",
+    "proTip3": "Enable reminders in Profile so you never forget to log meals and stay hydrated."
   }
 }

@@ -5,6 +5,11 @@ param(
 
 $ErrorActionPreference = "Continue"
 
+if (-not $env:ANDROID_HOME) { $env:ANDROID_HOME = "C:\Users\wrait\AppData\Local\Android\Sdk" }
+if (-not $env:ANDROID_SDK_ROOT) { $env:ANDROID_SDK_ROOT = "C:\Users\wrait\AppData\Local\Android\Sdk" }
+$env:NODE_OPTIONS = "--max-old-space-size=4096 --expose-gc"
+$env:SENTRY_DISABLE_AUTO_UPLOAD = "true"
+
 Write-Host "=========================================" -ForegroundColor Cyan
 Write-Host "  FitGO - Android Development Launcher" -ForegroundColor Cyan
 Write-Host "=========================================" -ForegroundColor Cyan

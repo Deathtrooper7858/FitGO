@@ -5,16 +5,22 @@ import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { Users, Trophy } from 'lucide-react-native';
+import { Users, Trophy, Sparkles } from 'lucide-react-native';
 import { useTheme } from '../../../hooks/useTheme';
 import { GlobalBackground } from '../../../components/GlobalBackground';
 import { Radius, Shadow } from '../../../constants';
 import FitGOSocial from '../../../components/social/FitGOSocial';
 import FitGOCompetitive from '../../../components/social/FitGOCompetitive';
+import { useSettingsStore, useAuthStore } from '../../../store';
+import { AppModeModal } from '../../../components/profile/AppModeModal';
 
 export default function SocialTabScreen() {
   const colors = useTheme();
   const { t } = useTranslation();
+  const { appMode, setAppMode } = useSettingsStore();
+  const { profile } = useAuthStore();
+  const isSimple = appMode === 'simple';
+  const [appModeModalVisible, setAppModeModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<'social' | 'competitive'>('social');
   const [socialInitialTab, setSocialInitialTab] = useState<'you' | 'feed' | 'friends'>('you');
   const [socialInitialFriendsTab, setSocialInitialFriendsTab] = useState<'list' | 'search' | 'requests'>('list');
@@ -61,6 +67,37 @@ export default function SocialTabScreen() {
                 </Text>
               </View>
             </View>
+
+            {/* Píldora de Modo Simplificado */}
+            {isSimple && (
+              <TouchableOpacity
+                style={[styles.simpleModeBanner, { backgroundColor: '#10B98115', borderColor: '#10B98140' }]}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setAppModeModalVisible(true);
+                }}
+                activeOpacity={0.8}
+              >
+                <View style={styles.simpleModeBannerLeft}>
+                  <View style={[styles.simpleModeIconWrap, { backgroundColor: '#10B98125' }]}>
+                    <Sparkles size={14} color="#10B981" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.simpleModeBannerTitle, { color: colors.textPrimary }]}>
+                      {t('social.simpleModeBadge', 'Versión Simplificada')}
+                    </Text>
+                    <Text style={[styles.simpleModeBannerSub, { color: colors.textSecondary }]} numberOfLines={1}>
+                      {t('social.simpleModeSub', 'Comunidad y amigos • Toca para cambiar a Avanzada')}
+                    </Text>
+                  </View>
+                </View>
+                <View style={[styles.simpleModeBadgeTag, { backgroundColor: '#10B98122' }]}>
+                  <Text style={{ color: '#10B981', fontSize: 11, fontWeight: '800' }}>
+                    {t('common.change', 'Cambiar')} ›
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
 
             {/* Segmented Control */}
             <View style={[styles.segmentWrapper, { backgroundColor: colors.surfaceAlt, borderColor: colors.border + '40' }]}>
@@ -144,6 +181,16 @@ export default function SocialTabScreen() {
             }}
           />
         </View>
+
+        <AppModeModal
+          visible={appModeModalVisible}
+          currentMode={appMode}
+          onClose={() => setAppModeModalVisible(false)}
+          onSelectMode={(m) => {
+            setAppMode(m);
+            if (profile) useAuthStore.getState().setProfile({ ...profile, appMode: m });
+          }}
+        />
       </SafeAreaView>
     </View>
   );
@@ -151,6 +198,46 @@ export default function SocialTabScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
+  simpleModeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginHorizontal: 18,
+    marginTop: 6,
+    marginBottom: 6,
+    gap: 10,
+  },
+  simpleModeBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  simpleModeIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  simpleModeBannerTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  simpleModeBannerSub: {
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 1,
+  },
+  simpleModeBadgeTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
   topSection: {
     paddingBottom: 4,
   },

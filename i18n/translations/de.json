@@ -26,7 +26,7 @@
     "greeting": "Hallo",
     "warning": "Warnung",
     "understood": "Verstanden 👊",
-    "tapToHide": "Zum Ausblenden tippen",
+    "tapToHide": "Tippen zum Einklappen",
     "tapToView": "Zum Anzeigen tippen",
     "accept": "Akzeptieren",
     "invalid": "Ungültig",
@@ -90,7 +90,11 @@
     "notNow": "Nicht jetzt",
     "goToProNoAds": "Go Pro · Keine Werbung",
     "watchAdUnlock": "▶ Video ansehen · Kostenlos freischalten",
-    "sugar": "Zucker"
+    "sugar": "Zucker",
+    "simple": "Vereinfacht",
+    "advanced": "Erweitert",
+    "activeBadge": "AKTUELL",
+    "change": "Ändern"
   },
   "tabs": {
     "dashboard": "Dashboard",
@@ -101,7 +105,9 @@
     "nutritionist": "Ernährungsberater",
     "trainer": "Trainer",
     "doctor": "Arzt",
-    "social": "Gemeinschaft"
+    "social": "Gemeinschaft",
+    "today": "Heute",
+    "progress": "Fortschritt"
   },
   "profile": {
     "title": "Profil",
@@ -389,7 +395,14 @@
     "femaleDesc": "Schätzung des weiblichen Stoffwechsels",
     "otherDesc": "Benutzerdefiniert / Nicht-binär",
     "specifyOther": "Geben Sie Ihre Option an:",
-    "specifyPlaceholder": "Beispiel: Nicht-binär usw."
+    "specifyPlaceholder": "Beispiel: Nicht-binär usw.",
+    "appExperienceMode": "App-Version",
+    "appModeTitle": "FitGO Erlebnis-Version",
+    "appModeSubtitle": "Wähle, wie du deine Anwendung organisieren und erleben möchtest.",
+    "modeSimpleShort": "Vereinfachte Version (Einfach & Schnell)",
+    "modeAdvancedShort": "Erweiterte Version (Vollständig & Pro)",
+    "modeSwitchedToSimple": "Vereinfachter Modus aktiviert ✨",
+    "modeSwitchedToAdvanced": "Erweiterter Modus aktiviert 🚀"
   },
   "coach": {
     "title": "Fitz-Trainer",
@@ -541,7 +554,9 @@
     "inputPlaceholderNew": "Frag mich etwas...",
     "disclaimer": "FitGO KI kann Fehler machen. Überprüfe wichtige Gesundheitsdaten stets mit Fachpersonal.",
     "hidePlan": "Details ausblenden",
-    "viewFullPlan": "Vollständigen Plan ansehen"
+    "viewFullPlan": "Vollständigen Plan ansehen",
+    "simpleModeBadge": "Vereinfachte Version",
+    "simpleModeSub": "Geführter Assistent • Tippen zum Wechsel auf Erweitert"
   },
   "about": {
     "title": "Über FitGO",
@@ -860,7 +875,12 @@
     "bodyScanner": "Anatomischer Entdecker",
     "burnedToday": "In Aktivität verbrannt",
     "refreshError": "Daten konnten nicht aktualisiert werden.",
-    "reorder": "Neu anordnen"
+    "reorder": "Neu anordnen",
+    "simpleModeBadge": "Vereinfachte Version",
+    "simpleModeSub": "Wesentliche Metriken • Tippen zum Wechsel auf Erweitert",
+    "quickStats": "Schnelle Statistiken",
+    "advancedAnalytics": "Detaillierte Analyse & Symmetrie",
+    "advancedAnalyticsDesc": "Wöchentliche Beständigkeit, Muskelsymmetrie und mehr"
   },
   "tracker": {
     "title": "Heute",
@@ -975,7 +995,14 @@
     "totalBurnedToday": "Heute insgesamt verbrannt",
     "goal": "Ziel",
     "endFast": "Schnell enden",
-    "logWorkoutSession": "Trainingseinheit protokollieren"
+    "logWorkoutSession": "Trainingseinheit protokollieren",
+    "simpleModeActiveTitle": "Vereinfachter Modus aktiv",
+    "simpleModeActiveDesc": "Fokus auf das Wesentliche: Kalorien, Makros, Wasser und tägliche Schritte.",
+    "viewInProfile": "Im Profil ansehen",
+    "simpleModeBadge": "Vereinfachte Version",
+    "simpleModeSub": "Intuitive Benutzeroberfläche • Tippen zum Wechsel auf Erweitert",
+    "moreTools": "Weitere Werkzeuge",
+    "moreToolsDesc": "Fasten, Makro-Radar und Beständigkeit"
   },
   "planner": {
     "title": "Mahlzeitenplaner",
@@ -1178,7 +1205,9 @@
     "pdfRoutine": "PDF-Routine",
     "mealsCount": "Mahlzeiten",
     "exercisesPlanned": "geplante Übungen",
-    "generatingShoppingList": "Einkaufsliste wird erstellt..."
+    "generatingShoppingList": "Einkaufsliste wird erstellt...",
+    "simpleModeBadge": "Vereinfachte Version",
+    "simpleModeSub": "Klare geführte Pläne • Tippen zum Wechsel auf Erweitert"
   },
   "recipes": {
     "title": "Rezepte",
@@ -1749,7 +1778,24 @@
       "prescription": "Verschreibungspflichtige Medikamente",
       "supplements": "ERGÄNZUNGSMITTEL & FITNESS"
     },
-    "noMedicationsSupplements": "Ich ziehe"
+    "noMedicationsSupplements": "Ich ziehe",
+    "experienceModeTitle": "Wie möchtest du FitGO nutzen?",
+    "experienceModeSub": "Wähle die Benutzeroberfläche, die am besten zu deinem Erfahrungsgrad und Lebensstil passt. Du kannst sie jederzeit im Profil wechseln.",
+    "simpleBadge": "Empfohlen für Einsteiger",
+    "simpleTitle": "Vereinfachte Version",
+    "simpleQuote": "\"Perfekt für Neulinge, die in diese unglaubliche Fitnesswelt eintauchen möchten\"",
+    "simpleBullet1": "Nur 3 wesentliche Tabs: Heute, Fortschritt und Coach.",
+    "simpleBullet2": "Visuelle und intuitive Übersicht über Kalorien, Makros, Wasser und Schritte.",
+    "simpleBullet3": "Keine überfordernden Diagramme oder komplizierte Einstellungen.",
+    "simpleBullet4": "Blitzschnelles Protokollieren von Mahlzeiten per KI-Scanner.",
+    "advancedBadge": "Die volle Power von FitGO",
+    "advancedTitle": "Erweiterte Version",
+    "advancedQuote": "\"Die Option mit allem, was du brauchst, wenn du bereits Erfahrung in dieser Welt und mit der App hast\"",
+    "advancedBullet1": "Voller Zugriff auf alle 5 Tabs: Tracker, Dashboard, Coach, Planer und Community.",
+    "advancedBullet2": "Detaillierte Mikronährstoff-Balance, Radar-Diagramm und Intervallfasten.",
+    "advancedBullet3": "Muskelsymmetrie-Analyse, Beständigkeits-Heatmap und anpassbare Widgets.",
+    "advancedBullet4": "Komplette Trainingspläne, RPE-Tracking und Ranglisten.",
+    "modeSwitchNotice": "Du kannst jederzeit in deinem Profil zwischen beiden Versionen wechseln."
   },
   "reminders": {
     "stayOnTrack": "Bleib auf Kurs",
@@ -3933,7 +3979,9 @@
     "pendingRequest": "Ausstehende Anfrage",
     "alreadyFriends": "Sie sind Freunde",
     "addFriend": "Freund hinzufügen",
-    "removeFriend": "Freund löschen"
+    "removeFriend": "Freund löschen",
+    "simpleModeBadge": "Vereinfachte Version",
+    "simpleModeSub": "Community & Freunde • Tippen zum Wechsel auf Erweitert"
   },
   "terms": {
     "titleTerms": "Nutzungsbedingungen",
@@ -5504,5 +5552,55 @@
     "recharge": "Aufladen ⚡",
     "energyToday": "Die heutige KI-Energie",
     "watchAdEarn": "Sehen Sie sich das Video an und verdienen Sie +2 ⚡"
+  },
+  "guide": {
+    "badgeTitle": "FITGO ANLEITUNG",
+    "dayCounter": "Tag {{day}} von {{total}}",
+    "dayCount": "Tag {{day}} von {{total}}",
+    "bannerMiniTitle": "Startanleitung",
+    "openGuide": "Anleitung ansehen",
+    "minimize": "Minimieren",
+    "bannerTitle": "Wie nutzen Sie FitGo optimal? 🚀",
+    "bannerSubtitle": "Erfahren Sie, was jeder Button macht, wie Sie Mahlzeiten mit KI scannen, Ihre Makros verstehen und sich mühelos in der App bewegen.",
+    "featureScan": "KI-Scanner",
+    "featureMacros": "Kalorienring & Makros",
+    "featureCoach": "Smarter Coach",
+    "ctaButton": "Detaillierte Anleitung öffnen",
+    "modalTitle": "Anleitung & Benutzerhandbuch",
+    "modalSub": "Meistern Sie FitGo Schritt für Schritt",
+    "heroBadge": "SCHNELLSTART-ANLEITUNG",
+    "heroTitle": "Ihre Fitness-Kommandozentrale",
+    "heroDesc": "Alles, was Sie wissen müssen, um Mahlzeiten mit KI zu erfassen, Metriken zu verstehen und Ihre Ziele zu erreichen.",
+    "searchPlaceholder": "Funktion, Button oder Thema suchen (z. B. Scannen, Makros)...",
+    "catAll": "Alle",
+    "catTracker": "Tracker & Buttons",
+    "catDashboard": "Metriken & Dashboard",
+    "catCoach": "KI-Coach",
+    "catPlanner": "Planer",
+    "catSocial": "Community & Ligen",
+    "catSettings": "Profil & Ziele",
+    "allTopics": "Alle Themen & Buttons",
+    "topicsCount": "Anleitungen",
+    "noResultsTitle": "Keine Treffer gefunden",
+    "noResultsDesc": "Versuchen Sie es mit Begriffen wie 'Wasser', 'Scannen', 'Kalorien' oder 'Coach'.",
+    "clearSearch": "Alle Anleitungen anzeigen",
+    "howToHeader": "Wie wird es verwendet?",
+    "actionTryScan": "KI-Scanner testen",
+    "actionTryBarcode": "Barcode-Scanner öffnen",
+    "actionGoTracker": "Im Tracker ansehen",
+    "actionOpenCalendar": "Kalender öffnen",
+    "actionGoDashboard": "Zum Dashboard gehen",
+    "actionGoBody": "Muskelverzeichnis ansehen",
+    "actionGoCoach": "Mit Coach chatten",
+    "actionGoPlanner": "Planer öffnen",
+    "actionGoSocial": "Community ansehen",
+    "actionGoProfile": "Zu Mein Profil gehen",
+    "proTipsTitle": "Wichtige Tipps für Ihre ersten 60 Tage",
+    "proTip1": "Beständigkeit schlägt Perfektion: Lieber eine Mahlzeit annähernd erfassen, als einen ganzen Tag auszulassen.",
+    "proTip2": "Proteine priorisieren: Das Erreichen Ihres Proteinziels erhält Muskelmasse und sorgt für anhaltende Sättigung.",
+    "proTip3": "Erinnerungen aktivieren: Richten Sie Erinnerungen im Profil ein, um Mahlzeiten und Wassertrinken nicht zu vergessen.",
+    "expand": "Ausklappen",
+    "collapse": "Einklappen",
+    "bannerCompactSubtitle": "Lerne, wie du Mahlzeiten mit KI, Makros und Coach scannst"
   }
 }

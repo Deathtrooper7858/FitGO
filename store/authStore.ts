@@ -3,7 +3,7 @@ import { Session } from '@supabase/supabase-js';
 import { supabase } from '../services/supabase';
 import { SecureStorage } from '../utils/storage';
 import { useSettingsStore } from './settingsStore';
-import { UserProfile, AppLanguage } from './types';
+import { UserProfile, AppLanguage, AppExperienceMode } from './types';
 
 interface AuthState {
   session:     Session | null;
@@ -35,6 +35,23 @@ function extractHealthData(profile: UserProfile): Record<string, any> {
 
 function mergeHealthData(profile: UserProfile, healthData: Record<string, any>): UserProfile {
   return { ...profile, ...healthData };
+}
+
+async function persistSession(session: Session | null): Promise<void> {
+  if (!session) {
+    await SecureStorage.removeItem('ff-session');
+    return;
+  }
+  await SecureStorage.setItem('ff-session', JSON.stringify(session));
+}
+
+async function loadCachedSession(): Promise<Session | null> {
+  try {
+    const raw = await SecureStorage.getItem('ff-session');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
 
 async function persistProfile(profile: UserProfile | null): Promise<void> {
@@ -82,7 +99,10 @@ export const useAuthStore = create<AuthState>()(
       session:    null,
       profile:    null,
       isLoading:  true,
-      setSession: (session) => set({ session }),
+      setSession: (session) => {
+        set({ session });
+        persistSession(session).catch(() => {});
+      },
       setProfile: async (profile) => {
         set({ profile });
         // Persist profile and health data to SecureStore whenever profile changes
@@ -90,24 +110,30 @@ export const useAuthStore = create<AuthState>()(
       },
       setLoading: (isLoading) => set({ isLoading }),
       loadCachedProfile: async () => {
-        const cached = await loadCachedProfile();
+        const [cached, cachedSession] = await Promise.all([
+          loadCachedProfile(),
+          loadCachedSession(),
+        ]);
+        if (cachedSession) {
+          set({ session: cachedSession });
+        }
         if (cached) {
           set({ profile: cached });
-          const now = new Date();
-          const isCachedPro = !!(
-            cached.isPro ||
-            ['owner', 'super_admin', 'admin', 'pro_user'].includes(cached.role ?? '') ||
-            (cached.trialExpiresAt && new Date(cached.trialExpiresAt) > now) ||
-            (cached.proExpiresAt && new Date(cached.proExpiresAt) > now)
-          );
-          if (cached.premiumColor && isCachedPro) {
+          if (cached.premiumColor) {
             if (useSettingsStore.getState().premiumColor !== cached.premiumColor) {
               useSettingsStore.getState().setPremiumColor(cached.premiumColor);
             }
+          } else if (useSettingsStore.getState().premiumColor) {
+            cached.premiumColor = useSettingsStore.getState().premiumColor || undefined;
           }
           if (cached.language) {
             if (useSettingsStore.getState().language !== cached.language) {
               useSettingsStore.getState().setLanguage(cached.language);
+            }
+          }
+          if (cached.appMode) {
+            if (useSettingsStore.getState().appMode !== cached.appMode) {
+              useSettingsStore.getState().setAppMode(cached.appMode);
             }
           }
         }
@@ -117,6 +143,7 @@ export const useAuthStore = create<AuthState>()(
         await Promise.all([
           SecureStorage.removeItem('ff-health-profile'),
           SecureStorage.removeItem('ff-user-profile'),
+          SecureStorage.removeItem('ff-session'),
         ]);
         set({ session: null, profile: null, isLoading: false });
       },
@@ -150,31 +177,26 @@ export const useAuthStore = create<AuthState>()(
 
                 const fetchedNameColor = (isProUser && !data.name_color) ? '#EAB308' : data.name_color;
 
-                // Restore premium color: DB > session user_metadata > locally chosen color
+                // Restore premium color: DB > locally chosen color > session user_metadata > cached profile
                 const currentSession = get().session;
                 const metaColor = currentSession?.user?.user_metadata?.premium_color;
                 const localColor = useSettingsStore.getState().premiumColor;
+                const cachedColor = get().profile?.premiumColor;
 
-                let effectivePremiumColor: string | null = null;
-                if (isProUser) {
-                  effectivePremiumColor = data.premium_color || metaColor || localColor || null;
+                const effectivePremiumColor: string | null =
+                  data.premium_color || localColor || metaColor || cachedColor || null;
+
+                if (effectivePremiumColor) {
                   if (useSettingsStore.getState().premiumColor !== effectivePremiumColor) {
                     useSettingsStore.getState().setPremiumColor(effectivePremiumColor);
                   }
 
                   // Backfill DB or metadata if one was missing
-                  if (effectivePremiumColor) {
-                    if (!data.premium_color) {
-                      Promise.resolve(supabase.from('users').update({ premium_color: effectivePremiumColor }).eq('id', userId)).catch(() => {});
-                    }
-                    if (metaColor !== effectivePremiumColor) {
-                      supabase.auth.updateUser({ data: { premium_color: effectivePremiumColor } }).catch(() => {});
-                    }
+                  if (!data.premium_color) {
+                    Promise.resolve(supabase.from('users').update({ premium_color: effectivePremiumColor }).eq('id', userId)).catch(() => {});
                   }
-                } else {
-                  // User is verified not pro
-                  if (useSettingsStore.getState().premiumColor !== null) {
-                    useSettingsStore.getState().setPremiumColor(null);
+                  if (metaColor !== effectivePremiumColor) {
+                    supabase.auth.updateUser({ data: { premium_color: effectivePremiumColor } }).catch(() => {});
                   }
                 }
 
@@ -189,6 +211,17 @@ export const useAuthStore = create<AuthState>()(
                 if (!metaLang && localLang) {
                   supabase.auth.updateUser({ data: { language: localLang } }).catch(() => {});
                 }
+
+                // Restore appMode: DB > locally chosen mode > session user_metadata > cached profile > 'simple'
+                const metaAppMode = currentSession?.user?.user_metadata?.app_mode;
+                const localAppMode = useSettingsStore.getState().appMode;
+                const cachedAppMode = get().profile?.appMode;
+                const effectiveAppMode: AppExperienceMode =
+                  ((data as any).app_mode || localAppMode || metaAppMode || cachedAppMode || 'simple') as AppExperienceMode;
+
+                if (useSettingsStore.getState().appMode !== effectiveAppMode) {
+                  useSettingsStore.getState().setAppMode(effectiveAppMode);
+                }
                 
                 const freshProfile: UserProfile = {
                     id:             data.id,
@@ -196,8 +229,9 @@ export const useAuthStore = create<AuthState>()(
                     name:           data.name,
                     avatarUrl:      data.avatar_url,
                     nameColor:      fetchedNameColor || undefined,
-                    premiumColor:   isProUser ? (effectivePremiumColor || undefined) : undefined,
+                    premiumColor:   effectivePremiumColor || undefined,
                     language:       effectiveLang,
+                    appMode:        effectiveAppMode,
                     sex:            data.sex,
                     age:            data.age,
                     weight:         data.weight,
@@ -217,7 +251,7 @@ export const useAuthStore = create<AuthState>()(
                     trialExpiresAt: data.trial_expires_at,
                     proExpiresAt:   data.pro_expires_at,
                     proWillRenew:   data.pro_will_renew,
-                    onboardingDone: data.onboarding_done,
+                    onboardingDone: Boolean(data.onboarding_done || data.goal || data.tdee || data.weight || get().profile?.onboardingDone),
                     lifestyle:      data.lifestyle,
                     extraSnacks:    data.extra_snacks,
                     widgetsOrder:   data.widgets_order,
@@ -233,6 +267,10 @@ export const useAuthStore = create<AuthState>()(
                     pinnedAchievements: data.pinned_achievements ?? [],
                     achievementPoints:  data.achievement_points ?? 0,
                 };
+
+                if (!data.onboarding_done && freshProfile.onboardingDone) {
+                  Promise.resolve(supabase.from('users').update({ onboarding_done: true }).eq('id', userId)).catch(() => {});
+                }
                 
                 // Persist health data to SecureStore
                 await persistProfile(freshProfile);
@@ -240,17 +278,35 @@ export const useAuthStore = create<AuthState>()(
                 return;
               } else {
                 if (error?.code === 'PGRST116') {
-                  retries -= 1;
-                  if (retries === 0) {
-                    // Use cached health data even if profile fetch fails
-                    const profileWithCache = Object.keys(cachedHealth).length > 0
-                      ? mergeHealthData({} as UserProfile, cachedHealth)
-                      : null;
-                    set({ profile: profileWithCache });
-                  }
-                  else await new Promise(resolve => setTimeout(resolve, 500));
+                  // User row does not exist yet -> brand new user requiring onboarding
+                  const currentSession = get().session;
+                  const newProfile: UserProfile = {
+                    id:             userId,
+                    email:          currentSession?.user?.email ?? '',
+                    name:           currentSession?.user?.user_metadata?.full_name || currentSession?.user?.user_metadata?.name || '',
+                    avatarUrl:      currentSession?.user?.user_metadata?.avatar_url || currentSession?.user?.user_metadata?.picture,
+                    sex:            'other',
+                    age:            25,
+                    weight:         70,
+                    height:         170,
+                    activityLevel:  'moderate',
+                    goal:           'maintain',
+                    tdee:           2000,
+                    targetCalories: 2000,
+                    macros:         { protein: 150, carbs: 200, fat: 65 },
+                    isPro:          false,
+                    role:           'user',
+                    onboardingDone: false,
+                    appMode:        'advanced',
+                  };
+                  set({ profile: newProfile });
+                  return;
                 } else {
-                  set({ profile: null });
+                  // General error (network/timeout): keep current cached profile if already present
+                  const existing = get().profile;
+                  if (!existing) {
+                    set({ profile: null });
+                  }
                   return;
                 }
               }

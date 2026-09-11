@@ -13,7 +13,8 @@ import { decode } from 'base64-arraybuffer';
 import { useTranslation } from 'react-i18next';
 import {
   Mail, Info, FileText, Share2, ShieldCheck, Globe, Smartphone, Camera,
-  MessageSquare, Heart, Target, Bell, Palette, LogOut,
+  MessageSquare, Heart, Target, Bell, Palette, LogOut, BookOpen,
+  Sparkles,
 } from 'lucide-react-native';
 import { cacheDirectory, EncodingType, writeAsStringAsync } from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
@@ -56,6 +57,7 @@ import { CustomToast } from '../../../components/profile/CustomToast';
 import { InviteFriendsModal } from '../../../components/profile/InviteFriendsModal';
 import { WeightChart } from '../../../components/profile/WeightChart';
 import { SecondaryGoalsModal } from '../../../components/profile/SecondaryGoalsModal';
+import { AppModeModal } from '../../../components/profile/AppModeModal';
 
 
 export default function ProfileScreen() {
@@ -65,7 +67,7 @@ export default function ProfileScreen() {
   const {
     theme, setTheme, language, setLanguage, massUnit, setMassUnit, volumeUnit,
     setVolumeUnit, lengthUnit, setLengthUnit, energyUnit, setEnergyUnit,
-    tempUnit, setTempUnit, premiumColor,
+    tempUnit, setTempUnit, premiumColor, appMode, setAppMode,
   } = useSettingsStore();
   const { profile, setProfile } = useAuthStore();
   const isPro = usePurchaseStore(s => s.isPro);
@@ -76,6 +78,7 @@ export default function ProfileScreen() {
 
   const [editModal, setEditModal] = useState<any>({ visible: false, field: '', title: '', placeholder: '' });
   const [langModalVisible, setLangModalVisible] = useState(false);
+  const [appModeModalVisible, setAppModeModalVisible] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
   const [showHealth, setShowHealth] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
@@ -147,6 +150,9 @@ export default function ProfileScreen() {
         selected_badge: newProfile.selectedBadge, badges: newProfile.badges,
       }).eq('id', userId);
       if (error) throw error;
+      if (newProfile.appMode) {
+        supabase.auth.updateUser({ data: { app_mode: newProfile.appMode } }).catch(() => {});
+      }
       setProfile(newProfile);
       if (updates.weight !== undefined && updates.weight !== profile.weight) {
         addMeasurement({ id: Date.now().toString(), date: getLocalDateString(), weight: updates.weight, bodyFat: lastMeasure?.bodyFat });
@@ -749,6 +755,16 @@ export default function ProfileScreen() {
         <SexSelectionModal visible={sexModalVisible} onClose={() => setSexModalVisible(false)} onSelect={(val) => updateProfileField('sex', val)} selectedValue={profile?.sex} premiumColor={premiumColor} />
         <InviteFriendsModal visible={inviteModalVisible} onClose={() => setInviteModalVisible(false)} onToast={(msg, type) => setToastMsg({ text: msg, type })} />
         <SecondaryGoalsModal visible={secondaryGoalsModalVisible} onClose={() => setSecondaryGoalsModalVisible(false)} onSaved={() => setToastMsg({ text: t('common.saved', 'Guardado con éxito'), type: 'success' })} />
+        <AppModeModal
+          visible={appModeModalVisible}
+          currentMode={appMode}
+          onSelect={(mode) => {
+            setAppMode(mode);
+            if (profile) setProfile({ ...profile, appMode: mode });
+            setToastMsg({ text: mode === 'simple' ? 'Modo Simplificado activado 🌱' : 'Modo Avanzado activado ⚡', type: 'success' });
+          }}
+          onClose={() => setAppModeModalVisible(false)}
+        />
 
         <ScrollView nestedScrollEnabled style={{ flex: 1, backgroundColor: colors.background }} showsVerticalScrollIndicator={false}>
           <ProfileHeader
@@ -828,6 +844,14 @@ export default function ProfileScreen() {
             accentColor="#8B5CF6"
           >
             <SettingsItem
+              icon={Sparkles}
+              label={t('profile.appModeTitle', 'Versión de FitGO')}
+              subtitle={appMode === 'simple' ? '🌱 Versión Simplificada (Fácil e intuitiva)' : '⚡ Versión Avanzada (Completa)'}
+              value={appMode === 'simple' ? 'Simplificada' : 'Avanzada'}
+              onPress={() => setAppModeModalVisible(true)}
+              iconColor={appMode === 'simple' ? '#10B981' : '#8B5CF6'}
+            />
+            <SettingsItem
               icon={Palette}
               label={t('profile.interface', 'Personalización y Unidades')}
               subtitle={t('profile.interfaceSubtitle', 'Aspecto, idioma y unidades de medida')}
@@ -894,6 +918,13 @@ export default function ProfileScreen() {
             icon={Info}
             accentColor="#3B82F6"
           >
+            <SettingsItem
+              icon={BookOpen}
+              label={t('profile.appGuide', 'Manual de Uso e Instructivo')}
+              subtitle={t('profile.appGuideSubtitle', 'Aprende a usar todos los botones y funciones')}
+              onPress={() => router.push('/modals/app-guide' as any)}
+              iconColor="#8B5CF6"
+            />
             <SettingsItem
               icon={Share2}
               label={t('profile.inviteFriends', 'Invitar Amigos')}

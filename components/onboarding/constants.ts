@@ -4,6 +4,7 @@ export const STEPS = [
   'goal', 'stats', 'activity', 'lifestyle',
   'dietaryRestrictions', 'medicalConditions', 'medications',
   'dietType', 'diet', 'personalization',
+  'experienceMode',
   'secondaryGoals', 'socialProof', 'experienceRating',
   'terms', 'projection'
 ] as const;
@@ -31,6 +32,7 @@ export interface OnboardingData {
   termsAccepted?: boolean;
   secondaryGoals?: string[];
   experienceRating?: number;
+  appMode?:     'simple' | 'advanced';
 }
 
 export interface StepProps {

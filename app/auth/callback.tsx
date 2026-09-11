@@ -34,7 +34,8 @@ function dismissAndNavigate(target: string) {
 function getDestination(): string {
   const { session, profile } = useAuthStore.getState();
   if (!session) return '/(auth)/welcome';
-  if (!profile || !profile.onboardingDone || !profile.id) {
+  const isDone = profile?.onboardingDone || !!profile?.goal || !!profile?.weight || !!profile?.tdee;
+  if (!profile || !isDone || !profile.id) {
     return '/onboarding';
   }
   return '/(tabs)/tracker';
@@ -143,31 +144,42 @@ export default function AuthCallbackScreen() {
 }
 
 /**
- * Polls the authStore for up to 2 seconds while profile loads,
- * then cleanly dismisses this screen and navigates to the proper destination.
+ * Waits for session and profile to resolve before cleanly dismissing this screen
+ * and navigating to the proper destination without flashing onboarding.
  */
 async function waitForProfileAndNavigate(): Promise<void> {
   const POLL_INTERVAL_MS = 100;
-  const TIMEOUT_MS = 2000;
+  const TIMEOUT_MS = 3500;
   const start = Date.now();
 
-  while (Date.now() - start < TIMEOUT_MS) {
-    const { session, profile, isLoading } = useAuthStore.getState();
+  // 1. Ensure session is stored
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    useAuthStore.getState().setSession(session);
+    // Actively trigger profile fetch if not already in store
+    if (!useAuthStore.getState().profile?.id) {
+      useAuthStore.getState().fetchProfile(session.user.id).catch(() => {});
+    }
+  }
 
-    // If profile is already populated, navigate immediately
-    if (session && profile?.id) {
-      dismissAndNavigate(profile.onboardingDone ? '/(tabs)/tracker' : '/onboarding');
+  while (Date.now() - start < TIMEOUT_MS) {
+    const { session: currentSession, profile, isLoading } = useAuthStore.getState();
+
+    // If profile is populated, make the definitive routing decision
+    if (currentSession && profile?.id) {
+      const isDone = Boolean(profile.onboardingDone || profile.goal || profile.weight || profile.tdee);
+      dismissAndNavigate(isDone ? '/(tabs)/tracker' : '/onboarding');
       return;
     }
 
-    // If finished loading and session exists (even if profile is null for new user)
-    if (session && !isLoading) {
-      dismissAndNavigate(getDestination());
+    // If loading completed and confirmed no profile (brand new user with no users row)
+    if (currentSession && !isLoading && (Date.now() - start > 800)) {
+      dismissAndNavigate('/onboarding');
       return;
     }
 
     // If definitely no session
-    if (!session && !isLoading) {
+    if (!currentSession && !isLoading && (Date.now() - start > 500)) {
       dismissAndNavigate('/(auth)/welcome');
       return;
     }
@@ -175,6 +187,6 @@ async function waitForProfileAndNavigate(): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
   }
 
-  // Timeout reached — dismiss based on whatever state we have
+  // Timeout reached — fallback to getDestination safely
   dismissAndNavigate(getDestination());
 }

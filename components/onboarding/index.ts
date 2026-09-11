@@ -14,4 +14,5 @@ export { SecondaryGoalsStep } from './SecondaryGoalsStep';
 export { SocialProofStep } from './SocialProofStep';
 export { ExperienceRatingStep } from './ExperienceRatingStep';
 export { HealthProfileStep } from './HealthProfileStep';
+export { ExperienceModeStep } from './ExperienceModeStep';
 export { FloatingHeroIcon } from './FloatingHeroIcon';

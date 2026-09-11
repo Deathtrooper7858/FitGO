@@ -55,6 +55,7 @@ import ShoppingListModal from '../../../components/planner/ShoppingListModal';
 import GenerateConfirmModal from '../../../components/planner/GenerateConfirmModal';
 import AILoadingOverlay from '../../../components/planner/AILoadingOverlay';
 import ResetWarningModal from '../../../components/planner/ResetWarningModal';
+import { AppModeModal } from '../../../components/profile/AppModeModal';
 import { generateNutritionHTML, generateWorkoutHTML } from '../../../components/planner/pdfHelpers';
 import i18n from '../../../i18n';
 
@@ -100,7 +101,9 @@ function msUntilSundayReset(): number {
 export default function PlannerScreen() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const { language, premiumColor } = useSettingsStore();
+  const { language, premiumColor, appMode, setAppMode } = useSettingsStore();
+  const isSimple = appMode === 'simple';
+  const [appModeModalVisible, setAppModeModalVisible] = useState(false);
   const [mode, setMode] = useState<PlannerMode>('nutrition');
   const jsDay = new Date().getDay();
   const [activeDay, setActiveDay] = useState(jsDay === 0 ? 'Sun' : DAYS[jsDay - 1]);
@@ -854,6 +857,17 @@ export default function PlannerScreen() {
         <ResetWarningModal visible={showResetWarning} onDismiss={() => setShowResetWarning(false)} />
         <ShoppingListModal visible={showShoppingList} onClose={() => setShowShoppingList(false)} mealPlans={mealPlans} language={language} />
 
+        {/* Modal de Cambio de Modo (Simplificada vs Avanzada) */}
+        <AppModeModal
+          visible={appModeModalVisible}
+          currentMode={appMode}
+          onClose={() => setAppModeModalVisible(false)}
+          onSelectMode={(m) => {
+            setAppMode(m);
+            if (profile) useAuthStore.getState().setProfile({ ...profile, appMode: m });
+          }}
+        />
+
         {/* Floating Rest Timer */}
         {restTimer !== null && (
           <TouchableOpacity
@@ -873,6 +887,37 @@ export default function PlannerScreen() {
         )}
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 160 }}>
+          {/* Píldora de Modo Simplificado */}
+          {isSimple && (
+            <TouchableOpacity
+              style={[s.simpleModeBanner, { backgroundColor: '#10B98115', borderColor: '#10B98140' }]}
+              onPress={() => {
+                Haptics.selectionAsync();
+                setAppModeModalVisible(true);
+              }}
+              activeOpacity={0.8}
+            >
+              <View style={s.simpleModeBannerLeft}>
+                <View style={[s.simpleModeIconWrap, { backgroundColor: '#10B98125' }]}>
+                  <Sparkles size={14} color="#10B981" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[s.simpleModeBannerTitle, { color: colors.textPrimary }]}>
+                    {t('planner.simpleModeBadge', 'Versión Simplificada')}
+                  </Text>
+                  <Text style={[s.simpleModeBannerSub, { color: colors.textSecondary }]} numberOfLines={1}>
+                    {t('planner.simpleModeSub', 'Planes guiados y claros • Toca para cambiar a Avanzada')}
+                  </Text>
+                </View>
+              </View>
+              <View style={[s.simpleModeBadgeTag, { backgroundColor: '#10B98122' }]}>
+                <Text style={{ color: '#10B981', fontSize: 11, fontWeight: '800' }}>
+                  {t('common.change', 'Cambiar')} ›
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
+
           {/* Header */}
           <View style={s.header}>
             <View style={s.headerTopRow}>
@@ -1794,5 +1839,44 @@ const s = StyleSheet.create({
     fontSize: 16,
     fontWeight: '900',
     fontVariant: ['tabular-nums'],
+  },
+  simpleModeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    marginBottom: 10,
+    gap: 10,
+  },
+  simpleModeBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  simpleModeIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  simpleModeBannerTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  simpleModeBannerSub: {
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 1,
+  },
+  simpleModeBadgeTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
 });

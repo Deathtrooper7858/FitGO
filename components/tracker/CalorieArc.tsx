@@ -158,33 +158,44 @@ export const CalorieArc = React.memo(function CalorieArc({
       </View>
 
       {/* Net Balance Row */}
-      <View style={[s.formulaBar, { backgroundColor: colors.surfaceAlt + '50', borderColor: colors.border + '30' }]}>
+      <View style={[s.formulaBar, { backgroundColor: colors.surfaceAlt ? colors.surfaceAlt + '45' : 'rgba(255,255,255,0.04)', borderColor: colors.border ? colors.border + '30' : 'rgba(255,255,255,0.08)' }]}>
         <View style={s.formulaCol}>
-          <Text style={[s.formulaLabel, { color: colors.textMuted }]}>{t('tracker.target', 'Meta')}</Text>
           <Text style={[s.formulaVal, { color: colors.textPrimary }]}>{safeTarget}</Text>
+          <Text style={[s.formulaLabel, { color: colors.textMuted }]} numberOfLines={1}>
+            {t('tracker.targetFormula', 'Objetivo')}
+          </Text>
         </View>
 
-        <Text style={[s.formulaSign, { color: colors.textMuted }]}>−</Text>
+        <View style={s.signWrap}>
+          <Text style={[s.formulaSign, { color: colors.textMuted }]}>−</Text>
+        </View>
 
         <View style={s.formulaCol}>
-          <Text style={[s.formulaLabel, { color: colors.textMuted }]}>{t('tracker.consumed', 'Comida')}</Text>
           <Text style={[s.formulaVal, { color: gradStart }]}>{safeConsumed}</Text>
+          <Text style={[s.formulaLabel, { color: colors.textMuted }]} numberOfLines={1}>
+            {t('tracker.consumedShort', 'Comida')}
+          </Text>
         </View>
 
         {safeBurned > 0 && (
           <>
-            <Text style={[s.formulaSign, { color: colors.textMuted }]}>+</Text>
+            <View style={s.signWrap}>
+              <Text style={[s.formulaSign, { color: colors.textMuted }]}>+</Text>
+            </View>
             <View style={s.formulaCol}>
-              <Text style={[s.formulaLabel, { color: colors.textMuted }]}>{t('tracker.activity', 'Quema')}</Text>
               <Text style={[s.formulaVal, { color: '#F59E0B' }]}>{safeBurned}</Text>
+              <Text style={[s.formulaLabel, { color: colors.textMuted }]} numberOfLines={1}>
+                {t('tracker.activityShort', 'Actividad')}
+              </Text>
             </View>
           </>
         )}
 
-        <Text style={[s.formulaSign, { color: colors.textMuted }]}>=</Text>
+        <View style={s.signWrap}>
+          <Text style={[s.formulaSign, { color: colors.textMuted }]}>=</Text>
+        </View>
 
         <View style={s.formulaCol}>
-          <Text style={[s.formulaLabel, { color: colors.textMuted }]}>{t('tracker.remaining', 'Restante')}</Text>
           <Text
             style={[
               s.formulaVal,
@@ -192,11 +203,14 @@ export const CalorieArc = React.memo(function CalorieArc({
                 color: isOver
                   ? (colors.error || '#EF4444')
                   : colors.primary,
-                fontWeight: '800',
+                fontWeight: '900',
               },
             ]}
           >
             {safeTarget - safeConsumed + safeBurned}
+          </Text>
+          <Text style={[s.formulaLabel, { color: colors.textMuted }]} numberOfLines={1}>
+            {t('tracker.remainingShort', 'Restante')}
           </Text>
         </View>
       </View>
@@ -247,17 +261,29 @@ const s = StyleSheet.create({
   formulaBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     width: '100%',
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     borderRadius: 16,
     borderWidth: 1,
     marginTop: 14,
   },
   formulaCol: {
+    flex: 1,
     alignItems: 'center',
-    gap: 2,
+    gap: 3,
+  },
+  signWrap: {
+    width: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: 14, // Aligns perfectly with the top numeric values
+  },
+  formulaVal: {
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: -0.3,
   },
   formulaLabel: {
     fontSize: 10,
@@ -265,13 +291,9 @@ const s = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.3,
   },
-  formulaVal: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
   formulaSign: {
     fontSize: 14,
-    fontWeight: '600',
-    opacity: 0.6,
+    fontWeight: '700',
+    opacity: 0.5,
   },
 });

@@ -146,6 +146,13 @@ export default function ScanModal() {
 
   const nameDebounceRefs = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
 
+  useEffect(() => {
+    const timers = nameDebounceRefs.current;
+    return () => {
+      Object.values(timers).forEach(t => clearTimeout(t));
+    };
+  }, []);
+
   const updateName = (index: number, newName: string) => {
     setEditedFoods(prev => prev.map((f, i) => i !== index ? f : { ...f, name: newName }));
     if (nameDebounceRefs.current[index]) clearTimeout(nameDebounceRefs.current[index]);

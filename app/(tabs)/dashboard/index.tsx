@@ -16,12 +16,17 @@ import {
   BarChart2,
   Calendar,
   Activity,
+  Sparkles,
+  SlidersHorizontal,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react-native';
 
 import { Spacing, Radius, Shadow } from '../../../constants';
 import { useAuthStore } from '../../../store/authStore';
 import { useNutritionStore, selectDailyTotals } from '../../../store/nutritionStore';
 import { useSettingsStore } from '../../../store/settingsStore';
+import { AppModeModal } from '../../../components/profile/AppModeModal';
 import { useBodyStore } from '../../../store/bodyStore';
 import { useTheme } from '../../../hooks/useTheme';
 import { supabase } from '../../../services/supabase';
@@ -319,7 +324,10 @@ const DEFAULT_WIDGETS = ['weight', 'bodyFat', 'muscle_directory', 'recipe_search
 export default function DashboardScreen() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const { language, premiumColor, massUnit = 'kg' } = useSettingsStore();
+  const { language, premiumColor, massUnit = 'kg', appMode, setAppMode } = useSettingsStore();
+  const isSimple = appMode === 'simple';
+  const [showAdvancedSection, setShowAdvancedSection] = useState(false);
+  const [appModeModalVisible, setAppModeModalVisible] = useState(false);
   const { profile, setProfile } = useAuthStore();
   const dailySleep = useNutritionStore(s => s.dailySleep);
   const selectedDate = useNutritionStore(s => s.selectedDate);
@@ -582,6 +590,37 @@ export default function DashboardScreen() {
               />
             </View>
 
+            {/* Píldora de Modo Simplificado */}
+            {isSimple && (
+              <TouchableOpacity
+                style={[s.simpleModeBanner, { backgroundColor: '#10B98115', borderColor: '#10B98140' }]}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setAppModeModalVisible(true);
+                }}
+                activeOpacity={0.8}
+              >
+                <View style={s.simpleModeBannerLeft}>
+                  <View style={[s.simpleModeIconWrap, { backgroundColor: '#10B98125' }]}>
+                    <Sparkles size={14} color="#10B981" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[s.simpleModeBannerTitle, { color: colors.textPrimary }]}>
+                      {t('dashboard.simpleModeBadge', 'Versión Simplificada')}
+                    </Text>
+                    <Text style={[s.simpleModeBannerSub, { color: colors.textSecondary }]} numberOfLines={1}>
+                      {t('dashboard.simpleModeSub', 'Métricas esenciales • Toca para cambiar a Avanzada')}
+                    </Text>
+                  </View>
+                </View>
+                <View style={[s.simpleModeBadgeTag, { backgroundColor: '#10B98122' }]}>
+                  <Text style={{ color: '#10B981', fontSize: 11, fontWeight: '800' }}>
+                    {t('common.change', 'Cambiar')} ›
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
+
             {/* Fitz Daily Coach Tip */}
             <FitzDailyTip streakDays={streakDays} />
 
@@ -611,105 +650,295 @@ export default function DashboardScreen() {
               t={t as any}
             />
 
-            {/* 2. Weekly Consistency & Habit Tracker */}
-            <WeeklyConsistencyCard
-              selectedDate={selectedDate}
-              onSelectDate={setDate}
-              streakDays={streakDays}
-              language={language}
-              t={t as any}
-            />
-
-            {/* 3. Nutritional Score & Energy Balance */}
-            <View style={s.sectionHeader}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <View style={[s.sectionIconWrap, { backgroundColor: (isPremiumCustom ? safePremiumColor : colors.primary) + '20' }]}>
-                  <Zap size={15} color={isPremiumCustom ? safePremiumColor : colors.primary} />
+            {/* In Simple Mode: Essential Focus first, then collapsible detailed analytics */}
+            {isSimple ? (
+              <>
+                {/* Score Nutricional */}
+                <View style={s.sectionHeader}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <View style={[s.sectionIconWrap, { backgroundColor: (isPremiumCustom ? safePremiumColor : colors.primary) + '20' }]}>
+                      <Zap size={15} color={isPremiumCustom ? safePremiumColor : colors.primary} />
+                    </View>
+                    <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>
+                      {t('dashboard.scoreTitle', 'Score Nutricional')}
+                    </Text>
+                  </View>
                 </View>
-                <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>
-                  {t('dashboard.scoreTitle', 'Score Nutricional')}
-                </Text>
-              </View>
-            </View>
 
-            <View style={[s.cardFull, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border + '45' }]}>
-              <LinearGradient
-                colors={[(isPremiumCustom ? safePremiumColor : colors.primary) + '12', 'transparent']}
-                style={StyleSheet.absoluteFill}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                pointerEvents="none"
-              />
-              <ScoreRing
-                consumed={calories}
-                target={target}
-                burnedCals={activityCals}
-                dateLabel={dateLabel}
-                customColor={isPremiumCustom ? safePremiumColor : null}
-              />
-            </View>
-
-            {/* 4. Muscle Symmetry Section */}
-            <View style={{ marginVertical: Spacing.sm }}>
-              <MuscleSymmetryCard />
-            </View>
-
-            {/* 5. Statistics & Tool Grid */}
-            <View style={s.sectionHeader}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <View style={[s.sectionIconWrap, { backgroundColor: colors.carbs + '20' }]}>
-                  <BarChart2 size={16} color={colors.carbs} />
+                <View style={[s.cardFull, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border + '45' }]}>
+                  <LinearGradient
+                    colors={[(isPremiumCustom ? safePremiumColor : colors.primary) + '12', 'transparent']}
+                    style={StyleSheet.absoluteFill}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    pointerEvents="none"
+                  />
+                  <ScoreRing
+                    consumed={calories}
+                    target={target}
+                    burnedCals={activityCals}
+                    dateLabel={dateLabel}
+                    customColor={isPremiumCustom ? safePremiumColor : null}
+                  />
                 </View>
-                <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>
-                  {t('dashboard.statsTitle', 'Estadísticas y Herramientas')}
-                </Text>
-              </View>
-              {isEditing ? (
-                <TouchableOpacity onPress={saveWidgetsOrder} style={s.doneBtn}>
-                  <Text style={s.doneText}>{t('common.done', 'Listo')}</Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity
-                  onPress={() => {
-                    Haptics.selectionAsync();
-                    setIsEditing(true);
-                  }}
-                  style={[s.editOrderBtn, { borderColor: colors.border + '50' }]}
-                >
-                  <Text style={[s.editOrderText, { color: colors.textSecondary }]}>
-                    {t('dashboard.reorder', 'Reordenar')}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
 
-            <View style={s.widgetGrid}>
-              {widgetsOrder.map((id, index) => renderDashboardWidget({
-                id,
-                index,
-                isEditing,
-                canMoveLeft: index > 0,
-                canMoveRight: index < widgetsOrder.length - 1,
-                onMoveLeft: () => moveWidget(index, -1),
-                onMoveRight: () => moveWidget(index, 1),
-                onLongPress: () => {
-                  setIsEditing(true);
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                },
-                currentWeight: currentWeightKg,
-                sleepHours,
-                calories,
-                bodyFat,
-                totalsData,
-                isPro,
-                colors,
-                massUnit,
-                t: t as any,
-                router,
-                hasPremiumAdAccess,
-                handlePremiumFeaturePress
-              }))}
-            </View>
+                {/* Métricas Principales Rápidas (Primeros 2 widgets) */}
+                <View style={[s.sectionHeader, { marginTop: 14 }]}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <View style={[s.sectionIconWrap, { backgroundColor: colors.carbs + '20' }]}>
+                      <BarChart2 size={16} color={colors.carbs} />
+                    </View>
+                    <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>
+                      {t('dashboard.quickStats', 'Estadísticas Rápidas')}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={s.widgetGrid}>
+                  {widgetsOrder.slice(0, 2).map((id, index) => renderDashboardWidget({
+                    id,
+                    index,
+                    isEditing: false,
+                    canMoveLeft: false,
+                    canMoveRight: false,
+                    onMoveLeft: () => {},
+                    onMoveRight: () => {},
+                    onLongPress: () => {},
+                    currentWeight: currentWeightKg,
+                    sleepHours,
+                    calories,
+                    bodyFat,
+                    totalsData,
+                    isPro,
+                    colors,
+                    massUnit,
+                    t: t as any,
+                    router,
+                    hasPremiumAdAccess,
+                    handlePremiumFeaturePress,
+                  }))}
+                </View>
+
+                {/* Sección Desplegable: Análisis Detallado y Más Herramientas (100% Funcional) */}
+                <View style={s.toolsAccordionCard}>
+                  <TouchableOpacity
+                    style={[
+                      s.toolsAccordionHeader,
+                      {
+                        backgroundColor: colors.surfaceAlt + '65',
+                        borderColor: colors.border + '40',
+                      },
+                    ]}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setShowAdvancedSection(!showAdvancedSection);
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                      <View style={[s.toolsIconBadge, { backgroundColor: '#8B5CF622' }]}>
+                        <SlidersHorizontal size={16} color="#8B5CF6" />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[s.toolsAccordionTitle, { color: colors.textPrimary }]}>
+                          {t('dashboard.advancedAnalytics', 'Análisis detallado y Simetría')}
+                        </Text>
+                        <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 1 }} numberOfLines={1}>
+                          {showAdvancedSection
+                            ? t('common.tapToHide', 'Toca para contraer')
+                            : t('dashboard.advancedAnalyticsDesc', 'Consistencia semanal, simetría muscular y más')}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={[s.toolsChevronWrap, { backgroundColor: colors.surface }]}>
+                      {showAdvancedSection ? (
+                        <ChevronUp size={16} color={colors.textSecondary} />
+                      ) : (
+                        <ChevronDown size={16} color={colors.textSecondary} />
+                      )}
+                    </View>
+                  </TouchableOpacity>
+
+                  {showAdvancedSection && (
+                    <View style={{ gap: 14, marginTop: 12 }}>
+                      {/* Weekly Consistency & Habit Tracker */}
+                      <WeeklyConsistencyCard
+                        selectedDate={selectedDate}
+                        onSelectDate={setDate}
+                        streakDays={streakDays}
+                        language={language}
+                        t={t as any}
+                      />
+
+                      {/* Muscle Symmetry Section */}
+                      <MuscleSymmetryCard />
+
+                      {/* Resto de Widgets con función de Reordenar */}
+                      <View style={s.sectionHeader}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                          <View style={[s.sectionIconWrap, { backgroundColor: colors.carbs + '20' }]}>
+                            <BarChart2 size={16} color={colors.carbs} />
+                          </View>
+                          <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>
+                            {t('dashboard.statsTitle', 'Estadísticas y Herramientas')}
+                          </Text>
+                        </View>
+                        {isEditing ? (
+                          <TouchableOpacity onPress={saveWidgetsOrder} style={s.doneBtn}>
+                            <Text style={s.doneText}>{t('common.done', 'Listo')}</Text>
+                          </TouchableOpacity>
+                        ) : (
+                          <TouchableOpacity
+                            onPress={() => {
+                              Haptics.selectionAsync();
+                              setIsEditing(true);
+                            }}
+                            style={[s.editOrderBtn, { borderColor: colors.border + '50' }]}
+                          >
+                            <Text style={[s.editOrderText, { color: colors.textSecondary }]}>
+                              {t('dashboard.reorder', 'Reordenar')}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+
+                      <View style={s.widgetGrid}>
+                        {widgetsOrder.slice(2).map((id, relIdx) => {
+                          const index = relIdx + 2;
+                          return renderDashboardWidget({
+                            id,
+                            index,
+                            isEditing,
+                            canMoveLeft: index > 0,
+                            canMoveRight: index < widgetsOrder.length - 1,
+                            onMoveLeft: () => moveWidget(index, -1),
+                            onMoveRight: () => moveWidget(index, 1),
+                            onLongPress: () => {
+                              setIsEditing(true);
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                            },
+                            currentWeight: currentWeightKg,
+                            sleepHours,
+                            calories,
+                            bodyFat,
+                            totalsData,
+                            isPro,
+                            colors,
+                            massUnit,
+                            t: t as any,
+                            router,
+                            hasPremiumAdAccess,
+                            handlePremiumFeaturePress,
+                          });
+                        })}
+                      </View>
+                    </View>
+                  )}
+                </View>
+              </>
+            ) : (
+              <>
+                {/* 2. Weekly Consistency & Habit Tracker (Avanzado Original) */}
+                <WeeklyConsistencyCard
+                  selectedDate={selectedDate}
+                  onSelectDate={setDate}
+                  streakDays={streakDays}
+                  language={language}
+                  t={t as any}
+                />
+
+                {/* 3. Nutritional Score & Energy Balance */}
+                <View style={s.sectionHeader}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <View style={[s.sectionIconWrap, { backgroundColor: (isPremiumCustom ? safePremiumColor : colors.primary) + '20' }]}>
+                      <Zap size={15} color={isPremiumCustom ? safePremiumColor : colors.primary} />
+                    </View>
+                    <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>
+                      {t('dashboard.scoreTitle', 'Score Nutricional')}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={[s.cardFull, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border + '45' }]}>
+                  <LinearGradient
+                    colors={[(isPremiumCustom ? safePremiumColor : colors.primary) + '12', 'transparent']}
+                    style={StyleSheet.absoluteFill}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    pointerEvents="none"
+                  />
+                  <ScoreRing
+                    consumed={calories}
+                    target={target}
+                    burnedCals={activityCals}
+                    dateLabel={dateLabel}
+                    customColor={isPremiumCustom ? safePremiumColor : null}
+                  />
+                </View>
+
+                {/* 4. Muscle Symmetry Section */}
+                <View style={{ marginVertical: Spacing.sm }}>
+                  <MuscleSymmetryCard />
+                </View>
+
+                {/* 5. Statistics & Tool Grid */}
+                <View style={s.sectionHeader}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <View style={[s.sectionIconWrap, { backgroundColor: colors.carbs + '20' }]}>
+                      <BarChart2 size={16} color={colors.carbs} />
+                    </View>
+                    <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>
+                      {t('dashboard.statsTitle', 'Estadísticas y Herramientas')}
+                    </Text>
+                  </View>
+                  {isEditing ? (
+                    <TouchableOpacity onPress={saveWidgetsOrder} style={s.doneBtn}>
+                      <Text style={s.doneText}>{t('common.done', 'Listo')}</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={() => {
+                        Haptics.selectionAsync();
+                        setIsEditing(true);
+                      }}
+                      style={[s.editOrderBtn, { borderColor: colors.border + '50' }]}
+                    >
+                      <Text style={[s.editOrderText, { color: colors.textSecondary }]}>
+                        {t('dashboard.reorder', 'Reordenar')}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                <View style={s.widgetGrid}>
+                  {widgetsOrder.map((id, index, arr) => renderDashboardWidget({
+                    id,
+                    index,
+                    isEditing,
+                    canMoveLeft: index > 0,
+                    canMoveRight: index < arr.length - 1,
+                    onMoveLeft: () => moveWidget(index, -1),
+                    onMoveRight: () => moveWidget(index, 1),
+                    onLongPress: () => {
+                      setIsEditing(true);
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    },
+                    currentWeight: currentWeightKg,
+                    sleepHours,
+                    calories,
+                    bodyFat,
+                    totalsData,
+                    isPro,
+                    colors,
+                    massUnit,
+                    t: t as any,
+                    router,
+                    hasPremiumAdAccess,
+                    handlePremiumFeaturePress,
+                  }))}
+                </View>
+              </>
+            )}
 
             <View style={{ height: 48 }} />
           </ScrollView>
@@ -743,6 +972,17 @@ export default function DashboardScreen() {
             dietType: profile?.dietType || 'recommended',
           }}
           onSave={() => setGoalModalVisible(false)}
+        />
+
+        {/* Modal de Cambio de Modo (Simplificada vs Avanzada) */}
+        <AppModeModal
+          visible={appModeModalVisible}
+          currentMode={appMode}
+          onClose={() => setAppModeModalVisible(false)}
+          onSelectMode={(mode) => {
+            setAppMode(mode);
+            if (profile) useAuthStore.getState().setProfile({ ...profile, appMode: mode });
+          }}
         />
       </SafeAreaView>
     </View>
@@ -844,5 +1084,74 @@ const s = StyleSheet.create({
     flexWrap: 'wrap',
     gap: Spacing.md,
     justifyContent: 'space-between',
+  },
+  simpleModeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 12,
+    gap: 10,
+  },
+  simpleModeBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  simpleModeIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  simpleModeBannerTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  simpleModeBannerSub: {
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 1,
+  },
+  simpleModeBadgeTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  toolsAccordionCard: {
+    marginTop: 14,
+    gap: 10,
+  },
+  toolsAccordionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+  },
+  toolsIconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  toolsAccordionTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  toolsChevronWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
