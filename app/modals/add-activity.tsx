@@ -23,6 +23,7 @@ import { useIsPro } from '../../hooks/useIsPro';
 
 import { transcribeAudio, estimateActivityCalories } from '../../services/groq';
 import { CustomAlert } from '../../components/CustomAlert';
+import { getLocalDateTimeString } from '../../utils/date';
 
 /** Preset exercise list with fixed kcal-per-30-min values and category mapping. */
 const EXERCISES = [
@@ -699,7 +700,7 @@ export default function AddActivityModal() {
                       icon:     selected.icon,
                       calories: cals,
                       duration: dur,
-                      loggedAt: `${selectedDate}T${new Date().toLocaleTimeString('en-GB')}`,
+                      loggedAt: getLocalDateTimeString(new Date(), selectedDate),
                     });
                   }
                 } catch (err) {

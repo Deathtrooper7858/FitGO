@@ -561,7 +561,7 @@ export default function DashboardScreen() {
               <View style={{ gap: 4 }}>
                 <Text style={[s.greeting, { color: colors.textPrimary }]}>
                   {t('dashboard.hello', '¡Hola')}{' '}
-                  <Text style={[{ color: colors.primary }, getNameStyle(profile?.nameColor)]}>
+                  <Text style={[{ color: colors.primary }, getNameStyle(profile?.nameColor, profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
                     {name}!
                   </Text>
                 </Text>

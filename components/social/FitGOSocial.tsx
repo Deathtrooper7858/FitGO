@@ -1421,7 +1421,7 @@ export default function FitGOSocial({
                     </View>
                   )}
                   <View>
-                    <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id, profile?.id, profile?.nameColor)]}>{post.user_profile?.name}</Text>
+                    <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id, profile?.id, profile?.nameColor, premiumColor)]}>{post.user_profile?.name}</Text>
                     <Text style={{ color: colors.textMuted, fontSize: 11 }}>
                       {new Date(post.created_at).toLocaleDateString()} {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </Text>

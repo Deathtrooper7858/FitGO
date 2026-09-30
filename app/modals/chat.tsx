@@ -45,7 +45,8 @@ const darkenHex = (hex?: string | null, amount = 0.22): string => {
 };
 
 // Formats message grouping date header
-function formatMessageDate(dateString: string): string {
+function formatMessageDate(dateString?: string | null): string {
+  if (!dateString) return '';
   try {
     const date = new Date(dateString);
     const now = new Date();
@@ -62,12 +63,56 @@ function formatMessageDate(dateString: string): string {
   }
 }
 
+// Formats message time safely (never throws RangeError)
+function formatMessageTime(dateString?: string | null): string {
+  if (!dateString) return '';
+  try {
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '';
+  }
+}
+
+// ── Safe Player Error Boundary ──────────────────────────────────────────────
+class SafePlayerBoundary extends React.Component<
+  { fallback?: React.ReactNode; children: React.ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(err: any) {
+    console.warn('[Chat] SafePlayerBoundary caught media playback error:', err);
+  }
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || null;
+    }
+    return this.props.children;
+  }
+}
+
 // ── Audio Player Component ──────────────────────────────────────────────────
 function VoiceNotePlayer({ audioUrl, isMine, colors }: { audioUrl?: string | null; isMine: boolean; colors: any }) {
   if (!audioUrl || typeof audioUrl !== 'string' || !audioUrl.trim()) {
     return null;
   }
-  return <VoiceNotePlayerInner audioUrl={audioUrl} isMine={isMine} colors={colors} />;
+  return (
+    <SafePlayerBoundary
+      fallback={
+        <View style={[vStyles.container, { minWidth: 160 }]}>
+          <Text style={{ color: isMine ? '#fff' : (colors.textMuted || '#888'), fontSize: 11 }}>
+            Nota de voz
+          </Text>
+        </View>
+      }
+    >
+      <VoiceNotePlayerInner audioUrl={audioUrl} isMine={isMine} colors={colors} />
+    </SafePlayerBoundary>
+  );
 }
 
 function VoiceNotePlayerInner({ audioUrl, isMine, colors }: { audioUrl: string; isMine: boolean; colors: any }) {
@@ -290,6 +335,17 @@ export default function ChatModal() {
     return () => { if (durationTimerRef.current) clearInterval(durationTimerRef.current); };
   }, [isRecording, pulseAnim]);
 
+  // Cleanup audio recording if active on unmount
+  useEffect(() => {
+    return () => {
+      try {
+        if (isRecording) {
+          recorder.stop().catch?.(() => {});
+        }
+      } catch {}
+    };
+  }, [isRecording, recorder]);
+
   // Load messages and subscribe to Realtime updates (STABLE - no infinite loop!)
   useEffect(() => {
     if (!profile?.id || !friendId) return;
@@ -317,8 +373,9 @@ export default function ChatModal() {
     // Mark as read once on screen focus
     markAsRead(profile.id, friendId).catch(() => {});
 
-    // Supabase Realtime channel
-    const channel = supabase.channel(`room_${roomName}`)
+    // Supabase Realtime channel with unique ID to avoid collisions
+    const channelId = `room_${roomName}_${Date.now()}`;
+    const channel = supabase.channel(channelId)
       .on(
         'postgres_changes',
         {
@@ -340,6 +397,22 @@ export default function ChatModal() {
           }
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'direct_messages',
+          filter: `sender_id=eq.${profile.id}`
+        },
+        (payload) => {
+          if (!isMounted) return;
+          const updatedMsg = payload.new as DirectMessage;
+          setMessages(prev =>
+            prev.map(m => (m.id === updatedMsg.id ? { ...m, is_read: updatedMsg.is_read } : m))
+          );
+        }
+      )
       .on('broadcast', { event: 'typing' }, ({ payload }) => {
         if (!isMounted) return;
         if (payload.userId === friendId) {
@@ -356,7 +429,7 @@ export default function ChatModal() {
     return () => {
       isMounted = false;
       if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
+        supabase.removeChannel(channelRef.current).catch?.(() => {});
         channelRef.current = null;
       }
     };
@@ -403,7 +476,12 @@ export default function ChatModal() {
     setNewMessage('');
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     optimisticSend(content);
-    await sendDirectMessage(profile.id, friendId, content);
+    const sent = await sendDirectMessage(profile.id, friendId, content);
+    if (sent?.id) {
+      setMessages(prev =>
+        prev.map(m => (m.id.startsWith('temp-') && m.content === content ? sent : m))
+      );
+    }
   };
 
   // ── Media Picker ──────────────────────────────────────────────────────────
@@ -614,6 +692,7 @@ export default function ChatModal() {
             ref={scrollViewRef}
             style={styles.messagesList}
             contentContainerStyle={styles.messagesContent}
+            keyboardShouldPersistTaps="handled"
             onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
             showsVerticalScrollIndicator={false}
           >
@@ -667,7 +746,7 @@ export default function ChatModal() {
                 </View>
               </View>
             ) : (
-              messages.map((msg, index) => {
+              messages.filter(Boolean).map((msg, index) => {
                 const isMine = msg.sender_id === profile?.id;
                 const prevMsg = index > 0 ? messages[index - 1] : null;
                 const isSameSender = prevMsg?.sender_id === msg.sender_id;
@@ -677,9 +756,10 @@ export default function ChatModal() {
                 const showDateHeader = !prevMsg || (currDate !== '' && currDate !== prevDate);
 
                 const bubbleBg = isMine ? primaryColor : (colors.surfaceAlt || '#1E293B');
+                const messageTime = formatMessageTime(msg.created_at);
 
                 return (
-                  <React.Fragment key={`${msg.id}-${index}`}>
+                  <React.Fragment key={`${msg.id || index}-${index}`}>
                     {showDateHeader && currDate ? (
                       <View style={styles.dateSeparator}>
                         <View style={[styles.dateBadge, { backgroundColor: colors.surfaceAlt ? colors.surfaceAlt + '90' : 'rgba(30,41,59,0.8)', borderColor: colors.border ? colors.border + '30' : 'rgba(255,255,255,0.08)' }]}>
@@ -698,10 +778,18 @@ export default function ChatModal() {
                       {msg.image_url ? (
                         msg.image_url.toLowerCase().includes('.mp4') || msg.image_url.toLowerCase().includes('.mov') || msg.image_url.includes('chat_media/17') || msg.image_url.includes('video') ? (
                           <View style={[styles.imageWrapper, isMine ? styles.myBubble : styles.theirBubble]}>
-                            <VideoPlayerView videoUrl={msg.image_url} style={{ width: 230, height: 190 }} />
+                            <SafePlayerBoundary
+                              fallback={
+                                <View style={{ width: 230, height: 190, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
+                                  <Text style={{ color: '#aaa', fontSize: 12 }}>Video no disponible</Text>
+                                </View>
+                              }
+                            >
+                              <VideoPlayerView videoUrl={msg.image_url} style={{ width: 230, height: 190 }} />
+                            </SafePlayerBoundary>
                             <View style={styles.mediaFooter}>
                               <Text style={styles.mediaTimeText}>
-                                {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                {messageTime}
                               </Text>
                               {isMine && (
                                 <CheckCheck size={13} color="rgba(255,255,255,0.85)" />
@@ -721,7 +809,7 @@ export default function ChatModal() {
                             >
                               <View style={styles.mediaFooter}>
                                 <Text style={styles.mediaTimeText}>
-                                  {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  {messageTime}
                                 </Text>
                                 {isMine && (
                                   <CheckCheck size={13} color="rgba(255,255,255,0.85)" />
@@ -744,7 +832,7 @@ export default function ChatModal() {
                           <VoiceNotePlayer audioUrl={msg.audio_url} isMine={isMine} colors={colors} />
                           <View style={styles.metaRow}>
                             <Text style={[styles.messageTime, { color: isMine ? 'rgba(255,255,255,0.75)' : colors.textMuted }]}>
-                              {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {messageTime}
                             </Text>
                             {isMine && (
                               <CheckCheck size={12} color="rgba(255,255,255,0.8)" style={{ marginLeft: 3 }} />
@@ -767,7 +855,7 @@ export default function ChatModal() {
                           </Text>
                           <View style={styles.metaRow}>
                             <Text style={[styles.messageTime, { color: isMine ? 'rgba(255,255,255,0.75)' : colors.textMuted }]}>
-                              {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {messageTime}
                             </Text>
                             {isMine && (
                               msg.is_read ? (

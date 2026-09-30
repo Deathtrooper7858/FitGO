@@ -119,12 +119,14 @@ export const useAuthStore = create<AuthState>()(
         }
         if (cached) {
           set({ profile: cached });
-          if (cached.premiumColor) {
-            if (useSettingsStore.getState().premiumColor !== cached.premiumColor) {
-              useSettingsStore.getState().setPremiumColor(cached.premiumColor);
+          const cachedColor = cached.premiumColor || cached.nameColor;
+          if (cachedColor) {
+            if (useSettingsStore.getState().premiumColor !== cachedColor) {
+              useSettingsStore.getState().setPremiumColor(cachedColor);
             }
           } else if (useSettingsStore.getState().premiumColor) {
             cached.premiumColor = useSettingsStore.getState().premiumColor || undefined;
+            cached.nameColor = useSettingsStore.getState().premiumColor || undefined;
           }
           if (cached.language) {
             if (useSettingsStore.getState().language !== cached.language) {
@@ -175,28 +177,59 @@ export const useAuthStore = create<AuthState>()(
                   (data.pro_expires_at && new Date(data.pro_expires_at) > now)
                 );
 
-                const fetchedNameColor = (isProUser && !data.name_color) ? '#EAB308' : data.name_color;
-
-                // Restore premium color: DB > locally chosen color > session user_metadata > cached profile
                 const currentSession = get().session;
-                const metaColor = currentSession?.user?.user_metadata?.premium_color;
+                const metaColor = currentSession?.user?.user_metadata?.premium_color || currentSession?.user?.user_metadata?.name_color;
                 const localColor = useSettingsStore.getState().premiumColor;
-                const cachedColor = get().profile?.premiumColor;
+                const cachedColor = get().profile?.premiumColor || get().profile?.nameColor;
 
-                const effectivePremiumColor: string | null =
-                  data.premium_color || localColor || metaColor || cachedColor || null;
+                // For Pro users, restore custom color:
+                // DB premium_color > local store > session metadata > cached profile > DB name_color
+                const effectivePremiumColor: string | null = isProUser
+                  ? (data.premium_color || localColor || metaColor || cachedColor || (data.name_color && data.name_color !== '#EAB308' ? data.name_color : null) || null)
+                  : null;
 
-                if (effectivePremiumColor) {
+                const fetchedNameColor: string | null = isProUser
+                  ? (effectivePremiumColor || data.name_color || '#EAB308')
+                  : null;
+
+                if (isProUser && effectivePremiumColor) {
                   if (useSettingsStore.getState().premiumColor !== effectivePremiumColor) {
                     useSettingsStore.getState().setPremiumColor(effectivePremiumColor);
                   }
 
-                  // Backfill DB or metadata if one was missing
-                  if (!data.premium_color) {
-                    Promise.resolve(supabase.from('users').update({ premium_color: effectivePremiumColor }).eq('id', userId)).catch(() => {});
+                  // Backfill DB or metadata if one was missing or out of sync
+                  if (data.premium_color !== effectivePremiumColor || data.name_color !== effectivePremiumColor) {
+                    Promise.resolve(supabase.from('users').update({
+                      premium_color: effectivePremiumColor,
+                      name_color: effectivePremiumColor,
+                    }).eq('id', userId)).catch(() => {});
                   }
                   if (metaColor !== effectivePremiumColor) {
-                    supabase.auth.updateUser({ data: { premium_color: effectivePremiumColor } }).catch(() => {});
+                    supabase.auth.updateUser({
+                      data: {
+                        premium_color: effectivePremiumColor,
+                        name_color: effectivePremiumColor,
+                      },
+                    }).catch(() => {});
+                  }
+                } else if (!isProUser && (data.premium_color || data.name_color || useSettingsStore.getState().premiumColor)) {
+                  // Non-pro users should not keep pro colors
+                  if (useSettingsStore.getState().premiumColor) {
+                    useSettingsStore.getState().setPremiumColor(null);
+                  }
+                  if (data.premium_color || data.name_color) {
+                    Promise.resolve(supabase.from('users').update({
+                      premium_color: null,
+                      name_color: null,
+                    }).eq('id', userId)).catch(() => {});
+                  }
+                  if (metaColor) {
+                    supabase.auth.updateUser({
+                      data: {
+                        premium_color: null,
+                        name_color: null,
+                      },
+                    }).catch(() => {});
                   }
                 }
 

@@ -154,7 +154,7 @@ export function ProfileHeader({
             style={[
               styles.nameText,
               { color: colors.textPrimary },
-              getNameStyle(profile?.nameColor, profile?.id, profile?.id, profile?.nameColor)
+              getNameStyle(profile?.nameColor, profile?.id, profile?.id, profile?.nameColor, safePremiumColor)
             ]}
           >
             {profile?.name || t('profile.user', 'Usuario')}

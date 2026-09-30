@@ -40,7 +40,7 @@ const isRomanceLang = (lang: string) => ['Spanish', 'French', 'Portuguese', 'Ita
 // ─── Model IDs ────────────────────────────────────────────────────────────────
 const CHAT_MODEL   = 'openai/gpt-oss-120b'; // Modelo principal multilingüe
 const FAST_MODEL   = 'openai/gpt-oss-20b'; // Modelo rápido de reemplazo
-const VISION_MODEL = 'qwen/qwen3.6-27b'; // Active multimodal vision model on Groq
+const VISION_MODEL = 'qwen/qwen3.8-27b'; // Active multimodal vision model on Groq
 const AUDIO_MODEL  = 'whisper-large-v3';
 
 /**
@@ -60,12 +60,16 @@ async function fetchGroq(payload: any): Promise<any> {
   const doFetch = async (): Promise<any> => {
     let modelsArray = [payload.model];
     
-    if (payload.model === CHAT_MODEL) {
+    const hasImage = payload.messages && Array.isArray(payload.messages) && payload.messages.some((msg: any) =>
+      Array.isArray(msg.content) && msg.content.some((part: any) => part.type === 'image_url' || part.image_url)
+    );
+
+    if (hasImage || payload.model === VISION_MODEL || (typeof payload.model === 'string' && payload.model.includes('qwen'))) {
+      modelsArray = [VISION_MODEL, VISION_MODEL];
+    } else if (payload.model === CHAT_MODEL) {
       modelsArray = [CHAT_MODEL, FAST_MODEL];
     } else if (payload.model === FAST_MODEL) {
       modelsArray = [FAST_MODEL, CHAT_MODEL];
-    } else if (payload.model === VISION_MODEL || (typeof payload.model === 'string' && payload.model.includes('qwen'))) {
-      modelsArray = ['qwen/qwen3.6-27b', 'qwen/qwen3.8-27b'];
     }
 
     const isQwenModel = modelsArray.some((m: string) => typeof m === 'string' && m.toLowerCase().includes('qwen'));

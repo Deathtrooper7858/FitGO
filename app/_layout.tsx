@@ -175,26 +175,30 @@ function RootLayout() {
   // ── Android navigation styling: themed solid bar to match the app perfectly ──
   useEffect(() => {
     if (Platform.OS === 'android') {
-      const targetButtonStyle = theme === 'dark' ? 'light' : 'dark';
-      if (lastButtonStyleRef.current !== targetButtonStyle) {
-        NavigationBar.setButtonStyleAsync(targetButtonStyle as any);
-        lastButtonStyleRef.current = targetButtonStyle;
-      }
+      try {
+        const targetButtonStyle = theme === 'dark' ? 'light' : 'dark';
+        if (lastButtonStyleRef.current !== targetButtonStyle) {
+          NavigationBar.setButtonStyleAsync(targetButtonStyle as any).catch(() => {});
+          lastButtonStyleRef.current = targetButtonStyle;
+        }
 
-      // In Android 15+ (API 35+), edge-to-edge is enforced by the system.
-      // Modifying navigation bar background color is deprecated and ignored.
-      if (typeof Platform.Version === 'number' && Platform.Version >= 35) {
-        return;
-      }
+        // In Android 15+ (API 35+), edge-to-edge is enforced by the system.
+        // Modifying navigation bar background color is deprecated and ignored.
+        if (typeof Platform.Version === 'number' && Platform.Version >= 35) {
+          return;
+        }
 
-      const inTabs = segments[0] === '(tabs)';
-      const targetColor = inTabs ? colors.surface : colors.background;
-      
-      NavigationBar.setPositionAsync('relative');
-      if (lastColorRef.current !== targetColor) {
-        NavigationBar.setBackgroundColorAsync(targetColor);
-        NavigationBar.setBorderColorAsync(targetColor);
-        lastColorRef.current = targetColor;
+        const inTabs = segments[0] === '(tabs)';
+        const targetColor = inTabs ? colors.surface : colors.background;
+        
+        NavigationBar.setPositionAsync('relative').catch(() => {});
+        if (lastColorRef.current !== targetColor) {
+          NavigationBar.setBackgroundColorAsync(targetColor).catch(() => {});
+          NavigationBar.setBorderColorAsync(targetColor).catch(() => {});
+          lastColorRef.current = targetColor;
+        }
+      } catch (e) {
+        // Silently catch unsupported navigation bar platform operations
       }
     }
   }, [theme, segments, colors]);

@@ -191,7 +191,7 @@ interface SocialState {
   
   // Direct Messages
   fetchDirectMessages: (userId: string, friendId: string) => Promise<DirectMessage[]>;
-  sendDirectMessage: (senderId: string, receiverId: string, content: string, image_url?: string, audio_url?: string) => Promise<void>;
+  sendDirectMessage: (senderId: string, receiverId: string, content: string, image_url?: string, audio_url?: string) => Promise<DirectMessage | null>;
   fetchUnreadCounts: (userId: string) => Promise<void>;
   markAsRead: (userId: string, friendId: string) => Promise<void>;
   subscribeToUnreadMessages: (userId: string) => () => void;
@@ -914,16 +914,56 @@ export const useSocialStore = create<SocialState>((set, get) => ({
 
 
   fetchDirectMessages: async (userId: string, friendId: string) => {
+    if (!userId || !friendId) return [];
     try {
+      // 1. Primary query:
+      // Under Supabase RLS (auth.uid() = sender_id OR auth.uid() = receiver_id),
+      // querying sender_id = friendId OR receiver_id = friendId guarantees
+      // only messages between the authenticated user and friendId are accessible.
       const { data, error } = await supabase
         .from('direct_messages')
         .select('*')
-        .or(`and(sender_id.eq.${userId},receiver_id.eq.${friendId}),and(sender_id.eq.${friendId},receiver_id.eq.${userId})`)
+        .or(`sender_id.eq.${friendId},receiver_id.eq.${friendId}`)
         .order('created_at', { ascending: true })
-        .limit(100);  // Safety limit
+        .limit(200);
         
-      if (error) throw error;
-      return data || [];
+      if (error) {
+        console.warn('[SocialStore] Primary direct messages query failed, attempting dual-query fallback:', error.message);
+        // Fallback: run two simple, foolproof queries and merge
+        const [sentRes, recvRes] = await Promise.all([
+          supabase
+            .from('direct_messages')
+            .select('*')
+            .eq('sender_id', userId)
+            .eq('receiver_id', friendId)
+            .order('created_at', { ascending: true })
+            .limit(100),
+          supabase
+            .from('direct_messages')
+            .select('*')
+            .eq('sender_id', friendId)
+            .eq('receiver_id', userId)
+            .order('created_at', { ascending: true })
+            .limit(100),
+        ]);
+
+        const merged = [...(sentRes.data || []), ...(recvRes.data || [])];
+        merged.sort((a, b) => {
+          const tA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const tB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return tA - tB;
+        });
+        return merged as DirectMessage[];
+      }
+
+      // Memory filter strictly enforces two-party isolation
+      const filtered = (data || []).filter(
+        (m: DirectMessage) =>
+          (m.sender_id === userId && m.receiver_id === friendId) ||
+          (m.sender_id === friendId && m.receiver_id === userId)
+      );
+
+      return filtered as DirectMessage[];
     } catch (err) {
       console.warn('[SocialStore] Error fetching direct messages:', err);
       return [];
@@ -932,13 +972,25 @@ export const useSocialStore = create<SocialState>((set, get) => ({
 
   sendDirectMessage: async (senderId: string, receiverId: string, content: string, image_url?: string, audio_url?: string) => {
     try {
-      const { error } = await supabase
+      const payload: any = {
+        sender_id: senderId,
+        receiver_id: receiverId,
+        content: content ?? '',
+      };
+      if (image_url) payload.image_url = image_url;
+      if (audio_url) payload.audio_url = audio_url;
+
+      const { data, error } = await supabase
         .from('direct_messages')
-        .insert({ sender_id: senderId, receiver_id: receiverId, content, image_url, audio_url });
+        .insert(payload)
+        .select()
+        .single();
         
       if (error) throw error;
+      return (data as DirectMessage) || null;
     } catch (err) {
       console.warn('[SocialStore] Error sending direct message:', err);
+      return null;
     }
   },
 

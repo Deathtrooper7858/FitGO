@@ -1,4 +1,4 @@
-import { getLocalDateString, formatDisplayDate, addDays } from '../../utils/date';
+import { getLocalDateString, formatDisplayDate, addDays, getLocalTimeString, getLocalDateTimeString, normalizeMealType } from '../../utils/date';
 
 describe('getLocalDateString', () => {
   it('returns YYYY-MM-DD format for a given date', () => {
@@ -62,3 +62,48 @@ describe('addDays', () => {
     expect(addDays('2027-01-02', -3)).toBe('2026-12-30');
   });
 });
+
+describe('getLocalTimeString and getLocalDateTimeString', () => {
+  it('formats local time as HH:mm:ss with padding', () => {
+    const d = new Date(2026, 8, 12, 19, 5, 9); // 7:05:09 PM
+    expect(getLocalTimeString(d)).toBe('19:05:09');
+  });
+
+  it('combines local date and time without UTC shift', () => {
+    const d = new Date(2026, 8, 12, 20, 30, 0); // 8:30 PM on Sept 12
+    expect(getLocalDateTimeString(d)).toBe('2026-09-12T20:30:00');
+  });
+
+  it('respects explicitly provided dateStr', () => {
+    const d = new Date(2026, 8, 12, 21, 15, 0); // 9:15 PM
+    expect(getLocalDateTimeString(d, '2026-09-10')).toBe('2026-09-10T21:15:00');
+  });
+});
+
+describe('normalizeMealType', () => {
+  it('normalizes Spanish breakfast/desayuno terms to breakfast', () => {
+    expect(normalizeMealType('desayuno')).toBe('breakfast');
+    expect(normalizeMealType('Desayuno')).toBe('breakfast');
+    expect(normalizeMealType('Breakfast')).toBe('breakfast');
+  });
+
+  it('normalizes Spanish lunch/almuerzo terms to lunch', () => {
+    expect(normalizeMealType('almuerzo')).toBe('lunch');
+    expect(normalizeMealType('Almuerzo')).toBe('lunch');
+    expect(normalizeMealType('comida')).toBe('lunch');
+    expect(normalizeMealType('Lunch')).toBe('lunch');
+  });
+
+  it('normalizes Spanish dinner/cena terms to dinner', () => {
+    expect(normalizeMealType('cena')).toBe('dinner');
+    expect(normalizeMealType('Cena')).toBe('dinner');
+    expect(normalizeMealType('Dinner')).toBe('dinner');
+  });
+
+  it('normalizes snacks correctly', () => {
+    expect(normalizeMealType('snack')).toBe('snack');
+    expect(normalizeMealType('Snack')).toBe('snack');
+    expect(normalizeMealType('snack2')).toBe('snack2');
+  });
+});
+

@@ -17,18 +17,29 @@ export function useKeyboardNavBar() {
 
     const inTabs = segments[0] === '(tabs)';
     const targetColor = inTabs ? colors.surface : colors.background;
-    NavigationBar.setPositionAsync('relative');
-    NavigationBar.setBackgroundColorAsync(targetColor);
-    NavigationBar.setBorderColorAsync(targetColor);
+
+    try {
+      NavigationBar.setPositionAsync('relative').catch(() => {});
+      NavigationBar.setBackgroundColorAsync(targetColor).catch(() => {});
+      NavigationBar.setBorderColorAsync(targetColor).catch(() => {});
+    } catch (e) {
+      // Silently catch unsupported navigation bar platform operations
+    }
 
     cleanupRef.current = () => {
-      NavigationBar.setPositionAsync('relative');
-      NavigationBar.setBackgroundColorAsync(targetColor);
-      NavigationBar.setBorderColorAsync(targetColor);
+      try {
+        NavigationBar.setPositionAsync('relative').catch(() => {});
+        NavigationBar.setBackgroundColorAsync(targetColor).catch(() => {});
+        NavigationBar.setBorderColorAsync(targetColor).catch(() => {});
+      } catch (e) {
+        // Silently catch
+      }
     };
 
     return () => {
-      cleanupRef.current?.();
+      try {
+        cleanupRef.current?.();
+      } catch {}
       cleanupRef.current = null;
     };
   }, [colors, segments]);

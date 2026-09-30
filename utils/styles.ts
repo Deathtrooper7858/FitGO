@@ -4,9 +4,9 @@ export const getNameStyle = (
   currentUserId?: string,
   currentUserColor?: string | null,
   premiumColor?: string | null,
-): { color: string; textShadowColor?: string; textShadowOffset?: { width: number; height: number }; textShadowRadius?: number } => {
-  const isMe = userId && userId === currentUserId;
-  const color = isMe ? (currentUserColor || nameColor || premiumColor) : nameColor;
+): { color?: string; textShadowColor?: string; textShadowOffset?: { width: number; height: number }; textShadowRadius?: number } => {
+  const isMe = (userId && currentUserId && userId === currentUserId) || (!userId && !currentUserId);
+  const color = isMe ? (premiumColor || currentUserColor || nameColor) : nameColor;
   const resolvedColor = color;
 
   if (resolvedColor === 'admin_glow') {
@@ -18,7 +18,11 @@ export const getNameStyle = (
     };
   }
 
-  return { color: resolvedColor || '#FFFFFF' };
+  if (!resolvedColor || (!resolvedColor.startsWith('#') && !resolvedColor.startsWith('rgb'))) {
+    return {};
+  }
+
+  return { color: resolvedColor };
 };
 
 export const getSafeColor = (color?: string | null, fallback?: string): string => {

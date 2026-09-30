@@ -16,7 +16,7 @@ import { useNutritionStore, useSettingsStore } from '../../store';
 import { useIsPro } from '../../hooks/useIsPro';
 import { useTheme } from '../../hooks/useTheme';
 import { SuccessModal } from '../../components/SuccessModal';
-import { getLocalDateString } from '../../utils/date';
+import { getLocalDateString, getLocalDateTimeString, normalizeMealType } from '../../utils/date';
 import { getSafeColor, isValidPremiumColor } from '../../utils/styles';
 import { CustomAlert, AlertType } from '../../components/CustomAlert';
 import { AIEnergyGate, useAIEnergy, AIEnergyMode } from '../../components/AIEnergyGate';
@@ -397,10 +397,8 @@ export default function ScanModal() {
     isAddingAllRef.current = true;
     setLoading(true);
 
-    const targetMeal = initialMeal || getAutoMeal();
-
-    const ts = logTime.toISOString().split('T')[1] || '12:00:00.000Z';
-    const finalLoggedAt = date ? `${date}T${ts}` : logTime.toISOString();
+    const targetMeal = normalizeMealType(initialMeal || getAutoMeal());
+    const finalLoggedAt = getLocalDateTimeString(logTime, date);
 
     const localLogs = editedFoods.map((food) => {
       const origG = food.originalGrams > 0 ? food.originalGrams : (food.grams > 0 ? food.grams : 100);

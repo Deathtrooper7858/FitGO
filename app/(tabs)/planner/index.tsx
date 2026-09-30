@@ -45,7 +45,7 @@ import { SuccessModal } from '../../../components/SuccessModal';
 import { CustomAlert, AlertType } from '../../../components/CustomAlert';
 import { GlobalBackground } from '../../../components/GlobalBackground';
 import { getNameStyle, getSafeColor, isValidPremiumColor } from '../../../utils/styles';
-import { getLocalDateString } from '../../../utils/date';
+import { getLocalDateString, getLocalDateTimeString, normalizeMealType } from '../../../utils/date';
 import { Spacing, Radius } from '../../../constants';
 import type { PlanItem, WorkoutRoutine } from '../../../store/plannerStore';
 import DaySelector from '../../../components/planner/DaySelector';
@@ -470,7 +470,7 @@ export default function PlannerScreen() {
           cutoff.setDate(cutoff.getDate() - 30);
           const counts: Record<string, number> = { chest: 0, back: 0, legs: 0, shoulders: 0, arms: 0, core: 0 };
           workouts
-            .filter(w => w.date >= cutoff.toISOString().split('T')[0])
+            .filter(w => w.date >= getLocalDateString(cutoff))
             .forEach(w =>
               w.exercises.forEach(ex => {
                 const n = (ex.englishName || ex.name || '').toLowerCase();
@@ -768,6 +768,9 @@ export default function PlannerScreen() {
 
   const handleConsumeMeal = (m: PlanItem) => {
     Haptics.selectionAsync();
+    const mealType = normalizeMealType(m.meal);
+    const logDateTime = getLocalDateTimeString(new Date(), activeDayDate);
+
     useNutritionStore.getState().addLog({
       id: '',
       foodItem: {
@@ -787,8 +790,8 @@ export default function PlannerScreen() {
         transFat: 0,
       },
       grams: 100,
-      meal: m.meal,
-      loggedAt: new Date().toISOString(),
+      meal: mealType,
+      loggedAt: logDateTime,
       calories: m.calories,
       protein: m.protein || 0,
       carbs: m.carbs || 0,
@@ -924,7 +927,7 @@ export default function PlannerScreen() {
               <View style={s.headerTextWrap}>
                 <Text style={[s.title, { color: colors.textPrimary }]}>{t('planner.title')}</Text>
                 {profile?.name && (
-                  <Text style={[s.greetingText, { color: colors.primary }, getNameStyle(profile?.nameColor)]}>
+                  <Text style={[s.greetingText, { color: colors.primary }, getNameStyle(profile?.nameColor, profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
                     {t('common.greeting', 'Hola')}, {profile.name}!
                   </Text>
                 )}

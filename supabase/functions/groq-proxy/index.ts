@@ -227,13 +227,23 @@ Deno.serve(async (req) => {
       );
     }
 
+    const hasImageContent = parsed?.messages && Array.isArray(parsed.messages) && parsed.messages.some((msg: any) => 
+      Array.isArray(msg.content) && msg.content.some((part: any) => part.type === 'image_url' || part.image_url)
+    );
+
     const rawModels = Array.isArray(parsed?.models) ? parsed.models : (parsed?.model ? [parsed.model] : [undefined]);
     const modelsToTry = rawModels.map((m: any) => {
       if (typeof m !== 'string') return m;
-      if (m === 'qwen-3.6-27b' || m === 'qwen/qwen-3.6-27b') return 'qwen/qwen3.6-27b';
-      if (m === 'qwen-3.8-27b' || m === 'qwen/qwen-3.8-27b') return 'qwen/qwen3.8-27b';
+      // All Qwen models on Groq are now qwen/qwen3.8-27b (qwen3.6-27b was deprecated and removed by Groq)
+      if (m.toLowerCase().includes('qwen') || (hasImageContent && m.includes('3.6'))) {
+        return 'qwen/qwen3.8-27b';
+      }
       return m;
     });
+
+    if (hasImageContent && !modelsToTry.includes('qwen/qwen3.8-27b')) {
+      modelsToTry.unshift('qwen/qwen3.8-27b');
+    }
     const maxKeysToTry = API_KEY_ENV_VARS.length;
     let keysTried = 0;
     

@@ -10,6 +10,7 @@ import { useWorkoutHistoryStore } from '../store/workoutHistoryStore';
 import { useAuthStore } from '../store/authStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { generateDailyTip } from '../services/groq';
+import { getLocalDateString } from '../utils/date';
 
 const STORAGE_KEY = 'ff-daily-tip';
 
@@ -28,7 +29,7 @@ export function FitzDailyTip({ streakDays }: { streakDays: number }) {
 
     const fetchTip = async () => {
       try {
-        const today = new Date().toISOString().split('T')[0];
+        const today = getLocalDateString();
         // Include userId and language in key so switching language refreshes tip
         const storageKey = `${STORAGE_KEY}-${profile.id}-${language}`;
         const stored = await AsyncStorage.getItem(storageKey);

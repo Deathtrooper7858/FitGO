@@ -1,7 +1,7 @@
 import * as Crypto from 'expo-crypto';
 import { FoodLog } from '../types';
 import type { FoodItem } from '../../services/foodDatabase';
-import { getLocalDateString } from '../../utils/date';
+import { getLocalDateString, getLocalTimeString, getLocalDateTimeString, normalizeMealType } from '../../utils/date';
 import { supabase } from '../../services/supabase';
 import { useAuthStore } from '../authStore';
 import { useToastStore } from '../toastStore';
@@ -16,6 +16,15 @@ const isValidUUID = (v: string | null | undefined): boolean =>
   !!v && UUID_REGEX.test(v);
 
 function mapSupabaseRowToFoodLog(d: any): FoodLog {
+  let loggedAtStr = d.logged_at || getLocalDateString();
+  if (typeof loggedAtStr === 'string' && !loggedAtStr.includes('T') && d.created_at) {
+    try {
+      const createdDate = new Date(d.created_at);
+      if (!isNaN(createdDate.getTime())) {
+        loggedAtStr = `${loggedAtStr}T${getLocalTimeString(createdDate)}`;
+      }
+    } catch {}
+  }
   return {
     id: d.id,
     foodItem: {
@@ -35,7 +44,7 @@ function mapSupabaseRowToFoodLog(d: any): FoodLog {
       calcium: d.grams > 0 ? Math.round(((d.calcium ?? 0) / d.grams) * 100) : (d.calcium ?? 0),
       source: 'custom',
     },
-    grams: d.grams, meal: d.meal, loggedAt: d.logged_at,
+    grams: d.grams, meal: normalizeMealType(d.meal), loggedAt: loggedAtStr,
     calories: d.calories, protein: d.protein, carbs: d.carbs, fat: d.fat,
     fiber: d.fiber ?? 0, sugar: d.sugar ?? 0, sodium: d.sodium ?? 0, iron: d.iron ?? 0, calcium: d.calcium ?? 0,
     saturatedFat: d.saturated_fat ?? 0, transFat: d.trans_fat ?? 0, cholesterol: d.cholesterol ?? 0,
@@ -108,7 +117,27 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
     },
 
     addLog: async (log) => {
-      const safeLog = isValidUUID(log.id) ? log : { ...log, id: Crypto.randomUUID() };
+      const rawId = isValidUUID(log.id) ? log.id : Crypto.randomUUID();
+      const normalizedMeal = normalizeMealType(log.meal);
+
+      // Guard against UTC ISO strings shifting the date across timezone boundaries
+      let resolvedLoggedAt = log.loggedAt;
+      if (!resolvedLoggedAt) {
+        resolvedLoggedAt = getLocalDateTimeString();
+      } else if (resolvedLoggedAt.endsWith('Z')) {
+        const parsed = new Date(resolvedLoggedAt);
+        if (!isNaN(parsed.getTime())) {
+          resolvedLoggedAt = getLocalDateTimeString(parsed);
+        }
+      }
+
+      const safeLog: FoodLog = {
+        ...log,
+        id: rawId,
+        meal: normalizedMeal,
+        loggedAt: resolvedLoggedAt,
+      };
+
       set((s: any) => ({ todayLogs: [...s.todayLogs, safeLog] }));
       get().updateActivity(safeLog.loggedAt.split('T')[0]);
 
@@ -129,7 +158,8 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
             sugar: safeLog.sugar || 0, fiber: safeLog.fiber || 0, sodium: safeLog.sodium || 0,
             iron: safeLog.iron || 0, calcium: safeLog.calcium || 0,
             saturated_fat: safeLog.saturatedFat || 0, trans_fat: safeLog.transFat || 0,
-            grams: safeLog.grams, meal: safeLog.meal, logged_at: safeLog.loggedAt,
+            grams: safeLog.grams, meal: safeLog.meal,
+            logged_at: safeLog.loggedAt.split('T')[0],
           });
           if (error) {
             if (error.code === '23505') { console.log('[NutritionStore] Duplicate log prevented (23505).'); }
@@ -297,7 +327,7 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
       _fetchHistoryInProgress.add(userId);
       try {
         const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const startDate = thirtyDaysAgo.toISOString().split('T')[0];
+        const startDate = getLocalDateString(thirtyDaysAgo);
         
         const [foodRes, actRes] = await Promise.all([
           supabase.from('food_logs').select('*').eq('user_id', userId).gte('logged_at', startDate),
@@ -371,7 +401,7 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
             cholesterol: l.cholesterol ?? 0,
             iron: l.iron ?? 0,
             calcium: l.calcium ?? 0,
-            logged_at: l.loggedAt,
+            logged_at: l.loggedAt.split('T')[0],
             is_favorite: l.is_favorite ?? false,
           }));
           await supabase.from('food_logs').insert(rows);

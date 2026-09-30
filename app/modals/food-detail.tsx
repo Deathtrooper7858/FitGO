@@ -10,6 +10,7 @@ import { FoodItem } from '../../services/foodDatabase';
 import { useSettingsStore, useNutritionStore } from '../../store';
 import { useTheme } from '../../hooks/useTheme';
 import { convertEnergy } from '../../utils/units';
+import { getLocalDateTimeString } from '../../utils/date';
 import { parseVoiceLog } from '../../services/groq';
 import { CustomAlert, AlertType } from '../../components/CustomAlert';
 import { useIsPro } from '../../hooks/useIsPro';
@@ -194,7 +195,7 @@ export default function FoodDetailModal() {
         const localId = Crypto.randomUUID();
         await addLog({
           id: localId, foodItem: { ...food, name: foodName }, grams: g, meal,
-          loggedAt: date ? `${date}T${logTime.toISOString().split('T')[1]}` : logTime.toISOString(),
+          loggedAt: getLocalDateTimeString(logTime, date),
           calories: calToSave, protein: proToSave, carbs: carbToSave, fat: fatToSave,
           sugar, fiber, sodium, iron, calcium, saturatedFat: satFat, transFat,
         });

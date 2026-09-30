@@ -34,6 +34,7 @@ function MealCard({
   const { t } = useTranslation();
   const colors = useTheme();
   const [localSwapping, setLocalSwapping] = useState(false);
+  const [justConsumed, setJustConsumed] = useState(false);
   const isSwapping = externalSwapping || localSwapping;
 
   const handleSwap = async () => {
@@ -47,8 +48,13 @@ function MealCard({
   };
 
   const handleConsume = () => {
+    if (justConsumed) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setJustConsumed(true);
     onConsume();
+    setTimeout(() => {
+      setJustConsumed(false);
+    }, 2000);
   };
 
   const handleRecipe = () => {
@@ -155,12 +161,18 @@ function MealCard({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[mc.actionBtnPrimary, { backgroundColor: colors.primary }]}
+          style={[
+            mc.actionBtnPrimary,
+            { backgroundColor: justConsumed ? '#10B981' : colors.primary },
+          ]}
           onPress={handleConsume}
           activeOpacity={0.8}
+          disabled={justConsumed}
         >
           <CheckCircle size={14} color="#fff" />
-          <Text style={mc.actionTextPrimary}>{t('planner.consume', 'Consumir')}</Text>
+          <Text style={mc.actionTextPrimary}>
+            {justConsumed ? t('planner.consumed', '¡Añadido!') : t('planner.consume', 'Consumir')}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

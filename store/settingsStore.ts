@@ -84,13 +84,27 @@ export const useSettingsStore = create<SettingsState>()(
         }
       },
       setPremiumColor: (premiumColor) => {
-        if (get().premiumColor === premiumColor) return;
+        const prev = get().premiumColor;
         set({ premiumColor });
-        // Background sync to DB — profile is updated by callers (fetchProfile, UI handlers)
         const profile = useAuthStore.getState().profile;
-        if (profile?.id) {
-          supabase.auth.updateUser({ data: { premium_color: premiumColor } }).catch(() => {});
-          Promise.resolve(supabase.from('users').update({ premium_color: premiumColor }).eq('id', profile.id)).catch(() => {});
+        if (profile?.id && (prev !== premiumColor || profile.premiumColor !== (premiumColor || undefined) || profile.nameColor !== (premiumColor || undefined))) {
+          useAuthStore.getState().setProfile({
+            ...profile,
+            premiumColor: premiumColor || undefined,
+            nameColor: premiumColor || undefined,
+          });
+          supabase.auth.updateUser({
+            data: {
+              premium_color: premiumColor,
+              name_color: premiumColor,
+            },
+          }).catch(() => {});
+          Promise.resolve(
+            supabase.from('users').update({
+              premium_color: premiumColor,
+              name_color: premiumColor,
+            }).eq('id', profile.id)
+          ).catch(() => {});
         }
       },
       setLanguage: (language) => {

@@ -87,8 +87,8 @@ export const useNutritionStore = create<NutritionState>()(
         ...initialStreakState,
         ...initialDailyMetricsState,
         ...initialAiUsageState,
-        selectedDate: new Date().toLocaleDateString('en-CA'),
-        lastAiUsageDate: new Date().toLocaleDateString('en-CA'),
+        selectedDate: getLocalDateString(),
+        lastAiUsageDate: getLocalDateString(),
       }),
     }),
     {

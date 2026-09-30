@@ -73,10 +73,22 @@ export default function PremiumColorsModal() {
     setPremiumColor(color.id);
 
     if (profile?.id) {
-      setProfile({ ...profile, premiumColor: color.id || undefined });
-      supabase.auth.updateUser({ data: { premium_color: color.id } }).catch(() => {});
+      setProfile({
+        ...profile,
+        premiumColor: color.id || undefined,
+        nameColor: color.id || undefined,
+      });
+      supabase.auth.updateUser({
+        data: {
+          premium_color: color.id,
+          name_color: color.id,
+        },
+      }).catch(() => {});
       Promise.resolve(
-        supabase.from('users').update({ premium_color: color.id }).eq('id', profile.id)
+        supabase.from('users').update({
+          premium_color: color.id,
+          name_color: color.id,
+        }).eq('id', profile.id)
       ).catch((err) => {
         console.error('[PremiumColors] Failed to save to DB:', err);
       });
