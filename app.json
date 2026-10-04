@@ -3,7 +3,7 @@
     "name": "FitGO",
     "slug": "fitgo",
     "owner": "deathtrooper",
-    "version": "2.2.2",
+    "version": "2.2.3",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -30,7 +30,7 @@
     },
     "android": {
       "package": "com.fitgo.app",
-      "versionCode": 42,
+      "versionCode": 43,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0D0F14"
