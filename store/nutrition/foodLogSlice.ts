@@ -6,6 +6,8 @@ import { supabase } from '../../services/supabase';
 import { useAuthStore } from '../authStore';
 import { useToastStore } from '../toastStore';
 import { useLeagueStore } from '../leagueStore';
+import { useSyncStore } from '../syncStore';
+import { useNetworkStore } from '../networkStore';
 import { NotificationTriggers } from '../../utils/notificationTriggers';
 import i18n from '../../i18n';
 import { memoRecalculateStreak } from './utils';
@@ -151,16 +153,18 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
 
       const { profile } = useAuthStore.getState();
       if (profile?.id) {
+        const payload = {
+          id: safeLog.id, user_id: profile.id, food_name: safeLog.foodItem.name,
+          calories: safeLog.calories, protein: safeLog.protein, carbs: safeLog.carbs, fat: safeLog.fat,
+          sugar: safeLog.sugar || 0, fiber: safeLog.fiber || 0, sodium: safeLog.sodium || 0,
+          iron: safeLog.iron || 0, calcium: safeLog.calcium || 0,
+          saturated_fat: safeLog.saturatedFat || 0, trans_fat: safeLog.transFat || 0,
+          grams: safeLog.grams, meal: safeLog.meal,
+          logged_at: safeLog.loggedAt.split('T')[0],
+        };
+
         try {
-          const { error } = await supabase.from('food_logs').insert({
-            id: safeLog.id, user_id: profile.id, food_name: safeLog.foodItem.name,
-            calories: safeLog.calories, protein: safeLog.protein, carbs: safeLog.carbs, fat: safeLog.fat,
-            sugar: safeLog.sugar || 0, fiber: safeLog.fiber || 0, sodium: safeLog.sodium || 0,
-            iron: safeLog.iron || 0, calcium: safeLog.calcium || 0,
-            saturated_fat: safeLog.saturatedFat || 0, trans_fat: safeLog.transFat || 0,
-            grams: safeLog.grams, meal: safeLog.meal,
-            logged_at: safeLog.loggedAt.split('T')[0],
-          });
+          const { error } = await supabase.from('food_logs').insert(payload);
           if (error) {
             if (error.code === '23505') { console.log('[NutritionStore] Duplicate log prevented (23505).'); }
             else { console.warn('[NutritionStore] addLog Supabase error:', error); throw error; }
@@ -190,19 +194,60 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
               debouncedSquadFetch(profile.id);
             } catch (e) { __DEV__ && console.warn('[NutritionStore] Gamification error:', e); }
           })();
-        } catch (err) { console.warn('[NutritionStore] addLog sync error:', err); throw err; }
+        } catch (err: any) {
+          const isNetworkErr = !useNetworkStore.getState().isInternetReachable ||
+            err?.name === 'AbortError' ||
+            err?.message?.includes('Network') ||
+            err?.message?.includes('fetch');
+
+          if (isNetworkErr) {
+            console.log('[NutritionStore] Network offline: queuing addLog in SyncStore');
+            useSyncStore.getState().enqueueTask({
+              table: 'food_logs',
+              method: 'INSERT',
+              payload,
+            });
+          } else {
+            // Revert optimistic add on unexpected database error
+            set((s: any) => ({ todayLogs: s.todayLogs.filter((l: FoodLog) => l.id !== safeLog.id) }));
+            console.warn('[NutritionStore] addLog sync error:', err);
+            throw err;
+          }
+        }
       }
     },
 
     removeLog: async (id) => {
+      const prevLogs = get().todayLogs;
       set((s: any) => ({ todayLogs: s.todayLogs.filter((l: FoodLog) => l.id !== id) }));
       try {
         const { error } = await supabase.from('food_logs').delete().eq('id', id);
         if (error) { console.error('[NutritionStore] removeLog Supabase error:', error); throw error; }
-      } catch (err) { console.error('[NutritionStore] removeLog sync error:', err); throw err; }
+      } catch (err: any) {
+        const isNetworkErr = !useNetworkStore.getState().isInternetReachable ||
+          err?.name === 'AbortError' ||
+          err?.message?.includes('Network') ||
+          err?.message?.includes('fetch');
+
+        if (isNetworkErr) {
+          console.log('[NutritionStore] Network offline: queuing removeLog in SyncStore');
+          useSyncStore.getState().enqueueTask({
+            table: 'food_logs',
+            method: 'DELETE',
+            payload: {},
+            matchCriteria: { id },
+          });
+        } else {
+          // Revert optimistic delete on error
+          set({ todayLogs: prevLogs });
+          console.error('[NutritionStore] removeLog sync error:', err);
+          throw err;
+        }
+      }
     },
 
     updateLog: async (id, updates) => {
+      const prevLogs = get().todayLogs;
       set((s: any) => ({
         todayLogs: s.todayLogs.map((l: FoodLog) => (l.id === id ? { ...l, ...updates, foodItem: updates.foodItem ? { ...l.foodItem, ...updates.foodItem } : l.foodItem } : l)),
       }));
@@ -219,7 +264,36 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
           const { error } = await supabase.from('food_logs').update(dbUpdates).eq('id', id);
           if (error) throw error;
         }
-      } catch (err) { console.error('[NutritionStore] updateLog sync error:', err); throw err; }
+      } catch (err: any) {
+        const isNetworkErr = !useNetworkStore.getState().isInternetReachable ||
+          err?.name === 'AbortError' ||
+          err?.message?.includes('Network') ||
+          err?.message?.includes('fetch');
+
+        if (isNetworkErr) {
+          console.log('[NutritionStore] Network offline: queuing updateLog in SyncStore');
+          const dbUpdates: any = {};
+          if (updates.meal) dbUpdates.meal = updates.meal;
+          if (updates.grams !== undefined) dbUpdates.grams = updates.grams;
+          if (updates.calories !== undefined) dbUpdates.calories = updates.calories;
+          if (updates.protein !== undefined) dbUpdates.protein = updates.protein;
+          if (updates.carbs !== undefined) dbUpdates.carbs = updates.carbs;
+          if (updates.fat !== undefined) dbUpdates.fat = updates.fat;
+          if (updates.foodItem?.name) dbUpdates.food_name = updates.foodItem.name;
+
+          useSyncStore.getState().enqueueTask({
+            table: 'food_logs',
+            method: 'UPDATE',
+            payload: dbUpdates,
+            matchCriteria: { id },
+          });
+        } else {
+          // Revert optimistic update
+          set({ todayLogs: prevLogs });
+          console.error('[NutritionStore] updateLog sync error:', err);
+          throw err;
+        }
+      }
     },
 
     setLogs: (logs) => set({ todayLogs: logs }),

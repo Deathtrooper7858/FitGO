@@ -519,6 +519,7 @@
     "waterUpdated": "Agua Actualizada",
     "waterTodayTotal": "Total de hoy: {{ml}} ml",
     "waterAdded": "Agua Añadida",
+    "activityWaterBadge": "actividad",
     "waterAddedDesc": "+{{ml}} ml añadidos • Total: {{total}} ml",
     "stepsAdded": "Pasos Añadidos",
     "stepsAddedDesc": "+{{steps}} pasos añadidos • Total: {{total}}",

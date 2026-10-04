@@ -13,9 +13,9 @@ interface WaterTrackerProps {
   colors: any;
   t: any;
   volumeUnit: string;
+  targetWaterMl?: number;
+  extraWaterActivityMl?: number;
 }
-
-const WATER_TARGET_ML = 3500;
 
 export function WaterTracker({
   waterMl,
@@ -23,14 +23,20 @@ export function WaterTracker({
   onCustomWaterPress,
   colors,
   t,
-  volumeUnit,
+  volumeUnit: _volumeUnit,
+  targetWaterMl = 2500,
+  extraWaterActivityMl = 0,
 }: WaterTrackerProps) {
+  const baseTarget = targetWaterMl > 0 ? targetWaterMl : 2500;
+  const extraMl = Math.max(0, extraWaterActivityMl || 0);
+  const totalTargetMl = baseTarget + extraMl;
+
   const safeWater = Math.max(0, waterMl || 0);
-  const targetL = 3.5;
+  const targetL = (totalTargetMl / 1000).toFixed(1);
   const currentL = (safeWater / 1000).toFixed(1);
   const glasses = Math.floor(safeWater / 250);
-  const targetGlasses = Math.round(WATER_TARGET_ML / 250);
-  const pct = Math.min(Math.max(safeWater / WATER_TARGET_ML, 0), 1);
+  const targetGlasses = Math.max(1, Math.round(totalTargetMl / 250));
+  const pct = Math.min(Math.max(safeWater / totalTargetMl, 0), 1);
 
   const handleAdd = (amount: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -47,9 +53,18 @@ export function WaterTracker({
               <Droplets size={16} color="#06B6D4" />
             </View>
             <View>
-              <Text style={[s.cardTitle, { color: colors.textPrimary }]}>
-                {t('tracker.water', 'Agua')}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={[s.cardTitle, { color: colors.textPrimary }]}>
+                  {t('tracker.water', 'Agua')}
+                </Text>
+                {extraMl > 0 && (
+                  <View style={[s.smartBonusPill, { backgroundColor: '#06B6D418', borderColor: '#06B6D440' }]}>
+                    <Text style={s.smartBonusText}>
+                      +{extraMl} ml {t('tracker.activityWaterBadge', 'actividad')}
+                    </Text>
+                  </View>
+                )}
+              </View>
               <Text style={[s.cardSubtitle, { color: colors.textMuted }]}>
                 {glasses} {t('tracker.of', 'de')} {targetGlasses} {t('tracker.glasses', 'vasos')} (250ml)
               </Text>
@@ -157,6 +172,17 @@ const s = StyleSheet.create({
     fontSize: 11,
     fontWeight: '500',
     marginTop: 1,
+  },
+  smartBonusPill: {
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  smartBonusText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#06B6D4',
   },
   editBtn: {
     flexDirection: 'row',

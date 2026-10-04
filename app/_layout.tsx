@@ -197,7 +197,7 @@ function RootLayout() {
           NavigationBar.setBorderColorAsync(targetColor).catch(() => {});
           lastColorRef.current = targetColor;
         }
-      } catch (e) {
+      } catch {
         // Silently catch unsupported navigation bar platform operations
       }
     }

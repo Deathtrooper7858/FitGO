@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Crypto from 'expo-crypto';
 import { useAuthStore } from './authStore';
 
 export interface CompletedWorkout {
@@ -30,7 +31,7 @@ export const useWorkoutHistoryStore = create<WorkoutHistoryState>()(
         
         const newWorkout: CompletedWorkout = {
           ...workoutData,
-          id: Math.random().toString(36).substring(2, 9),
+          id: Crypto.randomUUID(),
           completedAt: Date.now(),
           userId,
         };

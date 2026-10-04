@@ -265,7 +265,8 @@ export const useSocialStore = create<SocialState>((set, get) => ({
 
   subscribeToUnreadMessages: (userId: string) => {
     if (activeUnreadChannel) {
-      return () => {};
+      try { supabase.removeChannel(activeUnreadChannel); } catch {}
+      activeUnreadChannel = null;
     }
     const uniqueSuffix = Math.random().toString(36).substring(7);
     activeUnreadChannel = supabase.channel(`unread_counts_${userId}_${uniqueSuffix}`)
@@ -329,7 +330,8 @@ export const useSocialStore = create<SocialState>((set, get) => ({
 
   subscribeToSocialEvents: (userId: string) => {
     if (activeSocialChannel) {
-      return () => {};
+      try { supabase.removeChannel(activeSocialChannel); } catch {}
+      activeSocialChannel = null;
     }
     const uniqueSuffix = Math.random().toString(36).substring(7);
     activeSocialChannel = supabase.channel(`social_events_${userId}_${uniqueSuffix}`)

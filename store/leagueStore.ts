@@ -146,7 +146,9 @@ export const useLeagueStore = create<LeagueStore>()(
 
       const realPoints  = myStats?.league_points   ?? 0;
       const realStreak  = myStats?.current_streak  ?? 0;
-      const contributedPoints = myStats?.squad_members?.[0]?.contributed_points ?? 0;
+      const contributedPoints = Array.isArray(myStats?.squad_members)
+        ? (myStats.squad_members[0]?.contributed_points ?? 0)
+        : ((myStats?.squad_members as any)?.contributed_points ?? 0);
 
       // Network error: update points but keep squad cached
       if (memberErr) {

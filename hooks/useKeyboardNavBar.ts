@@ -22,7 +22,7 @@ export function useKeyboardNavBar() {
       NavigationBar.setPositionAsync('relative').catch(() => {});
       NavigationBar.setBackgroundColorAsync(targetColor).catch(() => {});
       NavigationBar.setBorderColorAsync(targetColor).catch(() => {});
-    } catch (e) {
+    } catch {
       // Silently catch unsupported navigation bar platform operations
     }
 
@@ -31,7 +31,7 @@ export function useKeyboardNavBar() {
         NavigationBar.setPositionAsync('relative').catch(() => {});
         NavigationBar.setBackgroundColorAsync(targetColor).catch(() => {});
         NavigationBar.setBorderColorAsync(targetColor).catch(() => {});
-      } catch (e) {
+      } catch {
         // Silently catch
       }
     };

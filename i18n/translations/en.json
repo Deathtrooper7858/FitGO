@@ -519,6 +519,7 @@
     "waterUpdated": "Water Updated",
     "waterTodayTotal": "Today's total: {{ml}} ml",
     "waterAdded": "Water Added",
+    "activityWaterBadge": "activity",
     "stepsAdded": "Steps Added",
     "stepsTodayTotal": "Today's total: {{steps}} steps",
     "sleepLogged": "Sleep Logged",

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Session } from '@supabase/supabase-js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../services/supabase';
 import { SecureStorage } from '../utils/storage';
 import { useSettingsStore } from './settingsStore';
@@ -59,14 +60,21 @@ async function persistProfile(profile: UserProfile | null): Promise<void> {
     await Promise.all([
       SecureStorage.removeItem('ff-health-profile'),
       SecureStorage.removeItem('ff-user-profile'),
+      AsyncStorage.removeItem('ff-widget-profile').catch(() => {}),
     ]);
     return;
   }
   // Store sensitive health data as well as the full user profile in SecureStore
   const healthData = extractHealthData(profile);
+  const widgetData = {
+    userName: (profile.name || '').split(' ')[0] || 'Usuario',
+    targetCalories: profile.targetCalories || 2000,
+    proteinTarget: profile.macros?.protein || 150,
+  };
   await Promise.all([
     SecureStorage.setItem('ff-health-profile', JSON.stringify(healthData)),
     SecureStorage.setItem('ff-user-profile', JSON.stringify(profile)),
+    AsyncStorage.setItem('ff-widget-profile', JSON.stringify(widgetData)).catch(() => {}),
   ]);
 }
 
@@ -170,8 +178,20 @@ export const useAuthStore = create<AuthState>()(
 
               if (data && !error) {
                 const now = new Date();
+                let isProFromStore = false;
+                try {
+                  // Late require breaks circular module dependency between authStore and purchaseStore
+                  // eslint-disable-next-line @typescript-eslint/no-require-imports
+                  const pStore = require('./purchaseStore').usePurchaseStore?.getState?.();
+                  if (pStore?.isPro || pStore?.isTrialActive) {
+                    isProFromStore = true;
+                  }
+                } catch {}
+
                 const isProUser = !!(
                   data.is_pro ||
+                  get().profile?.isPro ||
+                  isProFromStore ||
                   ['owner', 'super_admin', 'admin', 'pro_user'].includes(data.role ?? '') ||
                   (data.trial_expires_at && new Date(data.trial_expires_at) > now) ||
                   (data.pro_expires_at && new Date(data.pro_expires_at) > now)
@@ -182,15 +202,10 @@ export const useAuthStore = create<AuthState>()(
                 const localColor = useSettingsStore.getState().premiumColor;
                 const cachedColor = get().profile?.premiumColor || get().profile?.nameColor;
 
-                // For Pro users, restore custom color:
-                // DB premium_color > local store > session metadata > cached profile > DB name_color
-                const effectivePremiumColor: string | null = isProUser
-                  ? (data.premium_color || localColor || metaColor || cachedColor || (data.name_color && data.name_color !== '#EAB308' ? data.name_color : null) || null)
-                  : null;
-
-                const fetchedNameColor: string | null = isProUser
-                  ? (effectivePremiumColor || data.name_color || '#EAB308')
-                  : null;
+                // Priority: User's explicitly chosen localColor > DB premium_color > session metadata > cached profile > DB name_color
+                const chosenColor = localColor || data.premium_color || metaColor || cachedColor || (data.name_color && data.name_color !== '#EAB308' ? data.name_color : null) || null;
+                const effectivePremiumColor: string | null = isProUser ? chosenColor : null;
+                const fetchedNameColor: string | null = isProUser ? (effectivePremiumColor || data.name_color || '#EAB308') : null;
 
                 if (isProUser && effectivePremiumColor) {
                   if (useSettingsStore.getState().premiumColor !== effectivePremiumColor) {
@@ -212,8 +227,8 @@ export const useAuthStore = create<AuthState>()(
                       },
                     }).catch(() => {});
                   }
-                } else if (!isProUser && (data.premium_color || data.name_color || useSettingsStore.getState().premiumColor)) {
-                  // Non-pro users should not keep pro colors
+                } else if (!isProUser && !isProFromStore) {
+                  // Non-pro users should not keep pro colors (only if truly not pro anywhere)
                   if (useSettingsStore.getState().premiumColor) {
                     useSettingsStore.getState().setPremiumColor(null);
                   }

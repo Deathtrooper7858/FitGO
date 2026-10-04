@@ -34,6 +34,7 @@ import { SocialBadge } from '../../../components/tracker/SocialBadge';
 import { AppGuideBanner } from '../../../components/tracker/AppGuideBanner';
 import { AppModeModal } from '../../../components/profile/AppModeModal';
 import { useIsPro } from '../../../hooks/useIsPro';
+import { calculateDynamicWaterRecommendation, setupForegroundHealthSync } from '../../../services/healthSync';
 
 const MEALS = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 
@@ -164,12 +165,28 @@ export default function TrackerScreen() {
         sub = Pedometer.watchStepCount(r => { if (mounted) setLiveSteps(r.steps); });
       } catch {}
     })();
-    return () => { mounted = false; if (sub?.remove) sub.remove(); };
+
+    const cleanupFg = setupForegroundHealthSync((fgSteps) => {
+      if (mounted && fgSteps > 0) {
+        setHistoricalSteps(fgSteps);
+        setLiveSteps(0);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      if (sub?.remove) sub.remove();
+      cleanupFg();
+    };
   }, []);
 
   const todayStr = useMemo(() => getLocalDateString(new Date()), []);
   const pedometerTotal = historicalSteps + liveSteps;
   const currentSteps = selectedDate === todayStr ? Math.max(steps, pedometerTotal) : steps;
+
+  const { extraMl: dynamicExtraWaterMl } = useMemo(() => {
+    return calculateDynamicWaterRecommendation(profile?.targetWaterMl || 2500, activitiesRaw, currentSteps);
+  }, [profile?.targetWaterMl, activitiesRaw, currentSteps]);
 
   useEffect(() => {
     if (selectedDate === todayStr && pedometerTotal > steps) {
@@ -938,6 +955,8 @@ export default function TrackerScreen() {
                 <>
                   <WaterTracker
                     waterMl={rawWater}
+                    targetWaterMl={profile?.targetWaterMl || 2500}
+                    extraWaterActivityMl={dynamicExtraWaterMl}
                     onAddWater={addWater}
                     onCustomWaterPress={handleCustomWater}
                     colors={colors}
@@ -1018,6 +1037,8 @@ export default function TrackerScreen() {
                   />
                   <WaterTracker
                     waterMl={rawWater}
+                    targetWaterMl={profile?.targetWaterMl || 2500}
+                    extraWaterActivityMl={dynamicExtraWaterMl}
                     onAddWater={addWater}
                     onCustomWaterPress={handleCustomWater}
                     colors={colors}

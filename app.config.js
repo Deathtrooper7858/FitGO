@@ -99,51 +99,19 @@ const withR8Optimization = (expoConfig) => {
 module.exports = ({ config }) => {
   const variant = (process.env.APP_VARIANT || 'development').trim();
 
-  let finalConfig;
-  if (variant === 'development') {
-    finalConfig = {
-      ...config,
-      name: 'FitGO',
-      scheme: 'fitgo',
-      ios: {
-        ...config.ios,
-        bundleIdentifier: 'com.fitgo.app',
-      },
-      android: {
-        ...config.android,
-        package: 'com.fitgo.app',
-      },
-    };
-  } else if (variant === 'preview') {
-    finalConfig = {
-      ...config,
-      name: 'FitGO',
-      scheme: 'fitgo',
-      ios: {
-        ...config.ios,
-        bundleIdentifier: 'com.fitgo.app',
-      },
-      android: {
-        ...config.android,
-        package: 'com.fitgo.app',
-      },
-    };
-  } else {
-    // Production variant (default)
-    finalConfig = {
-      ...config,
-      name: 'FitGO',
-      scheme: 'fitgo',
-      ios: {
-        ...config.ios,
-        bundleIdentifier: 'com.fitgo.app',
-      },
-      android: {
-        ...config.android,
-        package: 'com.fitgo.app',
-      },
-    };
-  }
+  const finalConfig = {
+    ...config,
+    name: 'FitGO',
+    scheme: 'fitgo',
+    ios: {
+      ...config.ios,
+      bundleIdentifier: 'com.fitgo.app',
+    },
+    android: {
+      ...config.android,
+      package: 'com.fitgo.app',
+    },
+  };
 
   return withR8Optimization(withMultiDex(withDisableLintVital(finalConfig)));
 };

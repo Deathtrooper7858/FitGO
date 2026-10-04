@@ -1,7 +1,10 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as XLSX from 'xlsx';
 import { UserProfile, FoodLog } from '../store/types';
+import { convertMass, convertVolume, convertLength } from './units';
+import { getLocalDateString } from './date';
 
 export interface ReportData {
   profile: UserProfile;
@@ -12,6 +15,24 @@ export interface ReportData {
   dailySteps: Record<string, number>;
   massUnit?: string;
   energyUnit?: string;
+}
+
+export interface ExcelExportOptions {
+  profile?: UserProfile | null;
+  measurements?: any[];
+  foodLogs?: any[];
+  dailyWater?: Record<string, number>;
+  dailySteps?: Record<string, number>;
+  dailySleep?: Record<string, number>;
+  dailyNeat?: Record<string, string>;
+  dailyExercise?: Record<string, string>;
+  activityLogs?: any[];
+  workouts?: any[];
+  massUnit?: string;
+  lengthUnit?: string;
+  energyUnit?: string;
+  volumeUnit?: string;
+  t?: any;
 }
 
 /**
@@ -186,4 +207,187 @@ export async function exportReportCSV(data: ReportData): Promise<void> {
       dialogTitle: 'Exportar Datos CSV FitGO'
     });
   }
+}
+
+/**
+ * Generates and shares an Excel (.xlsx) workbook with multiple sheets:
+ * Profile, Body Measurements, Nutrition, Daily Metrics, Cardio/Activities, and Workouts.
+ */
+export async function exportReportXLSX(options: ExcelExportOptions): Promise<string> {
+  const {
+    profile,
+    measurements = [],
+    foodLogs = [],
+    dailyWater = {},
+    dailySteps = {},
+    dailySleep = {},
+    dailyNeat = {},
+    dailyExercise = {},
+    activityLogs = [],
+    workouts = [],
+    massUnit = 'kg',
+    lengthUnit = 'cm',
+    energyUnit = 'kcal',
+    volumeUnit = 'l',
+    t = (_key: string, def?: string) => def || '',
+  } = options;
+
+  const getGoalText = (g: string | undefined) => {
+    if (!g) return '';
+    if (g === 'lose_weight' || g === 'lose') return t('profile.loseWeight', 'Perder Peso');
+    if (g === 'gain_muscle' || g === 'gain') return t('profile.gainMuscle', 'Ganar Músculo');
+    if (g === 'maintain') return t('profile.maintain', 'Mantener');
+    return g;
+  };
+
+  const getSexText = (s: string | undefined) => {
+    if (!s) return '';
+    if (s === 'male') return t('profile.male', 'Hombre');
+    if (s === 'female') return t('profile.female', 'Mujer');
+    return s;
+  };
+
+  const getMealText = (m: string) => {
+    const key = `tracker.${(m || '').toLowerCase()}`;
+    return t(key, m);
+  };
+
+  const getNeatText = (n: string) => {
+    if (!n) return '';
+    return t(`neat.${n}`, n);
+  };
+
+  const getExerciseText = (e: string) => {
+    if (!e) return '';
+    return t(`exercise.${e}`, e);
+  };
+
+  const getActivityName = (name: string) => {
+    const key = `activities.${(name || '').toLowerCase().replace(/\s+/g, '_')}`;
+    return t(key, name);
+  };
+
+  // 1. Profile Rows
+  const profileRows = [
+    { [t('profile.field', 'Campo')]: t('profile.editName', 'Nombre'), [t('profile.value', 'Valor')]: profile?.name || '' },
+    { [t('profile.field', 'Campo')]: t('auth.email', 'Email'), [t('profile.value', 'Valor')]: profile?.email || '' },
+    { [t('profile.field', 'Campo')]: t('profile.userId', 'ID Usuario'), [t('profile.value', 'Valor')]: profile?.id || '' },
+    { [t('profile.field', 'Campo')]: t('onboarding.goal', 'Meta'), [t('profile.value', 'Valor')]: getGoalText(profile?.goal) },
+    { [t('profile.field', 'Campo')]: `${t('profile.weight', 'Peso')} (${massUnit})`, [t('profile.value', 'Valor')]: profile?.weight ? parseFloat(convertMass(profile.weight, 'kg', massUnit as any).toFixed(1)) : '' },
+    { [t('profile.field', 'Campo')]: `${t('profile.height', 'Altura')} (${lengthUnit})`, [t('profile.value', 'Valor')]: profile?.height ? parseFloat(convertLength(profile.height, 'cm', lengthUnit as any).toFixed(1)) : '' },
+    { [t('profile.field', 'Campo')]: t('profile.age', 'Edad'), [t('profile.value', 'Valor')]: profile?.age || '' },
+    { [t('profile.field', 'Campo')]: t('profile.sex', 'Sexo'), [t('profile.value', 'Valor')]: getSexText(profile?.sex) },
+    { [t('profile.field', 'Campo')]: `TDEE (${energyUnit})`, [t('profile.value', 'Valor')]: profile?.tdee || '' },
+    { [t('profile.field', 'Campo')]: `${t('tracker.target', 'Objetivo de Calorías')} (${energyUnit})`, [t('profile.value', 'Valor')]: profile?.targetCalories || '' },
+    { [t('profile.field', 'Campo')]: `${t('tracker.protein', 'Proteínas')} (g)`, [t('profile.value', 'Valor')]: profile?.macros?.protein || '' },
+    { [t('profile.field', 'Campo')]: `${t('tracker.carbs', 'Carbohidratos')} (g)`, [t('profile.value', 'Valor')]: profile?.macros?.carbs || '' },
+    { [t('profile.field', 'Campo')]: `${t('tracker.fat', 'Grasas')} (g)`, [t('profile.value', 'Valor')]: profile?.macros?.fat || '' },
+  ];
+
+  // 2. Measurements Rows
+  const measRows = measurements.map((m: any) => ({
+    [t('common.date', 'Fecha')]: m.date,
+    [`${t('profile.weight', 'Peso')} (${massUnit})`]: m.weight ? parseFloat(convertMass(m.weight, 'kg', massUnit as any).toFixed(1)) : '',
+    [`${t('profile.bodyFat', 'Grasa')} %`]: m.bodyFat ? parseFloat(Number(m.bodyFat).toFixed(1)) : '',
+    [`${t('profile.waist', 'Cintura')} (${lengthUnit})`]: m.waist ? parseFloat(convertLength(m.waist, 'cm', lengthUnit as any).toFixed(1)) : '',
+    [`${t('profile.hips', 'Cadera')} (${lengthUnit})`]: m.hips ? parseFloat(convertLength(m.hips, 'cm', lengthUnit as any).toFixed(1)) : '',
+    [`${t('profile.chest', 'Pecho')} (${lengthUnit})`]: m.chest ? parseFloat(convertLength(m.chest, 'cm', lengthUnit as any).toFixed(1)) : '',
+    [`${t('profile.arms', 'Brazos')} (${lengthUnit})`]: m.arms ? parseFloat(convertLength(m.arms, 'cm', lengthUnit as any).toFixed(1)) : '',
+    [`${t('profile.legs', 'Piernas')} (${lengthUnit})`]: m.legs ? parseFloat(convertLength(m.legs, 'cm', lengthUnit as any).toFixed(1)) : '',
+    [`${t('profile.neck', 'Cuello')} (${lengthUnit})`]: m.neck ? parseFloat(convertLength(m.neck, 'cm', lengthUnit as any).toFixed(1)) : '',
+    [t('common.notes', 'Notas')]: m.notes || '',
+  }));
+
+  // 3. Food/Nutrition Rows
+  const foodRows = foodLogs.map((l: any) => ({
+    [t('common.date', 'Fecha')]: l.loggedAt ? l.loggedAt.split('T')[0] : '',
+    [t('tracker.meal', 'Comida')]: getMealText(l.meal),
+    [t('tracker.food', 'Alimento')]: l.foodItem?.name || '',
+    [`${t('tracker.grams', 'Cantidad')} (g)`]: l.grams,
+    [`${t('tracker.calories', 'Calorías')} (${energyUnit})`]: l.calories,
+    [`${t('tracker.protein', 'Proteínas')} (g)`]: l.protein,
+    [`${t('tracker.carbs', 'Carbohidratos')} (g)`]: l.carbs,
+    [`${t('tracker.fat', 'Grasas')} (g)`]: l.fat,
+    [`${t('tracker.fiber', 'Fibra')} (g)`]: l.fiber || 0,
+    [`${t('tracker.sugar', 'Azúcar')} (g)`]: l.sugar || 0,
+    [`${t('tracker.sodium', 'Sodio')} (mg)`]: l.sodium || 0,
+  }));
+
+  // 4. Daily Metrics Rows
+  const metricDates = Array.from(new Set([...Object.keys(dailyWater), ...Object.keys(dailySteps), ...Object.keys(dailySleep)])).sort().reverse();
+  const metricRows = metricDates.map((d: string) => ({
+    [t('common.date', 'Fecha')]: d,
+    [t('tracker.steps', 'Pasos')]: dailySteps[d] || 0,
+    [`${t('tracker.water', 'Agua')} (${volumeUnit})`]: parseFloat(convertVolume(dailyWater[d] || 0, 'ml', volumeUnit as any).toFixed(2)),
+    [`${t('tracker.sleep', 'Sueño')} (h)`]: dailySleep[d] || 0,
+    [`${t('tracker.lifestyle', 'Estilo de vida')} (NEAT)`]: getNeatText(dailyNeat[d] || ''),
+    [t('exercise.title', 'Ejercicio')]: getExerciseText(dailyExercise[d] || ''),
+  }));
+
+  // 5. Cardio & Activity Rows
+  const activityRows = activityLogs.map((a: any) => ({
+    [t('common.date', 'Fecha')]: a.loggedAt ? a.loggedAt.split('T')[0] : '',
+    [t('profile.activity', 'Actividad')]: getActivityName(a.name),
+    [`${t('activities.duration', 'Duración')} (min)`]: a.duration,
+    [`${t('tracker.calories', 'Calorías')} (${energyUnit})`]: a.calories,
+  }));
+
+  // 6. Workout Rows
+  const workoutRows: any[] = [];
+  workouts.forEach((w: any) => {
+    (w.exercises || []).forEach((ex: any) => {
+      workoutRows.push({
+        [t('common.date', 'Fecha')]: w.date,
+        [t('profile.routine', 'Rutina')]: w.routineName,
+        [t('exercise.title', 'Ejercicio')]: ex.name,
+        [t('planner.sets', 'Series')]: ex.sets,
+        [t('planner.reps', 'Repeticiones')]: ex.reps,
+        [`${t('profile.weight', 'Peso')} (${massUnit})`]: ex.weight ? parseFloat(convertMass(ex.weight, 'kg', massUnit as any).toFixed(1)) : '',
+        'RPE': ex.rpe || '',
+      });
+    });
+  });
+
+  const wb = XLSX.utils.book_new();
+
+  const addSheet = (data: any[], sheetName: string) => {
+    const ws = XLSX.utils.json_to_sheet(data);
+    if (data.length > 0) {
+      const headers = Object.keys(data[0]);
+      ws['!cols'] = headers.map(h => {
+        let maxLen = String(h).length;
+        data.forEach(r => {
+          const val = r[h];
+          if (val !== undefined && val !== null) {
+            maxLen = Math.max(maxLen, String(val).length);
+          }
+        });
+        return { wch: Math.min(Math.max(maxLen + 3, 10), 40) };
+      });
+    }
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  };
+
+  addSheet(profileRows, t('profile.sheetProfile', 'Perfil'));
+  addSheet(measRows, t('profile.sheetWeight', 'Peso'));
+  addSheet(foodRows, t('profile.sheetNutrition', 'Nutrición'));
+  addSheet(metricRows, t('profile.sheetMetrics', 'Métricas'));
+  addSheet(activityRows, t('profile.cardioAndActivities', 'Actividades'));
+  addSheet(workoutRows, t('planner.workoutsTab', 'Entrenamientos'));
+
+  const wbout = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' });
+  const uri = `${FileSystem.cacheDirectory}FitGO_Data_${getLocalDateString(new Date())}.xlsx`;
+
+  await FileSystem.writeAsStringAsync(uri, wbout, { encoding: FileSystem.EncodingType.Base64 });
+
+  const isSharingAvailable = await Sharing.isAvailableAsync();
+  if (isSharingAvailable) {
+    await Sharing.shareAsync(uri, {
+      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      dialogTitle: t('profile.exportData', 'Exportar Data'),
+      UTI: 'org.openxmlformats.spreadsheetml.sheet',
+    });
+  }
+
+  return uri;
 }

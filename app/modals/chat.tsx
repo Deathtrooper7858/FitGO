@@ -75,6 +75,35 @@ function formatMessageTime(dateString?: string | null): string {
   }
 }
 
+// Accurately checks if a given media URL is an actual video stream/file
+export const isVideoUrl = (url?: string | null): boolean => {
+  if (!url || typeof url !== 'string') return false;
+  const clean = url.split('?')[0].toLowerCase().trim();
+  if (
+    clean.endsWith('.mp4') ||
+    clean.endsWith('.mov') ||
+    clean.endsWith('.webm') ||
+    clean.endsWith('.mkv') ||
+    clean.endsWith('.m4v') ||
+    clean.endsWith('.avi') ||
+    clean.endsWith('.3gp')
+  ) {
+    return true;
+  }
+  if (
+    clean.endsWith('.jpg') ||
+    clean.endsWith('.jpeg') ||
+    clean.endsWith('.png') ||
+    clean.endsWith('.webp') ||
+    clean.endsWith('.gif') ||
+    clean.endsWith('.bmp') ||
+    clean.endsWith('.heic')
+  ) {
+    return false;
+  }
+  return clean.includes('/video/') || clean.includes('video_');
+};
+
 // ── Safe Player Error Boundary ──────────────────────────────────────────────
 class SafePlayerBoundary extends React.Component<
   { fallback?: React.ReactNode; children: React.ReactNode },
@@ -99,6 +128,17 @@ class SafePlayerBoundary extends React.Component<
 function VoiceNotePlayer({ audioUrl, isMine, colors }: { audioUrl?: string | null; isMine: boolean; colors: any }) {
   if (!audioUrl || typeof audioUrl !== 'string' || !audioUrl.trim()) {
     return null;
+  }
+  // While uploading or temporary, show lightweight placeholder without instantiating native audio
+  if (audioUrl.startsWith('temp-')) {
+    return (
+      <View style={[vStyles.container, { minWidth: 160 }]}>
+        <ActivityIndicator size="small" color={isMine ? '#fff' : (colors.primary || '#8B5CF6')} />
+        <Text style={{ color: isMine ? '#fff' : (colors.textMuted || '#888'), fontSize: 11, marginLeft: 6 }}>
+          Enviando audio...
+        </Text>
+      </View>
+    );
   }
   return (
     <SafePlayerBoundary
@@ -264,8 +304,43 @@ const vStyles = StyleSheet.create({
   },
 });
 
-// ── Main Chat Modal ─────────────────────────────────────────────────────────
-export default function ChatModal() {
+// ── Chat Screen Error Boundary ──────────────────────────────────────────────
+class ChatErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: any }
+> {
+  state: { hasError: boolean; error: any } = { hasError: false, error: null };
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error('[ChatModal] Uncaught chat error:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#0F172A', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+          <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700', marginBottom: 8, textAlign: 'center' }}>
+            No se pudo abrir el chat
+          </Text>
+          <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, textAlign: 'center', marginBottom: 20 }}>
+            {this.state.error?.message || 'Ocurrió un error inesperado al cargar la conversación.'}
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{ paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24, backgroundColor: '#7C5CFC' }}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15 }}>Volver</Text>
+          </TouchableOpacity>
+        </SafeAreaView>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// ── Main Chat Modal Content ─────────────────────────────────────────────────
+function ChatModalContent() {
   const { friendId, friendName, friendAvatar } = useLocalSearchParams<{ friendId: string; friendName: string; friendAvatar: string }>();
   const colors = useTheme();
   const { t } = useTranslation();
@@ -386,8 +461,8 @@ export default function ChatModal() {
         },
         (payload) => {
           if (!isMounted) return;
-          const newMsg = payload.new as DirectMessage;
-          if (newMsg.sender_id === friendId) {
+          const newMsg = payload?.new as DirectMessage;
+          if (newMsg && newMsg.id && newMsg.sender_id === friendId) {
             setMessages(prev => {
               if (prev.some(m => m.id === newMsg.id)) return prev;
               return [...prev, newMsg];
@@ -407,10 +482,12 @@ export default function ChatModal() {
         },
         (payload) => {
           if (!isMounted) return;
-          const updatedMsg = payload.new as DirectMessage;
-          setMessages(prev =>
-            prev.map(m => (m.id === updatedMsg.id ? { ...m, is_read: updatedMsg.is_read } : m))
-          );
+          const updatedMsg = payload?.new as DirectMessage;
+          if (updatedMsg && updatedMsg.id) {
+            setMessages(prev =>
+              prev.map(m => (m.id === updatedMsg.id ? { ...m, is_read: updatedMsg.is_read } : m))
+            );
+          }
         }
       )
       .on('broadcast', { event: 'typing' }, ({ payload }) => {
@@ -776,7 +853,7 @@ export default function ChatModal() {
                       ]}
                     >
                       {msg.image_url ? (
-                        msg.image_url.toLowerCase().includes('.mp4') || msg.image_url.toLowerCase().includes('.mov') || msg.image_url.includes('chat_media/17') || msg.image_url.includes('video') ? (
+                        isVideoUrl(msg.image_url) ? (
                           <View style={[styles.imageWrapper, isMine ? styles.myBubble : styles.theirBubble]}>
                             <SafePlayerBoundary
                               fallback={
@@ -1017,7 +1094,7 @@ export default function ChatModal() {
               </TouchableOpacity>
 
               {previewImage && (
-                previewImage.toLowerCase().includes('.mp4') || previewImage.toLowerCase().includes('.mov') || previewImage.includes('video') ? (
+                isVideoUrl(previewImage) ? (
                   <VideoPlayerView videoUrl={previewImage} style={{ width: 320, height: 380, borderRadius: 16 }} />
                 ) : (
                   <Image cachePolicy="memory-disk" source={{ uri: previewImage }} style={styles.previewImage} contentFit="contain" />
@@ -1039,6 +1116,14 @@ export default function ChatModal() {
         </Modal>
       </SafeAreaView>
     </LinearGradient>
+  );
+}
+
+export default function ChatModal() {
+  return (
+    <ChatErrorBoundary>
+      <ChatModalContent />
+    </ChatErrorBoundary>
   );
 }
 

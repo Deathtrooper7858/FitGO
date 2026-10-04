@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AD_CONFIG } from '../constants/adConfig';
+import { getLocalDateString } from '../utils/date';
 
 interface AICreditsState {
   creditsLeft: number;
@@ -17,16 +18,11 @@ interface AICreditsState {
   setIsProUser: (isPro: boolean) => void;
 }
 
-function getTodayDateString(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-}
-
 export const useAICreditsStore = create<AICreditsState>()(
   persist(
     (set, get) => ({
       creditsLeft: AD_CONFIG.freeAICreditsPerDay,
-      lastResetDate: getTodayDateString(),
+      lastResetDate: getLocalDateString(),
       totalAdsWatched: 0,
       isProUser: false,
 
@@ -35,7 +31,7 @@ export const useAICreditsStore = create<AICreditsState>()(
        * Call this on app start and before checking credits.
        */
       resetIfNewDay: () => {
-        const today = getTodayDateString();
+        const today = getLocalDateString();
         const { lastResetDate } = get();
         if (lastResetDate !== today) {
           set({

@@ -4,6 +4,7 @@ import { useToastStore } from '../toastStore';
 import { useLeagueStore } from '../leagueStore';
 import { supabase } from '../../services/supabase';
 import i18n from '../../i18n';
+import { syncHealthMetricsToCloud, calculateDynamicWaterRecommendation, estimateCaloriesFromSteps } from '../../services/healthSync';
 import { scheduleSyncDailyMetrics } from './utils';
 
 export interface DailyMetricsSlice {
@@ -48,15 +49,22 @@ export function createDailyMetricsSlice(set: any, get: any): DailyMetricsSlice {
       const { profile } = useAuthStore.getState();
       if (!profile?.id) return;
       try {
-        await supabase.from('daily_metrics').upsert({
-          user_id: profile.id,
+        const steps = get().dailySteps[date] || 0;
+        const dayActivities = (get().activityLogs || []).filter((a: any) => a.loggedAt?.startsWith(date));
+        const activityCalories = dayActivities.reduce((acc: number, a: any) => acc + (a.calories || 0), 0);
+        const { totalMl } = calculateDynamicWaterRecommendation(profile.targetWaterMl || 2500, activityCalories, steps);
+
+        await syncHealthMetricsToCloud({
+          userId: profile.id,
           date,
-          water_ml: get().dailyWater[date] || 0,
-          steps: get().dailySteps[date] || 0,
-          sleep_hours: get().dailySleep[date] || 0,
-          neat_level: get().dailyNeat[date] || null,
-          exercise_level: get().dailyExercise[date] || null,
-        }, { onConflict: 'user_id,date' });
+          waterMl: get().dailyWater[date] || 0,
+          steps,
+          sleepHours: get().dailySleep[date] || 0,
+          neatLevel: get().dailyNeat[date] || null,
+          exerciseLevel: get().dailyExercise[date] || null,
+          activeCalories: activityCalories + estimateCaloriesFromSteps(steps, profile.weight),
+          suggestedWaterMl: totalMl,
+        });
       } catch (err) {
         console.error('[NutritionStore] syncDailyMetrics error:', err);
       }

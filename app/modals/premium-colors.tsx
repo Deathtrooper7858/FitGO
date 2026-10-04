@@ -70,28 +70,19 @@ export default function PremiumColorsModal() {
       return;
     }
 
+    // 1. Immediately update setting state and persistent local store
     setPremiumColor(color.id);
 
+    // 2. Sync to current user profile & databases
     if (profile?.id) {
       setProfile({
         ...profile,
         premiumColor: color.id || undefined,
         nameColor: color.id || undefined,
       });
-      supabase.auth.updateUser({
-        data: {
-          premium_color: color.id,
-          name_color: color.id,
-        },
-      }).catch(() => {});
-      Promise.resolve(
-        supabase.from('users').update({
-          premium_color: color.id,
-          name_color: color.id,
-        }).eq('id', profile.id)
-      ).catch((err) => {
-        console.error('[PremiumColors] Failed to save to DB:', err);
-      });
+
+      // RPC guaranteed update
+      Promise.resolve(supabase.rpc('set_user_premium_color', { p_color: color.id })).catch(() => {});
     }
   };
 

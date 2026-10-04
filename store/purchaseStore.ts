@@ -170,11 +170,13 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
         reportError(err, { module: 'PurchaseStore', action: 'updateCustomerInfo.verifyTrial.unhandled', severity: 'error' });
       });
     } else if (profile.isPro !== isProActive && !isPrivileged) {
+      const activeColor = profile.premiumColor || useSettingsStore.getState().premiumColor || (isProActive ? '#EAB308' : undefined);
       useAuthStore.getState().setProfile({
         ...profile,
         isPro: isProActive,
         role: isProActive ? 'pro_user' : 'user',
-        nameColor: isProActive ? '#EAB308' : undefined,
+        nameColor: isProActive ? activeColor : undefined,
+        premiumColor: isProActive ? activeColor : undefined,
       });
     }
   },
@@ -277,11 +279,12 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       set({ isPro: true, isLoading: false });
 
       const isPrivileged = ['owner', 'super_admin', 'admin'].includes(profile.role ?? '');
+      const assignedColor = profile.premiumColor || useSettingsStore.getState().premiumColor || '#EAB308';
       if (isPrivileged) {
         useAuthStore.getState().setProfile({ ...profile, isPro: true });
       } else {
-        useAuthStore.getState().setProfile({ ...profile, isPro: true, role: 'pro_user', nameColor: '#EAB308' });
-        await supabase.auth.updateUser({ data: { name_color: '#EAB308' } });
+        useAuthStore.getState().setProfile({ ...profile, isPro: true, role: 'pro_user', nameColor: assignedColor, premiumColor: assignedColor });
+        await supabase.auth.updateUser({ data: { name_color: assignedColor, premium_color: assignedColor } });
       }
     } catch (err) {
       reportError(err, { module: 'PurchaseStore', action: 'grantPro.updateUser' });
@@ -392,10 +395,13 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       }
 
       set({ isPro: isProNow, isLoading: false });
+      const currentColor = isProNow ? (profile.premiumColor || useSettingsStore.getState().premiumColor || profile.nameColor || undefined) : undefined;
       useAuthStore.getState().setProfile({ 
         ...profile, 
         isPro: isProNow, 
         role: isProNow ? (dbRole as any) : 'user',
+        premiumColor: currentColor,
+        nameColor: currentColor,
       });
       
       return isProNow;

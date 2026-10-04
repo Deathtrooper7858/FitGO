@@ -33,10 +33,26 @@ const fetchWithTimeout: typeof fetch = async (input, init) => {
     const timeout = BASE_TIMEOUT * (attempt + 1);
     const timer = setTimeout(() => controller.abort(), timeout);
 
+    const callerSignal = init?.signal;
+    if (callerSignal?.aborted) {
+      clearTimeout(timer);
+      controller.abort();
+    }
+    const onCallerAbort = () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+    if (callerSignal && !callerSignal.aborted) {
+      callerSignal.addEventListener?.('abort', onCallerAbort, { once: true });
+    }
+
     try {
       const response = await fetch(input, { ...init, signal: controller.signal });
       clearTimeout(timer);
-      if (!response.ok && response.status >= 429 && attempt < MAX_RETRIES) {
+      if (callerSignal) {
+        callerSignal.removeEventListener?.('abort', onCallerAbort);
+      }
+      if (!response.ok && response.status >= 429 && attempt < MAX_RETRIES && !callerSignal?.aborted) {
         const backoff = Math.min(1000 * Math.pow(2, attempt), 4000);
         await new Promise(res => setTimeout(res, backoff));
         return attemptFetch(attempt + 1);
@@ -44,6 +60,12 @@ const fetchWithTimeout: typeof fetch = async (input, init) => {
       return response;
     } catch (err: any) {
       clearTimeout(timer);
+      if (callerSignal) {
+        callerSignal.removeEventListener?.('abort', onCallerAbort);
+      }
+      if (callerSignal?.aborted) {
+        throw err;
+      }
       const retryable = err.name === 'AbortError' || err.message?.includes('Network') || err.message?.includes('fetch');
       if (attempt < MAX_RETRIES && retryable) {
         const backoff = Math.min(500 * Math.pow(2, attempt), 3000);

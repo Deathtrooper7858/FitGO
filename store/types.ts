@@ -43,6 +43,7 @@ export interface UserProfile extends HealthProfile {
   startingWeight?: number;
   tdee:            number;
   targetCalories:  number;
+  targetWaterMl?:  number;
   macros:          { protein: number; carbs: number; fat: number };
   availableFoods?:  string[];
   preferences?:    string[];

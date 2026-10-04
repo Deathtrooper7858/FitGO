@@ -1898,12 +1898,14 @@ export default function FitGOSocial({
                       <TouchableOpacity 
                         style={s.iconBtn}
                         onPress={() => {
+                          const fId = friend.friend_profile?.id;
+                          if (!fId) return;
                           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                           router.push({
                             pathname: '/modals/chat',
                             params: { 
-                              friendId: friend.friend_profile?.id, 
-                              friendName: friend.friend_profile?.name, 
+                              friendId: fId, 
+                              friendName: friend.friend_profile?.name || 'Amigo', 
                               friendAvatar: friend.friend_profile?.avatar_url || ''
                             }
                           } as any);

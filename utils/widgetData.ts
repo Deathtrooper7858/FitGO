@@ -1,7 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SecureStorage } from './storage';
+import { getLocalDateString } from './date';
 
 const STORE_KEYS = {
   NUTRITION: 'ff-nutrition-v2',
+  WIDGET_PROFILE: 'ff-widget-profile',
   AUTH: 'ff-auth',
 };
 
@@ -29,19 +32,43 @@ export async function loadWidgetData(): Promise<WidgetData> {
   };
 
   try {
-    const [nutritionStr, authStr] = await Promise.all([
+    const [nutritionStr, widgetProfileStr, authStr] = await Promise.all([
       AsyncStorage.getItem(STORE_KEYS.NUTRITION),
+      AsyncStorage.getItem(STORE_KEYS.WIDGET_PROFILE),
       AsyncStorage.getItem(STORE_KEYS.AUTH),
     ]);
 
-    if (authStr) {
-      const auth = JSON.parse(authStr);
-      const profile = auth?.state?.profile;
-      if (profile) {
-        defaults.userName = (profile.name || '').split(' ')[0] || 'Usuario';
-        defaults.calsTarget = profile.targetCalories || 2000;
-        defaults.proteinTarget = profile.macros?.protein || 150;
-      }
+    // 1. Try dedicated widget profile first (fastest and non-sensitive)
+    if (widgetProfileStr) {
+      try {
+        const wp = JSON.parse(widgetProfileStr);
+        if (wp.userName) defaults.userName = wp.userName;
+        if (wp.targetCalories) defaults.calsTarget = Number(wp.targetCalories);
+        if (wp.proteinTarget) defaults.proteinTarget = Number(wp.proteinTarget);
+      } catch {}
+    } else if (authStr) {
+      try {
+        const auth = JSON.parse(authStr);
+        const profile = auth?.state?.profile;
+        if (profile) {
+          defaults.userName = (profile.name || '').split(' ')[0] || 'Usuario';
+          defaults.calsTarget = Number(profile.targetCalories) || 2000;
+          defaults.proteinTarget = Number(profile.macros?.protein) || 150;
+        }
+      } catch {}
+    } else {
+      // Fallback: check SecureStorage if device is unlocked
+      try {
+        const cachedRaw = await SecureStorage.getItem('ff-user-profile');
+        if (cachedRaw) {
+          const profile = JSON.parse(cachedRaw);
+          if (profile) {
+            defaults.userName = (profile.name || '').split(' ')[0] || 'Usuario';
+            defaults.calsTarget = Number(profile.targetCalories) || 2000;
+            defaults.proteinTarget = Number(profile.macros?.protein) || 150;
+          }
+        }
+      } catch {}
     }
 
     if (nutritionStr) {
@@ -50,7 +77,7 @@ export async function loadWidgetData(): Promise<WidgetData> {
       if (state) {
         defaults.streak = state.streakDays || 0;
 
-        const dateStr = new Date().toLocaleDateString('en-CA');
+        const dateStr = getLocalDateString();
 
         const todayLogs = (state.todayLogs || []).filter(
           (l: any) => l.loggedAt && l.loggedAt.startsWith(dateStr)

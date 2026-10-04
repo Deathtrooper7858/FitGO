@@ -33,6 +33,8 @@ credentials.json
 keystore.properties
 
 # Temp & Dev artifacts
+*.aab
+*.apk
 staged_files.txt
 schema.json
 scratch/
