@@ -286,7 +286,7 @@ export default function RankingPage() {
                       <div className="flex items-center gap-2">
                         <span
                           className="font-bold text-sm truncate"
-                          style={{ color: user.name_color || "#F8FAFC" }}
+                          style={{ color: (user.name_color?.toLowerCase() === '#4c1d95' ? '#8B5CF6' : user.name_color) || "#F8FAFC" }}
                         >
                           {user.name || t("ranking.anonymous") || "Anónimo"}
                         </span>

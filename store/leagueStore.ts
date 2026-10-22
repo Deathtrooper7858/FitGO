@@ -251,7 +251,18 @@ export const useLeagueStore = create<LeagueStore>()(
         console.warn('[League] fetchSquadMembers error:', error.message);
         return [];
       }
-      return (data || []) as SquadMember[];
+      return (data || []).map((m: any) => {
+        let color = m.name_color?.trim() || null;
+        if (color?.toLowerCase() === '#4c1d95') color = '#8B5CF6';
+        const hasPremium = !!(m.is_pro || ['owner', 'admin', 'super_admin', 'pro_user'].includes(m.role || ''));
+        if (hasPremium && (!color || color === '')) {
+          color = '#FFB800';
+        }
+        return {
+          ...m,
+          name_color: color,
+        };
+      }) as SquadMember[];
     } catch (err: any) {
       console.warn('[League] fetchSquadMembers unexpected error:', err.message);
       return [];

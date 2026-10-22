@@ -193,7 +193,12 @@ export default function ProfileScreen() {
     if (!val.trim() && editModal.field !== 'availableFoods') return;
     const field = editModal.field;
     if (field === 'availableFoods') { updateProfileField('availableFoods', val.split(',').map(s => s.trim()).filter(s => s.length > 0)); return; }
-    if (field === 'name') { updateProfileFields({ name: val, nameColor: color || '' }); return; }
+    if (field === 'name') { 
+      const normColor = color?.toLowerCase() === '#4c1d95' ? '#8B5CF6' : color;
+      const finalColor = normColor !== undefined ? normColor : (profile?.nameColor || '');
+      updateProfileFields({ name: val, nameColor: finalColor }); 
+      return; 
+    }
     const numericFields = ['weight', 'height', 'age'];
     let parsed: any = numericFields.includes(field) ? parseFloat(val) : val;
     if (numericFields.includes(field)) {

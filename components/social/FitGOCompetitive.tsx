@@ -1355,7 +1355,7 @@ export default function FitGOCompetitive({
                 <View style={[styles.squadCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                   <View style={styles.squadCardRow}>
                     <View style={{ flex: 1 }}>
-                      <Text style={[styles.squadName, getNameStyle((squad as any).created_by_profile?.name_color, squad.created_by, profile?.id, profile?.nameColor, premiumColor)]}>{squad.name}</Text>
+                      <Text style={[styles.squadName, { color: colors.textPrimary }, getNameStyle((squad as any).created_by_profile?.name_color, squad.created_by, profile?.id, profile?.nameColor, premiumColor)]}>{squad.name}</Text>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <Users size={14} color={colors.textSecondary} />
                         <Text style={[styles.squadMeta, { color: colors.textSecondary }]}>
@@ -1819,7 +1819,7 @@ export default function FitGOCompetitive({
                 </View>
 
                 {/* Username */}
-                <Text style={[{ fontSize: 24, fontWeight: '900', textAlign: 'center', marginBottom: 28, textShadowColor: getSafeColor(userColor) + '40', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8 }, getNameStyle(inspectingUser.name_color, inspectingUser.id, profile?.id, profile?.nameColor, premiumColor)]}>
+                <Text style={[{ fontSize: 24, fontWeight: '900', textAlign: 'center', marginBottom: 28, color: colors.textPrimary, textShadowColor: getSafeColor(userColor) + '40', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8 }, getNameStyle(inspectingUser.name_color, inspectingUser.id, profile?.id, profile?.nameColor, premiumColor)]}>
                   {inspectingUser.name}
                 </Text>
 
@@ -2075,7 +2075,7 @@ const styles = StyleSheet.create({
     borderRadius: 20, borderWidth: 1.5, padding: 18, marginBottom: 16,
   },
   squadCardRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  squadName: { fontSize: 18, fontWeight: '900', marginBottom: 4 },
+  squadName: { fontSize: 18, fontWeight: '900', marginBottom: 4, color: '#F8FAFC' },
   squadMeta: { fontSize: 13, fontWeight: '600' },
   codeChip: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
@@ -2097,7 +2097,7 @@ const styles = StyleSheet.create({
     width: 42, height: 42, borderRadius: 21,
     justifyContent: 'center', alignItems: 'center',
   },
-  memberName: { fontSize: 15, fontWeight: '800', marginBottom: 2 },
+  memberName: { fontSize: 15, fontWeight: '800', marginBottom: 2, color: '#F8FAFC' },
   memberSub: { fontSize: 12, fontWeight: '600' },
   pointsBadge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12 },
   pointsBadgeText: { fontSize: 13, fontWeight: '800' },

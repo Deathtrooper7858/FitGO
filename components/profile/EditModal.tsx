@@ -67,15 +67,18 @@ export function EditModal({
   const colors = useTheme();
 
   const [value, setValue] = useState(initialValue ?? '');
-  const [selectedColor, setSelectedColor] = useState(initialNameColor ?? '');
+  const isUserPro = !!(isPro || role === 'owner' || role === 'admin' || role === 'super_admin');
+  const normalizedInit = initialNameColor?.toLowerCase() === '#4c1d95' ? '#8B5CF6' : (initialNameColor ?? '');
+  const [selectedColor, setSelectedColor] = useState(normalizedInit || (isUserPro ? '#FFC000' : ''));
   const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     if (visible) {
       setValue(initialValue ?? '');
-      setSelectedColor(initialNameColor ?? '');
+      const norm = initialNameColor?.toLowerCase() === '#4c1d95' ? '#8B5CF6' : (initialNameColor ?? '');
+      setSelectedColor(norm || (isUserPro ? '#FFC000' : ''));
     }
-  }, [visible, initialValue, initialNameColor]);
+  }, [visible, initialValue, initialNameColor, isUserPro]);
 
   // Metadatos temáticos según el campo
   let FieldIcon = User;

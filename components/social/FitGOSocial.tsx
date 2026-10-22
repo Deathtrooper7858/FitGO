@@ -58,7 +58,7 @@ const s = StyleSheet.create({
   avatarSmall: { width: 36, height: 36, borderRadius: 18 },
   avatarPlaceholder: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   avatarInitials: { color: '#fff', fontWeight: 'bold', fontSize: 18 },
-  userName: { fontSize: 15, fontWeight: '700' },
+  userName: { fontSize: 15, fontWeight: '700', color: '#F8FAFC' },
   
   actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: Radius.full },
   actionBtnText: { color: '#fff', fontSize: 12, fontWeight: '800' },
@@ -93,7 +93,7 @@ const s = StyleSheet.create({
   commentRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
   commentAvatar: { width: 28, height: 28, borderRadius: 14 },
   commentBubble: { flex: 1, padding: 12, borderRadius: Radius.lg, borderTopLeftRadius: 4 },
-  commentUser: { fontSize: 13, fontWeight: '800', marginBottom: 4 },
+  commentUser: { fontSize: 13, fontWeight: '800', marginBottom: 4, color: '#F8FAFC' },
   commentText: { fontSize: 14, lineHeight: 20 },
   commentInputRow: { flexDirection: 'row', gap: 10, alignItems: 'center', marginTop: 8 },
   commentInput: { flex: 1, height: 44, borderRadius: Radius.full, paddingHorizontal: 16, fontSize: 14 },
@@ -677,7 +677,7 @@ export default function FitGOSocial({
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Text
                     style={[
-                      { fontSize: 21, fontWeight: '900', letterSpacing: -0.4, flex: 1 },
+                      { fontSize: 21, fontWeight: '900', letterSpacing: -0.4, flex: 1, color: colors.textPrimary },
                       getNameStyle(profile?.nameColor, profile?.id, profile?.id, profile?.nameColor, premiumColor),
                     ]}
                     numberOfLines={1}
@@ -987,7 +987,7 @@ export default function FitGOSocial({
                       </View>
                     )}
                     <View>
-                      <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id, profile?.id, profile?.nameColor, premiumColor)]}>
+                      <Text style={[s.userName, { color: colors.textPrimary }, getNameStyle(post.user_profile?.name_color, post.user_id, profile?.id, profile?.nameColor, premiumColor)]}>
                         {post.user_profile?.name}
                       </Text>
                       <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 1 }}>
@@ -1421,7 +1421,7 @@ export default function FitGOSocial({
                     </View>
                   )}
                   <View>
-                    <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id, profile?.id, profile?.nameColor, premiumColor)]}>{post.user_profile?.name}</Text>
+                    <Text style={[s.userName, { color: colors.textPrimary }, getNameStyle(post.user_profile?.name_color, post.user_id, profile?.id, profile?.nameColor, premiumColor)]}>{post.user_profile?.name}</Text>
                     <Text style={{ color: colors.textMuted, fontSize: 11 }}>
                       {new Date(post.created_at).toLocaleDateString()} {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </Text>
@@ -1481,7 +1481,7 @@ export default function FitGOSocial({
                     )}
                     <View style={[s.commentBubble, { backgroundColor: colors.surfaceAlt }]}>
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                        <Text style={[s.commentUser, getNameStyle(comment.user_profile?.name_color, comment.user_id, profile?.id, profile?.nameColor, premiumColor), { marginBottom: 0 }]}>{comment.user_profile?.name}</Text>
+                        <Text style={[s.commentUser, { color: colors.textPrimary }, getNameStyle(comment.user_profile?.name_color, comment.user_id, profile?.id, profile?.nameColor, premiumColor), { marginBottom: 0 }]}>{comment.user_profile?.name}</Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                           <Text style={{ color: colors.textMuted, fontSize: 9 }}>
                             {new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -1701,7 +1701,7 @@ export default function FitGOSocial({
                     </View>
                   )}
                   <View style={{ flex: 1 }}>
-                    <Text style={[s.userName, getNameStyle(user.name_color, user.id, profile?.id, profile?.nameColor, premiumColor)]} numberOfLines={1}>
+                    <Text style={[s.userName, { color: colors.textPrimary }, getNameStyle(user.name_color, user.id, profile?.id, profile?.nameColor, premiumColor)]} numberOfLines={1}>
                       {user.name}
                     </Text>
                     <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 1 }} numberOfLines={1}>
@@ -1750,7 +1750,7 @@ export default function FitGOSocial({
                             <Text style={[s.avatarInitials, { fontSize: 15 }]}>{req.friend_profile?.name?.[0]}</Text>
                           </View>
                         )}
-                        <Text style={[s.userName, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
+                        <Text style={[s.userName, { color: colors.textPrimary }, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
                           {req.friend_profile?.name}
                         </Text>
                       </TouchableOpacity>
@@ -1802,7 +1802,7 @@ export default function FitGOSocial({
                             <Text style={[s.avatarInitials, { fontSize: 15 }]}>{req.friend_profile?.name?.[0]}</Text>
                           </View>
                         )}
-                        <Text style={[s.userName, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
+                        <Text style={[s.userName, { color: colors.textPrimary }, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
                           {req.friend_profile?.name}
                         </Text>
                       </TouchableOpacity>
@@ -1885,7 +1885,7 @@ export default function FitGOSocial({
                         </View>
                       )}
                       <View style={{ flex: 1 }}>
-                        <Text style={[s.userName, getNameStyle(friend.friend_profile?.name_color, friend.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
+                        <Text style={[s.userName, { color: colors.textPrimary }, getNameStyle(friend.friend_profile?.name_color, friend.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
                           {friend.friend_profile?.name}
                         </Text>
                         <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 1 }}>
@@ -2087,7 +2087,7 @@ export default function FitGOSocial({
                 )}
               </TouchableOpacity>
 
-              <Text style={[{ fontSize: 20, fontWeight: '900', letterSpacing: -0.4, marginBottom: 4, textAlign: 'center' }, getNameStyle(inspectingUser?.name_color, inspectingUser?.id, profile?.id, profile?.nameColor, premiumColor)]}>{inspectingUser?.name}</Text>
+              <Text style={[{ fontSize: 20, fontWeight: '900', letterSpacing: -0.4, marginBottom: 4, textAlign: 'center', color: colors.textPrimary }, getNameStyle(inspectingUser?.name_color, inspectingUser?.id, profile?.id, profile?.nameColor, premiumColor)]}>{inspectingUser?.name}</Text>
 
               {/* Points row */}
               {(() => {

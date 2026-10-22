@@ -84,28 +84,29 @@ export const useSettingsStore = create<SettingsState>()(
         }
       },
       setPremiumColor: (premiumColor) => {
-        set({ premiumColor });
+        const normalized = premiumColor?.toLowerCase() === '#4c1d95' ? '#8B5CF6' : premiumColor;
+        set({ premiumColor: normalized });
         const profile = useAuthStore.getState().profile;
         if (profile?.id) {
           useAuthStore.getState().setProfile({
             ...profile,
-            premiumColor: premiumColor || undefined,
-            nameColor: premiumColor || undefined,
+            premiumColor: normalized || undefined,
+            nameColor: normalized || undefined,
           });
 
           // 1. Auth metadata sync
           supabase.auth.updateUser({
             data: {
-              premium_color: premiumColor,
-              name_color: premiumColor,
+              premium_color: normalized,
+              name_color: normalized,
             },
           }).catch(() => {});
 
           // 2. Direct users table update
           Promise.resolve(
             supabase.from('users').update({
-              premium_color: premiumColor,
-              name_color: premiumColor,
+              premium_color: normalized,
+              name_color: normalized,
             }).eq('id', profile.id)
           ).then(({ error }: any) => {
             if (error) console.warn('[SettingsStore] direct users update warning:', error.message);
@@ -114,7 +115,7 @@ export const useSettingsStore = create<SettingsState>()(
           // 3. RPC fallback (Security Definer guarantees save regardless of client RLS)
           Promise.resolve(
             supabase.rpc('set_user_premium_color', {
-              p_color: premiumColor,
+              p_color: normalized,
             })
           ).catch(() => {});
         }

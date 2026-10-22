@@ -53,6 +53,19 @@ async function uploadToSocialStorage(
 let activeUnreadChannel: any = null;
 let activeSocialChannel: any = null;
 
+export function resolveUserProfileColor(user: { name_color?: string | null; is_pro?: boolean | null; role?: string | null } | null | undefined): string | null {
+  if (!user) return null;
+  const hasPremium = !!(user.is_pro || ['owner', 'admin', 'super_admin', 'pro_user'].includes(user.role || ''));
+  let color = user.name_color?.trim() || null;
+  if (color?.toLowerCase() === '#4c1d95') {
+    color = '#8B5CF6';
+  }
+  if (hasPremium && (!color || color === '')) {
+    return '#FFB800';
+  }
+  return color;
+}
+
 export interface Friend {
   id: string;
   user_id_1: string;
@@ -101,7 +114,7 @@ export interface RankedUser {
   id: string;
   name: string;
   avatar_url: string;
-  name_color?: string;
+  name_color?: string | null;
   is_pro?: boolean;
   points: number;
   current_streak?: number;
@@ -463,7 +476,10 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data, error } = await supabase.rpc('search_users_by_email_or_id', { search_query: query });
       if (error) throw error;
-      return data || [];
+      return (data || []).map((u: any) => ({
+        ...u,
+        name_color: resolveUserProfileColor(u),
+      }));
     } catch (err) {
       console.warn('[SocialStore] Error searching users:', err);
       return [];
@@ -475,16 +491,21 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('friends')
-        .select(`*, user1:user_id_1(id, name, email, avatar_url, name_color, is_pro), user2:user_id_2(id, name, email, avatar_url, name_color, is_pro)`)
+        .select(`*, user1:user_id_1(id, name, email, avatar_url, name_color, is_pro, role), user2:user_id_2(id, name, email, avatar_url, name_color, is_pro, role)`)
         .or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`);
         
       if (error) throw error;
 
       const friendsList = (data || []).map(f => {
         const isUser1 = f.user_id_1 === userId;
+        const rawFriend = isUser1 ? f.user2 : f.user1;
+        const friend_profile = rawFriend ? {
+          ...rawFriend,
+          name_color: resolveUserProfileColor(rawFriend),
+        } : rawFriend;
         return {
           ...f,
-          friend_profile: isUser1 ? f.user2 : f.user1
+          friend_profile
         };
       });
 
@@ -676,19 +697,6 @@ export const useSocialStore = create<SocialState>((set, get) => ({
       if (error) throw error;
       
       const mappedData = (data || []).map((u: any) => {
-        const hasPremiumAccess = u.is_pro || ['owner', 'admin', 'super_admin'].includes(u.role);
-        let validNameColor = u.name_color;
-        
-        // Si no tiene acceso premium, no puede usar colores premium (dorados)
-        if (!hasPremiumAccess && validNameColor && (validNameColor.toUpperCase() === '#EAB308' || validNameColor.toUpperCase() === '#FFD700' || validNameColor.toUpperCase() === '#F59E0B')) {
-          validNameColor = null;
-        }
-        
-        // Si tiene acceso premium y no tiene color, dale el dorado por defecto
-        if (hasPremiumAccess && (!validNameColor || validNameColor === '')) {
-          validNameColor = '#EAB308';
-        }
-
         return {
           id: u.id,
           name: u.name,
@@ -696,7 +704,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
           points: u.league_points || 0,
           current_streak: u.current_streak || 0,
           role: u.role || 'user',
-          name_color: validNameColor
+          name_color: resolveUserProfileColor(u)
         };
       });
       
@@ -721,7 +729,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         .from('posts')
         .select(`
           *,
-          user_profile:user_id(name, avatar_url, name_color, is_pro),
+          user_profile:user_id(name, avatar_url, name_color, is_pro, role),
           likes:post_likes(user_id),
           comments:post_comments(id)
         `)
@@ -732,26 +740,34 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         console.warn('[SocialStore] Query failed, trying fallback:', error.message);
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('posts')
-          .select(`*, user_profile:user_id(name, avatar_url, name_color, is_pro)`)
+          .select(`*, user_profile:user_id(name, avatar_url, name_color, is_pro, role)`)
           .order('created_at', { ascending: false })
           .limit(30);
         
         if (fallbackError) throw fallbackError;
 
-        const enrichedPosts = (fallbackData || []).map(p => ({
-          ...p,
-          likes_count: 0,
-          comments_count: 0,
-          is_liked: false
-        }));
+        const enrichedPosts = (fallbackData || []).map(p => {
+          const up = p.user_profile;
+          return {
+            ...p,
+            user_profile: up ? { ...up, name_color: resolveUserProfileColor(up) } : up,
+            likes_count: 0,
+            comments_count: 0,
+            is_liked: false
+          };
+        });
         set({ posts: enrichedPosts });
       } else {
-        const enrichedPosts = (data || []).map(p => ({
-          ...p,
-          likes_count: p.likes?.length || 0,
-          comments_count: p.comments?.length || 0,
-          is_liked: p.likes?.some((l: any) => l.user_id === currentUserId) || false
-        }));
+        const enrichedPosts = (data || []).map(p => {
+          const up = p.user_profile;
+          return {
+            ...p,
+            user_profile: up ? { ...up, name_color: resolveUserProfileColor(up) } : up,
+            likes_count: p.likes?.length || 0,
+            comments_count: p.comments?.length || 0,
+            is_liked: p.likes?.some((l: any) => l.user_id === currentUserId) || false
+          };
+        });
         set({ posts: enrichedPosts });
       }
     } catch (err) {
@@ -765,12 +781,19 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data, error } = await supabase.from('posts').insert(post).select(`
         *,
-        user_profile:user_id(name, avatar_url, name_color, is_pro)
+        user_profile:user_id(name, avatar_url, name_color, is_pro, role)
       `).single();
       if (error) throw error;
       // Optimistic prepend to avoid full list re-fetch
       if (data) {
-        const newPost = { ...data, likes_count: 0, comments_count: 0, is_liked: false };
+        const up = data.user_profile;
+        const newPost = {
+          ...data,
+          user_profile: up ? { ...up, name_color: resolveUserProfileColor(up) } : up,
+          likes_count: 0,
+          comments_count: 0,
+          is_liked: false
+        };
         set(s => ({ posts: [newPost, ...s.posts] }));
       }
     } catch (err) {
@@ -887,12 +910,18 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('post_comments')
-        .select('*, user_profile:user_id(name, avatar_url, name_color, is_pro)')
+        .select('*, user_profile:user_id(name, avatar_url, name_color, is_pro, role)')
         .eq('post_id', postId)
         .order('created_at', { ascending: true });
       
       if (error) throw error;
-      return data || [];
+      return (data || []).map((c: any) => {
+        const up = c.user_profile;
+        return {
+          ...c,
+          user_profile: up ? { ...up, name_color: resolveUserProfileColor(up) } : up,
+        };
+      });
     } catch (err) {
       console.warn('[SocialStore] Error fetching comments:', err);
       return [];

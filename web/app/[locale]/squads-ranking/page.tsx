@@ -388,7 +388,7 @@ export default function SquadsRankingPage() {
                                   )}
                                   <span
                                     className="text-sm font-semibold text-text-primary truncate max-w-35 sm:max-w-55"
-                                    style={member.name_color ? { color: member.name_color } : {}}
+                                    style={member.name_color ? { color: member.name_color.toLowerCase() === '#4c1d95' ? '#8B5CF6' : member.name_color } : { color: '#F8FAFC' }}
                                   >
                                     {member.name}
                                   </span>

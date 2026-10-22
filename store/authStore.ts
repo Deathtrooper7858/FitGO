@@ -129,12 +129,15 @@ export const useAuthStore = create<AuthState>()(
           set({ profile: cached });
           const cachedColor = cached.premiumColor || cached.nameColor;
           if (cachedColor) {
-            if (useSettingsStore.getState().premiumColor !== cachedColor) {
-              useSettingsStore.getState().setPremiumColor(cachedColor);
+            const normalizedColor = cachedColor.toLowerCase() === '#4c1d95' ? '#8B5CF6' : cachedColor;
+            if (useSettingsStore.getState().premiumColor !== normalizedColor) {
+              useSettingsStore.getState().setPremiumColor(normalizedColor);
             }
           } else if (useSettingsStore.getState().premiumColor) {
-            cached.premiumColor = useSettingsStore.getState().premiumColor || undefined;
-            cached.nameColor = useSettingsStore.getState().premiumColor || undefined;
+            const currentPrem = useSettingsStore.getState().premiumColor;
+            const normalizedPrem = currentPrem?.toLowerCase() === '#4c1d95' ? '#8B5CF6' : currentPrem;
+            cached.premiumColor = normalizedPrem || undefined;
+            cached.nameColor = normalizedPrem || undefined;
           }
           if (cached.language) {
             if (useSettingsStore.getState().language !== cached.language) {
@@ -198,14 +201,25 @@ export const useAuthStore = create<AuthState>()(
                 );
 
                 const currentSession = get().session;
-                const metaColor = currentSession?.user?.user_metadata?.premium_color || currentSession?.user?.user_metadata?.name_color;
-                const localColor = useSettingsStore.getState().premiumColor;
-                const cachedColor = get().profile?.premiumColor || get().profile?.nameColor;
+                const normalizeHex = (c?: string | null) => {
+                  if (!c) return null;
+                  const t = c.trim();
+                  if (t.toLowerCase() === '#4c1d95') return '#8B5CF6';
+                  return t || null;
+                };
 
-                // Priority: User's explicitly chosen localColor > DB premium_color > session metadata > cached profile > DB name_color
-                const chosenColor = localColor || data.premium_color || metaColor || cachedColor || (data.name_color && data.name_color !== '#EAB308' ? data.name_color : null) || null;
+                const localColor = normalizeHex(useSettingsStore.getState().premiumColor);
+                const dbPremiumColor = normalizeHex(data.premium_color);
+                const dbNameColor = normalizeHex(data.name_color);
+                const metaColor = normalizeHex(currentSession?.user?.user_metadata?.premium_color || currentSession?.user?.user_metadata?.name_color);
+                const cachedColor = normalizeHex(get().profile?.premiumColor || get().profile?.nameColor);
+
+                // Priority: User's explicitly chosen localColor > DB premium_color > session metadata > cached profile (excluding generic default gold)
+                const chosenColor = localColor || dbPremiumColor || metaColor || (cachedColor && cachedColor !== '#EAB308' && cachedColor !== '#FFB800' ? cachedColor : null) || null;
                 const effectivePremiumColor: string | null = isProUser ? chosenColor : null;
-                const fetchedNameColor: string | null = isProUser ? (effectivePremiumColor || data.name_color || '#EAB308') : null;
+                const fetchedNameColor: string | null = isProUser 
+                  ? (dbNameColor || effectivePremiumColor || '#FFB800') 
+                  : dbNameColor;
 
                 if (isProUser && effectivePremiumColor) {
                   if (useSettingsStore.getState().premiumColor !== effectivePremiumColor) {
@@ -213,20 +227,25 @@ export const useAuthStore = create<AuthState>()(
                   }
 
                   // Backfill DB or metadata if one was missing or out of sync
-                  if (data.premium_color !== effectivePremiumColor || data.name_color !== effectivePremiumColor) {
+                  if (data.premium_color !== effectivePremiumColor || (data.name_color !== fetchedNameColor && fetchedNameColor)) {
                     Promise.resolve(supabase.from('users').update({
                       premium_color: effectivePremiumColor,
-                      name_color: effectivePremiumColor,
+                      name_color: fetchedNameColor || effectivePremiumColor,
                     }).eq('id', userId)).catch(() => {});
                   }
                   if (metaColor !== effectivePremiumColor) {
                     supabase.auth.updateUser({
                       data: {
                         premium_color: effectivePremiumColor,
-                        name_color: effectivePremiumColor,
+                        name_color: fetchedNameColor || effectivePremiumColor,
                       },
                     }).catch(() => {});
                   }
+                } else if (isProUser && fetchedNameColor && !data.name_color) {
+                  // Ensure pro default name color is persisted
+                  Promise.resolve(supabase.from('users').update({
+                    name_color: fetchedNameColor,
+                  }).eq('id', userId)).catch(() => {});
                 } else if (!isProUser && !isProFromStore) {
                   // Non-pro users should not keep pro colors (only if truly not pro anywhere)
                   if (useSettingsStore.getState().premiumColor) {

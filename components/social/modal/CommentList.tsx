@@ -44,7 +44,7 @@ export function CommentList({
           )}
           <View style={[s.commentBubble, { backgroundColor: colors.surfaceAlt }]}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-              <Text style={[s.commentUser, getNameStyle(comment.user_profile?.name_color, comment.user_id, currentUserId, undefined, premiumColor), { marginBottom: 0 }]}>
+              <Text style={[s.commentUser, { color: colors.textPrimary }, getNameStyle(comment.user_profile?.name_color, comment.user_id, currentUserId, undefined, premiumColor), { marginBottom: 0 }]}>
                 {comment.user_profile?.name}
               </Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -112,7 +112,7 @@ const s = StyleSheet.create({
   commentRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
   commentAvatar: { width: 28, height: 28, borderRadius: 14 },
   commentBubble: { flex: 1, padding: 12, borderRadius: Radius.lg, borderTopLeftRadius: 4 },
-  commentUser: { fontSize: 13, fontWeight: '800', marginBottom: 4 },
+  commentUser: { fontSize: 13, fontWeight: '800', marginBottom: 4, color: '#F8FAFC' },
   commentText: { fontSize: 14, lineHeight: 20 },
   commentInputRow: { flexDirection: 'row', gap: 10, alignItems: 'center', marginTop: 8 },
   commentInput: { flex: 1, height: 44, borderRadius: Radius.full, paddingHorizontal: 16, fontSize: 14 },

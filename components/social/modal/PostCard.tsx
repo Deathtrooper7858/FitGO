@@ -114,7 +114,7 @@ export const PostCard = React.memo(function PostCard({
               </View>
             )}
             <View>
-              <Text style={[s.userName, getNameStyle(post.user_profile?.name_color, post.user_id, currentUserId, undefined, premiumColor)]}>
+              <Text style={[s.userName, { color: colors.textPrimary }, getNameStyle(post.user_profile?.name_color, post.user_id, currentUserId, undefined, premiumColor)]}>
                 {post.user_profile?.name}
               </Text>
               <Text style={{ color: colors.textMuted, fontSize: 11 }}>
@@ -164,7 +164,7 @@ const s = StyleSheet.create({
   avatarSmall: { width: 36, height: 36, borderRadius: 18 },
   avatarPlaceholder: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   avatarInitials: { color: '#fff', fontWeight: 'bold', fontSize: 18 },
-  userName: { fontSize: 15, fontWeight: '700' },
+  userName: { fontSize: 15, fontWeight: '700', color: '#F8FAFC' },
   postContent: { fontSize: 15, lineHeight: 22, marginBottom: 12 },
   postImage: { width: '100%', height: 200, borderRadius: Radius.lg, marginBottom: 12 },
   postFooter: { flexDirection: 'row', borderTopWidth: 1, paddingTop: 12 },

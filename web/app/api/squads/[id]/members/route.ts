@@ -33,7 +33,16 @@ export async function GET(
       return NextResponse.json({ members: [], error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ members: data || [] });
+    const mappedMembers = (data || []).map((m: any) => {
+      let color = m.name_color?.trim() || null;
+      if (color?.toLowerCase() === '#4c1d95') color = '#8B5CF6';
+      if ((m.is_pro || ['owner', 'admin', 'super_admin'].includes(m.role)) && (!color || color === '')) {
+        color = '#FFB800';
+      }
+      return { ...m, name_color: color };
+    });
+
+    return NextResponse.json({ members: mappedMembers });
   } catch (err) {
     Sentry.captureException(err);
     return NextResponse.json(

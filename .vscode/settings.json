@@ -24,5 +24,6 @@
   "java.import.exclusions": [
     "**/node_modules/**"
   ],
-  "cmake.ignoreCMakeListsMissing": true
+  "cmake.ignoreCMakeListsMissing": true,
+  "C_Cpp.default.compilerPath": "cl.exe"
 }

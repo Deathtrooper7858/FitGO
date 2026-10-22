@@ -65,7 +65,7 @@ export default function SocialFriendsTab({
                 </View>
               )}
               <View>
-                <Text style={[s.userName, getNameStyle(user.name_color, user.id, profile?.id, profile?.nameColor, premiumColor)]}>{user.name}</Text>
+                <Text style={[s.userName, { color: colors.textPrimary }, getNameStyle(user.name_color, user.id, profile?.id, profile?.nameColor, premiumColor)]}>{user.name}</Text>
                 <Text style={{ color: colors.textMuted, fontSize: 12 }}>{user.email}</Text>
               </View>
             </TouchableOpacity>
@@ -91,7 +91,7 @@ export default function SocialFriendsTab({
                       <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
                     </View>
                   )}
-                  <Text style={[s.userName, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
+                  <Text style={[s.userName, { color: colors.textPrimary }, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
                     {req.friend_profile?.name}
                   </Text>
                 </TouchableOpacity>
@@ -123,7 +123,7 @@ export default function SocialFriendsTab({
                       <Text style={[s.avatarInitials, { fontSize: 14 }]}>{req.friend_profile?.name?.[0]}</Text>
                     </View>
                   )}
-                  <Text style={[s.userName, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
+                  <Text style={[s.userName, { color: colors.textPrimary }, getNameStyle(req.friend_profile?.name_color, req.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
                     {req.friend_profile?.name}
                   </Text>
                 </TouchableOpacity>
@@ -154,7 +154,7 @@ export default function SocialFriendsTab({
                     <Text style={[s.avatarInitials, { fontSize: 14 }]}>{friend.friend_profile?.name?.[0]}</Text>
                   </View>
                 )}
-                <Text style={[s.userName, getNameStyle(friend.friend_profile?.name_color, friend.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
+                <Text style={[s.userName, { color: colors.textPrimary }, getNameStyle(friend.friend_profile?.name_color, friend.friend_profile?.id, profile?.id, profile?.nameColor, premiumColor)]}>
                   {friend.friend_profile?.name}
                 </Text>
               </TouchableOpacity>
@@ -189,7 +189,7 @@ const s = StyleSheet.create({
   avatarSmall: { width: 36, height: 36, borderRadius: 18 },
   avatarPlaceholder: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   avatarInitials: { color: '#fff', fontWeight: 'bold', fontSize: 18 },
-  userName: { fontSize: 15, fontWeight: '700' },
+  userName: { fontSize: 15, fontWeight: '700', color: '#F8FAFC' },
   actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: Radius.full },
   actionBtnText: { color: '#fff', fontSize: 12, fontWeight: '800' },
   iconBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },

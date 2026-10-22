@@ -30,7 +30,7 @@ const PREMIUM_COLORS = [
   { id: '#FF4081',  nameKey: 'profile.colors.pink',      defaultName: 'Rosa Atardecer',   hex: '#FF4081', isPro: true },
   { id: '#10B981',  nameKey: 'profile.colors.emerald',   defaultName: 'Verde Esmeralda',  hex: '#10B981', isPro: true },
   { id: '#06B6D4',  nameKey: 'profile.colors.turquoise', defaultName: 'Turquesa Profundo',hex: '#06B6D4', isPro: true },
-  { id: '#4C1D95',  nameKey: 'profile.colors.purple',    defaultName: 'Púrpura Imperial', hex: '#4C1D95', isPro: true },
+  { id: '#8B5CF6',  nameKey: 'profile.colors.purple',    defaultName: 'Púrpura Imperial', hex: '#8B5CF6', isPro: true },
   { id: '#94A3B8',  nameKey: 'profile.colors.silver',    defaultName: 'Plata Cromo',      hex: '#94A3B8', isPro: true },
 ];
 
@@ -57,8 +57,19 @@ export default function PremiumColorsModal() {
     });
   }, [hasProRole, verifyProStatus]);
 
-  const activeHex = premiumColor === 'admin_glow' ? '#00F0FF' : premiumColor || '#7C5CFC';
-  const selectedColorObj = PREMIUM_COLORS.find((c) => c.id === premiumColor) || PREMIUM_COLORS[0];
+  const normalizedColor = premiumColor?.toLowerCase() === '#4c1d95' ? '#8B5CF6' : premiumColor;
+  const activeHex = normalizedColor === 'admin_glow' ? '#00F0FF' : normalizedColor || '#7C5CFC';
+  
+  const isAdminOrOwner = profile?.role === 'admin' || profile?.role === 'owner' || profile?.role === 'super_admin';
+  const availableColors = React.useMemo(() => {
+    const list = [...PREMIUM_COLORS];
+    if (isAdminOrOwner) {
+      list.push({ id: 'admin_glow', nameKey: 'profile.colors.admin', defaultName: 'Diamante Admin', hex: '#00F0FF', isPro: true });
+    }
+    return list;
+  }, [isAdminOrOwner]);
+
+  const selectedColorObj = availableColors.find((c) => c.id === normalizedColor) || availableColors[0];
 
   const handleSelect = async (color: typeof PREMIUM_COLORS[0]) => {
     Haptics.selectionAsync();
@@ -236,9 +247,10 @@ export default function PremiumColorsModal() {
 
           {/* Cuadrícula de 2 columnas con tarjetas de color */}
           <View style={styles.colorGrid}>
-            {PREMIUM_COLORS.map((c) => {
-              const isSelected = premiumColor === c.id;
+            {availableColors.map((c) => {
+              const isSelected = normalizedColor === c.id;
               const isLocked = c.isPro && !actualIsPro && !loading;
+              const isAdminGlow = c.id === 'admin_glow';
 
               return (
                 <TouchableOpacity
@@ -247,7 +259,7 @@ export default function PremiumColorsModal() {
                     styles.colorCard,
                     {
                       backgroundColor: isSelected ? colors.surfaceAlt : colors.surface,
-                      borderColor: isSelected ? c.hex : colors.border + '45',
+                      borderColor: isSelected ? (isAdminGlow ? '#00F0FF' : c.hex) : colors.border + '45',
                       borderWidth: isSelected ? 2 : 1.5,
                     },
                   ]}
@@ -259,11 +271,18 @@ export default function PremiumColorsModal() {
                     style={[
                       styles.colorSwatch,
                       {
-                        backgroundColor: c.hex,
-                        shadowColor: c.hex,
+                        backgroundColor: isAdminGlow ? 'transparent' : c.hex,
+                        shadowColor: isAdminGlow ? '#00F0FF' : c.hex,
+                        overflow: 'hidden',
                       },
                     ]}
                   >
+                    {isAdminGlow && (
+                      <LinearGradient
+                        colors={['#00F0FF', '#7C5CFC']}
+                        style={StyleSheet.absoluteFill}
+                      />
+                    )}
                     {isSelected ? (
                       <View style={styles.checkInner}>
                         <Check size={18} color="#FFF" strokeWidth={3} />

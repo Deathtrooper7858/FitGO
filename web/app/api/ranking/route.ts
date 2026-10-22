@@ -39,13 +39,17 @@ export async function GET() {
 
     const mapped = (data as UserRow[] || []).map((u) => {
       const hasPremiumAccess = u.is_pro || ["owner", "admin", "super_admin"].includes(u.role ?? "");
-      let validNameColor = u.name_color;
+      let validNameColor = u.name_color?.trim() || null;
 
-      if (!hasPremiumAccess && validNameColor && ["#EAB308", "#FFD700", "#F59E0B"].includes(validNameColor.toUpperCase())) {
+      if (validNameColor?.toLowerCase() === "#4c1d95") {
+        validNameColor = "#8B5CF6";
+      }
+
+      if (!hasPremiumAccess && validNameColor && ["#EAB308", "#FFD700", "#F59E0B", "#FFB800"].includes(validNameColor.toUpperCase())) {
         validNameColor = null;
       }
       if (hasPremiumAccess && (!validNameColor || validNameColor === "")) {
-        validNameColor = "#EAB308";
+        validNameColor = "#FFB800";
       }
 
       return {
