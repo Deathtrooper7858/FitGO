@@ -893,6 +893,9 @@ export default function AchievementsModal() {
 
   // Badges obtenidos
   const ownedBadgeIds = useMemo(() => {
+    if (profile?.role === 'owner') {
+      return Object.keys(ALL_BADGES);
+    }
     const ids: string[] = [];
     if (profile?.role) ids.push(profile.role);
     if (profile?.badges) ids.push(...profile.badges);

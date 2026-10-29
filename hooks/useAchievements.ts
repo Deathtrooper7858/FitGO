@@ -86,6 +86,16 @@ export const ALL_BADGES: Record<string, BadgeInfo> = {
   speed_demon: { id: 'speed_demon', label: 'Velocidad Flash', colors: ['#FBBF24', '#92400E'], icon: '⚡', description: 'Registro express de comida.' },
   love_reactor: { id: 'love_reactor', label: 'Repartidor de Amor', colors: ['#EC4899', '#9D174D'], icon: '❤️', description: 'Diste tu primer like.' },
   legend_commenter: { id: 'legend_commenter', label: 'Rompe Hielos', colors: ['#7C3AED', '#5B21B6'], icon: '💬', description: 'Dejaste tu primer comentario.' },
+  water_titan: { id: 'water_titan', label: 'Titán del Agua', colors: ['#0284C7', '#0369A1'], icon: '🌊', description: 'Desbloqueado por registrar 2.5L de agua en un día.' },
+  macro_virtuoso: { id: 'macro_virtuoso', label: 'Virtuoso de Macros', colors: ['#10B981', '#047857'], icon: '🎯', description: 'Desbloqueado por balancear tus 3 macronutrientes con precisión.' },
+  consistency_king: { id: 'consistency_king', label: 'Rey de la Constancia', colors: ['#F59E0B', '#B45309'], icon: '👑', description: 'Desbloqueado por alcanzar 60 días de racha.' },
+  hiit_beast: { id: 'hiit_beast', label: 'Bestia del HIIT', colors: ['#EF4444', '#991B1B'], icon: '⚡', description: 'Desbloqueado por quemar más de 500 kcal en un entrenamiento.' },
+  sleep_perfectionist: { id: 'sleep_perfectionist', label: 'Sueño de los Dioses', colors: ['#8B5CF6', '#6D28D9'], icon: '🌌', description: 'Desbloqueado por dormir más de 8 horas con descanso óptimo.' },
+  social_champion: { id: 'social_champion', label: 'Líder Comunitario', colors: ['#EC4899', '#BE185D'], icon: '🌟', description: 'Desbloqueado por publicar activamente en tu Squad y comunidad.' },
+  super_planner: { id: 'super_planner', label: 'Estratega Nutricional', colors: ['#06B6D4', '#0891B2'], icon: '📋', description: 'Desbloqueado por consumir comidas del Planificador Semanal.' },
+  pedometer_titan: { id: 'pedometer_titan', label: 'Caminante Legendario', colors: ['#10B981', '#059669'], icon: '👟', description: 'Desbloqueado por superar los 20,000 pasos en un solo día.' },
+  iron_discipline: { id: 'iron_discipline', label: 'Disciplina de Acero', colors: ['#6366F1', '#4338CA'], icon: '🛡️', description: 'Desbloqueado por registrar comida, agua y actividad en el mismo día.' },
+  clean_fuel: { id: 'clean_fuel', label: 'Combustible Limpio', colors: ['#84CC16', '#4D7C0F'], icon: '🌿', description: 'Desbloqueado por mantener un consumo de azúcar bajo (<25g) en un día.' },
 };
 
 export function useAchievements() {
@@ -298,6 +308,18 @@ export function useAchievements() {
       // ── Nuevos Logros: Comunidad Extra ──
       { id: 'first_friend', title: 'Primer Amigo', description: 'Agregaste a tu primer amigo en FitGO.', icon: '🤝', iconType: 'lucide' as const, lucideIcon: 'UserPlus', tier: 'bronce', category: 'Comunidad', unlocked: unlockedAchievements.includes('first_friend') || (friends?.filter((f: any) => f.status === 'accepted').length || 0) >= 1 },
       { id: 'three_friends', title: 'Equipo de Élite', description: 'Tienes 3 o más amigos en FitGO.', icon: '👥', iconType: 'lucide' as const, lucideIcon: 'Users', tier: 'plata', category: 'Comunidad', unlocked: unlockedAchievements.includes('three_friends') || (friends?.filter((f: any) => f.status === 'accepted').length || 0) >= 3 },
+
+      // ── Nuevos Logros con Insignias Especiales ──
+      { id: 'water_titan', title: 'Titán del Agua', description: 'Registraste al menos 2500 ml de agua en un día.', icon: '🌊', iconType: 'lucide' as const, lucideIcon: 'Waves', tier: 'oro', category: 'Nutrición', unlocked: unlockedAchievements.includes('water_titan') || Object.values(dailyWater).some(w => w >= 2500), rewardBadgeId: 'water_titan' },
+      { id: 'macro_virtuoso', title: 'Virtuoso de Macros', description: 'Alcanzaste tus 3 macronutrientes dentro del 10% de tu objetivo.', icon: '🎯', iconType: 'lucide' as const, lucideIcon: 'Target', tier: 'diamante', category: 'Nutrición', unlocked: unlockedAchievements.includes('macro_virtuoso') || perfectMacros, rewardBadgeId: 'macro_virtuoso' },
+      { id: 'consistency_60', title: 'Rey de la Constancia', description: 'Has mantenido una racha de 60 días ininterrumpida.', icon: '👑', iconType: 'lucide' as const, lucideIcon: 'Crown', tier: 'oro', category: 'Constancia', unlocked: unlockedAchievements.includes('consistency_60') || (streakDays || 0) >= 60, rewardBadgeId: 'consistency_king' },
+      { id: 'hiit_beast', title: 'Bestia del HIIT', description: 'Quemaste más de 500 kcal en una sesión de ejercicio.', icon: '⚡', iconType: 'lucide' as const, lucideIcon: 'Flame', tier: 'oro', category: 'Actividad', unlocked: unlockedAchievements.includes('hiit_beast') || (activityLogs || []).some(a => (a.calories || 0) >= 500), rewardBadgeId: 'hiit_beast' },
+      { id: 'sleep_perfectionist', title: 'Sueño de los Dioses', description: 'Dormiste 8 horas o más para una recuperación total.', icon: '🌌', iconType: 'lucide' as const, lucideIcon: 'MoonStar', tier: 'plata', category: 'Descanso', unlocked: unlockedAchievements.includes('sleep_perfectionist') || Object.values(dailySleep).some(h => h >= 8), rewardBadgeId: 'sleep_perfectionist' },
+      { id: 'social_champion', title: 'Líder Comunitario', description: 'Tus publicaciones han generado gran impacto en el Squad.', icon: '🌟', iconType: 'lucide' as const, lucideIcon: 'Sparkles', tier: 'oro', category: 'Comunidad', unlocked: unlockedAchievements.includes('social_champion') || (posts?.length || 0) >= 5, rewardBadgeId: 'social_champion' },
+      { id: 'super_planner', title: 'Estratega Nutricional', description: 'Registraste una comida recomendada por el Planificador.', icon: '📋', iconType: 'lucide' as const, lucideIcon: 'ClipboardCheck', tier: 'plata', category: 'Nutrición', unlocked: unlockedAchievements.includes('super_planner') || todayLogs.length > 0, rewardBadgeId: 'super_planner' },
+      { id: 'pedometer_titan', title: 'Caminante Legendario', description: 'Superaste los 20,000 pasos en un solo día.', icon: '👟', iconType: 'lucide' as const, lucideIcon: 'Footprints', tier: 'diamante', category: 'Actividad', unlocked: unlockedAchievements.includes('pedometer_titan') || Object.values(dailySteps).some(s => s >= 20000), rewardBadgeId: 'pedometer_titan' },
+      { id: 'iron_discipline', title: 'Disciplina de Acero', description: 'Registraste comida, hidratación y actividad física en el mismo día.', icon: '🛡️', iconType: 'lucide' as const, lucideIcon: 'ShieldCheck', tier: 'oro', category: 'General', unlocked: unlockedAchievements.includes('iron_discipline') || (todayLogs.length > 0 && Object.values(dailyWater).some(w => w > 0) && (activityLogs || []).length > 0), rewardBadgeId: 'iron_discipline' },
+      { id: 'clean_fuel', title: 'Combustible Limpio', description: 'Mantuviste el azúcar total por debajo de 25g consumiendo tus comidas.', icon: '🌿', iconType: 'lucide' as const, lucideIcon: 'Leaf', tier: 'plata', category: 'Nutrición', unlocked: unlockedAchievements.includes('clean_fuel') || (todayLogs.length > 0 && totalsData.sugar <= 25), rewardBadgeId: 'clean_fuel' },
     ];
 
     if (profile.role === 'owner') {
@@ -328,10 +350,12 @@ export function useAchievements() {
     const currentUnlockedAchievements = profile.unlockedAchievements || [];
     const missingAchievements = newlyUnlockedIds.filter(id => !currentUnlockedAchievements.includes(id));
 
-    // 2. Newly earned badges from unlocked achievements
-    const earnedBadgeIds = achievements
-      .filter(a => a.unlocked && a.rewardBadgeId)
-      .map(a => a.rewardBadgeId as string);
+    // 2. Newly earned badges from unlocked achievements (Owners get ALL badges automatically)
+    const earnedBadgeIds = profile.role === 'owner'
+      ? Object.keys(ALL_BADGES)
+      : achievements
+          .filter(a => a.unlocked && a.rewardBadgeId)
+          .map(a => a.rewardBadgeId as string);
 
     const currentBadges = profile.badges || [];
     const missingBadges = earnedBadgeIds.filter(b => !currentBadges.includes(b));

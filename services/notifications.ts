@@ -123,10 +123,11 @@ async function ensureChannels(notif: any) {
         description: channel.description,
         importance: channel.importance,
         vibrationPattern: channel.vibrationPattern,
-        lightColor: channel.lightColor,
+        lightColor: '#7C5CFC',
         enableVibrate: true,
         enableLights: true,
         showBadge: true,
+        lockscreenVisibility: notif.AndroidNotificationVisibility?.PUBLIC ?? 1,
       });
     } catch {
       // Non-fatal

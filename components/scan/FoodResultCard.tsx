@@ -36,6 +36,8 @@ interface FoodResultCardProps {
   date?: string;
   isPremiumCustom: boolean;
   safePremiumColor: string;
+  selectedMeal?: string;
+  onSelectMeal?: (meal: string) => void;
   onUpdateName: (index: number, newName: string) => void;
   onUpdateGrams: (index: number, newGrams: string) => void;
   onResetPhoto: () => void;
@@ -48,6 +50,7 @@ interface FoodResultCardProps {
 export default function FoodResultCard({
   food, editedFoods, capturedUri, logTime, showTimePicker, loading,
   colors, t, language, initialMeal, date, isPremiumCustom, safePremiumColor,
+  selectedMeal, onSelectMeal,
   onUpdateName, onUpdateGrams, onResetPhoto, onAddAll, onAddMissing,
   onTimeChange, onToggleTimePicker,
 }: FoodResultCardProps) {
@@ -81,6 +84,47 @@ export default function FoodResultCard({
           <View style={[s.confidenceDot, { backgroundColor: confidenceColor }]} />
           <Text style={[s.confidenceText, { color: confidenceColor }]}>{food.confidence.toUpperCase()} {t('scan.confidence')}</Text>
         </View>
+        {/* Meal Slot Selector */}
+        <View style={{ marginBottom: 16 }}>
+          <Text style={[s.sectionTitle, { color: colors.textPrimary, marginBottom: 8 }]}>
+            {t('scan.mealCategory', 'Momento del día')}
+          </Text>
+          <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+            {[
+              { id: 'breakfast', label: t('tracker.breakfast', 'Desayuno'), icon: '🌅' },
+              { id: 'lunch', label: t('tracker.lunch', 'Almuerzo'), icon: '☀️' },
+              { id: 'dinner', label: t('tracker.dinner', 'Cena'), icon: '🌙' },
+              { id: 'snack', label: t('tracker.snack', 'Snack'), icon: '🍎' },
+            ].map(opt => {
+              const current = (selectedMeal || initialMeal || getAutoMeal()).toLowerCase();
+              const isSelected = current.includes(opt.id);
+              return (
+                <TouchableOpacity
+                  key={opt.id}
+                  onPress={() => onSelectMeal?.(opt.id)}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 5,
+                    paddingHorizontal: 12,
+                    paddingVertical: 7,
+                    borderRadius: 16,
+                    backgroundColor: isSelected ? colors.primary : colors.surfaceAlt,
+                    borderWidth: 1,
+                    borderColor: isSelected ? colors.primary : colors.border,
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={{ fontSize: 13 }}>{opt.icon}</Text>
+                  <Text style={{ color: isSelected ? '#fff' : colors.textPrimary, fontSize: 12, fontWeight: isSelected ? '700' : '500' }}>
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
         <Text style={[s.sectionTitle, { color: colors.primary }]}>{t('scan.detectedFoods')}</Text>
         {editedFoods.map((item, i) => (
           <LinearGradient
@@ -197,7 +241,7 @@ export default function FoodResultCard({
           >
             <Text style={{ fontSize: 18, color: '#fff' }}>✅</Text>
             <Text style={s.addAllText}>
-              {t('scan.addAll', { meal: t(`tracker.${initialMeal || getAutoMeal()}`) })}
+              {t('scan.addAll', { meal: t(`tracker.${selectedMeal || initialMeal || getAutoMeal()}`) })}
             </Text>
           </LinearGradient>
         </TouchableOpacity>

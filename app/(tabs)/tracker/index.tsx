@@ -14,7 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Radius } from '../../../constants';
 import { useAuthStore, useNutritionStore, selectDailyTotals, useSettingsStore, useSocialStore } from '../../../store';
 import { useTheme } from '../../../hooks/useTheme';
-import { getLocalDateString } from '../../../utils/date';
+import { getLocalDateString, normalizeMealType } from '../../../utils/date';
 import { requestNotificationPermissions } from '../../../services/notifications';
 import { convertEnergy } from '../../../utils/units';
 import { PaywallManager } from '../../../utils/paywallManager';
@@ -145,7 +145,13 @@ export default function TrackerScreen() {
   }, [profile?.extraSnacks]);
 
   const grouped = useMemo(() => allMeals.reduce((acc, m) => {
-    acc[m] = todayLogs.filter(l => l.meal === m && l.loggedAt.startsWith(selectedDate));
+    acc[m] = todayLogs.filter(l => {
+      if (!l.loggedAt || !l.loggedAt.startsWith(selectedDate)) return false;
+      const normMeal = normalizeMealType(l.meal);
+      if (normMeal === m) return true;
+      if (m === 'snack' && normMeal.startsWith('snack') && !allMeals.includes(normMeal)) return true;
+      return false;
+    });
     return acc;
   }, {} as Record<string, typeof todayLogs>), [allMeals, todayLogs, selectedDate]);
 
@@ -190,7 +196,7 @@ export default function TrackerScreen() {
 
   useEffect(() => {
     if (selectedDate === todayStr && pedometerTotal > steps) {
-      setSteps(pedometerTotal);
+      setSteps(pedometerTotal, todayStr);
     }
   }, [pedometerTotal, selectedDate, todayStr, steps, setSteps]);
 

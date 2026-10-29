@@ -1964,7 +1964,8 @@
     "tipBrands": "Aggiungi oli, salse o marchi noti, se applicabile.",
     "imageReadFailed": "Impossibile elaborare l'immagine selezionata.",
     "noInternet": "Nessuna connessione Internet. L’intelligenza artificiale richiede connessione.",
-    "foodNamePlaceholder": "Nome dell'alimento"
+    "foodNamePlaceholder": "Nome dell'alimento",
+    "mealCategory": "Momento della giornata"
   },
   "foodDetail": {
     "per": "Per",
@@ -4168,6 +4169,46 @@
       "owner": {
         "label": "Proprietario Assoluto",
         "description": "Creatore e proprietario principale di FitGO."
+      },
+      "water_titan": {
+        "label": "Titano dell’Acqua",
+        "description": "Sbloccato registrando 2,5 L di acqua in un giorno."
+      },
+      "macro_virtuoso": {
+        "label": "Virtuoso dei Macro",
+        "description": "Sbloccato bilanciando i tuoi 3 macronutrienti con precisione."
+      },
+      "consistency_king": {
+        "label": "Re della Costanza",
+        "description": "Sbloccato raggiungendo una serie attiva di 60 giorni."
+      },
+      "hiit_beast": {
+        "label": "Bestia del HIIT",
+        "description": "Sbloccato bruciando più di 500 kcal in un solo allenamento."
+      },
+      "sleep_perfectionist": {
+        "label": "Sonno degli Dei",
+        "description": "Sbloccato dormendo più di 8 ore con recupero ottimale."
+      },
+      "social_champion": {
+        "label": "Leader della Community",
+        "description": "Sbloccato pubblicando attivamente nella tua Squad e community."
+      },
+      "super_planner": {
+        "label": "Stratega Nutrizionale",
+        "description": "Sbloccato consumando pasti dal Pianificatore Settimanale."
+      },
+      "pedometer_titan": {
+        "label": "Camminatore Leggendario",
+        "description": "Sbloccato superando i 20.000 passi in un solo giorno."
+      },
+      "iron_discipline": {
+        "label": "Disciplina di Ferro",
+        "description": "Sbloccato registrando cibo, acqua e attività nello stesso giorno."
+      },
+      "clean_fuel": {
+        "label": "Carburante Pulito",
+        "description": "Sbloccato mantenendo gli zuccheri totali sotto i 25g in un giorno."
       }
     },
     "unlocked": "Sbloccati",
@@ -4816,6 +4857,46 @@
       "the_owner": {
         "title": "Proprietario Assoluto",
         "description": "Proprietario della piattaforma FitGO."
+      },
+      "water_titan": {
+        "title": "Titano dell’Acqua",
+        "description": "Registrati almeno 2500 ml di acqua in un giorno."
+      },
+      "macro_virtuoso": {
+        "title": "Virtuoso dei Macro",
+        "description": "Raggiunti tutti e 3 i macro con margine del 10%."
+      },
+      "consistency_60": {
+        "title": "Re della Costanza",
+        "description": "Mantenuta una serie continua di 60 giorni."
+      },
+      "hiit_beast": {
+        "title": "Bestia del HIIT",
+        "description": "Bruciate oltre 500 kcal in un solo allenamento."
+      },
+      "sleep_perfectionist": {
+        "title": "Sonno degli Dei",
+        "description": "Dormito 8 o più ore per un recupero ottimale."
+      },
+      "social_champion": {
+        "title": "Leader della Community",
+        "description": "I tuoi post hanno avuto un forte impatto nella Squad."
+      },
+      "super_planner": {
+        "title": "Stratega Nutrizionale",
+        "description": "Registrato un pasto raccomandato dal Pianificatore."
+      },
+      "pedometer_titan": {
+        "title": "Camminatore Leggendario",
+        "description": "Superati 20.000 passi in un solo giorno."
+      },
+      "iron_discipline": {
+        "title": "Disciplina di Ferro",
+        "description": "Cibo, acqua e attività fisica registrati nello stesso giorno."
+      },
+      "clean_fuel": {
+        "title": "Carburante Pulito",
+        "description": "Zucchero totale giornaliero inferiore a 25g."
       }
     },
     "newAchievement": "NUOVO OBIETTIVO SBLOCCATO!",

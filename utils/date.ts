@@ -39,23 +39,79 @@ export function getLocalDateTimeString(date: Date = new Date(), dateStr?: string
 }
 
 /**
- * Normalizes meal strings (Spanish or English) to standard database categories:
- * 'breakfast', 'lunch', 'dinner', 'snack' (or snack2, etc.)
+ * Normalizes meal strings (Spanish, English, German, French, Italian, Portuguese, etc.) to standard categories:
+ * 'breakfast', 'lunch', 'dinner', 'snack' (or snack2, snack3, etc.)
  */
 export function normalizeMealType(meal?: string): 'breakfast' | 'lunch' | 'dinner' | 'snack' | string {
-  if (!meal) {
+  if (!meal || typeof meal !== 'string') {
     const h = new Date().getHours();
-    if (h < 10) return 'breakfast';
-    if (h < 14) return 'lunch';
-    if (h < 18) return 'snack';
+    if (h < 11) return 'breakfast';
+    if (h < 16) return 'lunch';
+    if (h < 19) return 'snack';
     return 'dinner';
   }
   const norm = meal.toLowerCase().trim();
-  if (norm.includes('desayuno') || norm.includes('breakfast')) return 'breakfast';
-  if (norm.includes('almuerzo') || norm.includes('lunch') || norm.includes('comida')) return 'lunch';
-  if (norm.includes('cena') || norm.includes('dinner')) return 'dinner';
-  if (norm.startsWith('snack')) return norm;
-  return 'snack';
+
+  // Check for numbered extra snacks (e.g. "snack 2", "snack2", "snack-2", "merienda 2")
+  const snackMatch = norm.match(/(?:snack|merienda|colaci[oó]n|refrigerio)[^\d]*(\d+)/i);
+  if (snackMatch && snackMatch[1]) {
+    const num = parseInt(snackMatch[1], 10);
+    return num > 1 ? `snack${num}` : 'snack';
+  }
+
+  if (
+    norm.includes('desayuno') ||
+    norm.includes('breakfast') ||
+    norm.includes('petit-déjeuner') ||
+    norm.includes('frühstück') ||
+    norm.includes('colazione') ||
+    norm.includes('café da manhã')
+  ) {
+    return 'breakfast';
+  }
+
+  if (
+    norm.includes('almuerzo') ||
+    norm.includes('lunch') ||
+    norm.includes('comida') ||
+    norm.includes('mittagessen') ||
+    norm.includes('déjeuner') ||
+    norm.includes('pranzo')
+  ) {
+    return 'lunch';
+  }
+
+  if (
+    norm.includes('cena') ||
+    norm.includes('dinner') ||
+    norm.includes('abendessen') ||
+    norm.includes('dîner')
+  ) {
+    return 'dinner';
+  }
+
+  if (
+    norm.includes('snack') ||
+    norm.includes('merienda') ||
+    norm.includes('colaci') ||
+    norm.includes('tentempi') ||
+    norm.includes('refrigerio') ||
+    norm.includes('spuntino') ||
+    norm.includes('lanche')
+  ) {
+    return 'snack';
+  }
+
+  if (norm.startsWith('snack')) {
+    return norm.replace(/\s+/g, '');
+  }
+
+  // Safe fallback by current hour if unrecognized string
+  const h = new Date().getHours();
+  if (h < 11) return 'breakfast';
+  if (h < 16) return 'lunch';
+  if (h < 19) return 'snack';
+  return 'dinner';
 }
 
 /**
@@ -69,6 +125,7 @@ export function formatDisplayDate(dateStr: string, language: string = 'en'): str
     month: 'long' 
   });
 }
+
 /**
  * Adds or subtracts days from a YYYY-MM-DD date string.
  * @param dateStr Current date string.

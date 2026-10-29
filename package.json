@@ -1,6 +1,6 @@
 {
   "name": "fitgo",
-  "version": "2.6.2",
+  "version": "2.6.4",
   "main": "index.ts",
   "scripts": {
     "start": "react-native start",

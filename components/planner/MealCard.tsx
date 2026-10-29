@@ -17,6 +17,7 @@ interface MealCardProps {
   onConsume: () => void;
   onRecipe: () => void;
   isSwapping?: boolean;
+  isConsumed?: boolean;
 }
 
 function MealCard({
@@ -30,12 +31,14 @@ function MealCard({
   onConsume,
   onRecipe,
   isSwapping: externalSwapping,
+  isConsumed = false,
 }: MealCardProps) {
   const { t } = useTranslation();
   const colors = useTheme();
   const [localSwapping, setLocalSwapping] = useState(false);
   const [justConsumed, setJustConsumed] = useState(false);
   const isSwapping = externalSwapping || localSwapping;
+  const isConsumedEffective = isConsumed || justConsumed;
 
   const handleSwap = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -163,15 +166,14 @@ function MealCard({
         <TouchableOpacity
           style={[
             mc.actionBtnPrimary,
-            { backgroundColor: justConsumed ? '#10B981' : colors.primary },
+            { backgroundColor: isConsumedEffective ? '#10B981' : colors.primary },
           ]}
           onPress={handleConsume}
           activeOpacity={0.8}
-          disabled={justConsumed}
         >
           <CheckCircle size={14} color="#fff" />
           <Text style={mc.actionTextPrimary}>
-            {justConsumed ? t('planner.consumed', '¡Añadido!') : t('planner.consume', 'Consumir')}
+            {isConsumedEffective ? t('planner.consumed', '¡Consumido!') : t('planner.consume', 'Consumir')}
           </Text>
         </TouchableOpacity>
       </View>

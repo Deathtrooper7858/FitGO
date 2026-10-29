@@ -133,11 +133,22 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
         }
       }
 
+      const foodItem = log.foodItem || {
+        id: rawId,
+        name: (log as any).name || (log as any).food_name || 'Comida',
+        calories: log.calories || 0,
+        protein: log.protein || 0,
+        carbs: log.carbs || 0,
+        fat: log.fat || 0,
+        source: 'custom' as const,
+      };
+
       const safeLog: FoodLog = {
         ...log,
         id: rawId,
         meal: normalizedMeal,
         loggedAt: resolvedLoggedAt,
+        foodItem,
       };
 
       set((s: any) => ({ todayLogs: [...s.todayLogs, safeLog] }));
@@ -154,7 +165,7 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
       const { profile } = useAuthStore.getState();
       if (profile?.id) {
         const payload = {
-          id: safeLog.id, user_id: profile.id, food_name: safeLog.foodItem.name,
+          id: safeLog.id, user_id: profile.id, food_name: safeLog.foodItem?.name || (safeLog as any).name || 'Comida',
           calories: safeLog.calories, protein: safeLog.protein, carbs: safeLog.carbs, fat: safeLog.fat,
           sugar: safeLog.sugar || 0, fiber: safeLog.fiber || 0, sodium: safeLog.sodium || 0,
           iron: safeLog.iron || 0, calcium: safeLog.calcium || 0,
@@ -195,24 +206,12 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
             } catch (e) { __DEV__ && console.warn('[NutritionStore] Gamification error:', e); }
           })();
         } catch (err: any) {
-          const isNetworkErr = !useNetworkStore.getState().isInternetReachable ||
-            err?.name === 'AbortError' ||
-            err?.message?.includes('Network') ||
-            err?.message?.includes('fetch');
-
-          if (isNetworkErr) {
-            console.log('[NutritionStore] Network offline: queuing addLog in SyncStore');
-            useSyncStore.getState().enqueueTask({
-              table: 'food_logs',
-              method: 'INSERT',
-              payload,
-            });
-          } else {
-            // Revert optimistic add on unexpected database error
-            set((s: any) => ({ todayLogs: s.todayLogs.filter((l: FoodLog) => l.id !== safeLog.id) }));
-            console.warn('[NutritionStore] addLog sync error:', err);
-            throw err;
-          }
+          console.warn('[NutritionStore] addLog network/sync error, queuing in SyncStore:', err);
+          useSyncStore.getState().enqueueTask({
+            table: 'food_logs',
+            method: 'INSERT',
+            payload,
+          });
         }
       }
     },
@@ -459,8 +458,7 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
           const rows = newLogs.map((l: FoodLog) => ({
             id: l.id,
             user_id: user.id,
-            food_name: l.foodItem.name,
-            food_id: l.foodItem.id,
+            food_name: l.foodItem?.name || 'Comida',
             grams: l.grams,
             meal: l.meal,
             calories: l.calories,
@@ -472,11 +470,9 @@ export function createFoodLogSlice(set: any, get: any): FoodLogSlice {
             sodium: l.sodium ?? 0,
             saturated_fat: l.saturatedFat ?? 0,
             trans_fat: l.transFat ?? 0,
-            cholesterol: l.cholesterol ?? 0,
             iron: l.iron ?? 0,
             calcium: l.calcium ?? 0,
             logged_at: l.loggedAt.split('T')[0],
-            is_favorite: l.is_favorite ?? false,
           }));
           await supabase.from('food_logs').insert(rows);
         } catch (err) {

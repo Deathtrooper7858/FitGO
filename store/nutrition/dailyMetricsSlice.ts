@@ -17,7 +17,7 @@ export interface DailyMetricsSlice {
   dailyExercise: Record<string, string>;
   setWater: (ml: number) => void;
   addWater: (ml: number) => void;
-  setSteps: (steps: number) => void;
+  setSteps: (steps: number, targetDate?: string) => void;
   addSteps: (steps: number) => void;
   setSleep: (hours: number) => void;
   setActivity: (cals: number) => void;
@@ -96,10 +96,11 @@ export function createDailyMetricsSlice(set: any, get: any): DailyMetricsSlice {
       scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
     },
 
-    setSteps: (steps) => {
+    setSteps: (steps, targetDate) => {
       const safeSteps = Math.max(0, steps);
-      set((s: any) => ({ dailySteps: { ...s.dailySteps, [s.selectedDate]: safeSteps } }));
-      if (safeSteps > 0) get().updateActivity(get().selectedDate);
+      const dateKey = targetDate || get().selectedDate;
+      set((s: any) => ({ dailySteps: { ...s.dailySteps, [dateKey]: safeSteps } }));
+      if (safeSteps > 0) get().updateActivity(dateKey);
       scheduleSyncDailyMetrics(() => get().syncDailyMetrics());
     },
 

@@ -26,6 +26,7 @@ interface MealPlanViewProps {
   targetCalories: number;
   analysis: string | null;
   analyzing: boolean;
+  consumedMealNames?: string[];
   onWeeklyAnalysis: () => void;
   onAddWater: () => void;
   onSwapMeal: (day: string, index: number, meal: PlanItem) => Promise<void>;
@@ -46,6 +47,7 @@ function MealPlanView({
   targetCalories,
   analysis,
   analyzing,
+  consumedMealNames = [],
   onWeeklyAnalysis,
   onAddWater,
   onSwapMeal,
@@ -201,6 +203,7 @@ function MealPlanView({
                 protein={m.protein}
                 carbs={m.carbs}
                 fat={m.fat}
+                isConsumed={consumedMealNames.includes(m.name.trim().toLowerCase())}
                 onSwap={() => onSwapMeal(activeDay, i, m)}
                 onConsume={() => onConsumeMeal(m)}
                 onRecipe={() =>

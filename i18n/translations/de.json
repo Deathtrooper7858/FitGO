@@ -1964,7 +1964,8 @@
     "tipBrands": "Fügen Sie ggf. Öle, Saucen oder bekannte Marken hinzu.",
     "imageReadFailed": "Das ausgewählte Bild konnte nicht verarbeitet werden.",
     "noInternet": "Keine Internetverbindung. Künstliche Intelligenz erfordert Verbindung.",
-    "foodNamePlaceholder": "Lebensmittelname"
+    "foodNamePlaceholder": "Lebensmittelname",
+    "mealCategory": "Tageszeit"
   },
   "foodDetail": {
     "per": "Pro",
@@ -4168,6 +4169,46 @@
       "owner": {
         "label": "Absoluter Eigentümer",
         "description": "Hauptschöpfer und Eigentümer von FitGO."
+      },
+      "water_titan": {
+        "label": "Wasser-Titan",
+        "description": "Freigeschaltet durch die Erfassung von 2,5 l Wasser an einem Tag."
+      },
+      "macro_virtuoso": {
+        "label": "Makro-Virtuose",
+        "description": "Freigeschaltet durch präzise Makronährstoff-Balance."
+      },
+      "consistency_king": {
+        "label": "König der Ausdauer",
+        "description": "Freigeschaltet durch das Erreichen einer 60-Tage-Serie."
+      },
+      "hiit_beast": {
+        "label": "HIIT-Bestie",
+        "description": "Freigeschaltet durch das Verbrennen von über 500 kcal in einem Workout."
+      },
+      "sleep_perfectionist": {
+        "label": "Schlaf der Götter",
+        "description": "Freigeschaltet durch 8+ Stunden erholsamen Schlaf."
+      },
+      "social_champion": {
+        "label": "Community-Anführer",
+        "description": "Freigeschaltet durch aktive Beiträge in deinem Squad."
+      },
+      "super_planner": {
+        "label": "Ernährungs-Stratege",
+        "description": "Freigeschaltet durch Verzehr von Mahlzeiten aus dem Wochenplaner."
+      },
+      "pedometer_titan": {
+        "label": "Legendärer Läufer",
+        "description": "Freigeschaltet durch über 20.000 Schritte an einem einzigen Tag."
+      },
+      "iron_discipline": {
+        "label": "Eiserne Disziplin",
+        "description": "Freigeschaltet durch Eintragen von Mahlzeit, Wasser und Aktivität am selben Tag."
+      },
+      "clean_fuel": {
+        "label": "Sauberer Kraftstoff",
+        "description": "Freigeschaltet durch Halten des Gesamtzuckers unter 25g an einem Tag."
       }
     },
     "unlocked": "Freigeschaltet",
@@ -4816,6 +4857,46 @@
       "the_owner": {
         "title": "Absoluter Eigentümer",
         "description": "Eigentümer der FitGO-Plattform."
+      },
+      "water_titan": {
+        "title": "Wasser-Titan",
+        "description": "Mindestens 2500 ml Wasser an einem Tag erfasst."
+      },
+      "macro_virtuoso": {
+        "title": "Makro-Virtuose",
+        "description": "Alle 3 Makroziele mit 10 % Genauigkeit erreicht."
+      },
+      "consistency_60": {
+        "title": "König der Ausdauer",
+        "description": "Eine ununterbrochene Serie von 60 Tagen gehalten."
+      },
+      "hiit_beast": {
+        "title": "HIIT-Bestie",
+        "description": "Über 500 kcal in einem einzigen Training verbrannt."
+      },
+      "sleep_perfectionist": {
+        "title": "Schlaf der Götter",
+        "description": "8 Stunden oder mehr für optimale Erholung geschlafen."
+      },
+      "social_champion": {
+        "title": "Community-Anführer",
+        "description": "Deine Beiträge haben große Wirkung im Squad erzielt."
+      },
+      "super_planner": {
+        "title": "Ernährungs-Stratege",
+        "description": "Eine vom Wochenplaner vorgeschlagene Mahlzeit gegessen."
+      },
+      "pedometer_titan": {
+        "title": "Legendärer Läufer",
+        "description": "Mehr als 20.000 Schritte an einem Tag erreicht."
+      },
+      "iron_discipline": {
+        "title": "Eiserne Disziplin",
+        "description": "Mahlzeiten, Wasser und Aktivität am selben Tag erfasst."
+      },
+      "clean_fuel": {
+        "title": "Sauberer Kraftstoff",
+        "description": "Gesamtzucker an einem Tag unter 25 g gehalten."
       }
     },
     "newAchievement": "NEUER ERFOLG FREIGESCHALTET!",

@@ -66,6 +66,7 @@ const MEAL_SUGGESTIONS: Record<Meal, { emoji: string; text: string }[]> = {
 export default function ScanModal() {
   const { t } = useTranslation();
   const { initialMeal, date, initialMode } = useLocalSearchParams<{ initialMeal?: Meal, date?: string, initialMode?: ScanMode }>();
+  const [selectedMeal, setSelectedMeal] = useState<string>(initialMeal || 'breakfast');
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -397,7 +398,7 @@ export default function ScanModal() {
     isAddingAllRef.current = true;
     setLoading(true);
 
-    const targetMeal = normalizeMealType(initialMeal || getAutoMeal());
+    const targetMeal = normalizeMealType(selectedMeal || initialMeal || getAutoMeal());
     const finalLoggedAt = getLocalDateTimeString(logTime, date);
 
     const localLogs = editedFoods.map((food) => {
@@ -515,6 +516,8 @@ export default function ScanModal() {
         date={date}
         isPremiumCustom={isPremiumCustom}
         safePremiumColor={safePremiumColor}
+            selectedMeal={selectedMeal}
+            onSelectMeal={setSelectedMeal}
         onUpdateName={updateName}
         onUpdateGrams={updateGrams}
         onResetPhoto={resetPhoto}

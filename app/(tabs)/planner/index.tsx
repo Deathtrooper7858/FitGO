@@ -1,3 +1,4 @@
+import * as Crypto from 'expo-crypto';
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, TextInput, Vibration, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -109,7 +110,12 @@ export default function PlannerScreen() {
   const [activeDay, setActiveDay] = useState(jsDay === 0 ? 'Sun' : DAYS[jsDay - 1]);
   const [energyMode, setEnergyMode] = useState<'low' | 'normal' | 'beast'>('normal');
   const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(() => {
+    const cachedStart = usePlannerStore.getState().weekStart;
+    const currentStart = getStartOfWeek(new Date());
+    const hasCachedMeals = Object.keys(usePlannerStore.getState().mealPlans || {}).length > 0;
+    return !(cachedStart === currentStart && hasCachedMeals);
+  });
   const [isAdjustingBW, setIsAdjustingBW] = useState(false);
   const [restTimer, setRestTimer] = useState<number | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -183,13 +189,25 @@ export default function PlannerScreen() {
         if (usePlannerStore.getState().userId !== profile.id) {
           clearPlans();
         }
-        const { data: mData } = await supabase
-          .from('meal_plans')
-          .select('*, meal_plan_items(*)')
-          .eq('user_id', profile.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        const [mRes, wRes] = await Promise.all([
+          supabase
+            .from('meal_plans')
+            .select('*, meal_plan_items(*)')
+            .eq('user_id', profile.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from('workout_plans')
+            .select('*, workout_plan_items(*)')
+            .eq('user_id', profile.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ]);
+        const mData = mRes.data;
+        const wData = wRes.data;
+
         if (mData && mData.week_start === currentWeekStart && mData.meal_plan_items?.length > 0) {
           const grouped: Record<string, PlanItem[]> = {};
           mData.meal_plan_items.forEach((item: any) => {
@@ -204,24 +222,17 @@ export default function PlannerScreen() {
             });
           });
           setMealPlans(grouped, currentWeekStart, undefined, profile.id);
-        } else {
+        } else if (!usePlannerStore.getState().weekStart) {
           clearMealPlans();
         }
 
-        const { data: wData } = await supabase
-          .from('workout_plans')
-          .select('*, workout_plan_items(*)')
-          .eq('user_id', profile.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
         if (wData && wData.week_start === currentWeekStart && wData.workout_plan_items?.length > 0) {
           const grouped: Record<string, WorkoutRoutine> = {};
           wData.workout_plan_items.forEach((item: any) => {
             grouped[item.day_of_week] = { name: item.routine_name, exercises: item.exercises || [] };
           });
           setWorkoutPlans(grouped, currentWeekStart, undefined, profile.id);
-        } else {
+        } else if (!usePlannerStore.getState().weekStart) {
           clearWorkoutPlans();
         }
       } catch (_err) {
@@ -608,6 +619,13 @@ export default function PlannerScreen() {
   const isFutureDay = activeDayDate > todayDate;
   const alreadyCompleted = hasCompletedWorkoutToday(activeDayDate);
 
+  const consumedMealNames = useMemo(() => {
+    return todayLogs
+      .filter((l: any) => l.loggedAt && l.loggedAt.startsWith(activeDayDate))
+      .map((l: any) => (l.foodItem?.name || l.name || '').trim().toLowerCase())
+      .filter(Boolean);
+  }, [todayLogs, activeDayDate]);
+
   const consumedMacros = useMemo(() => {
     if (!isActiveToday) return { p: 0, c: 0, f: 0 };
     return todayLogs
@@ -770,11 +788,13 @@ export default function PlannerScreen() {
     Haptics.selectionAsync();
     const mealType = normalizeMealType(m.meal);
     const logDateTime = getLocalDateTimeString(new Date(), activeDayDate);
+    const newLogId = Crypto.randomUUID();
+    const newFoodId = Crypto.randomUUID();
 
     useNutritionStore.getState().addLog({
-      id: '',
+      id: newLogId,
       foodItem: {
-        id: '',
+        id: newFoodId,
         name: m.name,
         calories: m.calories,
         protein: m.protein || 0,
@@ -1401,7 +1421,8 @@ export default function PlannerScreen() {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               }}
               onSwapMeal={handleSwapMeal}
-              onConsumeMeal={handleConsumeMeal}
+              consumedMealNames={consumedMealNames}
+                onConsumeMeal={handleConsumeMeal}
             />
           ) : (
             <WorkoutPlanView

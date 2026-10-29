@@ -48,7 +48,7 @@ interface NutritionState {
 
   setWater: (ml: number) => void;
   addWater: (ml: number) => void;
-  setSteps: (steps: number) => void;
+  setSteps: (steps: number, targetDate?: string) => void;
   addSteps: (steps: number) => void;
   setSleep: (hours: number) => void;
   setActivity: (cals: number) => void;

@@ -1866,7 +1866,8 @@
     "tipBrands": "Add oils, dressings or specific brands if applicable.",
     "imageReadFailed": "The selected image could not be processed.",
     "noInternet": "No internet connection. Artificial Intelligence requires connection.",
-    "foodNamePlaceholder": "Food name"
+    "foodNamePlaceholder": "Food name",
+    "mealCategory": "Meal of the day"
   },
   "foodDetail": {
     "per": "Per",
@@ -4162,6 +4163,46 @@
       "owner": {
         "label": "Absolute Owner",
         "description": "Owner and main creator of FitGO."
+      },
+      "water_titan": {
+        "label": "Water Titan",
+        "description": "Unlocked by logging 2.5L of water in a day."
+      },
+      "macro_virtuoso": {
+        "label": "Macro Virtuoso",
+        "description": "Unlocked by balancing all 3 macronutrients with precision."
+      },
+      "consistency_king": {
+        "label": "King of Consistency",
+        "description": "Unlocked by reaching a 60-day active streak."
+      },
+      "hiit_beast": {
+        "label": "HIIT Beast",
+        "description": "Unlocked by burning over 500 kcal in a single workout."
+      },
+      "sleep_perfectionist": {
+        "label": "Sleep of the Gods",
+        "description": "Unlocked by sleeping 8+ hours with optimal recovery."
+      },
+      "social_champion": {
+        "label": "Community Leader",
+        "description": "Unlocked by actively posting in your Squad and community."
+      },
+      "super_planner": {
+        "label": "Nutritional Strategist",
+        "description": "Unlocked by logging meals from your Weekly Planner."
+      },
+      "pedometer_titan": {
+        "label": "Legendary Walker",
+        "description": "Unlocked by exceeding 20,000 steps in a single day."
+      },
+      "iron_discipline": {
+        "label": "Iron Discipline",
+        "description": "Unlocked by logging food, water, and activity on the same day."
+      },
+      "clean_fuel": {
+        "label": "Clean Fuel",
+        "description": "Unlocked by keeping total sugar under 25g in a full day."
       }
     },
     "unlocked": "Unlocked",
@@ -4816,6 +4857,46 @@
       "the_owner": {
         "title": "Absolute Owner",
         "description": "Owner of the FitGO platform."
+      },
+      "water_titan": {
+        "title": "Water Titan",
+        "description": "Logged at least 2500 ml of water in a day."
+      },
+      "macro_virtuoso": {
+        "title": "Macro Virtuoso",
+        "description": "Hit all 3 macronutrient targets within 10% accuracy."
+      },
+      "consistency_60": {
+        "title": "King of Consistency",
+        "description": "Maintained an unbroken 60-day streak."
+      },
+      "hiit_beast": {
+        "title": "HIIT Beast",
+        "description": "Burned over 500 kcal in a single workout session."
+      },
+      "sleep_perfectionist": {
+        "title": "Sleep of the Gods",
+        "description": "Slept 8 or more hours for total recovery."
+      },
+      "social_champion": {
+        "title": "Community Leader",
+        "description": "Your posts generated major impact in the Squad."
+      },
+      "super_planner": {
+        "title": "Nutritional Strategist",
+        "description": "Logged a meal planned by your AI Weekly Planner."
+      },
+      "pedometer_titan": {
+        "title": "Legendary Walker",
+        "description": "Exceeded 20,000 steps in a single day."
+      },
+      "iron_discipline": {
+        "title": "Iron Discipline",
+        "description": "Logged food, hydration, and activity on the same day."
+      },
+      "clean_fuel": {
+        "title": "Clean Fuel",
+        "description": "Kept daily sugar intake below 25g across your meals."
       }
     },
     "newAchievement": "NEW ACHIEVEMENT UNLOCKED!",

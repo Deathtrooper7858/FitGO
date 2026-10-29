@@ -1964,7 +1964,8 @@
     "tipBrands": "Ajoutez des huiles, des sauces ou des marques connues le cas échéant.",
     "imageReadFailed": "L'image sélectionnée n'a pas pu être traitée.",
     "noInternet": "Pas de connexion Internet. L'intelligence artificielle nécessite une connexion.",
-    "foodNamePlaceholder": "Nom de l'aliment"
+    "foodNamePlaceholder": "Nom de l'aliment",
+    "mealCategory": "Moment de la journée"
   },
   "foodDetail": {
     "per": "Par",
@@ -4168,6 +4169,46 @@
       "owner": {
         "label": "Propriétaire Absolu",
         "description": "Créateur principal et propriétaire de FitGO."
+      },
+      "water_titan": {
+        "label": "Titan de l’Eau",
+        "description": "Débloqué en enregistrant 2,5 L d’eau en une journée."
+      },
+      "macro_virtuoso": {
+        "label": "Virtuose des Macros",
+        "description": "Débloqué en équilibrant vos 3 macronutriments avec précision."
+      },
+      "consistency_king": {
+        "label": "Roi de la Constance",
+        "description": "Débloqué en atteignant une série active de 60 jours."
+      },
+      "hiit_beast": {
+        "label": "Bête de HIIT",
+        "description": "Débloqué en brûlant plus de 500 kcal lors d’un entraînement."
+      },
+      "sleep_perfectionist": {
+        "label": "Sommeil des Dieux",
+        "description": "Débloqué en dormant 8+ heures avec une récupération optimale."
+      },
+      "social_champion": {
+        "label": "Leader Communautaire",
+        "description": "Débloqué en publiant activement dans votre Squad et communauté."
+      },
+      "super_planner": {
+        "label": "Stratège Nutritionnel",
+        "description": "Débloqué en consommant des repas depuis le Planificateur Hebdomadaire."
+      },
+      "pedometer_titan": {
+        "label": "Marcheur Légendaire",
+        "description": "Débloqué en dépassant 20 000 pas en une seule journée."
+      },
+      "iron_discipline": {
+        "label": "Discipline de Fer",
+        "description": "Débloqué en enregistrant repas, eau et activité le même jour."
+      },
+      "clean_fuel": {
+        "label": "Carburant Propre",
+        "description": "Débloqué en maintenant le sucre total sous 25g sur une journée complète."
       }
     },
     "unlocked": "Débloqués",
@@ -4816,6 +4857,46 @@
       "the_owner": {
         "title": "Propriétaire Absolu",
         "description": "Propriétaire de la plateforme FitGO."
+      },
+      "water_titan": {
+        "title": "Titan de l’Eau",
+        "description": "Au moins 2500 ml d’eau enregistrés en une journée."
+      },
+      "macro_virtuoso": {
+        "title": "Virtuose des Macros",
+        "description": "Les 3 macros atteints avec une précision de 10%."
+      },
+      "consistency_60": {
+        "title": "Roi de la Constance",
+        "description": "Série ininterrompue de 60 jours maintenue."
+      },
+      "hiit_beast": {
+        "title": "Bête de HIIT",
+        "description": "Plus de 500 kcal brûlées lors d’une séance d’entraînement."
+      },
+      "sleep_perfectionist": {
+        "title": "Sommeil des Dieux",
+        "description": "8 heures de sommeil ou plus pour une récupération totale."
+      },
+      "social_champion": {
+        "title": "Leader Communautaire",
+        "description": "Vos publications ont généré un fort impact dans le Squad."
+      },
+      "super_planner": {
+        "title": "Stratège Nutritionnel",
+        "description": "Repas planifié consommé et enregistré."
+      },
+      "pedometer_titan": {
+        "title": "Marcheur Légendaire",
+        "description": "Plus de 20 000 pas franchis en une seule journée."
+      },
+      "iron_discipline": {
+        "title": "Discipline de Fer",
+        "description": "Alimentation, eau et activité enregistrées le même jour."
+      },
+      "clean_fuel": {
+        "title": "Carburant Propre",
+        "description": "Sucre quotidien maintenu sous 25g."
       }
     },
     "newAchievement": "NOUVEAU SUCCÈS DÉBLOQUÉ!",

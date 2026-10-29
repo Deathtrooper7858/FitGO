@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import {
   View,
@@ -365,9 +366,17 @@ export function AppToast() {
                 {
                   backgroundColor: config.accent + '1E',
                   borderColor: config.accent + '45',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 5,
                 },
               ]}
             >
+              <Image
+                source={require('../assets/notification-icon.png')}
+                style={{ width: 12, height: 12, tintColor: config.accent }}
+                contentFit="contain"
+              />
               <Text style={[styles.badgeText, { color: config.accent }]}>
                 {config.badgeLabel}
               </Text>
