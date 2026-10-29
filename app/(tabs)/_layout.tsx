@@ -10,6 +10,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsPro } from '../../hooks/useIsPro';
 import { useAuthStore, useSocialStore } from '../../store';
 import { useTheme } from '../../hooks/useTheme';
+import { initRetentionAndEngagementNotifications } from '../../services/notifications';
+import { initExercisePrecache } from '../../services/exercisePrecache';
 const TabIcon = React.memo(function TabIcon({ Icon, label, focused, badgeCount }: { Icon: any; label: string; focused: boolean; badgeCount?: number }) {
   const colors = useTheme();
   return (
@@ -59,6 +61,13 @@ const TAB_ROUTES = [
 ] as const;
 
 export default function TabsLayout() {
+  React.useEffect(() => {
+    initRetentionAndEngagementNotifications();
+    const timer = setTimeout(() => {
+      initExercisePrecache();
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
   const { t } = useTranslation();
   const colors = useTheme();
   const profileId = useAuthStore(s => s.profile?.id);

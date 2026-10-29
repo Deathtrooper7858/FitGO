@@ -28,7 +28,7 @@ if ($exitCode -eq 0) {
     if (Test-Path $aabPath) {
         $sizeMB = [math]::Round((Get-Item $aabPath).Length / 1MB, 2)
         Write-Host "Tamaño del archivo: $sizeMB MB" -ForegroundColor Yellow
-        $targetPath = "fitgo-v2.2.4-release.aab"
+        $targetPath = "fitgo-v2.6.2-b45-release.aab"
         Copy-Item -Path $aabPath -Destination $targetPath -Force
         Write-Host "Copiado a la raíz: $targetPath ($sizeMB MB)" -ForegroundColor Green
     }

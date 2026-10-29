@@ -110,6 +110,22 @@
     "progress": "Progresso"
   },
   "profile": {
+    "colors": {
+      "admin": "Diamante Admin",
+      "default": "Roxo Clássico",
+      "gold": "Ouro Elite",
+      "blue": "Azul Elétrico",
+      "green": "Verde Neon",
+      "red": "Vermelho Rubi",
+      "orange": "Laranja Fogo",
+      "magenta": "Magenta Escuro",
+      "pink": "Rosa Pôr do Sol",
+      "emerald": "Verde Esmeralda",
+      "turquoise": "Turquesa Profundo",
+      "purple": "Roxo Imperial",
+      "silver": "Prata Cromado",
+      "defaultSubtitle": "A cor padrão"
+    },
     "title": "Perfil",
     "editName": "Atualizar Nome",
     "enterName": "Digite seu nome",
@@ -303,21 +319,6 @@
     "passwordUpdated": "Senha atualizada com sucesso.",
     "samePasswordError": "A nova senha deve ser diferente da senha atual.",
     "noChanges": "Você não fez nenhuma alteração.",
-    "colors": {
-      "default": "Roxo Clássico",
-      "gold": "Ouro Elite",
-      "blue": "Azul Elétrico",
-      "green": "Verde Neon",
-      "red": "Vermelho Rubi",
-      "orange": "Laranja Fogo",
-      "magenta": "Magenta Escuro",
-      "pink": "Rosa Pôr do Sol",
-      "emerald": "Verde Esmeralda",
-      "turquoise": "Turquesa Profundo",
-      "purple": "Roxo Imperial",
-      "silver": "Prata Cromado",
-      "defaultSubtitle": "A cor padrão"
-    },
     "inviteFriends": "Convidar Amigos",
     "inviteSubtitle": "Qual dispositivo seu amigo possui?",
     "statusAvailable": "Disponível",
@@ -883,6 +884,7 @@
     "advancedAnalyticsDesc": "Consistência semanal, simetria muscular e mais"
   },
   "tracker": {
+    "activityWaterBadge": "atividade",
     "title": "Hoje",
     "addFood": "+ Adicionar Alimento",
     "searchFood": "Procure por comida...",
@@ -5352,6 +5354,8 @@
     "error": "✕ ERRO"
   },
   "chat": {
+    "contentWarningTitle": "Conteúdo não permitido",
+    "contentWarningMsg": "Sua mensagem não está de acordo com os padrões de convivência respeitosa do FitGO.",
     "cameraPermissionTitle": "Permissão necessária",
     "cameraPermissionMsg": "Acesso à câmera necessário.",
     "galleryPermissionTitle": "Permissão necessária",
@@ -5602,5 +5606,10 @@
     "expand": "Expandir",
     "collapse": "Recolher",
     "bannerCompactSubtitle": "Aprenda a escanear refeições com IA, macros e treinador"
+  },
+  "community": {
+    "contentWarningTitle": "Conteúdo não permitido",
+    "contentWarningMsg": "Sua publicação contém palavras ou expressões não permitidas pelas diretrizes da comunidade FitGO.",
+    "contentWarningCommentMsg": "Seu comentário contém linguagem não permitida pelas regras do FitGO."
   }
 }

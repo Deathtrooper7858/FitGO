@@ -95,6 +95,44 @@ export default function FitGOChallenges() {
     return actCalories > 0 ? actCalories : mealCalories;
   }, [activityLogs, todayLogs, todayStr]);
 
+  // Multi-day aggregated progress calculation
+  const getChallengeProgress = React.useCallback((challenge: any) => {
+    if (!challenge) return 0;
+    if (challenge.my_status === 'completed' || challenge.status === 'completed') {
+      return Number(challenge.target_value) || 1;
+    }
+    const target = Number(challenge.target_value) || 1;
+    const startStr = (challenge.start_date || challenge.created_at || todayStr).slice(0, 10);
+    const endStr = (challenge.end_date || todayStr).slice(0, 10);
+
+    if (challenge.type === 'steps') {
+      let aggregatedSteps = 0;
+      if (dailySteps) {
+        for (const [dateKey, steps] of Object.entries(dailySteps)) {
+          if (dateKey >= startStr && dateKey <= endStr && dateKey <= todayStr) {
+            aggregatedSteps += (Number(steps) || 0);
+          }
+        }
+      }
+      return Math.max(aggregatedSteps, todayStepsCount);
+    }
+
+    if (challenge.type === 'calories') {
+      let aggregatedCalories = 0;
+      if (activityLogs && activityLogs.length > 0) {
+        for (const act of activityLogs) {
+          const actDate = act.loggedAt ? act.loggedAt.slice(0, 10) : '';
+          if (actDate >= startStr && actDate <= endStr && actDate <= todayStr) {
+            aggregatedCalories += (Number(act.calories) || 0);
+          }
+        }
+      }
+      return Math.max(aggregatedCalories, todayCaloriesBurned);
+    }
+
+    return challenge.my_progress || 0;
+  }, [dailySteps, activityLogs, todayStr, todayStepsCount, todayCaloriesBurned]);
+
   // AI challenge generator
   const generateAIChallenge = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -704,14 +742,8 @@ export default function FitGOChallenges() {
         ) : (
           /* Challenge Cards */
           displayedChallenges.map((challenge: any) => {
-            let currentProgress = 0;
             const target = Number(challenge.target_value) || 1;
-
-            if (challenge.type === 'steps') {
-              currentProgress = todayStepsCount;
-            } else if (challenge.type === 'calories') {
-              currentProgress = todayCaloriesBurned;
-            }
+            const currentProgress = getChallengeProgress(challenge);
 
             const globalCompleted = challenge.status === 'completed';
             const myCompleted = challenge.my_status === 'completed';
@@ -1073,10 +1105,34 @@ export default function FitGOChallenges() {
               </View>
               <View style={[s.typeBadge, { backgroundColor: colors.surfaceAlt, borderColor: colors.border + '30' }]}>
                 <Text style={[s.typeBadgeText, { color: colors.textSecondary }]}>
-                  Meta: {selectedChallenge?.target_value}
+                  Meta: {Number(selectedChallenge?.target_value || 0).toLocaleString()}
                 </Text>
               </View>
             </View>
+
+            {/* Modal Progress Bar */}
+            {selectedChallenge?.type !== 'physical' && (
+              <View style={{ marginVertical: 12 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <Text style={{ fontSize: 13, color: colors.textSecondary, fontWeight: '600' }}>
+                    {t('social.challenges.progress', 'Progreso acumulado')}
+                  </Text>
+                  <Text style={{ fontSize: 13, color: colors.textPrimary, fontWeight: '700' }}>
+                    {getChallengeProgress(selectedChallenge).toLocaleString()} / {Number(selectedChallenge?.target_value || 1).toLocaleString()} ({Math.min(100, Math.round((getChallengeProgress(selectedChallenge) / Number(selectedChallenge?.target_value || 1)) * 100))}%)
+                  </Text>
+                </View>
+                <View style={{ height: 8, backgroundColor: colors.surfaceAlt, borderRadius: 4, overflow: 'hidden' }}>
+                  <View
+                    style={{
+                      height: '100%',
+                      width: `${Math.min(100, Math.round((getChallengeProgress(selectedChallenge) / Number(selectedChallenge?.target_value || 1)) * 100))}%`,
+                      backgroundColor: primaryColor,
+                      borderRadius: 4,
+                    }}
+                  />
+                </View>
+              </View>
+            )}
 
             <Text style={[s.participantsTitle, { color: colors.textPrimary }]}>
               {t('social.challenges.participants', 'Participantes')}

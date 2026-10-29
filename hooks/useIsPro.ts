@@ -1,5 +1,6 @@
 import { useAuthStore } from '../store/authStore';
 import { usePurchaseStore } from '../store/purchaseStore';
+import { isProOrPrivilegedRole } from '../store/types';
 
 export function useIsPro(): boolean {
   const isPro = usePurchaseStore(s => s.isPro);
@@ -20,9 +21,6 @@ export function useIsPro(): boolean {
     profileIsPro ||
     hasActiveTrial ||
     hasActiveProSub ||
-    role === 'pro_user' ||
-    role === 'admin' ||
-    role === 'super_admin' ||
-    role === 'owner'
+    isProOrPrivilegedRole(role)
   );
 }

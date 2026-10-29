@@ -30,6 +30,7 @@ import { supabase } from '../../services/supabase';
 import { AvatarViewerModal } from '../../components/AvatarViewerModal';
 import { MediaPickerModal } from '../../components/MediaPickerModal';
 import { VideoPlayerView } from '../../components/social/VideoPlayerView';
+import { checkContent } from '../../utils/contentFilter';
 
 // Darkens a hex color by a given ratio (0–1)
 const darkenHex = (hex?: string | null, amount = 0.22): string => {
@@ -549,7 +550,20 @@ function ChatModalContent() {
 
   const handleSend = async () => {
     if (!newMessage.trim() || !profile?.id || !friendId) return;
-    const content = newMessage.trim();
+    const rawContent = newMessage.trim();
+    
+    // Check against profanity and sensitive content
+    const filterRes = checkContent(rawContent);
+    if (filterRes.category === 'hate_speech' || filterRes.category === 'sensitive_topic') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      Alert.alert(
+        t('chat.contentWarningTitle', 'Contenido no permitido'),
+        t('chat.contentWarningMsg', 'Tu mensaje no cumple con las normas de convivencia respetuosa de FitGO.')
+      );
+      return;
+    }
+
+    const content = filterRes.flagged ? filterRes.cleanText : rawContent;
     setNewMessage('');
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     optimisticSend(content);

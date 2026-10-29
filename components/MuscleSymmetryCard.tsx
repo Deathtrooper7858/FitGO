@@ -29,6 +29,7 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useWorkoutHistoryStore } from '../store/workoutHistoryStore';
 import { useAuthStore } from '../store/authStore';
+import { isPrivilegedRole } from '../store/types';
 import { useSettingsStore } from '../store';
 import { useIsPro } from '../hooks/useIsPro';
 import { useTheme } from '../hooks/useTheme';
@@ -456,7 +457,7 @@ function MuscleTooltip({
               </Pressable>
             </View>
 
-            {/* Level badge */}
+            {/* Level badge & Guidance */}
             {level && (
               <View style={tipSt.levelRow}>
                 <LinearGradient
@@ -482,6 +483,25 @@ function MuscleTooltip({
                 </Text>
               </View>
             )}
+
+            {/* Smart Coaching Advice for Muscle */}
+            <View style={[tipSt.adviceBox, { backgroundColor: colors.surfaceAlt + '80', borderColor: colors.border + '40' }]}>
+              <Text style={[tipSt.adviceHeading, { color: colors.textPrimary }]}>
+                {mode === 'evolution' ? '📊 Resumen de Estímulo' : '⚡ Estado de Recuperación'}
+              </Text>
+              <Text style={[tipSt.adviceText, { color: colors.textSecondary }]}>
+                {mode === 'evolution'
+                  ? (sessionCount >= 10
+                      ? 'Excelente consistencia muscular acumulada en los últimos 30 días. Has estimulado este grupo de forma balanceada.'
+                      : 'Nivel inicial de estímulo este mes. Agrega 1-2 ejercicios enfocados para mantener la simetría muscular.')
+                  : (sessionCount <= 3
+                      ? '✅ Músculo fresco y recuperado. Listo para entrenar con alta intensidad hoy.'
+                      : sessionCount <= 6
+                      ? '⚠️ Fatiga moderada por sesiones recientes. Se recomienda volumen controlado o descanso activo.'
+                      : '🔥 Alto estrés muscular acumulado. Se aconseja descanso de 24-48h, hidratación y estiramientos suaves.')
+                }
+              </Text>
+            </View>
 
             {/* Divider */}
             <View style={[tipSt.divider, { backgroundColor: colors.border + '40' }]} />
@@ -589,6 +609,21 @@ const tipSt = StyleSheet.create({
     fontSize: 11,
     fontWeight: '500',
   },
+  adviceBox: {
+    marginTop: 14,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  adviceHeading: {
+    fontSize: 13,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  adviceText: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
   divider: { height: 1, marginVertical: 4 },
   hintRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   hint: { fontSize: 12, fontWeight: '500' },
@@ -613,7 +648,7 @@ export default function MuscleSymmetryCard() {
   const userId = profile?.id;
   const { premiumColor } = useSettingsStore();
   const isPro = useIsPro();
-  const hasProAccess = isPro || profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin';
+  const hasProAccess = isPro || isPrivilegedRole(profile?.role);
   const safePremiumColor = getSafeColor(premiumColor, colors.primary);
   const isPremiumCustom = !!(hasProAccess && isValidPremiumColor(premiumColor));
   
@@ -810,18 +845,38 @@ export default function MuscleSymmetryCard() {
           </View>
         </View>
         
-        {/* Mode Toggle Button */}
-        <TouchableOpacity 
-          onPress={() => {
-            Haptics.selectionAsync();
-            setViewMode(v => v === 'evolution' ? 'fatigue' : 'evolution');
-          }}
-          style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: viewMode === 'evolution' ? colors.primary + '20' : '#EF444420', borderWidth: 1, borderColor: viewMode === 'evolution' ? colors.primary + '40' : '#EF444440' }}
-        >
-          <Text style={{ fontSize: 12, fontWeight: '800', color: viewMode === 'evolution' ? colors.primary : '#EF4444' }}>
-            {viewMode === 'evolution' ? t('dashboard.viewFatigue', 'View Fatigue') : t('dashboard.viewEvolution', 'View Evolution')}
-          </Text>
-        </TouchableOpacity>
+        {/* Mode Switcher Pill */}
+        <View style={[styles.modeSegmentContainer, { backgroundColor: colors.surfaceAlt, borderColor: colors.border + '40' }]}>
+          <TouchableOpacity 
+            onPress={() => {
+              Haptics.selectionAsync();
+              setViewMode('evolution');
+            }}
+            style={[
+              styles.modeSegmentBtn,
+              viewMode === 'evolution' && { backgroundColor: colors.primary, borderColor: colors.primary }
+            ]}
+          >
+            <Text style={[styles.modeSegmentBtnText, { color: viewMode === 'evolution' ? '#fff' : colors.textSecondary }]}>
+              🏆 {t('dashboard.muscleEvolution', 'Evolución')}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            onPress={() => {
+              Haptics.selectionAsync();
+              setViewMode('fatigue');
+            }}
+            style={[
+              styles.modeSegmentBtn,
+              viewMode === 'fatigue' && { backgroundColor: '#EF4444', borderColor: '#EF4444' }
+            ]}
+          >
+            <Text style={[styles.modeSegmentBtnText, { color: viewMode === 'fatigue' ? '#fff' : colors.textSecondary }]}>
+              ⚡ {t('dashboard.fatigueRecovery', 'Fatiga')}
+            </Text>
+          </TouchableOpacity>
+        </View>
         
       </View>
 
@@ -931,8 +986,50 @@ export default function MuscleSymmetryCard() {
           </Text>
           {bodyData.length > 0 && (
             <Text style={[styles.bodyHint, { color: colors.textMuted }]}>
-              💡 {t('dashboard.tapColoredMuscle', 'Tap a colored muscle to see details')}
+              💡 {t('dashboard.tapColoredMuscle', 'Toca un músculo coloreado o selecciónalo abajo para ver detalles')}
             </Text>
+          )}
+
+          {/* Quick-touch Active Muscles List */}
+          {bodyData.length > 0 && (
+            <View style={styles.quickTouchSection}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.quickTouchScroll}
+              >
+                {bodyData.map(item => {
+                  const count = muscleCounts[item.slug] || 0;
+                  const name = MUSCLE_LABELS[item.slug] || item.slug;
+                  const lvl = getLevelForCount(count, viewMode);
+                  return (
+                    <TouchableOpacity
+                      key={item.slug}
+                      style={[
+                        styles.quickChip,
+                        {
+                          backgroundColor: colors.surfaceAlt + '95',
+                          borderColor: `${item.color}50`,
+                        }
+                      ]}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setTooltip({ visible: true, slug: item.slug, count });
+                      }}
+                      activeOpacity={0.75}
+                    >
+                      <View style={[styles.quickChipDot, { backgroundColor: item.color }]} />
+                      <Text style={[styles.quickChipText, { color: colors.textPrimary }]}>{name}</Text>
+                      <View style={[styles.quickChipBadge, { backgroundColor: `${item.color}25` }]}>
+                        <Text style={[styles.quickChipBadgeText, { color: item.color }]}>
+                          {viewMode === 'evolution' ? `${count} pts` : (lvl?.name || `${count}`)}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
           )}
         </Animated.View>
       ) : (
@@ -1113,6 +1210,61 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '500',
     letterSpacing: 0.3,
+  },
+  modeSegmentContainer: {
+    flexDirection: 'row',
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 3,
+    gap: 4,
+  },
+  modeSegmentBtn: {
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  modeSegmentBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  quickTouchSection: {
+    marginTop: 12,
+    width: '100%',
+  },
+  quickTouchScroll: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+  },
+  quickChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 6,
+  },
+  quickChipDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  quickChipText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  quickChipBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  quickChipBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
   },
 
   // Empty state

@@ -1,129 +1,131 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, Dumbbell, Activity, Flame, ChevronUp } from 'lucide-react-native';
+import { router } from 'expo-router';
+import { ChevronRight, Dumbbell, Activity, Flame, Sparkles } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../hooks/useTheme';
 import { Radius, Shadow, Spacing } from '../constants';
 
-
-const MUSCLE_GROUPS = [
-  {
-    id: 'chest',
-    name: 'Pecho',
-    icon: <Activity size={20} color="#FF4D4D" />,
-    exercises: ['Press de Banca', 'Aperturas con Mancuernas', 'Flexiones', 'Cruces en Polea', 'Press Inclinado'],
-    color: '#FF4D4D'
-  },
-  {
-    id: 'back',
-    name: 'Espalda',
-    icon: <Dumbbell size={20} color="#4D94FF" />,
-    exercises: ['Dominadas', 'Remo con Barra', 'Jalón al Pecho', 'Peso Muerto', 'Remo en Polea Baja'],
-    color: '#4D94FF'
-  },
-  {
-    id: 'legs',
-    name: 'Piernas',
-    icon: <Flame size={20} color="#FF9900" />,
-    exercises: ['Sentadillas', 'Prensa Inclinada', 'Extensiones de Cuádriceps', 'Curl Femoral', 'Elevación de Gemelos'],
-    color: '#FF9900'
-  },
-  {
-    id: 'shoulders',
-    name: 'Hombros',
-    icon: <Activity size={20} color="#7C5CFC" />,
-    exercises: ['Press Militar', 'Elevaciones Laterales', 'Pájaros', 'Elevaciones Frontales', 'Encogimientos'],
-    color: '#7C5CFC'
-  },
-  {
-    id: 'arms',
-    name: 'Brazos',
-    icon: <Dumbbell size={20} color="#4DFF88" />,
-    exercises: ['Curl de Bíceps con Barra', 'Martillo', 'Extensión de Tríceps', 'Fondos', 'Press Francés'],
-    color: '#4DFF88'
-  },
-  {
-    id: 'core',
-    name: 'Core / Abdomen',
-    icon: <Flame size={20} color="#00F0FF" />,
-    exercises: ['Plancha (Plank)', 'Crunches', 'Elevación de Piernas', 'Rueda Abdominal', 'Russian Twists'],
-    color: '#00F0FF'
-  }
+const MUSCLE_SHORTCUTS = [
+  { id: 'chest',     name: 'Pecho',     nameKey: 'chest',     icon: Activity, color: '#FF4D6D', count: 180 },
+  { id: 'back',      name: 'Espalda',   nameKey: 'back',      icon: Dumbbell, color: '#3B82F6', count: 240 },
+  { id: 'legs',      name: 'Piernas',   nameKey: 'legs',      icon: Flame,    color: '#F59E0B', count: 320 },
+  { id: 'shoulders', name: 'Hombros',   nameKey: 'shoulders', icon: Activity, color: '#8B5CF6', count: 160 },
+  { id: 'arms',      name: 'Brazos',    nameKey: 'arms',      icon: Dumbbell, color: '#10B981', count: 210 },
+  { id: 'core',      name: 'Core',      nameKey: 'core',      icon: Flame,    color: '#06B6D4', count: 130 },
 ];
 
 export function MuscleDirectoryWidget() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const toggleAccordion = (id: string) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpandedId(expandedId === id ? null : id);
+  const handleOpenGroup = (groupId: string) => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch {}
+    router.push({
+      pathname: '/modals/muscle-directory',
+      params: { group: groupId },
+    });
+  };
+
+  const handleOpenAll = () => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch {}
+    router.push('/modals/muscle-directory');
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
+      {/* Header with Title and "Ver Todo" link */}
       <View style={styles.header}>
         <View style={styles.headerTitleWrap}>
-          <Text style={{ fontSize: 24 }}>💪</Text>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>
-            {t('dashboard.muscleDirectory', 'Directorio Muscular')}
-          </Text>
+          <Text style={{ fontSize: 22 }}>💪</Text>
+          <View>
+            <Text style={[styles.title, { color: colors.textPrimary }]}>
+              {t('dashboard.muscleDirectory', 'Directorio Muscular')}
+            </Text>
+            <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+              {t('dashboard.muscleDirectorySub', 'Explora ejercicios y anatomía por grupo muscular')}
+            </Text>
+          </View>
         </View>
-        <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-          {t('dashboard.muscleDirectorySub', 'Encuentra ejercicios por grupo muscular')}
-        </Text>
+
+        <TouchableOpacity
+          style={[styles.seeAllBtn, { backgroundColor: `${colors.primary}18` }]}
+          onPress={handleOpenAll}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.seeAllText, { color: colors.primary }]}>
+            {t('common.seeAll', 'Ver Todo')}
+          </Text>
+          <ChevronRight size={14} color={colors.primary} />
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.list}>
-        {MUSCLE_GROUPS.map((group) => {
-          const isExpanded = expandedId === group.id;
-
+      {/* Grid of Muscle Categories */}
+      <View style={styles.grid}>
+        {MUSCLE_SHORTCUTS.map(item => {
+          const IconComp = item.icon;
           return (
-            <View 
-              key={group.id} 
+            <TouchableOpacity
+              key={item.id}
               style={[
-                styles.accordionItem, 
-                { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
-                isExpanded && { borderColor: group.color }
+                styles.muscleCard,
+                {
+                  backgroundColor: colors.surfaceAlt + '90',
+                  borderColor: `${item.color}35`,
+                },
               ]}
+              onPress={() => handleOpenGroup(item.id)}
+              activeOpacity={0.8}
             >
-              <TouchableOpacity 
-                style={styles.accordionHeader} 
-                onPress={() => toggleAccordion(group.id)}
-                activeOpacity={0.7}
+              <LinearGradient
+                colors={[`${item.color}14`, 'transparent']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.cardGradient}
               >
-                <View style={styles.groupInfo}>
-                  <View style={[styles.iconWrap, { backgroundColor: group.color + '20' }]}>
-                    {group.icon}
-                  </View>
-                  <Text style={[styles.groupName, { color: colors.textPrimary }]}>{t(`muscleDirectory.${group.id}`, group.name)}</Text>
+                <View style={[styles.iconCircle, { backgroundColor: `${item.color}22` }]}>
+                  <IconComp size={18} color={item.color} />
                 </View>
-                <View style={[styles.chevronWrap, { backgroundColor: isExpanded ? group.color : colors.border + '50' }]}>
-                  {isExpanded ? (
-                    <ChevronUp size={16} color={isExpanded ? '#FFF' : colors.textSecondary} />
-                  ) : (
-                    <ChevronDown size={16} color={colors.textSecondary} />
-                  )}
-                </View>
-              </TouchableOpacity>
 
-              {isExpanded && (
-                <View style={[styles.expandedContent, { borderTopColor: colors.border }]}>
-                  <View style={styles.exercisesGrid}>
-                    {group.exercises.map((exercise, idx) => (
-                      <View key={idx} style={[styles.exercisePill, { backgroundColor: colors.background }]}>
-                        <Text style={[styles.exerciseDot, { color: group.color }]}>•</Text>
-                        <Text style={[styles.exerciseText, { color: colors.textSecondary }]}>{t(`exerciseNames.${exercise}`, exercise)}</Text>
-                      </View>
-                    ))}
-                  </View>
+                <View style={styles.cardTextWrap}>
+                  <Text style={[styles.cardTitle, { color: colors.textPrimary }]} numberOfLines={1}>
+                    {t(`muscleDirectory.${item.nameKey}`, item.name)}
+                  </Text>
+                  <Text style={[styles.cardCount, { color: item.color }]}>
+                    +{item.count} {t('muscleDirectory.exercisesShort', 'ejercicios')}
+                  </Text>
                 </View>
-              )}
-            </View>
+              </LinearGradient>
+            </TouchableOpacity>
           );
         })}
       </View>
+
+      {/* Full Explorer Banner CTA */}
+      <TouchableOpacity
+        style={styles.bannerCTA}
+        onPress={handleOpenAll}
+        activeOpacity={0.85}
+      >
+        <LinearGradient
+          colors={['#8B5CF6', '#6D28D9']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.bannerGrad}
+        >
+          <Sparkles size={16} color="#FFF" />
+          <Text style={styles.bannerText}>
+            {t('muscleDirectory.exploreFull', 'Abrir Directorio Interactivo 3D')}
+          </Text>
+          <ChevronRight size={16} color="#FFF" />
+        </LinearGradient>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -136,83 +138,89 @@ const styles = StyleSheet.create({
     marginTop: Spacing.lg,
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: Spacing.md,
   },
   headerTitleWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
+    gap: 10,
+    flex: 1,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800',
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 12,
+    marginTop: 1,
   },
-  list: {
-    gap: 12,
+  seeAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: Radius.full,
+    gap: 3,
   },
-  accordionItem: {
+  seeAllText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: Spacing.md,
+  },
+  muscleCard: {
+    width: '48%',
     borderRadius: Radius.lg,
     borderWidth: 1,
     overflow: 'hidden',
   },
-  accordionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: Spacing.md,
-  },
-  groupInfo: {
+  cardGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    padding: 12,
+    gap: 10,
   },
-  iconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  iconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
   },
-  groupName: {
-    fontSize: 16,
+  cardTextWrap: {
+    flex: 1,
+  },
+  cardTitle: {
+    fontSize: 14,
     fontWeight: '700',
   },
-  chevronWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
+  cardCount: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 2,
   },
-  expandedContent: {
-    padding: Spacing.md,
-    paddingTop: Spacing.sm,
-    borderTopWidth: 1,
+  bannerCTA: {
+    borderRadius: Radius.lg,
+    overflow: 'hidden',
   },
-  exercisesGrid: {
+  bannerGrad: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 11,
+    paddingHorizontal: 16,
     gap: 8,
   },
-  exercisePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: Radius.full,
-    gap: 6,
-  },
-  exerciseDot: {
-    fontSize: 16,
-    fontWeight: '900',
-    marginTop: -2,
-  },
-  exerciseText: {
+  bannerText: {
+    color: '#FFF',
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

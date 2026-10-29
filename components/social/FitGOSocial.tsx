@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Share, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, LayoutAnimation, Share, Modal, Alert } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 // import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
@@ -25,6 +25,7 @@ import { AvatarViewerModal } from '../../components/AvatarViewerModal';
 import { supabase } from '../../services/supabase';
 import { useAchievements, ALL_BADGES, useTranslatedBadge } from '../../hooks/useAchievements';
 import { parsePostContent, formatPostContent } from '../../utils/language';
+import { checkContent } from '../../utils/contentFilter';
 import { MediaPickerModal } from '../MediaPickerModal';
 // import { CommentList } from './modal/CommentList';
 import { PostAudioPlayer } from './modal/PostCard';
@@ -476,6 +477,20 @@ export default function FitGOSocial({
 
   const handleCreatePost = useCallback(async () => {
     if (!newPostContent.trim() && !selectedImage && !selectedVideo && !selectedAudio || !profile?.id) return;
+    
+    // Filter profanity / sensitive content in community posts
+    if (newPostContent.trim()) {
+      const filterRes = checkContent(newPostContent.trim());
+      if (filterRes.flagged) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        Alert.alert(
+          t('community.contentWarningTitle', 'Contenido no permitido'),
+          t('community.contentWarningMsg', 'Tu publicación contiene palabras o expresiones no permitidas por las normas de la comunidad FitGO.')
+        );
+        return;
+      }
+    }
+
     setIsPosting(true);
     let imageUrl = null;
     let audioUrl = null;
@@ -500,7 +515,7 @@ export default function FitGOSocial({
     setSelectedAudio(null);
     setIsPosting(false);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
-  }, [newPostContent, selectedImage, selectedVideo, selectedAudio, profile?.id, socialStore]);
+  }, [newPostContent, selectedImage, selectedVideo, selectedAudio, profile?.id, socialStore, t]);
 
   const handleLike = useCallback(async (postId: string, isLiked: boolean) => {
     if (!profile?.id) return;
@@ -538,11 +553,23 @@ export default function FitGOSocial({
 
   const handleAddComment = useCallback(async (postId: string) => {
     if (!newComment.trim() || !profile?.id) return;
+
+    // Filter profanity / sensitive content in comments
+    const filterRes = checkContent(newComment.trim());
+    if (filterRes.flagged) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      Alert.alert(
+        t('community.contentWarningTitle', 'Comentario no permitido'),
+        t('community.contentWarningCommentMsg', 'Tu comentario contiene lenguaje no permitido por las normas de FitGO.')
+      );
+      return;
+    }
+
     await socialStore.addComment(postId, profile.id, newComment);
     setNewComment('');
     const updatedComments = await socialStore.fetchComments(postId);
     setPostComments(prev => ({ ...prev, [postId]: updatedComments }));
-  }, [newComment, profile?.id, socialStore]);
+  }, [newComment, profile?.id, socialStore, t]);
 
   const handleStartEditComment = (commentId: string, currentContent: string) => {
     setEditingCommentId(commentId);
@@ -556,6 +583,18 @@ export default function FitGOSocial({
 
   const handleSaveCommentEdit = async (commentId: string, postId: string) => {
     if (!editingCommentText.trim()) return;
+
+    // Filter profanity / sensitive content in edited comments
+    const filterRes = checkContent(editingCommentText.trim());
+    if (filterRes.flagged) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      Alert.alert(
+        t('community.contentWarningTitle', 'Comentario no permitido'),
+        t('community.contentWarningCommentMsg', 'Tu comentario contiene lenguaje no permitido por las normas de FitGO.')
+      );
+      return;
+    }
+
     await socialStore.editComment(commentId, editingCommentText);
     setEditingCommentId(null);
     setEditingCommentText('');
@@ -618,7 +657,7 @@ export default function FitGOSocial({
   }, [socialStore.posts, feedSearchQuery, selectedLanguage, contentFilter, sortBy]);
 
 
-  const currentBadgeId = profile?.selectedBadge || (profile?.role === 'owner' ? 'owner' : profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
+  const currentBadgeId = profile?.selectedBadge || (['owner', 'master', 'maestro'].includes(profile?.role ?? '') ? 'owner' : profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
   const currentBadge = useTranslatedBadge(currentBadgeId) || ALL_BADGES.verified;
 
   const renderYou = () => {

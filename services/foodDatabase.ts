@@ -1,5 +1,5 @@
 /**
- * OpenFoodFacts + Edamam food database service.
+ * OpenFoodFacts + Edamam + Local Multilingual Fitness Food Database Service.
  */
 import axios from 'axios';
 import { OPEN_FOOD_FACTS_URL } from '../constants/urls';
@@ -28,10 +28,413 @@ export interface FoodItem {
   source:   'openfoodfacts' | 'edamam' | 'custom';
 }
 
+// ─── Local Multilingual Fitness Foods Catalog ────────────────────────────────
+export interface LocalFitnessFoodDef {
+  id: string;
+  names: Record<string, string>;
+  brand?: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber?: number;
+  sugar?: number;
+  sodium?: number;
+}
+
+export const LOCAL_FITNESS_FOODS: LocalFitnessFoodDef[] = [
+  {
+    id: 'local_pechuga_pollo',
+    names: {
+      es: 'Pechuga de Pollo',
+      en: 'Chicken Breast',
+      pt: 'Peito de Frango',
+      fr: 'Blanc de Poulet',
+      de: 'Hähnchenbrust',
+      it: 'Petto di Pollo',
+      ru: 'Куриная грудка',
+    },
+    brand: 'FitGO Base',
+    calories: 165,
+    protein: 31,
+    carbs: 0,
+    fat: 3.6,
+    sodium: 74,
+  },
+  {
+    id: 'local_huevos_enteros',
+    names: {
+      es: 'Huevo Entero',
+      en: 'Whole Egg',
+      pt: 'Ovo Inteiro',
+      fr: 'Oeuf Entier',
+      de: 'Ganzes Ei',
+      it: 'Uovo Intero',
+      ru: 'Яйцо куриное',
+    },
+    brand: 'FitGO Base',
+    calories: 143,
+    protein: 12.6,
+    carbs: 0.7,
+    fat: 9.5,
+    sodium: 142,
+  },
+  {
+    id: 'local_claras_huevo',
+    names: {
+      es: 'Claras de Huevo',
+      en: 'Egg Whites',
+      pt: 'Claras de Ovo',
+      fr: 'Blancs d\'Oeufs',
+      de: 'Eiklar',
+      it: 'Albumi d\'Uovo',
+      ru: 'Яичный белок',
+    },
+    brand: 'FitGO Base',
+    calories: 52,
+    protein: 11,
+    carbs: 0.7,
+    fat: 0.2,
+    sodium: 166,
+  },
+  {
+    id: 'local_arroz_blanco',
+    names: {
+      es: 'Arroz Blanco (Cocido)',
+      en: 'White Rice (Cooked)',
+      pt: 'Arroz Branco (Cozido)',
+      fr: 'Riz Blanc (Cuit)',
+      de: 'Weißer Reis (Gekocht)',
+      it: 'Riso Bianco (Cotto)',
+      ru: 'Белый рис (вареный)',
+    },
+    brand: 'FitGO Base',
+    calories: 130,
+    protein: 2.7,
+    carbs: 28,
+    fat: 0.3,
+    fiber: 0.4,
+  },
+  {
+    id: 'local_avena_hojuelas',
+    names: {
+      es: 'Avena en Hojuelas',
+      en: 'Rolled Oats',
+      pt: 'Aveia em Flocos',
+      fr: 'Flocons d\'Avoine',
+      de: 'Haferflocken',
+      it: 'Fiocchi d\'Avena',
+      ru: 'Овсяные хлопья',
+    },
+    brand: 'FitGO Base',
+    calories: 389,
+    protein: 16.9,
+    carbs: 66,
+    fat: 6.9,
+    fiber: 10.6,
+    sodium: 2,
+  },
+  {
+    id: 'local_salmon_fresco',
+    names: {
+      es: 'Salmón Fresco',
+      en: 'Fresh Salmon',
+      pt: 'Salmão Fresco',
+      fr: 'Saumon Frais',
+      de: 'Frischer Lachs',
+      it: 'Salmone Fresco',
+      ru: 'Свежий лосось',
+    },
+    brand: 'FitGO Base',
+    calories: 208,
+    protein: 20,
+    carbs: 0,
+    fat: 13,
+    sodium: 59,
+  },
+  {
+    id: 'local_atun_natural',
+    names: {
+      es: 'Atún al Natural (Lata)',
+      en: 'Canned Tuna in Water',
+      pt: 'Atum ao Natural',
+      fr: 'Thon au Naturel',
+      de: 'Thunfisch im eigenen Saft',
+      it: 'Tonno al Naturale',
+      ru: 'Тунец в собственном соку',
+    },
+    brand: 'FitGO Base',
+    calories: 116,
+    protein: 26,
+    carbs: 0,
+    fat: 1,
+    sodium: 330,
+  },
+  {
+    id: 'local_ternera_magra',
+    names: {
+      es: 'Ternera Magra',
+      en: 'Lean Beef',
+      pt: 'Carne Bovina Magra',
+      fr: 'Boeuf Maigre',
+      de: 'Mageres Rindfleisch',
+      it: 'Manzo Magro',
+      ru: 'Нежирная говядина',
+    },
+    brand: 'FitGO Base',
+    calories: 180,
+    protein: 26,
+    carbs: 0,
+    fat: 8,
+    sodium: 60,
+  },
+  {
+    id: 'local_platano',
+    names: {
+      es: 'Plátano / Banana',
+      en: 'Banana',
+      pt: 'Banana',
+      fr: 'Banane',
+      de: 'Banane',
+      it: 'Banana',
+      ru: 'Банан',
+    },
+    brand: 'FitGO Base',
+    calories: 89,
+    protein: 1.1,
+    carbs: 23,
+    fat: 0.3,
+    fiber: 2.6,
+    sugar: 12,
+  },
+  {
+    id: 'local_manzana',
+    names: {
+      es: 'Manzana',
+      en: 'Apple',
+      pt: 'Maçã',
+      fr: 'Pomme',
+      de: 'Apfel',
+      it: 'Mela',
+      ru: 'Яблоко',
+    },
+    brand: 'FitGO Base',
+    calories: 52,
+    protein: 0.3,
+    carbs: 14,
+    fat: 0.2,
+    fiber: 2.4,
+    sugar: 10,
+  },
+  {
+    id: 'local_aguacate',
+    names: {
+      es: 'Aguacate / Palta',
+      en: 'Avocado',
+      pt: 'Abacate',
+      fr: 'Avocat',
+      de: 'Avocado',
+      it: 'Avocado',
+      ru: 'Авокадо',
+    },
+    brand: 'FitGO Base',
+    calories: 160,
+    protein: 2,
+    carbs: 8.5,
+    fat: 14.7,
+    fiber: 6.7,
+  },
+  {
+    id: 'local_proteina_whey',
+    names: {
+      es: 'Proteína Whey (Suero)',
+      en: 'Whey Protein Powder',
+      pt: 'Proteína Whey em Pó',
+      fr: 'Protéine Whey en Poudre',
+      de: 'Whey Protein Pulver',
+      it: 'Proteine Whey in Polvere',
+      ru: 'Сывороточный протеин',
+    },
+    brand: 'FitGO Base',
+    calories: 390,
+    protein: 78,
+    carbs: 6,
+    fat: 5,
+    sodium: 180,
+  },
+  {
+    id: 'local_yogur_griego',
+    names: {
+      es: 'Yogur Griego 0% Grasa',
+      en: 'Greek Yogurt 0% Fat',
+      pt: 'Iogurte Grego 0% Gordura',
+      fr: 'Yaourt Grec 0% MG',
+      de: 'Griechischer Joghurt 0% Fett',
+      it: 'Yogurt Greco 0% Grassi',
+      ru: 'Греческий йогурт 0%',
+    },
+    brand: 'FitGO Base',
+    calories: 59,
+    protein: 10,
+    carbs: 3.6,
+    fat: 0.4,
+    sodium: 36,
+  },
+  {
+    id: 'local_aceite_oliva',
+    names: {
+      es: 'Aceite de Oliva Virgen Extra',
+      en: 'Extra Virgin Olive Oil',
+      pt: 'Azeite de Oliva Extra Virgem',
+      fr: 'Huile d\'Olive Vierge Extra',
+      de: 'Natives Olivenöl Extra',
+      it: 'Olio Extravergine d\'Oliva',
+      ru: 'Оливковое масло Extra Virgin',
+    },
+    brand: 'FitGO Base',
+    calories: 884,
+    protein: 0,
+    carbs: 0,
+    fat: 100,
+  },
+  {
+    id: 'local_brocoli',
+    names: {
+      es: 'Brócoli Fresco',
+      en: 'Fresh Broccoli',
+      pt: 'Brócolis Fresco',
+      fr: 'Brocolis Frais',
+      de: 'Frischer Brokkoli',
+      it: 'Broccoli Freschi',
+      ru: 'Свежий брокколи',
+    },
+    brand: 'FitGO Base',
+    calories: 34,
+    protein: 2.8,
+    carbs: 7,
+    fat: 0.4,
+    fiber: 2.6,
+    sodium: 33,
+  },
+  {
+    id: 'local_patata_cocida',
+    names: {
+      es: 'Patata / Papa Cocida',
+      en: 'Boiled Potato',
+      pt: 'Batata Cozida',
+      fr: 'Pomme de Terre Bouillie',
+      de: 'Gekochte Kartoffeln',
+      it: 'Patata Bollita',
+      ru: 'Вареный картофель',
+    },
+    brand: 'FitGO Base',
+    calories: 87,
+    protein: 1.9,
+    carbs: 20,
+    fat: 0.1,
+    fiber: 1.8,
+  },
+  {
+    id: 'local_mantequilla_mani',
+    names: {
+      es: 'Mantequilla de Maní / Cacahuete',
+      en: 'Peanut Butter 100%',
+      pt: 'Manteiga de Amendoim 100%',
+      fr: 'Beurre de Cacahuète 100%',
+      de: 'Erdnussbutter 100%',
+      it: 'Burro di Arachidi 100%',
+      ru: 'Арахисовая паста 100%',
+    },
+    brand: 'FitGO Base',
+    calories: 588,
+    protein: 25,
+    carbs: 20,
+    fat: 50,
+    fiber: 8,
+  },
+  {
+    id: 'local_almendras',
+    names: {
+      es: 'Almendras Naturales',
+      en: 'Raw Almonds',
+      pt: 'Amêndoas Naturais',
+      fr: 'Amandes Naturelles',
+      de: 'Naturbelassene Mandeln',
+      it: 'Mandorle al Naturale',
+      ru: 'Миндаль натуральный',
+    },
+    brand: 'FitGO Base',
+    calories: 579,
+    protein: 21,
+    carbs: 22,
+    fat: 49,
+    fiber: 12.5,
+  },
+  {
+    id: 'local_queso_cottage',
+    names: {
+      es: 'Queso Cottage / Requesón',
+      en: 'Cottage Cheese',
+      pt: 'Queijo Cottage',
+      fr: 'Fromage Cottage',
+      de: 'Hüttenkäse',
+      it: 'Fiocchi di Latte',
+      ru: 'Творог зерненый',
+    },
+    brand: 'FitGO Base',
+    calories: 98,
+    protein: 11,
+    carbs: 3.4,
+    fat: 4.3,
+    sodium: 364,
+  },
+];
+
+export function searchLocalFitnessFoods(query: string, language: string = 'en'): FoodItem[] {
+  const clean = query.trim().toLowerCase();
+  if (!clean) return [];
+
+  const langKey = language?.toLowerCase().slice(0, 2) || 'en';
+
+  return LOCAL_FITNESS_FOODS.filter(item => {
+    // Check in user's active language first
+    const localized = item.names[langKey]?.toLowerCase() || '';
+    if (localized.includes(clean)) return true;
+
+    // Check across all available localized names
+    return Object.values(item.names).some(n => n.toLowerCase().includes(clean));
+  }).map(item => {
+    const displayName = item.names[langKey] || item.names.en || item.names.es;
+    return {
+      id: item.id,
+      name: displayName,
+      brand: item.brand,
+      calories: item.calories,
+      protein: item.protein,
+      carbs: item.carbs,
+      fat: item.fat,
+      fiber: item.fiber,
+      sugar: item.sugar,
+      sodium: item.sodium,
+      source: 'custom' as const,
+    };
+  });
+}
+
 // ─── OpenFoodFacts ─────────────────────────────────────────────────────────────
 function mapOFFProduct(p: any, langKey: string = 'en'): FoodItem | null {
   const nut = p.nutriments || {};
-  let name = p[`product_name_${langKey}`] || p.product_name || p.product_name_en || p[`generic_name_${langKey}`] || p.generic_name;
+  let name = p[`product_name_${langKey}`] ||
+    p.product_name ||
+    p.product_name_en ||
+    p.product_name_es ||
+    p.product_name_pt ||
+    p.product_name_fr ||
+    p.product_name_de ||
+    p.product_name_it ||
+    p.product_name_ru ||
+    p[`generic_name_${langKey}`] ||
+    p.generic_name;
   
   if (!name) {
     const localizedKey = Object.keys(p).find(k => k.startsWith('product_name_') && p[k]);
@@ -63,26 +466,29 @@ function mapOFFProduct(p: any, langKey: string = 'en'): FoodItem | null {
 export async function searchFoodOFF(query: string, language: string = 'en', page = 1): Promise<FoodItem[]> {
   const langKey = language.substring(0, 2).toLowerCase();
   
-  const { data } = await axios.get(`${OFF_BASE}/cgi/search.pl`, {
-    headers: {
-      'User-Agent': 'FitGO - Android/iOS - 1.0.0 - fitgoenterprise@gmail.com',
-    },
-    params: {
-      search_terms: query,
-      search_simple: 1,
-      action: 'process',
-      json: 1,
-      page_size: 25,
-      page,
-      fields: `id,_id,code,product_name,product_name_${langKey},product_name_en,generic_name,generic_name_${langKey},brands,nutriments,image_front_small_url`,
-      // NOTE: No lc/categories_lc filter — it causes 0 results for many Spanish queries
-    },
-    timeout: 10000,
-  });
+  try {
+    const { data } = await axios.get(`${OFF_BASE}/cgi/search.pl`, {
+      headers: {
+        'User-Agent': 'FitGO - Android/iOS - 1.0.0 - fitgoenterprise@gmail.com',
+      },
+      params: {
+        search_terms: query,
+        search_simple: 1,
+        action: 'process',
+        json: 1,
+        page_size: 25,
+        page,
+        fields: `id,_id,code,product_name,product_name_${langKey},product_name_en,generic_name,generic_name_${langKey},brands,nutriments,image_front_small_url`,
+      },
+      timeout: 8000,
+    });
 
-  return (data.products ?? [])
-    .map((p: any) => mapOFFProduct(p, langKey))
-    .filter((item: FoodItem | null): item is FoodItem => item !== null);
+    return (data.products ?? [])
+      .map((p: any) => mapOFFProduct(p, langKey))
+      .filter((item: FoodItem | null): item is FoodItem => item !== null);
+  } catch {
+    return [];
+  }
 }
 
 // ─── OpenFoodFacts barcode lookup ──────────────────────────────────────────────
@@ -178,8 +584,6 @@ export async function getFoodByBarcode(barcode: string, language: string = 'en')
 }
 
 // ─── Edamam search (fallback / enrichment) ─────────────────────────────────────
-// NOTE: Edamam requires EDAMAM_APP_ID + EDAMAM_APP_KEY to be set as Supabase secrets.
-// If not configured, this silently returns [] and the app uses OpenFoodFacts only.
 export async function searchFoodEdamam(query: string): Promise<FoodItem[]> {
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -209,13 +613,14 @@ export async function searchFoodEdamam(query: string): Promise<FoodItem[]> {
       source:   'edamam' as const,
     }));
   } catch {
-    // Silently ignore — Edamam is optional enrichment
     return [];
   }
 }
 
 // ─── Combined search ───────────────────────────────────────────────────────────
 export async function searchFood(query: string, language: string = 'en'): Promise<FoodItem[]> {
+  const localMatches = searchLocalFitnessFoods(query, language);
+
   const [off, edamam] = await Promise.allSettled([
     searchFoodOFF(query, language),
     searchFoodEdamam(query),
@@ -226,7 +631,7 @@ export async function searchFood(query: string, language: string = 'en'): Promis
 
   // Deduplicate by name (case-insensitive)
   const seen = new Set<string>();
-  return [...offResults, ...edamamResults].filter(f => {
+  return [...localMatches, ...offResults, ...edamamResults].filter(f => {
     if (!f.name) return false;
     const key = f.name.toLowerCase().trim();
     if (seen.has(key)) return false;

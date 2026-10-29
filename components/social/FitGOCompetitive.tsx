@@ -604,6 +604,7 @@ export default function FitGOCompetitive({
   const isProActually = useIsPro();
   const squad = useLeagueStore(s => s.squad);
   const members = useLeagueStore(s => s.members);
+  const subscribeToSquadRealtime = useLeagueStore(s => s.subscribeToSquadRealtime);
   const mySquadPoints = useLeagueStore(s => s.mySquadPoints);
   const loading = useLeagueStore(s => s.loading);
   const fetchMySquad = useLeagueStore(s => s.fetchMySquad);

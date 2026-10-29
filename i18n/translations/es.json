@@ -5354,6 +5354,8 @@
     "error": "✕ ERROR"
   },
   "chat": {
+    "contentWarningTitle": "Contenido no permitido",
+    "contentWarningMsg": "Tu mensaje no cumple con las normas de convivencia respetuosa de FitGO.",
     "cameraPermissionTitle": "Permiso requerido",
     "cameraPermissionMsg": "Se necesita acceso a la cámara.",
     "galleryPermissionTitle": "Permiso requerido",
@@ -5604,5 +5606,10 @@
     "proTip1": "La consistencia supera a la perfección: Es mejor registrar un plato aproximado que dejar de registrar por un día entero.",
     "proTip2": "Prioriza tu proteína: Llegar a tu meta de proteína mantendrá tu masa muscular y te mantendrá saciado durante el día.",
     "proTip3": "Activa los recordatorios en Perfil para no olvidar registrar tus comidas y tomar agua en tus horarios habituales."
+  },
+  "community": {
+    "contentWarningTitle": "Contenido no permitido",
+    "contentWarningMsg": "Tu publicación contiene palabras o expresiones no permitidas por las normas de la comunidad FitGO.",
+    "contentWarningCommentMsg": "Tu comentario contiene lenguaje no permitido por las normas de FitGO."
   }
 }

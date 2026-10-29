@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../services/supabase';
 import { SecureStorage } from '../utils/storage';
 import { useSettingsStore } from './settingsStore';
-import { UserProfile, AppLanguage, AppExperienceMode } from './types';
+import { UserProfile, AppLanguage, AppExperienceMode, isPrivilegedRole, isProOrPrivilegedRole } from './types';
 
 interface AuthState {
   session:     Session | null;
@@ -195,7 +195,7 @@ export const useAuthStore = create<AuthState>()(
                   data.is_pro ||
                   get().profile?.isPro ||
                   isProFromStore ||
-                  ['owner', 'super_admin', 'admin', 'pro_user'].includes(data.role ?? '') ||
+                  isProOrPrivilegedRole(data.role) ||
                   (data.trial_expires_at && new Date(data.trial_expires_at) > now) ||
                   (data.pro_expires_at && new Date(data.pro_expires_at) > now)
                 );
@@ -246,7 +246,7 @@ export const useAuthStore = create<AuthState>()(
                   Promise.resolve(supabase.from('users').update({
                     name_color: fetchedNameColor,
                   }).eq('id', userId)).catch(() => {});
-                } else if (!isProUser && !isProFromStore) {
+                } else if (!isProUser && !isProFromStore && !isPrivilegedRole(data.role)) {
                   // Non-pro users should not keep pro colors (only if truly not pro anywhere)
                   if (useSettingsStore.getState().premiumColor) {
                     useSettingsStore.getState().setPremiumColor(null);

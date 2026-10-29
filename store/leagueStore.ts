@@ -72,10 +72,13 @@ interface LeagueStore {
   removeMember: (squadId: string, userId: string) => Promise<boolean>;
   deleteSquad: (squadId: string) => Promise<boolean>;
   transferLeadership: (squadId: string, newOwnerId: string) => Promise<boolean>;
+  subscribeToSquadRealtime: (squadId: string, userId: string) => () => void;
   showReward: (points: number) => void;
   hideReward: () => void;
   reset: () => void;
 }
+
+let activeSquadChannel: any = null;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -254,7 +257,7 @@ export const useLeagueStore = create<LeagueStore>()(
       return (data || []).map((m: any) => {
         let color = m.name_color?.trim() || null;
         if (color?.toLowerCase() === '#4c1d95') color = '#8B5CF6';
-        const hasPremium = !!(m.is_pro || ['owner', 'admin', 'super_admin', 'pro_user'].includes(m.role || ''));
+        const hasPremium = !!(m.is_pro || ['owner', 'master', 'maestro', 'admin', 'super_admin', 'pro_user'].includes(m.role || ''));
         if (hasPremium && (!color || color === '')) {
           color = '#FFB800';
         }
@@ -545,6 +548,44 @@ export const useLeagueStore = create<LeagueStore>()(
   },
 
 
+
+  // ── Squad Realtime WebSocket Subscription ──────────────────────────────────
+  subscribeToSquadRealtime: (squadId: string, userId: string) => {
+    if (!squadId) return () => {};
+    if (activeSquadChannel) {
+      supabase.removeChannel(activeSquadChannel);
+      activeSquadChannel = null;
+    }
+
+    const uniqueSuffix = Math.random().toString(36).substring(7);
+    activeSquadChannel = supabase.channel(`squad_realtime_${squadId}_${uniqueSuffix}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'squads', filter: `id=eq.${squadId}` },
+        (payload: any) => {
+          if (payload.new) {
+            set(state => ({
+              squad: state.squad ? { ...state.squad, ...payload.new } : null,
+            }));
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'squad_members', filter: `squad_id=eq.${squadId}` },
+        () => {
+          get().fetchMySquad(userId);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      if (activeSquadChannel) {
+        supabase.removeChannel(activeSquadChannel);
+        activeSquadChannel = null;
+      }
+    };
+  },
 
   // ── UI Reward animation control ────────────────────────────────────────────
   showReward: (points: number) => set({ rewardVisible: true, rewardPoints: points }),

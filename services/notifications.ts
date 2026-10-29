@@ -318,6 +318,101 @@ export async function sendTestNotification() {
   }
 }
 
+
+/**
+ * Initializes smart retention and engagement notifications.
+ * Sets up morning motivation, hydration, evening log review, and weekly weigh-in.
+ * Safe to call repeatedly; uses unique identifiers to avoid duplicate triggers.
+ */
+export async function initRetentionAndEngagementNotifications(): Promise<void> {
+  const notif = getNotifications();
+  if (notif._isMock) return;
+
+  try {
+    const hasPerm = await checkNotificationPermissions();
+    if (!hasPerm) return;
+
+    if (Platform.OS === 'android') {
+      await ensureChannels(notif);
+    }
+
+    // 1. Morning Motivation (08:00 Daily)
+    await notif.scheduleNotificationAsync({
+      identifier: 'retention_morning_motivation',
+      content: {
+        title: '☀️ ' + i18n.t('notifTriggers.aiMorningTitle', { defaultValue: '¡Buenos días campeón!' }),
+        body: i18n.t('notifTriggers.aiMorningBody', { defaultValue: 'Tu constancia de hoy construye tus metas. ¡Vamos por ello!' }),
+        sound: true,
+        channelId: CHANNELS.fitness.id,
+        color: CHANNELS.fitness.lightColor,
+      },
+      trigger: {
+        type: 'daily',
+        hour: 8,
+        minute: 0,
+        channelId: CHANNELS.fitness.id,
+      },
+    });
+
+    // 2. Afternoon Hydration & Posture (14:30 Daily)
+    await notif.scheduleNotificationAsync({
+      identifier: 'retention_afternoon_hydration',
+      content: {
+        title: '💧 ' + i18n.t('notifTriggers.hydrationPMTTitle', { defaultValue: 'Hora de hidratarte' }),
+        body: i18n.t('notifTriggers.hydrationPMTBody', { defaultValue: 'Bebe un vaso de agua y mantén tu energía al máximo.' }),
+        sound: true,
+        channelId: CHANNELS.nutrition.id,
+        color: CHANNELS.nutrition.lightColor,
+      },
+      trigger: {
+        type: 'daily',
+        hour: 14,
+        minute: 30,
+        channelId: CHANNELS.nutrition.id,
+      },
+    });
+
+    // 3. Evening Habits & Meal Review (20:30 Daily)
+    await notif.scheduleNotificationAsync({
+      identifier: 'retention_evening_review',
+      content: {
+        title: '🥗 ' + i18n.t('notifTriggers.aiNightlyTitle', { defaultValue: 'Revisión nocturna' }),
+        body: i18n.t('notifTriggers.aiNightlyBody', { defaultValue: 'Cierra tu día registrando tus comidas y hábitos en FitGO.' }),
+        sound: true,
+        channelId: CHANNELS.nutrition.id,
+        color: CHANNELS.nutrition.lightColor,
+      },
+      trigger: {
+        type: 'daily',
+        hour: 20,
+        minute: 30,
+        channelId: CHANNELS.nutrition.id,
+      },
+    });
+
+    // 4. Weekly Progress & Weigh-In (Sundays at 09:00)
+    await notif.scheduleNotificationAsync({
+      identifier: 'retention_sunday_weighin',
+      content: {
+        title: '⚖️ ' + i18n.t('notifTriggers.weighInTitle', { defaultValue: 'Registro semanal de peso' }),
+        body: i18n.t('notifTriggers.weighInBody', { defaultValue: 'Es domingo: tómate 1 minuto para registrar tu peso y ver tu evolución.' }),
+        sound: true,
+        channelId: CHANNELS.reminders.id,
+        color: CHANNELS.reminders.lightColor,
+      },
+      trigger: {
+        type: 'weekly',
+        weekday: 1, // Sunday
+        hour: 9,
+        minute: 0,
+        channelId: CHANNELS.reminders.id,
+      },
+    });
+  } catch (err) {
+    console.warn('[Notifications] initRetentionAndEngagementNotifications warning:', err);
+  }
+}
+
 export async function triggerInstantNotification(
   title: string,
   body: string,

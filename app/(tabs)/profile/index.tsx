@@ -21,11 +21,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import {
   useAuthStore, useBodyStore, useSettingsStore, useNutritionStore,
   useCoachStore, useRecipesStore, useProgressStore, useSocialStore,
-  usePlannerStore, usePurchaseStore, useWorkoutHistoryStore,
+  usePlannerStore, usePurchaseStore, useWorkoutHistoryStore, isPrivilegedRole, isProOrPrivilegedRole,
 } from '../../../store';
 import { supabase } from '../../../services/supabase';
 import { calculateTDEE, calculateMacros } from '../../../services/foodDatabase';
 import { useTheme } from '../../../hooks/useTheme';
+import { useIsPro } from '../../../hooks/useIsPro';
 import { useAchievements, ALL_BADGES, useTranslatedBadge } from '../../../hooks/useAchievements';
 import LanguageModal from '../../../components/LanguageModal';
 import { Spacing } from '../../../constants';
@@ -67,7 +68,7 @@ export default function ProfileScreen() {
     tempUnit, setTempUnit, premiumColor, appMode, setAppMode,
   } = useSettingsStore();
   const { profile, setProfile } = useAuthStore();
-  const isPro = usePurchaseStore(s => s.isPro);
+  const isPro = useIsPro();
   const addMeasurement = useBodyStore(s => s.addMeasurement);
   const measurements = useBodyStore(s => s.measurements);
   const lastMeasure = useBodyStore(s => s.latest());
@@ -94,7 +95,7 @@ export default function ProfileScreen() {
 
   const availableBadges = useMemo(() => {
     const list = ['verified', 'early_adopter'];
-    if (profile?.role === 'owner') list.push('owner', 'super_admin', 'admin', 'pro', 'beast_mode', 'fitness_enthusiast');
+    if (profile?.role === 'owner' || profile?.role === 'master' || profile?.role === 'maestro') list.push('owner', 'super_admin', 'admin', 'pro', 'beast_mode', 'fitness_enthusiast');
     else if (profile?.role === 'super_admin') list.push('super_admin', 'admin', 'pro', 'beast_mode', 'fitness_enthusiast');
     else if (profile?.role === 'admin') list.push('admin', 'pro', 'beast_mode');
     else if (profile?.isPro) list.push('pro', 'fitness_enthusiast');
@@ -102,7 +103,7 @@ export default function ProfileScreen() {
     return list;
   }, [profile]);
 
-  const currentBadgeId = profile?.selectedBadge || (profile?.role === 'owner' ? 'owner' : profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
+  const currentBadgeId = profile?.selectedBadge || (['owner', 'master', 'maestro'].includes(profile?.role ?? '') ? 'owner' : profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
   const currentBadge = useTranslatedBadge(currentBadgeId) || ALL_BADGES.verified;
   const toggleSection = (setter: any, current: boolean) => { (LayoutAnimation as any).configureNext((LayoutAnimation as any).Presets.easeInEaseOut); setter(!current); };
 
@@ -147,8 +148,12 @@ export default function ProfileScreen() {
         selected_badge: newProfile.selectedBadge, badges: newProfile.badges,
       }).eq('id', userId);
       if (error) throw error;
-      if (newProfile.appMode) {
-        supabase.auth.updateUser({ data: { app_mode: newProfile.appMode } }).catch(() => {});
+      const authDataUpdates: any = {};
+      if (newProfile.appMode) authDataUpdates.app_mode = newProfile.appMode;
+      if (updates.name !== undefined) authDataUpdates.name = newProfile.name;
+      if (updates.nameColor !== undefined) authDataUpdates.name_color = newProfile.nameColor || null;
+      if (Object.keys(authDataUpdates).length > 0) {
+        supabase.auth.updateUser({ data: authDataUpdates }).catch(() => {});
       }
       setProfile(newProfile);
       if (updates.weight !== undefined && updates.weight !== profile.weight) {
@@ -578,7 +583,7 @@ export default function ProfileScreen() {
   };
 
   const { isAdminRole, safePremiumColor, isPremiumCustom } = useMemo(() => {
-    const isAdmin = profile?.role === 'owner' || profile?.role === 'super_admin' || profile?.role === 'admin';
+    const isAdmin = isPrivilegedRole(profile?.role);
     const safeColor = premiumColor === 'admin_glow' ? '#00F0FF' : (premiumColor && premiumColor.startsWith('#') ? premiumColor : null);
     const isCustom = (isPro || profile?.isPro || isAdmin) && !!safeColor;
     return { isAdminRole: isAdmin, safePremiumColor: safeColor, isPremiumCustom: isCustom };
@@ -588,7 +593,7 @@ export default function ProfileScreen() {
     <View style={{ flex: 1 }}>
       <GlobalBackground />
       <SafeAreaView style={{ flex: 1 }}>
-        <EditModal visible={editModal.visible} field={editModal.field} title={editModal.title} placeholder={editModal.placeholder} keyboardType={editModal.keyboardType} initialValue={editModal.initialValue} onSave={handleSaveEdit} onClose={() => setEditModal((p: any) => ({ ...p, visible: false }))} massUnit={massUnit} lengthUnit={lengthUnit} isPro={profile?.isPro} initialNameColor={profile?.nameColor} role={profile?.role} premiumColor={premiumColor} />
+        <EditModal visible={editModal.visible} field={editModal.field} title={editModal.title} placeholder={editModal.placeholder} keyboardType={editModal.keyboardType} initialValue={editModal.initialValue} onSave={handleSaveEdit} onClose={() => setEditModal((p: any) => ({ ...p, visible: false }))} massUnit={massUnit} lengthUnit={lengthUnit} isPro={isPro || profile?.isPro || isAdminRole} initialNameColor={profile?.nameColor} role={profile?.role} premiumColor={premiumColor} />
         {toastMsg && <CustomToast message={toastMsg.text} type={toastMsg.type} onHide={() => setToastMsg(null)} />}
         <CustomAlert visible={alert.visible} type={alert.type} title={alert.title} message={alert.message} confirmText={alert.confirmText} cancelText={alert.cancelText} onConfirm={alert.onConfirm} onCancel={alert.onCancel} actions={alert.actions} />
         <LanguageModal visible={langModalVisible} currentLang={language} onSelect={handleLanguageSelect} onClose={() => setLangModalVisible(false)} />

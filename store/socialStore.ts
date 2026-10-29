@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../services/supabase';
 import { triggerInstantNotification } from '../services/notifications';
+import { sanitizeContent } from '../utils/contentFilter';
 import { useAuthStore } from './authStore';
 import { useLeagueStore } from './leagueStore';
 
@@ -779,7 +780,11 @@ export const useSocialStore = create<SocialState>((set, get) => ({
 
   createPost: async (post: Partial<Post>) => {
     try {
-      const { data, error } = await supabase.from('posts').insert(post).select(`
+      const sanitizedPost = {
+        ...post,
+        content: post.content ? sanitizeContent(post.content) : post.content,
+      };
+      const { data, error } = await supabase.from('posts').insert(sanitizedPost).select(`
         *,
         user_profile:user_id(name, avatar_url, name_color, is_pro, role)
       `).single();
@@ -872,7 +877,8 @@ export const useSocialStore = create<SocialState>((set, get) => ({
 
   addComment: async (postId: string, userId: string, content: string) => {
     try {
-      const { error } = await supabase.from('post_comments').insert({ post_id: postId, user_id: userId, content });
+      const clean = sanitizeContent(content);
+      const { error } = await supabase.from('post_comments').insert({ post_id: postId, user_id: userId, content: clean });
       if (error) throw error;
       // Optimistically bump comments_count
       set(s => ({
@@ -896,9 +902,10 @@ export const useSocialStore = create<SocialState>((set, get) => ({
 
   editComment: async (commentId: string, content: string) => {
     try {
+      const clean = sanitizeContent(content);
       const { error } = await supabase
         .from('post_comments')
-        .update({ content, is_edited: true })
+        .update({ content: clean, is_edited: true })
         .eq('id', commentId);
       if (error) throw error;
     } catch (err) {
@@ -1003,10 +1010,11 @@ export const useSocialStore = create<SocialState>((set, get) => ({
 
   sendDirectMessage: async (senderId: string, receiverId: string, content: string, image_url?: string, audio_url?: string) => {
     try {
+      const clean = sanitizeContent(content ?? '');
       const payload: any = {
         sender_id: senderId,
         receiver_id: receiverId,
-        content: content ?? '',
+        content: clean,
       };
       if (image_url) payload.image_url = image_url;
       if (audio_url) payload.audio_url = audio_url;

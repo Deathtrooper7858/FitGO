@@ -10,6 +10,17 @@ export type LengthUnit = 'cm' | 'm' | 'in' | 'ft';
 export type EnergyUnit = 'kcal' | 'kj';
 export type TempUnit = 'c' | 'f';
 
+export type UserRole = 'user' | 'pro_user' | 'admin' | 'super_admin' | 'owner' | 'master' | 'maestro';
+
+export const PRIVILEGED_ROLES: readonly string[] = ['owner', 'master', 'maestro', 'super_admin', 'admin'] as const;
+export const PRO_ROLES: readonly string[] = ['pro_user', ...PRIVILEGED_ROLES] as const;
+
+export const isPrivilegedRole = (role?: string | null): boolean =>
+  !!role && PRIVILEGED_ROLES.includes(role.toLowerCase().trim());
+
+export const isProOrPrivilegedRole = (role?: string | null): boolean =>
+  !!role && PRO_ROLES.includes(role.toLowerCase().trim());
+
 /**
  * Health profile sub-shape stored inside UserProfile.
  * All fields are optional so users can skip any section.
@@ -48,7 +59,7 @@ export interface UserProfile extends HealthProfile {
   availableFoods?:  string[];
   preferences?:    string[];
   isPro:           boolean;
-  role:            'user' | 'pro_user' | 'admin' | 'super_admin' | 'owner';
+  role:            UserRole;
   trialUsedAt?:    string | null;
   trialExpiresAt?: string | null;
   proExpiresAt?:   string | null;

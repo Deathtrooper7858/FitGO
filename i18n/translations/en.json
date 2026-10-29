@@ -5354,6 +5354,8 @@
     "error": "✕ ERROR"
   },
   "chat": {
+    "contentWarningTitle": "Content Not Allowed",
+    "contentWarningMsg": "Your message does not comply with FitGO respectful communication standards.",
     "cameraPermissionTitle": "Permission Required",
     "cameraPermissionMsg": "Camera access is needed.",
     "galleryPermissionTitle": "Permission Required",
@@ -5604,5 +5606,10 @@
     "proTip1": "Consistency beats perfection: An approximate meal entry is better than skipping an entire day.",
     "proTip2": "Prioritize protein: Hitting your protein goal preserves lean mass and keeps you full throughout the day.",
     "proTip3": "Enable reminders in Profile so you never forget to log meals and stay hydrated."
+  },
+  "community": {
+    "contentWarningTitle": "Content Not Allowed",
+    "contentWarningMsg": "Your post contains words or expressions not allowed by FitGO community guidelines.",
+    "contentWarningCommentMsg": "Your comment contains language not allowed by FitGO rules."
   }
 }

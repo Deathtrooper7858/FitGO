@@ -1,10 +1,13 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import Purchases, { CustomerInfo, PurchasesOffering, PurchasesPackage, LOG_LEVEL } from 'react-native-purchases';
 import { supabase } from '../services/supabase';
 import { reportError } from '../utils/errorReporter';
 import { useAuthStore } from './authStore';
 import { useSettingsStore } from './settingsStore';
+import { isPrivilegedRole } from './types';
 
 interface PurchaseState {
   isPro: boolean;
@@ -47,7 +50,9 @@ export const isProEntitlementActive = (info: CustomerInfo | null): boolean => {
   );
 };
 
-export const usePurchaseStore = create<PurchaseState>((set, get) => ({
+export const usePurchaseStore = create<PurchaseState>()(
+  persist(
+    (set, get) => ({
   isPro: false,
   offering: null,
   isLoading: false,
@@ -117,7 +122,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     if (!profile) return;
 
     // NEVER let RevenueCat downgrade privileged roles
-    const isPrivileged = ['owner', 'super_admin', 'admin'].includes(profile.role ?? '');
+    const isPrivileged = isPrivilegedRole(profile.role);
 
     if (isProActive && !profile.isPro) {
       console.log('[PurchaseStore] RevenueCat entitlement active. Upgrading in database...');
@@ -139,7 +144,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
           if (error) throw error;
 
           const dbRole = data?.role ?? 'user';
-          if (['owner', 'super_admin', 'admin'].includes(dbRole)) {
+          if (isPrivilegedRole(dbRole)) {
             console.log('[PurchaseStore] DB role is privileged. Skipping downgrade.');
             return;
           }
@@ -278,7 +283,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       
       set({ isPro: true, isLoading: false });
 
-      const isPrivileged = ['owner', 'super_admin', 'admin'].includes(profile.role ?? '');
+      const isPrivileged = isPrivilegedRole(profile.role);
       const assignedColor = profile.premiumColor || useSettingsStore.getState().premiumColor || '#EAB308';
       if (isPrivileged) {
         useAuthStore.getState().setProfile({ ...profile, isPro: true });
@@ -306,16 +311,11 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
         .single();
 
       const dbRole = dbUser?.role ?? profile.role ?? 'user';
-      const isPrivileged = ['owner', 'super_admin', 'admin'].includes(dbRole);
+      const isPrivileged = isPrivilegedRole(dbRole);
 
       if (isPrivileged) {
-        await supabase
-          .from('users')
-          .update({ is_pro: false, pro_will_renew: false, pro_expires_at: null })
-          .eq('id', profile.id);
-        set({ isPro: false, isLoading: false });
-        useAuthStore.getState().setProfile({ ...profile, isPro: false });
-        useSettingsStore.getState().setPremiumColor(null);
+        console.log('[PurchaseStore] cancelPro called for privileged role (' + dbRole + '). Skipping cancel.');
+        set({ isPro: true, isLoading: false });
         return;
       }
 
@@ -340,7 +340,7 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
     const profile = useAuthStore.getState().profile;
     if (!profile?.id) return false;
 
-    const isPrivileged = ['owner', 'super_admin', 'admin'].includes(profile.role ?? '');
+    const isPrivileged = isPrivilegedRole(profile.role);
     if (isPrivileged) {
       set({ isPro: true });
       return true;
@@ -395,13 +395,14 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       }
 
       set({ isPro: isProNow, isLoading: false });
-      const currentColor = isProNow ? (profile.premiumColor || useSettingsStore.getState().premiumColor || profile.nameColor || undefined) : undefined;
+      const currentNameColor = isProNow ? (profile.nameColor || profile.premiumColor || useSettingsStore.getState().premiumColor || undefined) : undefined;
+      const currentPremiumColor = isProNow ? (profile.premiumColor || useSettingsStore.getState().premiumColor || undefined) : undefined;
       useAuthStore.getState().setProfile({ 
         ...profile, 
         isPro: isProNow, 
         role: isProNow ? (dbRole as any) : 'user',
-        premiumColor: currentColor,
-        nameColor: currentColor,
+        premiumColor: currentPremiumColor,
+        nameColor: currentNameColor,
       });
       
       return isProNow;
@@ -542,4 +543,16 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       console.warn('[PurchaseStore] checkAndRevokeExpiredTrial error:', err);
     }
   },
-}));
+}),
+{
+  name: 'fitgo-purchase-storage',
+  storage: createJSONStorage(() => AsyncStorage),
+  partialize: (state) => ({
+    isPro: state.isPro,
+    isTrialActive: state.isTrialActive,
+    trialExpiresAt: state.trialExpiresAt,
+    trialUsedAt: state.trialUsedAt,
+  }),
+}
+)
+);

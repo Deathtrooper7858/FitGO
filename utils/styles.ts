@@ -47,10 +47,11 @@ export const getNameStyle = (
   currentUserId?: string,
   currentUserColor?: string | null,
   premiumColor?: string | null,
-  fallbackColor: string = '#F8FAFC',
-): { color: string; textShadowColor?: string; textShadowOffset?: { width: number; height: number }; textShadowRadius?: number } => {
+  fallbackColor?: string,
+): { color?: string; textShadowColor?: string; textShadowOffset?: { width: number; height: number }; textShadowRadius?: number } => {
   const isMe = (userId && currentUserId && userId === currentUserId) || (!userId && !currentUserId);
-  const color = isMe ? (currentUserColor || premiumColor || nameColor) : nameColor;
+  const effectiveMyColor = (currentUserColor === '#EAB308' && premiumColor) ? premiumColor : (currentUserColor || premiumColor);
+  const color = isMe ? (effectiveMyColor || nameColor) : nameColor;
 
   if (color === 'admin_glow') {
     return {
@@ -82,8 +83,11 @@ export const getNameStyle = (
     }
   }
 
-  // Fallback to crisp readable white/textPrimary — NEVER return empty object so text is never black!
-  return { color: fallbackColor || '#F8FAFC' };
+  if (fallbackColor) {
+    return { color: fallbackColor };
+  }
+
+  return {};
 };
 
 export const getSafeColor = (color?: string | null, fallback?: string): string => {

@@ -14,7 +14,7 @@ import {
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   ChevronDown,
@@ -221,8 +221,11 @@ export default function MuscleDirectoryModal() {
   const colors = useTheme();
   const lang = i18n.language?.startsWith('es') ? 'es' : 'en';
 
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [selectedMuscleFilter, setSelectedMuscleFilter] = useState<string | null>(null);
+  const params = useLocalSearchParams<{ group?: string }>();
+  const initialGroup = params.group || null;
+  const [expandedId, setExpandedId] = useState<string | null>(initialGroup);
+  const [selectedMuscleFilter, setSelectedMuscleFilter] = useState<string | null>(initialGroup);
+  const [displayLimits, setDisplayLimits] = useState<Record<string, number>>({});
   const [bodySideView, setBodySideView] = useState<'both' | 'front' | 'back'>('both');
   const [selectedExercise, setSelectedExercise] = useState<typeof exercisesData[0] | null>(null);
   const [translatedData, setTranslatedData] = useState<{ name: string; instructions: string[] } | null>(null);
@@ -822,6 +825,9 @@ export default function MuscleDirectoryModal() {
                     : group.allExercises.filter(
                         ex => (ex.equipments?.[0] || 'other') === activeEquipment
                       );
+                const currentLimit = displayLimits[group.id] || 24;
+                const visibleExercises = filteredExercises.slice(0, currentLimit);
+                const hasMore = filteredExercises.length > currentLimit;
 
                 return (
                   <View
@@ -966,9 +972,9 @@ export default function MuscleDirectoryModal() {
                           })}
                         </ScrollView>
 
-                        {/* Exercise Pills / Cards Grid */}
+                        {/* Exercise Pills / Cards Grid with Pagination */}
                         <View style={styles.exercisesGrid}>
-                          {filteredExercises.map(exercise => (
+                          {visibleExercises.map(exercise => (
                             <ExercisePillItem
                               key={exercise.exerciseId}
                               exercise={exercise}
@@ -979,6 +985,24 @@ export default function MuscleDirectoryModal() {
                             />
                           ))}
                         </View>
+
+                        {hasMore && (
+                          <TouchableOpacity
+                            style={[
+                              styles.loadMoreBtn,
+                              { backgroundColor: `${group.color}15`, borderColor: `${group.color}40` }
+                            ]}
+                            onPress={() => {
+                              triggerHaptic();
+                              setDisplayLimits(prev => ({ ...prev, [group.id]: currentLimit + 30 }));
+                            }}
+                            activeOpacity={0.8}
+                          >
+                            <Text style={[styles.loadMoreText, { color: group.color }]}>
+                              {t('muscleDirectory.showMore', 'Mostrar más ejercicios')} ({filteredExercises.length - currentLimit} {t('common.remaining', 'restantes')})
+                            </Text>
+                          </TouchableOpacity>
+                        )}
                       </View>
                     )}
                   </View>
@@ -1054,9 +1078,11 @@ export default function MuscleDirectoryModal() {
                   <Image
                     cachePolicy="memory-disk"
                     source={{
-                      uri: supabase.storage
-                        .from('excercises')
-                        .getPublicUrl(selectedExercise.gifUrl.split('/').pop() || '').data.publicUrl,
+                      uri: selectedExercise.gifUrl?.startsWith('http')
+                        ? selectedExercise.gifUrl
+                        : supabase.storage
+                            .from('excercises')
+                            .getPublicUrl(selectedExercise.gifUrl.split('/').pop() || '').data.publicUrl,
                     }}
                     style={styles.gifImage}
                     contentFit="contain"
@@ -1526,6 +1552,19 @@ const styles = StyleSheet.create({
   equipFilterText: {
     fontSize: 12,
     fontWeight: '600',
+  },
+  loadMoreBtn: {
+    marginTop: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadMoreText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
   exercisesGrid: {
     gap: 8,

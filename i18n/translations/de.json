@@ -110,6 +110,22 @@
     "progress": "Fortschritt"
   },
   "profile": {
+    "colors": {
+      "admin": "Admin Diamant",
+      "default": "Klassisches Lila",
+      "gold": "Elite-Gold",
+      "blue": "Elektrisches Blau",
+      "green": "Neongrün",
+      "red": "Rubinrot",
+      "orange": "Feuerorange",
+      "magenta": "Dunkles Magenta",
+      "pink": "Sonnenuntergang-Rosa",
+      "emerald": "Smaragdgrün",
+      "turquoise": "Tiefes Türkis",
+      "purple": "Imperiales Violett",
+      "silver": "Chromsilber",
+      "defaultSubtitle": "Die Standardfarbe"
+    },
     "title": "Profil",
     "editName": "Name aktualisieren",
     "enterName": "Geben Sie Ihren Namen ein",
@@ -300,21 +316,6 @@
     "passwordUpdated": "Passwort erfolgreich aktualisiert.",
     "samePasswordError": "Das neue Passwort muss sich vom aktuellen Passwort unterscheiden.",
     "noChanges": "Sie haben keine Änderungen vorgenommen.",
-    "colors": {
-      "default": "Klassisches Lila",
-      "gold": "Elite-Gold",
-      "blue": "Elektrisches Blau",
-      "green": "Neongrün",
-      "red": "Rubinrot",
-      "orange": "Feuerorange",
-      "magenta": "Dunkles Magenta",
-      "pink": "Sonnenuntergang-Rosa",
-      "emerald": "Smaragdgrün",
-      "turquoise": "Tiefes Türkis",
-      "purple": "Imperiales Violett",
-      "silver": "Chromsilber",
-      "defaultSubtitle": "Die Standardfarbe"
-    },
     "inviteFriends": "Freunde Einladen",
     "badges": {
       "owner": "Eigentümer"
@@ -883,6 +884,7 @@
     "advancedAnalyticsDesc": "Wöchentliche Beständigkeit, Muskelsymmetrie und mehr"
   },
   "tracker": {
+    "activityWaterBadge": "Aktivität",
     "title": "Heute",
     "addFood": "+ Essen hinzufügen",
     "searchFood": "Essen suchen...",
@@ -5352,6 +5354,8 @@
     "error": "✕ FEHLER"
   },
   "chat": {
+    "contentWarningTitle": "Nicht erlaubter Inhalt",
+    "contentWarningMsg": "Deine Nachricht entspricht nicht den respektvollen Kommunikationsstandards von FitGO.",
     "cameraPermissionTitle": "Berechtigung erforderlich",
     "cameraPermissionMsg": "Kamerazugriff ist erforderlich.",
     "galleryPermissionTitle": "Berechtigung erforderlich",
@@ -5602,5 +5606,10 @@
     "expand": "Ausklappen",
     "collapse": "Einklappen",
     "bannerCompactSubtitle": "Lerne, wie du Mahlzeiten mit KI, Makros und Coach scannst"
+  },
+  "community": {
+    "contentWarningTitle": "Nicht erlaubter Inhalt",
+    "contentWarningMsg": "Dein Beitrag enthält Wörter oder Ausdrücke, die gegen die FitGO-Community-Richtlinien verstoßen.",
+    "contentWarningCommentMsg": "Dein Kommentar enthält Ausdrücke, die gegen die FitGO-Regeln verstoßen."
   }
 }

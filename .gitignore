@@ -32,7 +32,9 @@ GoogleService-Info.plist
 credentials.json
 keystore.properties
 
-# Temp & Dev artifacts
+# Documentation (Word documents and generated docs)
+documentacion/
+
 *.aab
 *.apk
 staged_files.txt

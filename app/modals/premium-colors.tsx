@@ -14,6 +14,7 @@ import { Check, X, Crown, Lock, Sparkles, ArrowRight, Palette } from 'lucide-rea
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../hooks/useTheme';
 import { useSettingsStore, useAuthStore } from '../../store';
+import { isPrivilegedRole } from '../../store/types';
 import { usePurchaseStore } from '../../store/purchaseStore';
 import { useIsPro } from '../../hooks/useIsPro';
 import { supabase } from '../../services/supabase';
@@ -60,7 +61,7 @@ export default function PremiumColorsModal() {
   const normalizedColor = premiumColor?.toLowerCase() === '#4c1d95' ? '#8B5CF6' : premiumColor;
   const activeHex = normalizedColor === 'admin_glow' ? '#00F0FF' : normalizedColor || '#7C5CFC';
   
-  const isAdminOrOwner = profile?.role === 'admin' || profile?.role === 'owner' || profile?.role === 'super_admin';
+  const isAdminOrOwner = isPrivilegedRole(profile?.role);
   const availableColors = React.useMemo(() => {
     const list = [...PREMIUM_COLORS];
     if (isAdminOrOwner) {

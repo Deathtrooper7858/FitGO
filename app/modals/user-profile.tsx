@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { getNameStyle, getSafeColor, isValidPremiumColor, hexToRgba } from '../../utils/styles';
 import { getLucideIcon } from '../../constants/iconMap';
 import { supabase } from '../../services/supabase';
-import { useAuthStore, useSocialStore, useSettingsStore, usePurchaseStore } from '../../store';
+import { useAuthStore, useSocialStore, useSettingsStore, usePurchaseStore, isPrivilegedRole } from '../../store';
 import { GlassCard } from '../../components/GlassCard';
 import { useTheme } from '../../hooks/useTheme';
 import { useAchievements, useTranslatedBadge, ALL_BADGES } from '../../hooks/useAchievements';
@@ -107,7 +107,7 @@ export default function UserProfileModal() {
   }, [userId]);
 
   const displayUser = userProfile || { name: fallbackName, avatar_url: fallbackAvatar, unlockedAchievements: [], role: 'verified' };
-  const currentBadgeId = displayUser.selectedBadge || (displayUser.role === 'owner' ? 'owner' : displayUser.role === 'super_admin' ? 'super_admin' : displayUser.role === 'admin' ? 'admin' : displayUser.isPro ? 'pro' : 'verified');
+  const currentBadgeId = displayUser.selectedBadge || (['owner', 'master', 'maestro'].includes(displayUser?.role ?? '') ? 'owner' : displayUser.role === 'super_admin' ? 'super_admin' : displayUser.role === 'admin' ? 'admin' : displayUser.isPro ? 'pro' : 'verified');
   const currentBadge = useTranslatedBadge(currentBadgeId) || ALL_BADGES.verified;
 
   if (loading) {
@@ -131,7 +131,7 @@ export default function UserProfileModal() {
 
   // For own profile: use premiumColor from local store.
   // For others: use their name_color from DB (visible to ALL users inspecting the profile).
-  const isCustomPro = !!(isPro || myProfile?.isPro || myProfile?.role === 'owner' || myProfile?.role === 'super_admin' || myProfile?.role === 'admin');
+  const isCustomPro = !!(isPro || myProfile?.isPro || isPrivilegedRole(myProfile?.role));
   const vitrineColor: string | null = isMe
     ? (isCustomPro && isValidPremiumColor(premiumColor) ? getSafeColor(premiumColor) : null)
     : (isValidPremiumColor(displayUser.name_color) ? getSafeColor(displayUser.name_color) : null);

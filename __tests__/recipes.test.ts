@@ -47,4 +47,21 @@ describe('Recipes Module & Curated Catalog', () => {
     // English name check
     expect(enRecipes.some(r => r.name.includes('Chicken') || r.name.includes('Salad') || r.name.includes('Oatmeal') || r.name.includes('Salmon'))).toBe(true);
   });
+
+  it('should support Portuguese, French, German, Italian and Russian localizations', () => {
+    const ptRecipes = getCuratedRecipes(undefined, 'maintain', 'pt');
+    expect(ptRecipes.some(r => r.name.includes('Frango') || r.name.includes('Salmão'))).toBe(true);
+
+    const frRecipes = getCuratedRecipes(undefined, 'maintain', 'fr');
+    expect(frRecipes.some(r => r.name.includes('Poulet') || r.name.includes('Saumon'))).toBe(true);
+
+    const deRecipes = getCuratedRecipes(undefined, 'maintain', 'de');
+    expect(deRecipes.some(r => r.name.includes('Hähnchen') || r.name.includes('Lachsfilet'))).toBe(true);
+
+    const itRecipes = getCuratedRecipes(undefined, 'maintain', 'it');
+    expect(itRecipes.some(r => r.name.includes('Pollo') || r.name.includes('Salmone'))).toBe(true);
+
+    const ruRecipes = getCuratedRecipes(undefined, 'maintain', 'ru');
+    expect(ruRecipes.some(r => r.name.includes('Куриная') || r.name.includes('лосося'))).toBe(true);
+  });
 });

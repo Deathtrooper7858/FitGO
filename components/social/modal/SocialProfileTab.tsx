@@ -26,7 +26,7 @@ export default function SocialProfileTab({
   const userRankInfo = socialStore.globalRanking.find((u: any) => u.id === profile?.id);
   const userRankIndex = socialStore.globalRanking.findIndex((u: any) => u.id === profile?.id);
   const myPosts = socialStore.posts.filter((p: any) => p.user_id === profile?.id);
-  const currentBadgeId = profile?.selectedBadge || (profile?.role === 'owner' ? 'owner' : profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
+  const currentBadgeId = profile?.selectedBadge || (['owner', 'master', 'maestro'].includes(profile?.role ?? '') ? 'owner' : profile?.role === 'super_admin' ? 'super_admin' : profile?.role === 'admin' ? 'admin' : profile?.isPro ? 'pro' : 'verified');
   const currentBadge = useTranslatedBadge(currentBadgeId) || ALL_BADGES.verified;
 
   return (

@@ -17,18 +17,42 @@ import { router } from 'expo-router';
 import { User, Scale, Ruler, Calendar, Check, Lock, X, Crown } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../hooks/useTheme';
+import { useIsPro } from '../../hooks/useIsPro';
+import { isPrivilegedRole, isProOrPrivilegedRole } from '../../store/types';
 
 const PREMIUM_NAME_COLORS = [
-  { id: 'gold', hex: '#FFC000', name: 'Dorado Élite' },
-  { id: 'electric', hex: '#3B82F6', name: 'Azul Eléctrico' },
-  { id: 'neon', hex: '#10B981', name: 'Verde Neón' },
-  { id: 'ruby', hex: '#EF4444', name: 'Rojo Rubí' },
-  { id: 'magenta', hex: '#D946EF', name: 'Magenta' },
+  { id: 'gold', hex: '#FFB800', name: 'Dorado Élite' },
+  { id: 'electric', hex: '#00F0FF', name: 'Azul Eléctrico' },
+  { id: 'neon', hex: '#00E676', name: 'Verde Neón' },
+  { id: 'ruby', hex: '#FF2A54', name: 'Rojo Rubí' },
   { id: 'fire', hex: '#FF5722', name: 'Naranja Fuego' },
+  { id: 'magenta', hex: '#FF00FF', name: 'Magenta Oscuro' },
+  { id: 'pink', hex: '#FF4081', name: 'Rosa Atardecer' },
+  { id: 'emerald', hex: '#10B981', name: 'Verde Esmeralda' },
   { id: 'ocean', hex: '#06B6D4', name: 'Turquesa' },
   { id: 'purple', hex: '#8B5CF6', name: 'Púrpura' },
   { id: 'silver', hex: '#94A3B8', name: 'Plata' },
 ];
+
+const isColorMatch = (a?: string | null, b?: string | null) => {
+  if (!a || !b) return false;
+  const normA = a.toLowerCase().trim();
+  const normB = b.toLowerCase().trim();
+  if (normA === normB) return true;
+  const goldAliases = ['#ffb800', '#ffc000', '#eab308', '#ffd700'];
+  if (goldAliases.includes(normA) && goldAliases.includes(normB)) return true;
+  const redAliases = ['#ff2a54', '#ef4444', '#f43f5e'];
+  if (redAliases.includes(normA) && redAliases.includes(normB)) return true;
+  const blueAliases = ['#00f0ff', '#3b82f6', '#0ea5e9'];
+  if (blueAliases.includes(normA) && blueAliases.includes(normB)) return true;
+  const greenAliases = ['#00e676', '#10b981', '#22c55e'];
+  if (greenAliases.includes(normA) && greenAliases.includes(normB)) return true;
+  const magentaAliases = ['#ff00ff', '#d946ef', '#ec4899'];
+  if (magentaAliases.includes(normA) && magentaAliases.includes(normB)) return true;
+  const purpleAliases = ['#8b5cf6', '#4c1d95', '#7c3aed'];
+  if (purpleAliases.includes(normA) && purpleAliases.includes(normB)) return true;
+  return false;
+};
 
 interface EditModalProps {
   visible: boolean;
@@ -66,17 +90,28 @@ export function EditModal({
   const { t } = useTranslation();
   const colors = useTheme();
 
+  const hookIsPro = useIsPro();
+  const isUserPro = Boolean(
+    isPro ||
+    hookIsPro ||
+    isProOrPrivilegedRole(role)
+  );
+
+  const getInitialColor = () => {
+    if (initialNameColor !== undefined && initialNameColor !== null) {
+      return initialNameColor.toLowerCase() === '#4c1d95' ? '#8B5CF6' : initialNameColor;
+    }
+    return isUserPro ? '#FFB800' : '';
+  };
+
   const [value, setValue] = useState(initialValue ?? '');
-  const isUserPro = !!(isPro || role === 'owner' || role === 'admin' || role === 'super_admin');
-  const normalizedInit = initialNameColor?.toLowerCase() === '#4c1d95' ? '#8B5CF6' : (initialNameColor ?? '');
-  const [selectedColor, setSelectedColor] = useState(normalizedInit || (isUserPro ? '#FFC000' : ''));
+  const [selectedColor, setSelectedColor] = useState(getInitialColor);
   const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     if (visible) {
       setValue(initialValue ?? '');
-      const norm = initialNameColor?.toLowerCase() === '#4c1d95' ? '#8B5CF6' : (initialNameColor ?? '');
-      setSelectedColor(norm || (isUserPro ? '#FFC000' : ''));
+      setSelectedColor(getInitialColor());
     }
   }, [visible, initialValue, initialNameColor, isUserPro]);
 
@@ -107,7 +142,7 @@ export function EditModal({
   }
 
   const allColors = [...PREMIUM_NAME_COLORS];
-  if (role === 'admin' || role === 'owner' || role === 'super_admin') {
+  if (isPrivilegedRole(role)) {
     allColors.push({ id: 'admin_glow', hex: 'admin_glow', name: 'Diamante Admin' });
   }
 
@@ -245,31 +280,41 @@ export function EditModal({
                   contentContainerStyle={styles.colorsScroll}
                 >
                   {/* Opción por defecto */}
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    style={[
-                      styles.colorSwatchBtn,
-                      {
-                        backgroundColor: colors.textPrimary,
-                        borderColor: selectedColor === '' ? fieldAccent : 'transparent',
-                        borderWidth: selectedColor === '' ? 2.5 : 1,
-                      },
-                    ]}
-                    onPress={() => {
-                      Haptics.selectionAsync();
-                      setSelectedColor('');
-                    }}
-                  >
-                    {selectedColor === '' && (
-                      <Check size={18} color={colors.surface} strokeWidth={3} />
-                    )}
-                  </TouchableOpacity>
+                  {(() => {
+                    const isDefaultSel = !selectedColor || selectedColor === '' || selectedColor === 'default';
+                    return (
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        style={[
+                          styles.colorSwatchBtn,
+                          {
+                            backgroundColor: colors.textPrimary,
+                            borderColor: isDefaultSel ? fieldAccent : 'transparent',
+                            borderWidth: isDefaultSel ? 2.5 : 1,
+                          },
+                        ]}
+                        onPress={() => {
+                          Haptics.selectionAsync();
+                          setSelectedColor('');
+                        }}
+                      >
+                        {isDefaultSel && (
+                          <Check
+                            size={18}
+                            color={colors.theme === 'dark' ? '#0F172A' : '#FFFFFF'}
+                            strokeWidth={3}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })()}
 
                   {/* Colores Pro */}
                   {allColors.map((c) => {
-                    const isSel = selectedColor === c.hex;
+                    const isSel = isColorMatch(selectedColor, c.hex);
                     const isAdminGlow = c.hex === 'admin_glow';
-                    const hasAccess = isPro || isAdminGlow;
+                    const isStaff = isPrivilegedRole(role);
+                    const hasAccess = isAdminGlow ? isStaff : isUserPro;
 
                     return (
                       <TouchableOpacity

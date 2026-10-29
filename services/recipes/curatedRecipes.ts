@@ -1,19 +1,21 @@
 import type { Recipe } from '../../store/types';
 
+export interface RecipeLocale {
+  name: string;
+  description: string;
+  ingredients: string[];
+  instructions: string[];
+}
+
 export interface CuratedRecipeDef {
   id: string;
-  es: {
-    name: string;
-    description: string;
-    ingredients: string[];
-    instructions: string[];
-  };
-  en: {
-    name: string;
-    description: string;
-    ingredients: string[];
-    instructions: string[];
-  };
+  es: RecipeLocale;
+  en: RecipeLocale;
+  pt?: RecipeLocale;
+  fr?: RecipeLocale;
+  de?: RecipeLocale;
+  it?: RecipeLocale;
+  ru?: RecipeLocale;
   calories: number;
   protein: number;
   carbs: number;
@@ -580,6 +582,260 @@ export const CURATED_RECIPES: CuratedRecipeDef[] = [
   }
 ];
 
+// Multi-language overlays for pt, fr, de, it, ru
+const RECIPE_I18N_OVERLAYS: Record<string, Record<string, Partial<RecipeLocale>>> = {
+  pt: {
+    curated_pollo_arroz_brocoli: {
+      name: 'Frango Grelhado com Arroz Jasmim e Brócolis',
+      description: 'O clássico fitness: peito suculento marinado com ervas, arroz soltinho e brócolis rico em fibras.',
+    },
+    curated_ternera_patatas_romero: {
+      name: 'Carne Magra Grelhada com Batatas Assadas e Alecrim',
+      description: 'Corte magro de carne bovina rico em ferro e creatina natural com batatas douradas.',
+    },
+    curated_avena_proteica_chocolate: {
+      name: 'Mingau de Aveia Proteico com Cacau e Frutas Vermelhas',
+      description: 'Café da manhã de campeões com aveia integral, whey protein e antioxidantes.',
+    },
+    curated_tortilla_claras_pavo_espinacas: {
+      name: 'Omelete de Claras com Peito de Peru e Espinafre',
+      description: 'Ultraleve e rica em proteínas de alto valor biológico com zero gordura supérflua.',
+    },
+    curated_salmon_esparragos_limon: {
+      name: 'Salmão Grelhado com Aspargos e Limão',
+      description: 'Rico em ácidos graxos ômega-3 saudáveis para o coração e recuperação articular.',
+    },
+    curated_aguacate_relleno_atun: {
+      name: 'Abacate Recheado com Atum e Pimentão',
+      description: 'Lanche cetogênico rico em gorduras boas e proteínas magras.',
+    },
+    curated_ensalada_mediterranea_pollo: {
+      name: 'Salada Mediterrânea com Frango e Queijo Feta',
+      description: 'Refrescante, rica em micronutrientes, fibras e proteínas de alto valor.',
+    },
+    curated_merluza_wok_verduras: {
+      name: 'Pescada Grelhada com Wok de Legumes Coloridos',
+      description: 'Peixe branco hipocalórico com legumes crocantes ricos em antioxidantes.',
+    },
+    curated_tortitas_avena_platano: {
+      name: 'Panquecas Fit de Aveia e Banana',
+      description: 'Apenas 3 ingredientes para energia limpa e carboidratos complexos pré-treino.',
+    },
+    curated_yogur_griego_nueces_miel: {
+      name: 'Iogurte Grego com Nozes e Toque de Mel',
+      description: 'Sobremesa ou ceia rica em caseína de absorção lenta para proteção muscular noturna.',
+    },
+    curated_fajitas_pollo_pimientos: {
+      name: 'Fajitas de Frango com Pimentões e Tortilha Integral',
+      description: 'Sabor mexicano equilibrado com proteínas magras e fibras.',
+    },
+    curated_burrito_bowl_arroz_frijoles: {
+      name: 'Burrito Bowl de Frango, Arroz Integral e Feijão Preto',
+      description: 'Combinação perfeita de aminoácidos essenciais e energia de liberação lenta.',
+    },
+  },
+  fr: {
+    curated_pollo_arroz_brocoli: {
+      name: 'Poulet Doré au Riz Jasmin et Brocolis Sautés',
+      description: 'Le classique fitness parfait : blanc de poulet mariné aux herbes, riz parfumé et brocolis croquants.',
+    },
+    curated_ternera_patatas_romero: {
+      name: 'Pavé de Boeuf Maigre et Pommes de Terre Rôties au Romarin',
+      description: 'Morceau maigre riche en fer et créatine naturelle avec pommes de terre rôties dorées.',
+    },
+    curated_avena_proteica_chocolate: {
+      name: 'Porridge Protéiné au Cacao Pur et Fruits Rouges',
+      description: 'Petit-déjeuner idéal riche en protéines, flocons d\'avoine et antioxydants.',
+    },
+    curated_tortilla_claras_pavo_espinacas: {
+      name: 'Omelette de Blancs d\'Oeufs, Dinde et Épinards Frais',
+      description: 'Ultra-légère et riche en protéines pures avec zéro graisse superflue.',
+    },
+    curated_salmon_esparragos_limon: {
+      name: 'Pavé de Saumon Rôti aux Asperges et Citron',
+      description: 'Riche en oméga-3 essentiels pour la récupération musculaire et les articulations.',
+    },
+    curated_aguacate_relleno_atun: {
+      name: 'Avocat Farcie au Thon Frais et Épices',
+      description: 'Collation cétogène saine riche en bons lipides et protéines maigres.',
+    },
+    curated_ensalada_mediterranea_pollo: {
+      name: 'Salade Méditerranéenne au Poulet et Feta',
+      description: 'Fraîche, riche en fibres et parfaite pour une sèche efficace.',
+    },
+    curated_merluza_wok_verduras: {
+      name: 'Filet de Colin au Wok de Légumes Croquants',
+      description: 'Poisson blanc très maigre avec légumes riches en antioxydants.',
+    },
+    curated_tortitas_avena_platano: {
+      name: 'Pancakes Fitness Avoine et Banane',
+      description: 'Énergie saine pré-entraînement avec des glucides complexes et zéro sucre ajouté.',
+    },
+    curated_yogur_griego_nueces_miel: {
+      name: 'Yaourt Grec aux Noix et Miel Pur',
+      description: 'Riche en caséine pour une libération continue d\'acides aminés la nuit.',
+    },
+    curated_fajitas_pollo_pimientos: {
+      name: 'Fajitas de Poulet aux Poivrons et Tortilla Complète',
+      description: 'Saveurs épicées équilibrées avec protéines maigres et fibres digestives.',
+    },
+    curated_burrito_bowl_arroz_frijoles: {
+      name: 'Burrito Bowl Poulet, Riz Complet et Haricots Noirs',
+      description: 'Combo d\'acides aminés complet et énergie longue durée pour les journées intenses.',
+    },
+  },
+  de: {
+    curated_pollo_arroz_brocoli: {
+      name: 'Goldenes Hähnchen mit Jasminreis und Brokkoli',
+      description: 'Der Fitness-Klassiker: saftige Hähnchenbrust mit Kräutern, lockerer Reis und ballaststoffreicher Brokkoli.',
+    },
+    curated_ternera_patatas_romero: {
+      name: 'Mageres Rindersteak mit Rosmarin-Röstkartoffeln',
+      description: 'Mageres Rindfleisch reich an Eisen und natürlichem Kreatin mit knusprigen Kartoffeln.',
+    },
+    curated_avena_proteica_chocolate: {
+      name: 'Protein-Porridge mit dunklem Kakao und Waldbeeren',
+      description: 'Kraftvolles Frühstück mit Haferflocken, Whey-Protein und frischen Beeren.',
+    },
+    curated_tortilla_claras_pavo_espinacas: {
+      name: 'Eiklar-Omelett mit Putenbrust und frischem Spinat',
+      description: 'Extrem proteinreich, fettarm und voll mit Mikronährstoffen.',
+    },
+    curated_salmon_esparragos_limon: {
+      name: 'Lachsfilet mit grünem Spargel und Zitrone',
+      description: 'Hochwertige Omega-3-Fettsäuren für Gelenke und Muskelregeneration.',
+    },
+    curated_aguacate_relleno_atun: {
+      name: 'Gefüllte Avocado mit Thunfisch und Kräutern',
+      description: 'Keto-freundlicher Snack mit gesunden Fetten und Proteinen.',
+    },
+    curated_ensalada_mediterranea_pollo: {
+      name: 'Mediterraner Hähnchensalat mit Feta und Oliven',
+      description: 'Frisch, knackig und reich an wertvollen Nährstoffen für Muskeldefinition.',
+    },
+    curated_merluza_wok_verduras: {
+      name: 'Kabeljaufilet mit buntem Gemüse-Wok',
+      description: 'Leichter weißer Fisch mit knackigem Pfannengemüse.',
+    },
+    curated_tortitas_avena_platano: {
+      name: 'Fitness-Pancakes aus Haferflocken und Banane',
+      description: 'Saubere Energie für dein Workout, ohne Zuckerzusatz.',
+    },
+    curated_yogur_griego_nueces_miel: {
+      name: 'Griechischer Joghurt mit Walnüssen und Honig',
+      description: 'Perfekt vor dem Schlafen dank langanhaltendem Casein-Protein.',
+    },
+    curated_fajitas_pollo_pimientos: {
+      name: 'Hähnchen-Fajitas mit Paprika und Vollkorn-Wrap',
+      description: 'Würzige mexikanische Proteine mit ballaststoffreichem Wrap.',
+    },
+    curated_burrito_bowl_arroz_frijoles: {
+      name: 'Burrito Bowl mit Hähnchen, Naturreis und Bohnen',
+      description: 'Komplettes Aminosäurenprofil und langanhaltende Energie.',
+    },
+  },
+  it: {
+    curated_pollo_arroz_brocoli: {
+      name: 'Pollo Dorato con Riso Jasmine e Broccoli Saltati',
+      description: 'Il classico del fitness: petto succoso marinato alle erbe, riso al dente e broccoli croccanti.',
+    },
+    curated_ternera_patatas_romero: {
+      name: 'Medaglioni di Manzo Magro con Patate Arrosto al Rosmarino',
+      description: 'Taglio magro ricco di ferro e creatina naturale con patate croccanti.',
+    },
+    curated_avena_proteica_chocolate: {
+      name: 'Porridge Proteico al Cioccolato Fondente e Frutti Rossi',
+      description: 'Colazione energetica con fiocchi d\'avena, proteine isolate e frutti di bosco.',
+    },
+    curated_tortilla_claras_pavo_espinacas: {
+      name: 'Frittata di Albumi con Tacchino ed Spinaci',
+      description: 'Ultra leggera e ricca di proteine ad alto valore biologico senza grassi in eccesso.',
+    },
+    curated_salmon_esparragos_limon: {
+      name: 'Trancio di Salmone con Asparagi e Limone',
+      description: 'Fonte eccezionale di Omega-3 per il recupero muscolare e articolare.',
+    },
+    curated_aguacate_relleno_atun: {
+      name: 'Avocado Ripieno di Tonno ed Erbe Aromatiche',
+      description: 'Pasto chetogenico ricco di grassi sani e proteine magre.',
+    },
+    curated_ensalada_mediterranea_pollo: {
+      name: 'Insalata Mediterranea con Pollo e Feta',
+      description: 'Fresca e bilanciata, ideale per restare leggeri con gusto.',
+    },
+    curated_merluza_wok_verduras: {
+      name: 'Merluzzo al Vapore con Wok di Verdure Croccanti',
+      description: 'Pesce bianco magrissimo e ricco di vitamine.',
+    },
+    curated_tortitas_avena_platano: {
+      name: 'Pancake Fit di Avena e Banana',
+      description: 'Energia pulita pre-allenamento con carboidrati complessi.',
+    },
+    curated_yogur_griego_nueces_miel: {
+      name: 'Yogurt Greco con Noci e Miele',
+      description: 'Ottimo spuntino serale ricco di caseina a lento rilascio.',
+    },
+    curated_fajitas_pollo_pimientos: {
+      name: 'Fajitas di Pollo con Peperoni e Tortilla Integrale',
+      description: 'Gusto messicano sano ed equilibrato in macronutrienti.',
+    },
+    curated_burrito_bowl_arroz_frijoles: {
+      name: 'Burrito Bowl con Pollo, Riso Integrale e Fagioli Neri',
+      description: 'Profilo amminoacidico completo e carboidrati a basso IG.',
+    },
+  },
+  ru: {
+    curated_pollo_arroz_brocoli: {
+      name: 'Куриная грудка с рисом жасмин и брокколи',
+      description: 'Фитнес-классика: сочное куриное филе с травами, рассыпчатый рис и богатый клетчаткой брокколи.',
+    },
+    curated_ternera_patatas_romero: {
+      name: 'Нежирная говядина с запеченным картофелем и розмарином',
+      description: 'Нежирное мясо, богатое железом и натуральным креатином, с хрустящим картофелем.',
+    },
+    curated_avena_proteica_chocolate: {
+      name: 'Протеиновая овсянка с темным какао и ягодами',
+      description: 'Завтрак чемпионов с цельным овсом, сывороточным протеином и ягодами.',
+    },
+    curated_tortilla_claras_pavo_espinacas: {
+      name: 'Омлет из белков с индейкой и свежим шпинатом',
+      description: 'Максимум белка, минимум жиров и обилие витаминов.',
+    },
+    curated_salmon_esparragos_limon: {
+      name: 'Филе лосося со спаржей и лимоном',
+      description: 'Богат омега-3 жирными кислотами для восстановления мышц и суставов.',
+    },
+    curated_aguacate_relleno_atun: {
+      name: 'Авокадо, фаршированное тунцом и зеленью',
+      description: 'Кето-закуска, богатая полезными мононенасыщенными жирами и белком.',
+    },
+    curated_ensalada_mediterranea_pollo: {
+      name: 'Средиземноморский салат с курицей и фетой',
+      description: 'Освежающий, богатый клетчаткой и легкий в усвоении.',
+    },
+    curated_merluza_wok_verduras: {
+      name: 'Филе хека с овощным воком',
+      description: 'Диетическая белая рыба с хрустящими овощами.',
+    },
+    curated_tortitas_avena_platano: {
+      name: 'Фитнес-панкейки из овсянки и банана',
+      description: 'Чистая энергия для тренировок без сахара.',
+    },
+    curated_yogur_griego_nueces_miel: {
+      name: 'Греческий йогурт с грецкими орехами и медом',
+      description: 'Идеальный вечерний перекус с медленным казеиновым белком.',
+    },
+    curated_fajitas_pollo_pimientos: {
+      name: 'Фахитас с курицей, перцем и цельнозерновой тортильей',
+      description: 'Мексиканский вкус с постным белком и сложными углеводами.',
+    },
+    curated_burrito_bowl_arroz_frijoles: {
+      name: 'Буррито-боул с курицей, бурым рисом и черной фасолью',
+      description: 'Полноценный аминокислотный состав и сытость на весь день.',
+    },
+  },
+};
+
 /**
  * Returns localized curated recipes matching query, goal, and language.
  */
@@ -588,12 +844,29 @@ export function getCuratedRecipes(
   userGoal: string = 'maintain',
   language: string = 'es'
 ): Recipe[] {
-  const langKey = language?.toLowerCase().startsWith('es') ? 'es' : 'en';
+  const langKey = language?.toLowerCase().slice(0, 2) || 'es';
   const cleanQuery = (query || '').trim().toLowerCase();
 
-  // Map definitions to Recipe type
+  // Map definitions to Recipe type with multi-language fallback
   const allMapped: Recipe[] = CURATED_RECIPES.map((def) => {
-    const loc = def[langKey] || def.es;
+    // Check direct definition or multi-language overlay
+    let loc = def.es;
+    if (langKey === 'en') {
+      loc = def.en || def.es;
+    } else if (langKey === 'es') {
+      loc = def.es;
+    } else {
+      // Check overlay for pt, fr, de, it, ru
+      const overlay = RECIPE_I18N_OVERLAYS[langKey]?.[def.id];
+      const base = def.en || def.es;
+      loc = {
+        name: overlay?.name || base.name,
+        description: overlay?.description || base.description,
+        ingredients: overlay?.ingredients || base.ingredients,
+        instructions: overlay?.instructions || base.instructions,
+      };
+    }
+
     return {
       id: def.id,
       name: loc.name,
